@@ -6,7 +6,7 @@ use Data::Dumper;
 use File::Basename;
 use Storable;
 use FindBin qw ($Bin);
-use lib $Bin;
+use lib "$Bin/../lib";
 
 use Common;
 

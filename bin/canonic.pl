@@ -6,7 +6,7 @@ use FileHandle;
 use File::Basename;
 use FindBin qw ($Bin);
 
-use lib $Bin;
+use lib "$Bin/../lib";
 
 use Common;
 use Canonic;

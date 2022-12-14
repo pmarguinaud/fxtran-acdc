@@ -10,7 +10,7 @@ use File::Path;
 use Getopt::Long;
 use Data::Dumper;
 use FindBin qw ($Bin);
-use lib $Bin;
+use lib "$Bin/../lib";
 
 use Common;
 use Canonic;

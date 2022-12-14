@@ -1,4 +1,4 @@
-#!/home/gmap/mrpm/marguina/install/perl-5.32.0/bin/perl -w
+#!/usr/bin/perl -w
 
 package scan;
 
