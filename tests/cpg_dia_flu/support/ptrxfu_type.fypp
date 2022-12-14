@@ -1,0 +1,21 @@
+MODULE PTRXFU_TYPE
+
+USE PARKIND1  ,ONLY : JPIM    
+
+IMPLICIT NONE
+
+SAVE
+
+!     ------------------------------------------------------------
+
+!*    Pointers for instantaneous fluxes diagnostics (XFU).
+
+#:include "ptrxfu_list.hypp"
+
+TYPE TXFUPTR
+#:for v in xfu_list
+INTEGER(KIND=JPIM) :: MX${v[NAME]}$        = 0 ! ${v[COMM]}$
+#:endfor
+END TYPE TXFUPTR
+
+END MODULE PTRXFU_TYPE

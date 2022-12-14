@@ -1,0 +1,33 @@
+
+MODULE MODEL_PHYSICS_AEROSOL_MOD
+  USE YOEAERLID, ONLY : TEAERLID
+  USE YOEAERMAP, ONLY : TEAERMAP
+  USE YOEAERSNK, ONLY : TEAERSNK
+  USE YOEAERSRC, ONLY : TEAERSRC
+  USE YOEAERVOL, ONLY : TEAERVOL
+  USE YOEDBUG, ONLY : TEDBUG
+  IMPLICIT NONE
+          
+  TYPE MODEL_PHYSICS_AEROSOL_TYPE
+
+  TYPE(TEAERLID)  :: YREAERLID  !! LIDAR simulator of 
+                                !! aerosol effects
+  TYPE(TEAERMAP)  :: YREAERMAP
+  TYPE(TEAERSNK)  :: YREAERSNK  !! sinks
+  TYPE(TEAERSRC)  :: YREAERSRC  !! sources
+  TYPE(TEAERVOL)  :: YREAERVOL  !! volcanic aerosols
+  TYPE(TEDBUG)    :: YREDBUG    !! aerosol debugging help
+
+    CONTAINS
+
+     
+
+  END TYPE MODEL_PHYSICS_AEROSOL_TYPE
+
+  !---------------------------------------------------------------------
+
+  CONTAINS 
+
+  
+
+END MODULE MODEL_PHYSICS_AEROSOL_MOD

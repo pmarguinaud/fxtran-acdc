@@ -1,0 +1,77 @@
+#:set NAME = 0
+#:set COMM = 1
+#:set DIMS = 2
+#:set xfu_list = [ &
+&  [ "CAPE"     ,  "CAPE (convective available potential energy)"      ,  1   ], &
+&  [ "CLPH"     ,  "height of the PBL out of the model"                ,  1   ], &
+&  [ "CLWC2"    ,  "maximum of CLWC"                                   ,  1   ], &
+&  [ "CLWC"     ,  "maximum of CLWC"                                   ,  1   ], &
+&  [ "CTOP"     ,  "pressure of top of deep convection"                ,  1   ], &
+&  [ "DICQ"     ,  "contribution of convection to q"                   ,  2   ], &
+&  [ "DICS"     ,  "contribution of convection to (cp T)"              ,  2   ], &
+&  [ "DITQ"     ,  "contribution of turbulence to T"                   ,  2   ], &
+&  [ "DITS"     ,  "contribution of turbulence to (cp T)"              ,  2   ], &
+&  [ "FCHSP"    ,  "heat flux in soil"                                 ,  1   ], &
+&  [ "FEVL"     ,  "liquid evaporation"                                ,  1   ], &
+&  [ "FEVV"     ,  "evapotranspiration"                                ,  1   ], &
+&  [ "FLWSP"    ,  "water flux in soil"                                ,  1   ], &
+&  [ "FONTE"    ,  "melt snow"                                         ,  1   ], &
+&  [ "FTR"      ,  "transpiration"                                     ,  1   ], &
+&  [ "HUN"      ,  "minimum relative humidity at 2 meters (pbl)"       ,  1   ], &
+&  [ "HUX"      ,  "maximum relative humidity at 2 meters (pbl)"       ,  1   ], &
+&  [ "MOCON"    ,  "moisture convergence"                              ,  1   ], &
+&  [ "MRT"      ,  "mean radiant temperature at 2 meters"              ,  1   ], &
+&  [ "NBBAS"    ,  "low cloud cover"                                   ,  1   ], &
+&  [ "NBCON"    ,  "convective cloud cover"                            ,  1   ], &
+&  [ "NBHAU"    ,  "high cloud cover"                                  ,  1   ], &
+&  [ "NBMOY"    ,  "medium cloud cover"                                ,  1   ], &
+&  [ "NEB"      ,  "cloud cover"                                       ,  2   ], &
+&  [ "NEBT"     ,  "total cloudiness"                                  ,  1   ], &
+&  [ "NUCLS"    ,  "U-component of neutral wind at 10 meters (pbl)"    ,  1   ], &
+&  [ "NVCLS"    ,  "V-component of neutral wind at 10 meters (pbl)"    ,  1   ], &
+&  [ "PLCG"     ,  "convective graupel fall"                           ,  2   ], &
+&  [ "PLCH"     ,  "convective hail fall"                              ,  2   ], &
+&  [ "PLCL"     ,  "convective precipitation"                          ,  2   ], &
+&  [ "PLCN"     ,  "convective snow fall"                              ,  2   ], &
+&  [ "PLSG"     ,  "large scale graupel fall (stratiform)"             ,  2   ], &
+&  [ "PLSH"     ,  "large scale hail fall (stratiform)"                ,  2   ], &
+&  [ "PLSL"     ,  "large scale precipitation (stratiform)"            ,  2   ], &
+&  [ "PLSN"     ,  "large scale snow fall (stratiform)"                ,  2   ], &
+&  [ "PTYPE2"   ,  "frequent precipitations type"                      ,  1   ], &
+&  [ "PTYPE"    ,  "frequent precipitations type"                      ,  1   ], &
+&  [ "PTYPESEV2",  "severe precipitations type"                        ,  1   ], &
+&  [ "PTYPESEV" ,  "severe precipitations type"                        ,  1   ], &
+&  [ "QCLS"     ,  "specific humidity at 2 meters (pbl)"               ,  1   ], &
+&  [ "QICE"     ,  "ice water"                                         ,  2   ], &
+&  [ "QLI"      ,  "liquid water"                                      ,  2   ], &
+&  [ "RHCLS"    ,  "relative humidity at 2 meters (pbl)"               ,  1   ], &
+&  [ "RSO"      ,  "solar radiation"                                   ,  2   ], &
+&  [ "RTH"      ,  "surface radiation"                                 ,  2   ], &
+&  [ "RUISL"    ,  "interception soil layer runoff"                    ,  1   ], &
+&  [ "RUISP"    ,  "deep soil runoff"                                  ,  1   ], &
+&  [ "RUISS"    ,  "surface soil runoff"                               ,  1   ], &
+&  [ "SIC"      ,  ""                                                  ,  1   ], &
+&  [ "TCLS"     ,  "temperature at 2 meters (pbl)"                     ,  1   ], &
+&  [ "THW"      ,  "theta prime_w surface"                             ,  1   ], &
+&  [ "TN"       ,  "minimum temperature at 2 meters"                   ,  1   ], &
+&  [ "TPWCLS"   ,  "wet bulb temperature at 2 meters (pbl)"            ,  1   ], &
+&  [ "TRCU"     ,  "contribution of convection to U"                   ,  2   ], &
+&  [ "TRCV"     ,  "contribution of convection to V"                   ,  2   ], &
+&  [ "TRDU"     ,  "U-wind gravity wave stress"                        ,  2   ], &
+&  [ "TRDV"     ,  "V-wind gravity wave stress"                        ,  2   ], &
+&  [ "TRTU"     ,  "contribution of turbulence to U"                   ,  2   ], &
+&  [ "TRTV"     ,  "contribution of turbulence to V"                   ,  2   ], &
+&  [ "TX"       ,  "maximum temperature at 2 meters"                   ,  1   ], &
+&  [ "UCLS"     ,  "U-component of wind at 10 meters (pbl)"            ,  1   ], &
+&  [ "UGST2"    ,  "U-momentum of gusts2"                              ,  1   ], &
+&  [ "UGST"     ,  "U-momentum of gusts out of the model"              ,  1   ], &
+&  [ "VCLS"     ,  "V-component of wind at 10 meters (pbl)"            ,  1   ], &
+&  [ "VEIN"     ,  "ventilation index in PBL"                          ,  1   ], &
+&  [ "VGST2"    ,  "V-momentum of gusts2"                              ,  1   ], &
+&  [ "VGST"     ,  "V-momentum of gusts out of the model"              ,  1   ], &
+&  [ "VISICLD2" ,  "visibility due to water and/or ice cloud"          ,  1   ], &
+&  [ "VISICLD"  ,  "visibility due to water and/or ice cloud"          ,  1   ], &
+&  [ "VISIHYD2" ,  "visibility due to precipitations"                  ,  1   ], &
+&  [ "VISIHYD"  ,  "visibility due to precipitations"                  ,  1   ], &
+&  [ "XDIAGH"   ,  "hail diagnostic"                                   ,  1   ], &
+& ]

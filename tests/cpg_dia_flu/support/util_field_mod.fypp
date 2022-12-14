@@ -1,0 +1,123 @@
+MODULE UTIL_FIELD_MOD
+#:include "field_definition.hypp"
+
+USE FIELD_MODULE
+
+IMPLICIT NONE
+
+INTERFACE LOAD
+#:for dtype, suffix, rank, default in field_descriptors
+  MODULE PROCEDURE LOAD_FIELD_${'%s%sD' % (suffix, rank)}$
+#:endfor
+END INTERFACE
+
+INTERFACE SAVE
+#:for dtype, suffix, rank, default in field_descriptors
+  MODULE PROCEDURE SAVE_FIELD_${'%s%sD' % (suffix, rank)}$
+#:endfor
+END INTERFACE
+
+INTERFACE DIFF
+#:for dtype, suffix, rank, default in field_descriptors
+  MODULE PROCEDURE DIFF_FIELD_${'%s%sD' % (suffix, rank)}$
+#:endfor
+END INTERFACE
+
+INTERFACE COPY
+#:for dtype, suffix, rank, default in field_descriptors
+  MODULE PROCEDURE COPY_FIELD_${'%s%sD' % (suffix, rank)}$
+#:endfor
+END INTERFACE
+
+INTERFACE WIPE
+#:for dtype, suffix, rank, default in field_descriptors
+  MODULE PROCEDURE WIPE_FIELD_${'%s%sD' % (suffix, rank)}$
+#:endfor
+END INTERFACE
+
+CONTAINS
+
+#:for dtype, suffix, rank, default in field_descriptors
+#:set suff = '%s%sD' % (suffix, rank)
+SUBROUTINE LOAD_FIELD_${suff}$ (KLUN, YD)
+INTEGER (KIND=JPIM), INTENT (IN) :: KLUN
+CLASS (FIELD_${suff}$), POINTER :: YD
+INTEGER (KIND=JPIM) :: ISIZE (${rank}$), LBOUNDS (${rank}$), UBOUNDS (${rank}$)
+
+TYPE (FIELD_${suff}$_OWNER), POINTER :: YL
+
+ALLOCATE (YL)
+
+YL%ISTATUS = NHSTFRESH
+
+READ (KLUN) LBOUNDS
+READ (KLUN) ISIZE
+UBOUNDS = LBOUNDS + ISIZE - 1
+ALLOCATE (YL%PTR (${','.join (map (lambda i: "LBOUNDS (" + str (i) + "):UBOUNDS (" + str (i) + ")", range (1, rank+1)))}$))
+READ (KLUN) YL%PTR
+
+YD => YL
+
+END SUBROUTINE
+
+SUBROUTINE SAVE_FIELD_${suff}$ (KLUN, YD)
+INTEGER (KIND=JPIM), INTENT (IN) :: KLUN
+CLASS (FIELD_${suff}$), POINTER :: YD
+INTEGER (KIND=JPIM) :: ISIZE (${rank}$), LBOUNDS (${rank}$), UBOUNDS (${rank}$)
+
+LBOUNDS = LBOUND (YD%PTR)
+UBOUNDS = UBOUND (YD%PTR)
+ISIZE = UBOUNDS - LBOUNDS + 1
+
+WRITE (KLUN) LBOUNDS
+WRITE (KLUN) ISIZE
+WRITE (KLUN) YD%PTR
+
+END SUBROUTINE
+
+SUBROUTINE DIFF_FIELD_${suff}$ (CDMESS, YD, YO)
+CHARACTER(LEN=*), INTENT(IN) :: CDMESS
+CLASS (FIELD_${suff}$), POINTER :: YD, YO
+
+#:for i in range (1, rank+1)
+INTEGER (KIND=JPIM) :: I${i}$
+#:endfor
+
+IF (ANY (LBOUND (YD%PTR) /= LBOUND (YO%PTR))) CALL ABOR1 ('DIMENSION MISMATCH')
+IF (ANY (UBOUND (YD%PTR) /= UBOUND (YO%PTR))) CALL ABOR1 ('DIMENSION MISMATCH')
+
+CALL YD%SYNC_HOST_RDONLY
+CALL YO%SYNC_HOST_RDONLY
+
+#:for i in reversed (range (1, rank+1))
+DO I${i}$ = LBOUND (YD%PTR, ${i}$), UBOUND (YD%PTR, ${i}$)
+#:endfor
+#:set ind = ', '.join (map (lambda i: "I" + str (i), range (1, rank+1)))
+  IF (YD%PTR (${ind}$) /= YO%PTR (${ind}$)) THEN
+    WRITE (*, '(A16," ",${rank}$I4," ",3E15.4)') CDMESS, ${ind}$, YD%PTR (${ind}$), YO%PTR (${ind}$), YD%PTR (${ind}$) - YO%PTR (${ind}$)
+  ENDIF
+#:for i in reversed (range (1, rank+1))
+ENDDO
+#:endfor
+
+END SUBROUTINE
+
+SUBROUTINE COPY_FIELD_${suff}$ (SELF, LDCREATED)
+CLASS (FIELD_${suff}$) :: SELF
+LOGICAL, INTENT (IN), OPTIONAL :: LDCREATED
+
+CALL SELF%COPY_OBJECT (LDCREATED)
+
+END SUBROUTINE 
+
+SUBROUTINE WIPE_FIELD_${suff}$ (SELF, LDDELETED)
+CLASS (FIELD_${suff}$) :: SELF
+LOGICAL, INTENT (IN), OPTIONAL :: LDDELETED
+
+CALL SELF%WIPE_OBJECT (LDDELETED)
+
+END SUBROUTINE 
+
+#:endfor
+
+END MODULE

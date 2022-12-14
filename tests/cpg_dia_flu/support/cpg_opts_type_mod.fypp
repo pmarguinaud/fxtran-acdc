@@ -1,0 +1,209 @@
+#:mute
+#:set config_file = os.path.dirname(_THIS_FILE_) + '/field_config.yaml'
+#:set config = field_config.VariableConfiguration(config_file)
+#:set gfl = config.groups['GFL'] 
+#:set surf_config_file = os.path.dirname(_THIS_FILE_) + '/surface_fields_config.yaml'
+#:set surf_config = field_config.VariableConfiguration(surf_config_file)
+#:set prognostic = [field_config.VariableGroup(**group) for group in surf_config.schema['prognostic']]
+#:set diagnostic = [field_config.VariableGroup(**group) for group in surf_config.schema['diagnostic']]
+#:set variable_groups = prognostic + diagnostic
+
+#:endmute
+MODULE CPG_OPTS_TYPE_MOD
+
+USE PARKIND1, ONLY : JPIM, JPRB
+USE YOMCLI, ONLY : TCLI, YRCLI
+USE SURFACE_FIELDS_MIX , ONLY : TYPE_SURF_GEN
+
+IMPLICIT NONE
+
+TYPE CPG_DIM_VAR_TYPE
+  INTEGER(KIND=JPIM) :: ILEVT1I
+  INTEGER(KIND=JPIM) :: ILEVT1F
+END TYPE
+
+#:def cpg_dim_var_decl (var)
+  TYPE (CPG_DIM_VAR_TYPE) :: ${var}$
+#:enddef
+
+TYPE CPG_DIMS_VARS_TYPE
+$:cpg_dim_var_decl ("U")
+$:cpg_dim_var_decl ("V")
+$:cpg_dim_var_decl ("T")
+$:cpg_dim_var_decl ("SVD")
+#:for v in gfl.variables
+  #:if v.array
+  #:elif v.dim == 3
+$:cpg_dim_var_decl (v.name)
+  #:endif
+#:endfor
+CONTAINS 
+END TYPE CPG_DIMS_VARS_TYPE
+
+TYPE CPG_DIMS_SURF_TYPE
+#:for group in prognostic
+  TYPE (TYPE_SURF_GEN) :: YSP_${group.short}$D
+#:endfor
+#:for group in diagnostic
+  TYPE (TYPE_SURF_GEN) :: YSD_${group.short}$D
+#:endfor
+CONTAINS
+END TYPE
+
+TYPE CPG_BNDS_TYPE
+  INTEGER(KIND=JPIM) :: KIDIA 
+  INTEGER(KIND=JPIM) :: KFDIA 
+  INTEGER(KIND=JPIM) :: KFDIE 
+  INTEGER(KIND=JPIM) :: KIDIE
+  INTEGER(KIND=JPIM) :: KBL 
+  INTEGER(KIND=JPIM) :: KSTGLO 
+
+  INTEGER(KIND=JPIM) :: KLON 
+  INTEGER(KIND=JPIM) :: KGPTOT 
+  INTEGER(KIND=JPIM) :: KGPCOMP 
+
+CONTAINS
+  PROCEDURE :: UPDATE_VIEW => CPG_BNDS_TYPE_UPDATE
+  PROCEDURE :: UPDATE => CPG_BNDS_TYPE_UPDATE
+END TYPE CPG_BNDS_TYPE
+
+#:for group in prognostic
+  #:for v in group.variables
+    #:if v.array
+    #:else
+TYPE CPG_SURF_${group.short}$_${v.name}$P_OPTS_TYPE
+  LOGICAL :: LSET = .FALSE.
+END TYPE
+    #:endif
+
+  #:endfor
+TYPE CPG_SURF_${group.short}$P_OPTS_TYPE
+  #:for v in group.variables
+    #:if v.array
+    #:else
+  TYPE (CPG_SURF_${group.short}$_${v.name}$P_OPTS_TYPE) :: Y${v.name}$
+    #:endif
+  #:endfor
+END TYPE
+
+#:endfor
+#:for group in diagnostic
+  #:for v in group.variables
+    #:if v.array
+    #:else
+TYPE CPG_SURF_${group.short}$_${v.name}$D_OPTS_TYPE
+  LOGICAL :: LSET = .FALSE.
+END TYPE
+    #:endif
+
+  #:endfor
+TYPE CPG_SURF_${group.short}$D_OPTS_TYPE
+  #:for v in group.variables
+    #:if v.array
+    #:else
+  TYPE (CPG_SURF_${group.short}$_${v.name}$D_OPTS_TYPE) :: Y${v.name}$ 
+    #:endif
+  #:endfor
+END TYPE
+
+#:endfor
+
+TYPE CPG_OPTS_SURF_TYPE
+
+#:for group in prognostic
+  TYPE (CPG_SURF_${group.short}$P_OPTS_TYPE) :: YSP_${group.short}$
+#:endfor
+#:for group in diagnostic
+  TYPE (CPG_SURF_${group.short}$D_OPTS_TYPE) :: YSD_${group.short}$
+#:endfor
+CONTAINS
+END TYPE
+
+TYPE CPG_OPTS_TYPE
+
+  INTEGER(KIND=JPIM) :: KLON 
+  INTEGER(KIND=JPIM) :: KFLEVG 
+  INTEGER(KIND=JPIM) :: KGPTOT 
+  INTEGER(KIND=JPIM) :: KGPBLKS
+  INTEGER(KIND=JPIM) :: KGPCOMP 
+  INTEGER(KIND=JPIM) :: KGL1
+  INTEGER(KIND=JPIM) :: KGL2
+  INTEGER(KIND=JPIM) :: NSTEP
+  INTEGER(KIND=JPIM) :: KTDIA
+  INTEGER(KIND=JPIM) :: KVCLIS
+  INTEGER(KIND=JPIM) :: NDTPREC
+  INTEGER(KIND=JPIM) :: NDTPREC2
+  INTEGER(KIND=JPIM) :: NDTPRECCUR
+  INTEGER(KIND=JPIM) :: NDTPRECCUR2
+  INTEGER(KIND=JPIM) :: KTSSG
+  INTEGER(KIND=JPIM) :: KGRADIENTS
+  INTEGER(KIND=JPIM) :: KMAXDRAFT
+  INTEGER(KIND=JPIM) :: KSW
+  
+  TYPE (CPG_OPTS_SURF_TYPE) :: YRSURF_OPTS
+  TYPE (CPG_DIMS_SURF_TYPE) :: YRSURF_DIMS
+  TYPE (CPG_DIMS_VARS_TYPE) :: YRVARS_DIMS
+
+  LOGICAL :: LCONFX, L_DFISTEP, LFSTEP, LDIAB, LSLPHY, LUSEPB1
+  REAL(KIND=JPRB) :: ZDT, ZDTPHY, ZTE, ZBETADT
+
+  TYPE (TCLI) :: YRCLI
+  
+  INTEGER (KIND=JPIM) :: NSSSSS
+  INTEGER (KIND=JPIM) :: NFNUDG
+  INTEGER (KIND=JPIM) :: NINDAT
+  LOGICAL :: LAROME 
+  LOGICAL :: LCALLSFX 
+  LOGICAL :: LCORWAT
+  LOGICAL :: LECMWF
+  LOGICAL :: LINITER
+  LOGICAL :: LELAM
+  LOGICAL :: LFLASH
+  LOGICAL :: LNHDYN
+  LOGICAL :: LNHEE
+  LOGICAL :: LNHQE
+  LOGICAL :: LNUDG
+  LOGICAL :: LRPLANE
+  LOGICAL :: LSFORC
+  LOGICAL :: LSFORCS  
+  LOGICAL :: LSLAG
+  LOGICAL :: LSOMEGA_FRC
+  LOGICAL :: LSPRT
+  LOGICAL :: LSPS_FRC
+  LOGICAL :: LSW_FRC
+  LOGICAL :: LTWOTL
+  LOGICAL :: LVERTFE
+  LOGICAL :: LVFE_ECMWF
+  LOGICAL :: LVFE_GW
+  LOGICAL :: LVFE_LAPL_BC
+  LOGICAL :: LXCLP
+  LOGICAL :: LXTGST
+  LOGICAL :: LXXGST
+  REAL (KIND=JPRB) :: RPLDARE 
+  REAL (KIND=JPRB) :: RPLRG
+  REAL (KIND=JPRB) :: TOPPRES
+  REAL (KIND=JPRB) :: RPSTRA
+  REAL (KIND=JPRB) :: RPTROP
+  REAL (KIND=JPRB) :: RTSUR
+  REAL (KIND=JPRB), ALLOCATABLE :: XPNUDG (:)
+
+
+CONTAINS
+END TYPE CPG_OPTS_TYPE
+
+CONTAINS
+  SUBROUTINE CPG_BNDS_TYPE_UPDATE(SELF, BLOCK_INDEX)
+    CLASS(CPG_BNDS_TYPE) :: SELF
+    INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
+
+    SELF%KBL    = BLOCK_INDEX
+    SELF%KSTGLO = 1 + (BLOCK_INDEX - 1) * SELF%KLON
+    SELF%KFDIA  = MIN (SELF%KLON, SELF%KGPCOMP - SELF%KSTGLO + 1)
+    SELF%KFDIE  = MIN (SELF%KLON, SELF%KGPTOT  - SELF%KSTGLO + 1)
+
+  END SUBROUTINE CPG_BNDS_TYPE_UPDATE
+
+
+END MODULE CPG_OPTS_TYPE_MOD
+
+

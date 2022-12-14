@@ -1,0 +1,21 @@
+MODULE PTRGFU_TYPE
+
+USE PARKIND1  ,ONLY : JPIM
+
+IMPLICIT NONE
+
+SAVE
+
+!     ------------------------------------------------------------
+
+!*    Pointers for cumulated fluxes diagnostics (CFU).
+
+#:include "ptrgfu_list.hypp"
+
+TYPE TCFUPTR
+#:for v in cfu_list
+INTEGER(KIND=JPIM) :: M${v[NAME]}$        = 0 ! ${v[COMM]}$
+#:endfor
+END TYPE TCFUPTR
+
+END MODULE PTRGFU_TYPE

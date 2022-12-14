@@ -1,0 +1,73 @@
+MODULE ARRAY_MOD
+#:include "field_definition.hypp"
+
+USE FIELD_MODULE
+
+IMPLICIT NONE
+
+#:for dtype, suffix, rank, default in field_descriptors
+TYPE ARRAY_${'%s%sD' % (suffix, rank)}$
+  CLASS (FIELD_${'%s%sD' % (suffix, rank)}$), POINTER :: F_P => NULL ()
+  ${dtype}$, POINTER :: P (${shapes[rank-1]}$) => NULL()
+CONTAINS
+  PROCEDURE :: INIT => INIT_ARRAY_${'%s%sD' % (suffix, rank)}$
+  PROCEDURE :: FINAL => FINAL_ARRAY_${'%s%sD' % (suffix, rank)}$
+  PROCEDURE :: UPDATE_VIEW => UPDATE_VIEW_ARRAY_${'%s%sD' % (suffix, rank)}$
+END TYPE
+
+#:endfor
+
+CONTAINS
+
+#:for dtype, suffix, rank, default in field_descriptors
+#:set suff = '%s%sD' % (suffix, rank)
+SUBROUTINE INIT_ARRAY_${suff}$ (SELF, PERSISTENT, LBOUNDS, UBOUNDS, DATA)
+
+CLASS (ARRAY_${suff}$) :: SELF
+LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+INTEGER (KIND=JPIM), INTENT (IN), OPTIONAL :: LBOUNDS (${rank}$)
+INTEGER (KIND=JPIM), INTENT (IN), OPTIONAL :: UBOUNDS (${rank}$)
+${dtype}$, INTENT (IN), TARGET, OPTIONAL :: DATA (${shapes[rank]}$)
+
+INTEGER (KIND=JPIM) :: LBOUNDS_ (${rank}$)
+TYPE (FIELD_${suff}$_OWNER), POINTER :: YLFO
+TYPE (FIELD_${suff}$_WRAPPER), POINTER :: YLFW
+
+IF (PRESENT (DATA)) THEN
+  ALLOCATE (YLFW)
+  CALL YLFW%INIT (DATA=DATA, PERSISTENT=PERSISTENT, LBOUNDS=LBOUNDS)
+ELSE
+  ALLOCATE (YLFO)
+  LBOUNDS_ = 1
+  IF (PRESENT (LBOUNDS)) LBOUNDS_ = LBOUNDS
+  CALL YLFO%INIT (PERSISTENT=PERSISTENT, LBOUNDS=LBOUNDS_, UBOUNDS=UBOUNDS)
+  SELF%F_P => YLFO
+ENDIF
+
+END SUBROUTINE
+
+SUBROUTINE UPDATE_VIEW_ARRAY_${suff}$ (SELF, BLOCK_INDEX)
+CLASS (ARRAY_${suff}$) :: SELF
+INTEGER (KIND=JPIM), INTENT (IN) :: BLOCK_INDEX
+
+IF (ASSOCIATED (SELF%F_P)) THEN
+  SELF%P => SELF%F_P%GET_VIEW (BLOCK_INDEX)
+ENDIF
+
+END SUBROUTINE
+
+SUBROUTINE FINAL_ARRAY_${suff}$ (SELF)
+CLASS (ARRAY_${suff}$) :: SELF
+
+IF (ASSOCIATED (SELF%F_P)) THEN
+  CALL SELF%F_P%FINAL ()
+  DEALLOCATE (SELF%F_P)
+  SELF%F_P => NULL ()
+  SELF%P => NULL ()
+ENDIF
+
+END SUBROUTINE
+
+#:endfor
+
+END MODULE

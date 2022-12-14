@@ -1,0 +1,28 @@
+
+!!=================================
+
+MODULE MODEL_PHYSICS_STOCHAST_MOD
+  USE STOPH_MIX        , ONLY : TSTOPH
+  USE YOMRANDOM_STREAMS, ONLY : TRANDOM_STREAMS
+  IMPLICIT NONE
+
+  TYPE MODEL_PHYSICS_STOCHAST_TYPE
+
+  TYPE(TSTOPH)          :: YRSTOPH
+  TYPE(TRANDOM_STREAMS) :: YR_RANDOM_STREAMS
+
+    CONTAINS
+
+     
+
+  END TYPE MODEL_PHYSICS_STOCHAST_TYPE
+
+  !---------------------------------------------------------------------
+
+  CONTAINS 
+
+  
+
+END MODULE MODEL_PHYSICS_STOCHAST_MOD
+
+

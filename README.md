@@ -1,6 +1,6 @@
 
-# cpg_dia_flu.F90
+# fxtran-acdc
 
-Small test case from cpg.F90, using a lot of field API based structures.
+Adaptation des Codes à Divers Calculateurs
 
-![](./images/CPG_DIA_FLU.svg)
+![](./images/ACDC.png)

@@ -1,0 +1,73 @@
+#:set NAME = 0
+#:set COMM = 1
+#:set DIMS = 2
+#:set cfu_list = [ &
+& [ 'FCCQL'     , "liquid condensation due to convection"                       ,     2    ], &
+& [ 'FCCQN'     , "solid condensation due to convection"                        ,     2    ], &
+& [ 'FCHSP'     , "heat in soil"                                                ,     1    ], &
+& [ 'FCL'       , "latent heat"                                                 ,     1    ], &
+& [ 'FCLL'      , "liquid latent heat"                                          ,     1    ], &
+& [ 'FCLN'      , "solid latent heat"                                           ,     1    ], &
+& [ 'FCSQL'     , "large scale liquid condensation"                             ,     2    ], &
+& [ 'FCSQN'     , "large scale solid condensation"                              ,     2    ], &
+& [ 'FCS'       , "sensible heat"                                               ,     1    ], &
+& [ 'FDICQ'     , "contribution of convection to q"                             ,     2    ], &
+& [ 'FDICS'     , "contribution of convection to (cp T)"                        ,     2    ], &
+& [ 'FDISH'     , "surface enthalpy (due to the dissipation of kinetic energy)" ,     1    ], &
+& [ 'FDITQ'     , "contribution of turbulence to T"                             ,     2    ], &
+& [ 'FDITS'     , "contribution of turbulence to (cp T)"                        ,     2    ], &
+& [ 'FDUTP'     , "filtered duration of total precipitations"                   ,     1    ], &
+& [ 'FEVL'      , "liquid evaporation"                                          ,     1    ], &
+& [ 'FEVN'      , "snow evaporation"                                            ,     1    ], &
+& [ 'FEVV'      , "evapotranspiration"                                          ,     1    ], &
+& [ 'FGEL'      , "deep frost"                                                  ,     1    ], &
+& [ 'FGELS'     , "surface frost"                                               ,     1    ], &
+& [ 'FLASH'     , "cumulative lighntning diagnotics"                            ,     1    ], &
+& [ 'FLWSP'     , "water in soil"                                               ,     1    ], &
+& [ 'FNEB'      , "cloud cover"                                                 ,     2    ], &
+& [ 'FNEBT'     , "total cloudiness"                                            ,     1    ], &
+& [ 'FONTE'     , "melt snow"                                                   ,     1    ], &
+& [ 'FPLCG'     , "convective graupel fall"                                     ,     2    ], &
+& [ 'FPLCH'     , "convective hail fall"                                        ,     2    ], &
+& [ 'FPLCL'     , "convective precipitation"                                    ,     2    ], &
+& [ 'FPLCN'     , "convective snow fall"                                        ,     2    ], &
+& [ 'FPLSG'     , "large scale graupel fall (stratiform)"                       ,     2    ], &
+& [ 'FPLSH'     , "large scale hail fall (stratiform)"                          ,     2    ], &
+& [ 'FPLSL'     , "large scale precipitation (stratiform)"                      ,     2    ], &
+& [ 'FPLSN'     , "large scale snow fall (stratiform)"                          ,     2    ], &
+& [ 'FRSDNI'    , "surface direct normal irradiance"                            ,     1    ], &
+& [ 'FRSGNI'    , "surface global normal irradiance"                            ,     1    ], &
+& [ 'FRSOC0'    , "top clear sky shortwave radiative"                           ,     1    ], &
+& [ 'FRSOC1'    , "surface clear sky shortwave radiative"                       ,     1    ], &
+& [ 'FRSODS'    , "surface down solar"                                          ,     1    ], &
+& [ 'FRSOLU'    , "surface downward moon radiation"                             ,     1    ], &
+& [ 'FRSOPS'    , "surface parallel solar"                                      ,     1    ], &
+& [ 'FRSOPT'    , "top parallel solar"                                          ,     1    ], &
+& [ 'FRSO'      , "solar radiation"                                             ,     2    ], &
+& [ 'FRTHC0'    , "top clear sky longwave radiative"                            ,     1    ], &
+& [ 'FRTHC1'    , "surface clear sky longwave radiative"                        ,     1    ], &
+& [ 'FRTHDS'    , "surface down thermic"                                        ,     1    ], &
+& [ 'FRTH'      , "surface radiation"                                           ,     2    ], &
+& [ 'FTOPH'     , "top mesospheric enthalpy (+ dissipation)"                    ,     1    ], &
+& [ 'FTR'       , "transpiration"                                               ,     1    ], &
+& [ 'NEBBAS'    , "low cloud cover"                                             ,     1    ], &
+& [ 'NEBCON'    , "convective cloud cover"                                      ,     1    ], &
+& [ 'NEBHAU'    , "high cloud cover"                                            ,     1    ], &
+& [ 'NEBMOY'    , "medium cloud cover"                                          ,     1    ], &
+& [ 'OZONT'     , "total ozone"                                                 ,     1    ], &
+& [ 'QICE'      , "solid specific moisture"                                     ,     1    ], &
+& [ 'QLI'       , "liquid specific moisture"                                    ,     1    ], &
+& [ 'QTOT'      , "total precipitable water"                                    ,     1    ], &
+& [ 'RUISL'     , "interception soil layer runoff"                              ,     1    ], &
+& [ 'RUISP'     , "deep soil runoff"                                            ,     1    ], &
+& [ 'RUISS'     , "surface soil runoff"                                         ,     1    ], &
+& [ 'SNS'       , "snow mass"                                                   ,     1    ], &
+& [ 'SPRES'     , "surface pressure"                                            ,     1    ], &
+& [ 'STRCU'     , "contribution of convection to U"                             ,     2    ], &
+& [ 'STRCV'     , "contribution of convection to V"                             ,     2    ], &
+& [ 'STRDU'     , "U-wind gravity wave stress"                                  ,     2    ], &
+& [ 'STRDV'     , "V-wind gravity wave stress"                                  ,     2    ], &
+& [ 'STRTU'     , "contribution of turbulence to U"                             ,     2    ], &
+& [ 'STRTV'     , "contribution of turbulence to V"                             ,     2    ], &
+& [ 'WS'        , "soil moisture"                                               ,     1    ], &
+& ]

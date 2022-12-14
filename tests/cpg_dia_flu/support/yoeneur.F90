@@ -1,0 +1,32 @@
+MODULE YOENEUR
+
+USE PARKIND1  ,ONLY : JPIM     ,JPRB
+
+IMPLICIT NONE
+
+SAVE
+
+TYPE :: TENEUR
+INTEGER(KIND=JPIM) :: NCOU, NBR, NBNEURMAX
+INTEGER(KIND=JPIM) :: KLEV_NN
+
+INTEGER(KIND=JPIM), ALLOCATABLE :: NBNEUR(:,:)
+REAL(KIND=JPRB),    ALLOCATABLE :: WNELN(:,:,:,:)
+REAL(KIND=JPRB),    ALLOCATABLE :: ENTREEMOY(:,:), RAPIN(:,:)
+REAL(KIND=JPRB),    ALLOCATABLE :: SORTIEMOY(:,:), RAPOUT(:,:)
+REAL(KIND=JPRB),    ALLOCATABLE :: PDFSDX(:,:,:,:)
+REAL(KIND=JPRB),    ALLOCATABLE :: AAM_NN(:), BBM_NN(:)
+!----------------------------------------------------------------------------
+CONTAINS
+   
+END TYPE TENEUR
+!============================================================================
+
+!!TYPE(TENEUR), POINTER :: YRENEUR => NULL()
+
+
+CONTAINS
+
+
+
+END MODULE YOENEUR

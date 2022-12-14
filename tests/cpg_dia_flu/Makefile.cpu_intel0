@@ -1,0 +1,10 @@
+
+#pack=/home/gmap/mrpm/marguina/pack/48t3_cpg_drv-.01.MIMPIIFC1805.2y
+pack=/home/mf/dp/marp/gco/packs/cy48t3_main.01.IMPIIFC2018.2y.pack
+
+FC=/home/gmap/mrpm/khatib/public/bin/mimpifc-18.0.5.274 \
+  -I. -I$(pack)/src/local/ifsaux/module -shared-intel -convert big_endian -assume byterecl \
+  -align array64byte,all -traceback -fpic -qopenmp -qopenmp-threadprivate compat -fp-model source -qopt-report=5 \
+  -g -O0 -DUSE_STACK
+
+LIBS=-L$(pack)/lib -lifsaux.local -lstdc++

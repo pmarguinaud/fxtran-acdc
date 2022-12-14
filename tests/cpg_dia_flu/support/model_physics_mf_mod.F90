@@ -1,0 +1,51 @@
+MODULE MODEL_PHYSICS_MF_MOD
+  USE YOMPHY   , ONLY : TPHY
+  USE YOMPHY0  , ONLY : TPHY0
+  USE YOMPHY1  , ONLY : TPHY1
+  USE YOMPHY2  , ONLY : TPHY2
+  USE YOMPHY3  , ONLY : TPHY3
+  USE YOMPHYDS , ONLY : TPHYDS
+  USE YOMCVMNH , ONLY : TCVMNH
+  USE YOMTOPH  , ONLY : TTOPH
+  USE YOMVDOZ  , ONLY : TVDOZ
+  USE YOMSIMPHL, ONLY : TSIMPHL
+  USE YOMARPHY , ONLY : TARPHY
+  USE YOMPARAR , ONLY : TPARAR
+  USE YOMMSE   , ONLY : TMSE
+  USE YOMLOUIS , ONLY : TLOUIS
+  USE YOMNORGWD, ONLY : TNORGWD
+  USE EINT_MOD , ONLY : SL_STRUCT
+  IMPLICIT NONE
+  
+  TYPE MODEL_PHYSICS_MF_TYPE
+
+  TYPE(TPHY)    :: YRPHY !! (french) physics
+  TYPE(TPHY0)   :: YRPHY0 !! atmospheric parameters
+  TYPE(TPHY1)   :: YRPHY1 !! surface parameters
+  TYPE(TPHY2)   :: YRPHY2 !! expt parameters
+  TYPE(TPHY3)   :: YRPHY3 !! radiation-related parameters
+  TYPE(TPHYDS)  :: YRPHYDS
+  TYPE(TCVMNH)  :: YRCVMNH
+  TYPE(TTOPH)   :: YRTOPH
+  TYPE(TVDOZ)   :: YRVDOZ
+  TYPE(TSIMPHL) :: YRSIMPHL
+  TYPE(TARPHY)  :: YRARPHY
+  TYPE(TPARAR)  :: YRPARAR
+  TYPE(TMSE)    :: YRMSE
+  TYPE(TLOUIS)  :: YRLOUIS
+  TYPE(TNORGWD) :: YRNORGWD !! non-orographic GWD scheme parameters
+  TYPE(SL_STRUCT) :: YRGR ! horizontal gradients manager
+
+    CONTAINS
+
+     
+
+  END TYPE MODEL_PHYSICS_MF_TYPE
+
+  !---------------------------------------------------------------------
+
+  CONTAINS 
+
+  
+
+END MODULE MODEL_PHYSICS_MF_MOD

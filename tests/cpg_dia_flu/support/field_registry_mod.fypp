@@ -1,0 +1,88 @@
+#:set surface_config_file = os.path.dirname(_THIS_FILE_) + '/surface_fields_config.yaml'
+#:set surface_config = field_config.VariableConfiguration(surface_config_file)
+#:set surface_prognostic = [field_config.VariableGroup(**group) for group in surface_config.schema['prognostic']]
+#:set surface_diagnostic = [field_config.VariableGroup(**group) for group in surface_config.schema['diagnostic']]
+#:set surface_variable_groups = surface_prognostic + surface_diagnostic
+
+#:set config_file = os.path.dirname(_THIS_FILE_) + '/field_config.yaml'
+#:set config = field_config.VariableConfiguration(config_file)
+#:set gfl = config.groups['GFL']
+
+MODULE FIELD_REGISTRY_MOD
+
+USE PARKIND1, ONLY : JPIM, JPRB
+USE FIELD_MODULE, ONLY: FIELD_2D, FIELD_INT2D, FIELD_LOG2D, FIELD_3D, FIELD_INT3D, FIELD_4D, FIELD_5D
+USE VARIABLE_MODULE, ONLY: VARIABLE_2D, VARIABLE_3D, VARIABLE_4D
+USE FIELD_VARIABLES_MOD, ONLY: FIELD_VARIABLES
+USE SURFACE_VARIABLES_MOD, ONLY: SURFACE_VARIABLES
+
+IMPLICIT NONE
+
+INTERFACE DELETE_TEMPORARY
+  MODULE PROCEDURE DELETE_TEMPORARY_2D, DELETE_TEMPORARY_INT2D, DELETE_TEMPORARY_LOG2D
+  MODULE PROCEDURE DELETE_TEMPORARY_3D, DELETE_TEMPORARY_INT3D, DELETE_TEMPORARY_4D, DELETE_TEMPORARY_5D
+END INTERFACE DELETE_TEMPORARY
+
+CONTAINS
+
+  SUBROUTINE DELETE_TEMPORARY_2D(FIELD_PTR)
+    ! Finalize a temporary field and deallocate the pointer
+    CLASS(FIELD_2D), POINTER, INTENT(INOUT) :: FIELD_PTR
+
+    CALL FIELD_PTR%FINAL()
+    DEALLOCATE(FIELD_PTR)
+  END SUBROUTINE DELETE_TEMPORARY_2D
+
+  SUBROUTINE DELETE_TEMPORARY_INT2D(FIELD_PTR)
+    ! Finalize a temporary field and deallocate the pointer
+    CLASS(FIELD_INT2D), POINTER, INTENT(INOUT) :: FIELD_PTR
+
+    CALL FIELD_PTR%FINAL()
+    DEALLOCATE(FIELD_PTR)
+  END SUBROUTINE DELETE_TEMPORARY_INT2D
+
+  SUBROUTINE DELETE_TEMPORARY_INT3D(FIELD_PTR)
+    ! Finalize a temporary field and deallocate the pointer
+    CLASS(FIELD_INT3D), POINTER, INTENT(INOUT) :: FIELD_PTR
+
+    CALL FIELD_PTR%FINAL()
+    DEALLOCATE(FIELD_PTR)
+  END SUBROUTINE DELETE_TEMPORARY_INT3D
+
+  SUBROUTINE DELETE_TEMPORARY_LOG2D(FIELD_PTR)
+    ! Finalize a temporary field and deallocate the pointer
+    CLASS(FIELD_LOG2D), POINTER, INTENT(INOUT) :: FIELD_PTR
+
+    CALL FIELD_PTR%FINAL()
+    DEALLOCATE(FIELD_PTR)
+  END SUBROUTINE DELETE_TEMPORARY_LOG2D
+
+  SUBROUTINE DELETE_TEMPORARY_3D(FIELD_PTR)
+    ! Finalize a temporary field and deallocate the pointer
+    CLASS(FIELD_3D), POINTER, INTENT(INOUT) :: FIELD_PTR
+
+    CALL FIELD_PTR%FINAL()
+    DEALLOCATE(FIELD_PTR)
+  END SUBROUTINE DELETE_TEMPORARY_3D
+
+  SUBROUTINE DELETE_TEMPORARY_4D(FIELD_PTR)
+    ! Finalize a temporary field and deallocate the pointer
+    CLASS(FIELD_4D), POINTER, INTENT(INOUT) :: FIELD_PTR
+
+    CALL FIELD_PTR%FINAL()
+    DEALLOCATE(FIELD_PTR)
+  END SUBROUTINE DELETE_TEMPORARY_4D
+
+  SUBROUTINE DELETE_TEMPORARY_5D(FIELD_PTR)
+    ! Finalize a temporary field and deallocate the pointer
+    CLASS(FIELD_5D), POINTER, INTENT(INOUT) :: FIELD_PTR
+
+    CALL FIELD_PTR%FINAL()
+    DEALLOCATE(FIELD_PTR)
+  END SUBROUTINE DELETE_TEMPORARY_5D
+
+
+END MODULE FIELD_REGISTRY_MOD
+
+
+

@@ -1,0 +1,379 @@
+#:set ISARG = 0
+#:set ELARG = 1
+#:set NDIMS = 2
+#:set NTYPE = 3
+#:set NCOND = 4
+#:set NDEFS = 5
+
+#:def pcpg_struct1_definition (name, vars)
+TYPE ${name}$
+  LOGICAL :: LOWNED = .FALSE.
+  REAL (KIND=JPRB), POINTER, CONTIGUOUS :: ZVIEW (:,:) => NULL ()
+  REAL (KIND=JPRB), POINTER, CONTIGUOUS :: ZDATA (:,:,:) => NULL ()
+  CLASS (FIELD_3D), POINTER :: F_DATA => NULL ()
+#:for var in vars
+  #:set ndim = 1 + len (vars[var][NDIMS])
+  REAL (KIND=JPRB), POINTER, CONTIGUOUS :: ${var}$ (${", ".join ([":"] * ndim)}$) => NULL ()
+!>REAL (KIND=JPRB)                      :: ${var}$ (${', '.join (['NPROMA'] + list (map (lambda d: d[0] + ':' + d[1], vars[var][NDIMS])))}$)
+  CLASS (FIELD_${ndim+1}$D), POINTER :: F_${var}$ => NULL ()
+#:endfor
+
+CONTAINS
+  PROCEDURE :: UPDATE_VIEW => ${name}$_UPDATE_VIEW
+  PROCEDURE :: FINAL => ${name}$_FINAL
+END TYPE ${name}$
+#:enddef
+
+#:def pcpg_struct_definition (name, vars)
+TYPE ${name}$
+  LOGICAL :: LOWNED = .FALSE.
+  REAL (KIND=JPRB), POINTER, CONTIGUOUS :: ZVIEW (:,:,:) => NULL ()
+  REAL (KIND=JPRB), POINTER, CONTIGUOUS :: ZDATA (:,:,:,:) => NULL ()
+  CLASS (FIELD_4D), POINTER :: F_DATA => NULL ()
+#:for var in vars
+  #:set ndim = 1 + len (vars[var][NDIMS])
+  INTEGER (KIND=JPIM) :: IP_${var}$ = -1
+  REAL (KIND=JPRB), POINTER, CONTIGUOUS :: ${var}$ (${", ".join ([":"] * ndim)}$) => NULL ()
+!>REAL (KIND=JPRB)                      :: ${var}$ (${', '.join (['NPROMA'] + list (map (lambda d: d[0] + ':' + d[1], vars[var][NDIMS])))}$)
+  CLASS (FIELD_${ndim+1}$D), POINTER :: F_${var}$ => NULL ()
+#:endfor
+
+CONTAINS
+  PROCEDURE :: UPDATE_VIEW => ${name}$_UPDATE_VIEW
+  PROCEDURE :: FINAL => ${name}$_FINAL
+END TYPE ${name}$
+#:enddef
+
+#:def pcpg_intdyn_definition (name, vars)
+$:pcpg_struct_definition (name, vars)
+#:enddef
+
+#:def pcpg_type_definition (name, vars)
+TYPE ${name}$
+
+#:for var in vars
+  #:set elt = vars[var]
+  #:set ndim = 1 + len (elt[NDIMS])
+  #:if elt[NTYPE] is None
+  REAL (KIND=JPRB), POINTER, CONTIGUOUS :: ${var}$ (${", ".join ([":"] * ndim)}$) => NULL ()
+!>REAL (KIND=JPRB)                      :: ${var}$ (${', '.join (['NPROMA'] + list (map (lambda d: d[0] + ':' + d[1], elt[NDIMS])))}$)
+  CLASS (FIELD_${ndim+1}$D), POINTER :: F_${var}$ => NULL ()
+  #:elif elt[NTYPE] == 'INTEGER'
+  INTEGER (KIND=JPIM), POINTER, CONTIGUOUS :: ${var}$ (${", ".join ([":"] * ndim)}$) => NULL ()
+!>INTEGER (KIND=JPIM)                      :: ${var}$ (${', '.join (['NPROMA'] + list (map (lambda d: d[0] + ':' + d[1], elt[NDIMS])))}$)
+  CLASS (FIELD_INT${ndim+1}$D), POINTER :: F_${var}$ => NULL ()
+  #:else
+  TYPE (${elt[NTYPE]}$) :: ${var}$
+  #:endif
+#:endfor
+
+CONTAINS
+  PROCEDURE :: UPDATE_VIEW => ${name}$_UPDATE_VIEW
+  PROCEDURE :: FINAL => ${name}$_FINAL
+END TYPE ${name}$
+#:enddef pcpg_type_definition
+
+#:def gdim (d)
+  #:if d[0] == '0' 
+    #:set s = "+1"
+  #:elif d[0] == '1' 
+    #:set s = ""
+  #:else 
+    #:set s = "-" + d[0] + "+1"
+  #:endif
+  #:set s = d[1] + s
+$:s
+#:enddef gdim
+
+#:def wrap_array (var, dim, ind, typ, use_lbounds=False)
+  #:if use_lbounds
+${ind}$  SELF%F_${var}$ => CREATE_FIELD_WRAP (${argn (var)}$, LBOUNDS=[1, ${", ".join (list (map (lambda x: x[0], dim)) + ["1"])}$])
+  #:else
+${ind}$  SELF%F_${var}$ => CREATE_FIELD_WRAP (${argn (var)}$)
+  #:endif
+#:enddef wrap_array
+
+#:def temporary (var, dim, ind, typ, use_lbounds=False)
+  #:set ndim = 1 + len (dim)
+  #:if typ is None
+    #:set suf = ""
+  #:else
+    #:set suf = '_INT'
+  #:endif
+  #:if ndim == 1
+${ind}$SELF%F_${var}$ => CREATE_TEMPORARY${suf}$ (GEOM=REGISTRY%GEOM, PERSISTENT=PERSISTENT)
+  #:elif ndim == 2
+    #:set s2 = gdim (dim[0])
+    #:if use_lbounds
+      #:set nlev0 = ", NLEV0=" + dim[0][0]
+    #:else
+      #:set nlev0 = ""
+    #:endif
+${ind}$SELF%F_${var}$ => CREATE_TEMPORARY${suf}$ (GEOM=REGISTRY%GEOM, NLEV=${s2}$${nlev0}$, PERSISTENT=PERSISTENT)
+  #:elif ndim == 3
+    #:set s2 = gdim (dim[0])
+    #:set s3 = gdim (dim[1])
+    #:if use_lbounds
+      #:set nlev0 = ", NLEV0=" + dim[0][0]
+      #:set ndim0 = ", NDIM0=" + dim[1][0]
+    #:else
+      #:set nlev0 = ""
+      #:set ndim0 = ""
+    #:endif
+${ind}$SELF%F_${var}$ => CREATE_TEMPORARY${suf}$ (GEOM=REGISTRY%GEOM, NLEV=${s2}$${nlev0}$, NDIM=${s3}$${ndim0}$, PERSISTENT=PERSISTENT)
+  #:endif
+#:enddef temporary
+
+#:def size (dims, type)
+  #:if type is None
+    #:set sz = 'REGISTRY%GEOM%YRDIM%NPROMA * JPRB'
+    #:for d in dims
+      #:set sz = sz + ' * (' + d[1] + ' - ' + d[0] + ' + 1)'
+    #:endfor
+  #:else
+    #:set sz = dims + " x " + type
+  #:endif
+$:sz
+#:enddef
+
+#:def argn (a)
+  #:if a[0:1] != "P"
+    #:set a = "P" + a
+  #:endif
+$:a
+#:enddef argn
+
+#:def pdim (d)
+  #:if all (map (lambda x: x[0] == '1', d))
+    #:set s = ""
+  #:else
+    #:set s = "(1:," + ", ".join (map (lambda x: x[0] + ":", d)) + ")"
+  #:endif
+$:s
+#:enddef pdim
+
+#:def pdiml (d)
+  #:set s = ", ".join (["1"] + list (map (lambda x: x[0], d)))
+$:s
+#:enddef pdiml
+
+#:def pdimu (d)
+  #:set s = ", ".join (["REGISTRY%GEOM%YRDIM%NPROMA"] + list (map (lambda x: x[1], d)))
+$:s
+#:enddef pdimu
+
+#:def pcpg_struct1_methods (name, vars, type, modn, memb, ntot)
+SUBROUTINE ${name}$_UPDATE_VIEW (SELF, BLOCK_INDEX)
+
+CLASS (${name}$)         :: SELF
+INTEGER(KIND=JPIM), INTENT (IN)   :: BLOCK_INDEX
+
+IF (ASSOCIATED (SELF%F_DATA)) THEN
+
+  SELF%ZVIEW => SELF%F_DATA%GET_VIEW (BLOCK_INDEX)
+
+#:for var in vars
+  #:set ss = pdim (vars[var][NDIMS])
+  #:set ndim = 1 + len (vars[var][NDIMS])
+  IF (ASSOCIATED (SELF%F_${var}$)) THEN
+    IF ((.NOT. SELF%F_${var}$%THREAD_BUFFER) .OR. (.NOT. ASSOCIATED (SELF%${var}$))) THEN
+      SELF%${var}$ ${ss}$ => SELF%F_${var}$%GET_VIEW (BLOCK_INDEX)
+    ENDIF
+  ELSEIF (.NOT. ASSOCIATED (SELF%${var}$)) THEN
+    SELF%${var}$ ${ss}$ => ZDUM${ndim}$
+  ENDIF
+#:endfor
+
+ELSE
+
+  SELF%ZVIEW => ZDUM2
+
+#:for var in vars
+  #:set ss = pdim (vars[var][NDIMS])
+  #:set ndim = 1 + len (vars[var][NDIMS])
+  IF (.NOT. ASSOCIATED (SELF%${var}$)) SELF%${var}$ ${ss}$ => ZDUM${ndim}$
+#:endfor
+
+ENDIF
+
+END SUBROUTINE ${name}$_UPDATE_VIEW
+
+SUBROUTINE ${name}$_FINAL (SELF)
+CLASS (${name}$)          :: SELF
+
+IF (ASSOCIATED (SELF%F_DATA)) CALL DELETE_TEMPORARY (SELF%F_DATA)
+SELF%F_DATA => NULL ()
+
+IF (SELF%LOWNED) THEN
+  DEALLOCATE (SELF%ZDATA)
+ENDIF
+
+SELF%ZDATA => NULL ()
+SELF%ZVIEW => NULL ()
+
+#:for var in vars
+IF (ASSOCIATED (SELF%F_${var}$)) THEN
+  CALL DELETE_TEMPORARY (SELF%F_${var}$) 
+  SELF%F_${var}$ => NULL ()
+  SELF%${var}$ => NULL ()
+ENDIF
+#:endfor
+
+END SUBROUTINE ${name}$_FINAL
+#:enddef
+
+#:def pcpg_struct_methods (name, vars, type, modn, memb, use_lbounds=False)
+SUBROUTINE ${name}$_UPDATE_VIEW (SELF, BLOCK_INDEX)
+
+CLASS (${name}$)         :: SELF
+INTEGER(KIND=JPIM), INTENT (IN)   :: BLOCK_INDEX
+
+IF (ASSOCIATED (SELF%F_DATA)) THEN
+
+  SELF%ZVIEW => SELF%F_DATA%GET_VIEW (BLOCK_INDEX)
+
+#:for var in vars
+  #:set ndim = 1 + len (vars[var][NDIMS])
+  #:if use_lbounds
+    #:set ss = ""
+  #:else
+    #:set ss = pdim (vars[var][NDIMS])
+  #:endif
+  IF (ASSOCIATED (SELF%F_${var}$)) THEN
+    IF ((.NOT. SELF%F_${var}$%THREAD_BUFFER) .OR. (.NOT. ASSOCIATED (SELF%${var}$))) THEN
+      SELF%${var}$ ${ss}$ => SELF%F_${var}$%GET_VIEW (BLOCK_INDEX)
+    ENDIF
+  ELSEIF (.NOT. ASSOCIATED (SELF%${var}$)) THEN
+    SELF%${var}$ ${ss}$ => ZDUM${ndim}$
+  ENDIF
+#:endfor
+
+ELSE
+
+  SELF%ZVIEW => ZDUM3
+
+#:for var in vars
+  #:set ndim = 1 + len (vars[var][NDIMS])
+  #:if use_lbounds
+    #:set ss = ""
+  #:else
+    #:set ss = pdim (vars[var][NDIMS])
+  #:endif
+  IF (.NOT. ASSOCIATED (SELF%${var}$)) SELF%${var}$ ${ss}$ => ZDUM${ndim}$
+#:endfor
+
+ENDIF
+
+END SUBROUTINE ${name}$_UPDATE_VIEW
+
+SUBROUTINE ${name}$_FINAL (SELF)
+CLASS (${name}$)          :: SELF
+
+IF (ASSOCIATED (SELF%F_DATA)) CALL DELETE_TEMPORARY (SELF%F_DATA)
+SELF%F_DATA => NULL ()
+
+IF (SELF%LOWNED) THEN
+  DEALLOCATE (SELF%ZDATA)
+ENDIF
+
+SELF%ZDATA => NULL ()
+SELF%ZVIEW => NULL ()
+
+#:for var in vars
+IF (ASSOCIATED (SELF%F_${var}$)) THEN
+  CALL DELETE_TEMPORARY (SELF%F_${var}$) 
+  SELF%F_${var}$ => NULL ()
+  SELF%${var}$ => NULL ()
+ENDIF
+#:endfor
+
+END SUBROUTINE ${name}$_FINAL
+#:enddef
+
+#:def pcpg_intdyn_methods (name, vars, type, use_lbounds=False)
+$:pcpg_struct_methods (name, vars, "T" + type, "INTDYN_MOD", "M_", use_lbounds=use_lbounds)
+#:enddef
+
+#:def pcpg_type_methods (name, vars, use_intdyn=False, use_lbounds=False)
+
+#:set use_llt0      = False
+#:set use_llmf_phys = False
+#:set use_lnhdyn    = False
+#:set use_yddphy    = False
+#:set use_ydsurf    = False
+#:set use_ydmodel   = False
+#:set use_cpg_dim   = False
+#:for var in vars
+  #:if vars[var][NCOND]
+    #:set cond = vars[var][NCOND]
+    #:set use_llt0      = use_llt0      or ("LLT0"      in cond)
+    #:set use_llmf_phys = use_llmf_phys or ("LLMF_PHYS" in cond)
+    #:set use_lnhdyn    = use_lnhdyn    or ("LNHDYN"    in cond)
+    #:set use_ydmodel   = use_ydmodel   or ("YDMODEL"   in cond)
+  #:endif
+  #:for dim in vars[var][NDIMS]
+    #:for x in dim
+      #:set use_yddphy  = use_yddphy    or ("YDDPHY"     in x)
+      #:set use_ydsurf  = use_ydsurf    or ("YDSURF"     in x)
+      #:set use_ydmodel = use_ydmodel   or ("YDMODEL"    in x)
+      #:set use_cpg_dim = use_cpg_dim   or ("YDCPG_OPTS" in x)
+    #:endfor
+  #:endfor
+#:endfor
+
+#:set use_llt0 = use_llt0 or use_intdyn
+
+SUBROUTINE ${name}$_UPDATE_VIEW (SELF, BLOCK_INDEX)
+
+CLASS (${name}$)         :: SELF
+INTEGER(KIND=JPIM), INTENT (IN)   :: BLOCK_INDEX
+
+#:for var in vars
+  #:set elt = vars[var]
+  #:if elt[NTYPE] is None
+    #:set ss = pdim (elt[NDIMS])
+    #:set ndim = 1 + len (elt[NDIMS])
+    #:if use_lbounds
+      #:set ss = ""
+    #:endif
+IF (ASSOCIATED (SELF%F_${var}$)) THEN
+  IF ((.NOT. SELF%F_${var}$%THREAD_BUFFER) .OR. (.NOT. ASSOCIATED (SELF%${var}$))) THEN
+    SELF%${var}$ ${ss}$ => SELF%F_${var}$%GET_VIEW (BLOCK_INDEX)
+  ENDIF
+ELSEIF (.NOT. ASSOCIATED (SELF%${var}$)) THEN
+  SELF%${var}$ ${ss}$ => ZDUM${ndim}$
+ENDIF
+  #:elif elt[NTYPE] == 'INTEGER'
+    #:set ss = pdim (elt[NDIMS])
+    #:set ndim = 1 + len (elt[NDIMS])
+IF (ASSOCIATED (SELF%F_${var}$)) THEN
+  IF ((.NOT. SELF%F_${var}$%THREAD_BUFFER) .OR. (.NOT. ASSOCIATED (SELF%${var}$))) THEN
+    SELF%${var}$ ${ss}$ => SELF%F_${var}$%GET_VIEW (BLOCK_INDEX)
+  ENDIF
+ELSEIF (.NOT. ASSOCIATED (SELF%${var}$)) THEN
+  SELF%${var}$ ${ss}$ => IDUM${ndim}$
+ENDIF
+  #:else
+CALL SELF%${var}$%UPDATE_VIEW (BLOCK_INDEX)
+  #:endif
+#:endfor
+
+END SUBROUTINE ${name}$_UPDATE_VIEW
+
+SUBROUTINE ${name}$_FINAL (SELF)
+CLASS (${name}$)         :: SELF
+
+#:for var in vars
+  #:set elt = vars[var]
+  #:if (elt[NTYPE] is None) or (elt[NTYPE] == 'INTEGER')
+IF (ASSOCIATED (SELF%F_${var}$)) CALL DELETE_TEMPORARY (SELF%F_${var}$) 
+  #:else
+CALL SELF%${var}$%FINAL ()
+  #:endif
+#:endfor
+
+END SUBROUTINE ${name}$_FINAL
+#:enddef pcpg_type_methods
+
+
+
