@@ -196,19 +196,20 @@ sub inlineSingleCall
     my $i = 0;
     for my $arg (@arg)
       {
+        my $aa;
         if (my ($argn) = &F ('./arg-N/k/text()', $arg, 1))
           {            
-            my ($argv) = &F ('./ANY-E', $arg);
-            $da2aa{$argn} = $argv;
+            ($aa) = &F ('./ANY-E', $arg);
+            $da2aa{$argn} = $aa;
           }
         else
           {
-            my ($aa) = &F ('./named-E', $arg);
+            ($aa) = &F ('./ANY-E', $arg);
             $da2aa{$da[$i++]} = $aa;
           }
       }
   }
-  
+
   # Remove dummy arguments declaration
   
   for my $da (@da)

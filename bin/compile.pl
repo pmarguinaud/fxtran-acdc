@@ -155,13 +155,14 @@ sub generateSINGLECOLUMNFIELDAPIHOST
     Construct::changeIfStatementsInIfConstructs
     Inline::inlineContainedSubroutines
     FieldAPI::pointers2FieldAPIPtrHost
-    Loop::removeJlonLoops
   );
 
   for my $method (@method)
     {
       &apply ($method, $d);
     }
+
+  &Loop::removeJlonLoops ($d, fieldAPI => 1);
 
   my $suffix = '_SINGLE_COLUMN_FIELD_API_HOST';
 
@@ -190,13 +191,14 @@ sub generateSINGLECOLUMNFIELDAPIDEVICE
     Construct::changeIfStatementsInIfConstructs
     Inline::inlineContainedSubroutines
     FieldAPI::pointers2FieldAPIPtrDevice
-    Loop::removeJlonLoops
   );
 
   for my $method (@method)
     {
       &apply ($method, $d);
     }
+
+  &Loop::removeJlonLoops ($d, fieldAPI => 1);
 
   my $suffix = '_SINGLE_COLUMN_FIELD_API_DEVICE';
 

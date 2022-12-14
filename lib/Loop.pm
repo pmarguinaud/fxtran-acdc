@@ -34,7 +34,8 @@ sub removeJlonConstructs
 sub removeJlonLoops
 {
   my $d = shift;
-  
+  my %opts = @_;
+
   my $noexec = &Scope::getNoExec ($d);
 
   unless (&F ('.//T-decl-stmt[.//EN-decl[string(EN-N)="JLON"]]', $d))
@@ -68,7 +69,11 @@ sub removeJlonLoops
       $NPROMA{$N} = scalar (@ss);
     }
 
-  &removeJlonLoopsFieldAPI ($d, $d);
+  if ($opts{fieldAPI})
+    {
+      &removeJlonLoopsFieldAPI ($d, $d);
+    }
+
 
   for my $NPROMA (sort keys (%NPROMA))
     {
@@ -153,7 +158,8 @@ sub setJLON
     }
 
   my @ss = &F ('./section-subscript-LT/section-subscript', $ar);
-  $ss[0]->replaceNode (&n ('<section-subscript><named-E><N><n>JLON</n></N></named-E></section-subscript>'));
+  $ss[0]->replaceNode (&n ('<section-subscript><lower-bound><named-E><N><n>JLON</n></N></named-E></lower-bound></section-subscript>'));
+
 }
 
 1;

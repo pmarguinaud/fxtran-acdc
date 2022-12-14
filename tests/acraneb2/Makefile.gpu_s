@@ -1,0 +1,2 @@
+FC=nvfortran -mp -byteswapio -Mlarge_arrays -fast -acc=gpu -Minfo=accel,all,intensity,ccff -gpu=lineinfo -O3 -Mcuda -DUSE_STACK -DPARKIND1_SINGLE
+
