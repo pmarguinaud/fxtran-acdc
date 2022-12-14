@@ -6,7 +6,7 @@ use FileHandle;
 use List::MoreUtils qw (uniq);
 use Data::Dumper;
 use FindBin qw ($Bin);
-use lib $Bin;
+use lib "$Bin/../lib";
 
 use Common;
 

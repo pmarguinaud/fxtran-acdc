@@ -2,6 +2,9 @@
 
 set -x
 
+TOP=$(dirname $0)/../../../bin
+export PATH=$TOP:$PATH
+
 function resolve ()
 {
   f=$1
@@ -142,7 +145,7 @@ arpifs/module/yom_ygfl.F90                         \
 arpifs/module/yophlc.F90                           \
 arpifs/module/yophnc.F90 
 do
-  ./scripts/loadsave.pl \
+  generateStructureMethods.pl \
      --skip-components TYPE_GFL_COMP%PREVIOUS,MODEL_PHYSICS_STOCHAST_TYPE%YR_RANDOM_STREAMS,TEPHY%YSURF,TRADIATION%RAD_CONFIG,TECUCONVCA%YD_RANDOM_STREAM_CA,GEOMETRY%YRCSGEOMAD_NB,GEOMETRY%YRGSGEOMAD_NB,TYPE_GFLD%YCRM_NL \
      --dir support \
      --wipe --copy --save --load $(resolve $f)
