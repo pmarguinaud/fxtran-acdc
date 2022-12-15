@@ -210,6 +210,7 @@ sub inlineSingleCall
       }
   }
 
+
   # Remove dummy arguments declaration
   
   for my $da (@da)
@@ -258,10 +259,9 @@ sub inlineSingleCall
   for my $da (@da)
     {
       next if (my $aa = $da2aa{$da});
-      my @e = &F ('.//named-E[./N/n/text()="?"]', $da, $d2);
-      for my $e (@e)
+      my @stmt = &F ('.//ANY-stmt[.//named-E[./N/n/text()="?"]]', $da, $d2);
+      for my $stmt (@stmt)
         {
-          my $stmt = &Fxtran::stmt ($e);
           if ($stmt->nodeName eq 'if-then-stmt')
             {
               my $construct = $stmt->parentNode->parentNode;
@@ -443,6 +443,7 @@ sub inlineExternalSubroutine
   my ($S2) = &F ('./subroutine-stmt', $D2);
   my ($n2) = &F ('./subroutine-N/N/n/text()', $S2);
   
+
   # Subroutine calls to be replaced by subroutine contents
   my @call = &F ('.//call-stmt[./procedure-designator/named-E/N/n/text()="?"]', $n2, $d1);
 
@@ -458,7 +459,17 @@ sub inlineExternalSubroutine
       &DrHook::remove ($DD2);
       my ($SS2) = &F ('./subroutine-stmt', $DD2);
   
-      push @rename, &suffixVariables ($DD2, suffix => $suffix);
+      my $rename = &suffixVariables ($DD2, suffix => $suffix);
+      push @rename, $rename;
+
+      for my $N (sort keys (%$rename))
+        {
+          my @k = &F ('./arg-spec/arg/arg-N/k/text()[string(.)="?"]', $N, $call);
+          for my $k (@k)
+            {
+              $k->setData ($rename->{$N});
+            }
+        }
 
       &inlineSingleCall ($d1, $DD2, $SS2, $n2, $call, %opts, inlineDeclarations => 1);
     }
