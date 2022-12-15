@@ -411,7 +411,7 @@ sub suffixVariables
 
   my @en_decl = &F ('.//T-decl-stmt//EN-decl/EN-N/N/n/text()', $d);
 
-  my @skip = qw (JLON JLEV);
+  my @skip = qw (JL JLON JLEV);
   my %skip = map { ($_, 1) } @skip;
   
   my %N;
@@ -484,11 +484,17 @@ sub inlineExternalSubroutine
         }
     }
 
-  # Merge consistent declarations
+  # Merge consistent declarations (and remove variable suffix)
+
+  my @ENN = &F ('./object/file/program-unit/T-decl-stmt//EN-N', $d1, 1);
+  my %ENN = map { ($_, 1) } @ENN;
 
   for my $N (sort keys (%N))
     {
+      next if ($ENN{$N}); # Variable already exists in caller
+
       my @N = @{ $N{$N} };
+
       my @en_decl = map { &F ('./object/file/program-unit/T-decl-stmt//EN-decl[string(EN-N)="?"]', $_, $d1) } @N;
       next unless (@en_decl); # May be an argument
 
@@ -512,6 +518,7 @@ sub inlineExternalSubroutine
            
           my ($ENN) = &F ('./EN-N/N/n/text()', $en_decl);
           $ENN->setData ($N);
+          $ENN{$N}++;
         }
     }
 

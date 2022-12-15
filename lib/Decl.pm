@@ -43,7 +43,7 @@ sub declare
   my $d = shift;
   my @stmt = map { ref ($_) ? $_ : &s ($_) } @_;
 
-  my %N_d = map { ($_, 1) } &F ('.//EN-N', $d, 1);
+  my %N_d = map { ($_, 1) } &F ('./object/file/program-unit/T-decl-stmt//EN-N', $d, 1);
 
   my $noexec = &Scope::getNoExec ($d);
 
@@ -87,9 +87,15 @@ sub include
 {
   my ($d, $include) = @_;
 
+  my ($filename) = &F ('filename', $include, 2);
+
+  return if (&F ('./object/file/program-unit/include[string(filename)="?"]', $filename, $d));
+
   my $base;
 
-  if (my @include = &F ('.//include', $d))
+  my @include = &F ('./object/file/program-unit/include', $d);
+
+  if (@include)
     {
       $base = $include[0];
     }
