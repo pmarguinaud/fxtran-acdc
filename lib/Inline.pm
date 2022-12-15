@@ -254,10 +254,35 @@ sub inlineSingleCall
   # Simplify subroutine (with PRESENT (...) expressions replaced by their values
   &Construct::apply ($d2);
 
+  # See whether some optional missing arguments remain
+  for my $da (@da)
+    {
+      next if (my $aa = $da2aa{$da});
+      my @e = &F ('.//named-E[./N/n/text()="?"]', $da, $d2);
+      for my $e (@e)
+        {
+          my $stmt = &Fxtran::stmt ($e);
+          if ($stmt->nodeName eq 'if-then-stmt')
+            {
+              my $construct = $stmt->parentNode->parentNode;
+              $construct->replaceNode (&s ('STOP 1'));
+            }
+          elsif ($stmt->nodeName eq 'else-if-stmt')
+            {
+              die;
+            }
+          else
+            {
+              $stmt->replaceNode (&s ('STOP 1'));
+            }
+        }
+    }
+
   my @use = &F ('.//use-stmt', $d2);
   my @decl = &F ('.//T-decl-stmt', $d2);
+  my @include = &F ('.//include', $d2);
   
-  if (@use || @decl)
+  if (@use || @decl || @include)
     {
       if ($opts{inlineDeclarations})
         {
@@ -271,6 +296,15 @@ sub inlineSingleCall
               &Decl::declare ($d1, $decl->cloneNode (1));
               &removeStmt ($decl);
             }
+          for my $include (@include)
+            {
+              &Decl::include ($d1, $include->cloneNode (1));
+              &removeStmt ($include);
+            }
+        }
+      else
+        {
+          die;
         }
     }
 
@@ -278,7 +312,7 @@ sub inlineSingleCall
   
   for (&F ('.//implicit-none-stmt', $d2))
     {
-      $_->unbindNode (); # Should move includes to d1
+      $_->unbindNode (); 
     }
   
   my @node = &F ('descendant-or-self::program-unit/node()', $d2);
@@ -412,6 +446,7 @@ sub inlineExternalSubroutine
   # Subroutine calls to be replaced by subroutine contents
   my @call = &F ('.//call-stmt[./procedure-designator/named-E/N/n/text()="?"]', $n2, $d1);
 
+  # Record renamed local variables from inlined subroutine
   my @rename;
 
   for my $i (0 .. $#call)
@@ -428,9 +463,6 @@ sub inlineExternalSubroutine
       &inlineSingleCall ($d1, $DD2, $SS2, $n2, $call, %opts, inlineDeclarations => 1);
     }
 
-  my @include = &F ('./object/file/program-unit/include[string(filename)="?"]', lc ($n2) . '.intfb.h', $d1);
-  &removeStmt ($_) for (@include);
-
   my %N;
 
   for my $rename (@rename)
@@ -440,6 +472,8 @@ sub inlineExternalSubroutine
           push @{ $N{$N} }, $rename->{$N};
         }
     }
+
+  # Merge consistent declarations
 
   for my $N (sort keys (%N))
     {
@@ -469,6 +503,14 @@ sub inlineExternalSubroutine
           $ENN->setData ($N);
         }
     }
+
+  # Remove include of inlined subroutine
+
+  my ($include) = &F ('./object/file/program-unit/include[string(filename)="?"]', 
+                      lc ($n2) . '.intfb.h', $d1);
+
+  $include && &removeStmt ($include);
+
 }
 
 

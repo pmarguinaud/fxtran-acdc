@@ -58,7 +58,24 @@ sub simplify
   if (my ($op) = &F ('./op', $e, 1))
     {
       my ($e2) = grep { $_->unique_key != $e1->unique_key } &F ('./ANY-E', $e);
-      if ($e1->textContent eq '.TRUE.')
+
+      if (defined (my ($i1) = ($e1->textContent =~ m/^(\d+)$/o)) 
+       && $e2 && defined (my ($i2) =($e2->textContent =~ m/^(\d+)$/o)))
+        {
+          if (defined ($i1) && defined ($i2))
+            {
+              if ($op eq '+')
+                {
+                  my $s = $i1 + $i2;
+                  $nn = &n ("<literal-E><l>$s</l></literal-E>");
+                }
+              elsif (($op eq '==') || ($op eq '.EQ.'))
+                {
+                  $nn = &e ($i1 == $i2 ? '.TRUE.' : '.FALSE.');
+                }
+            }
+        }
+      elsif ($e1->textContent eq '.TRUE.')
         {
           if ($op eq '.AND.')
             {
@@ -103,6 +120,11 @@ sub simplify
   $e->replaceNode ($nn); 
 
   if ($nn->textContent =~ m/^\.(?:TRUE|FALSE)\.$/o)
+    {
+      &simplify ($nn);
+    }
+
+  if ($nn->textContent =~ m/^\d+$/o)
     {
       &simplify ($nn);
     }
@@ -152,10 +174,11 @@ sub apply
 
 
 
-  my @expr = &F ('.//literal-E[string(.)=".FALSE." or string(.)=".TRUE."]', $d);
+  my @expr = &F ('.//literal-E', $d);
 
   for my $expr (@expr)
     {
+      next unless ($expr->textContent =~ m/^(?:\.TRUE\.|\.FALSE\.|\d+)$/o);
       next unless (&Fxtran::stmt ($expr));
       &simplify ($expr);
     }

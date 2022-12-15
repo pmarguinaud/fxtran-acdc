@@ -5,6 +5,8 @@ use Fxtran;
 use Data::Dumper;
 use Intrinsic;
 use Ref;
+use Decl;
+use Associate;
 
 sub makeCanonicReferences
 {
@@ -46,6 +48,8 @@ sub makeCanonic
   my $d = shift;
 
   &makeCanonicReferences ($d);
+  &Decl::forceSingleDecl ($d);
+  &Associate::resolveAssociates ($d);
 
   return;
 

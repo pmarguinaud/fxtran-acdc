@@ -83,6 +83,27 @@ sub use
 
 }
 
+sub include
+{
+  my ($d, $include) = @_;
+
+  my $base;
+
+  if (my @include = &F ('.//include', $d))
+    {
+      $base = $include[0];
+    }
+  else
+    {
+      $base = &Scope::getNoExec ($d);
+    }
+
+  $base->parentNode->insertBefore ($include, $base);
+  $base->parentNode->insertBefore (&t ("\n"), $base);
+  
+
+}
+
 sub changeIntent
 {
   my ($d, %intent) = @_;
