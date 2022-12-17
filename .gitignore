@@ -11,3 +11,4 @@ drhook.prof.*
 drhook_lock
 *.svg
 attic
+slurm-*.out
