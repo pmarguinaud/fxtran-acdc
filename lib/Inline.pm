@@ -211,18 +211,6 @@ sub inlineSingleCall
   }
 
 
-  # Remove dummy arguments declaration
-  
-  for my $da (@da)
-    {
-      my @en_decl = &F ('.//EN-decl/EN-N/N/n[text()="?"]', $da, $d2);
-      for my $en_decl (@en_decl)
-        {
-          my ($stmt) = &Fxtran::stmt ($en_decl);
-          &removeStmt ($stmt);
-        }
-    }
-  
   # Replace simple IFs by IF constructs
    
   use Construct;
@@ -252,6 +240,74 @@ sub inlineSingleCall
         }
     }
 
+  # Remove dummy arguments declaration & check dimension consistency
+  
+  for my $da (@da)
+    {
+      my ($en_decl_da) = &F ('./T-decl-stmt/EN-decl-LT/EN-decl[string(EN-N)="?"]', $da, $d2);
+
+      if (my $aa = $da2aa{$da})
+        {
+          goto SKIP unless ($aa->nodeName eq 'named-E');
+          my @r = &F ('./R-LT/ANY-R', $aa);
+
+          goto SKIP if (scalar (@r) > 1); # Cannot check dimensions of structure members
+
+          my ($n) = &F ('./N', $aa, 1);
+          my ($en_decl_aa) = &F ('./object/file/program-unit/T-decl-stmt/EN-decl-LT/EN-decl[string(EN-N)="?"]', $n, $d1);
+
+          die "Declaration of $n was not found" unless ($en_decl_aa);
+
+          my ($as_aa) = &F ('./array-spec', $en_decl_aa);
+          my ($as_da) = &F ('./array-spec', $en_decl_da);
+
+          goto SKIP unless ($as_aa);
+
+          my @ss_aa = &F ('./shape-spec-LT/shape-spec', $as_aa, 1);
+          my @ss_da = &F ('./shape-spec-LT/shape-spec', $as_da, 1);
+
+          die if (&F ('./R-LT/parens-R', $aa));
+
+          for (@ss_aa, @ss_da)
+            {
+              s/\s+//go;
+            }
+
+    
+          if (my @ss = &F ('./R-LT/array-R/section-subscript-LT/section-subscript', $aa))
+            {
+              for my $i (reverse (0 .. $#ss_aa))
+                {
+                  next if ($ss[$i]->textContent eq ':'); # Keep
+                  my @b = &F ('./ANY-bound', $ss[$i]);
+                  if (scalar (@b) == 2)
+                    {
+                      die "Inlining $n2 is unsafe";
+                    }
+                  elsif (scalar (@b) == 1)
+                    {
+                      splice (@ss_aa, $i, 1); # Do not check
+                      splice (@ss_da, $i, 1); # Do not check
+                    }
+                  else
+                    {
+                      die; # Unexpected
+                    }
+                }
+            }
+ 
+          my $mess = "Dimensions mismatch while inlining $n2: " . $en_decl_da->textContent . " vs " . $en_decl_aa->textContent;
+
+          die $mess unless (scalar (@ss_aa) == scalar (@ss_da));
+          die $mess if (grep { my $i = $_; $ss_aa[$i] ne $ss_da[$i] } (0 .. $#ss_da));
+
+SKIP:
+        }
+
+      my ($decl) = &Fxtran::stmt ($en_decl_da);
+      &removeStmt ($decl);
+    }
+  
   # Simplify subroutine (with PRESENT (...) expressions replaced by their values
   &Construct::apply ($d2);
 
@@ -406,13 +462,16 @@ sub inlineContainedSubroutines
 
 sub suffixVariables
 {
-  my ($d, %opts) = @_;
+  my ($pu, %opts) = @_;
   my $suffix = $opts{suffix};
 
-  my @en_decl = &F ('.//T-decl-stmt//EN-decl/EN-N/N/n/text()', $d);
+  # Do not suffix arguments, as they will be replaced anyway
+
+  my @args = &F ('./subroutine-stmt/dummy-arg-LT/arg-N', $pu, 1);
+  my @en_decl = &F ('.//T-decl-stmt/EN-decl-LT/EN-decl/EN-N/N/n/text()', $pu);
 
   my @skip = qw (JL JLON JLEV);
-  my %skip = map { ($_, 1) } @skip;
+  my %skip = map { ($_, 1) } (@skip, @args);
   
   my %N;
   for my $en_decl (@en_decl)
@@ -424,8 +483,8 @@ sub suffixVariables
     }
 
   for my $expr 
-    (&F ('./subroutine-stmt/dummy-arg-LT/arg-N/N/n/text()', $d), 
-     &F ('.//named-E/N/n/text()', $d))
+    (&F ('./subroutine-stmt/dummy-arg-LT/arg-N/N/n/text()', $pu), 
+     &F ('.//named-E/N/n/text()', $pu))
     {
       my $N = $expr->data;
       next unless ($N{$N});

@@ -10,19 +10,21 @@ use Inline;
 use Canonic;
 use Decl;
 
-my ($f1, $f2) = @ARGV;
+my ($f, @f) = @ARGV;
 
-my ($d1, $d2) = map { &Fxtran::parse (location => $_, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]) } ($f1, $f2);
+my ($d, @d) = map { &Fxtran::parse (location => $_, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]) } ($f, @f);
 
-for ($d1, $d2)
+for ($d, @d)
   {
     &Canonic::makeCanonic ($_);
   }
 
-'FileHandle'->new (">$f1.old")->print (&Canonic::indent ($d1));
-'FileHandle'->new (">$f2.old")->print (&Canonic::indent ($d2));
+'FileHandle'->new (">$f.old")->print (&Canonic::indent ($d));
 
-&Inline::inlineExternalSubroutine ($d1, $d2);
+for (@d)
+  {
+    &Inline::inlineExternalSubroutine ($d, $_);
+  }
 
-'FileHandle'->new (">$f1.new")->print (&Canonic::indent ($d1));
+'FileHandle'->new (">$f.new")->print (&Canonic::indent ($d));
 

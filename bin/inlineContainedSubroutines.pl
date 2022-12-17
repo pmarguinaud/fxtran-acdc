@@ -11,13 +11,16 @@ use Common;
 
 use Fxtran;
 use Inline;
+use Canonic;
 
 my ($f) = @ARGV;
 
-my $d = &Fxtran::parse (location => $f);
+my $d = &Fxtran::parse (location => $f, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]);
+
+&Canonic::makeCanonic ($d);
 
 &Inline::inlineContainedSubroutines ($d);
 
-print ($d->textContent ());
+print (&Canonic::indent ($d));
 #'FileHandle'->new (">$f.new")->print ($d->textContent ());
 

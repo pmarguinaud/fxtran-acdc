@@ -3,7 +3,7 @@
 use strict;
 use local::lib;
 use FindBin qw ($Bin);
-use lib "$Bin/../../../lib";
+use lib "$Bin/../../../../lib";
 use FileHandle;
 use File::Copy;
 use File::Basename;
@@ -76,11 +76,11 @@ sub preProcessIfNewer
       my $d = &Fxtran::parse (location => $f1);
       &saveToFile ($d, "tmp/$f2");
 
-      &Inline::inlineContainedSubroutines ($d);
-      &saveToFile ($d, "tmp/inlineContainedSubroutines/$f2");
-
       &Associate::resolveAssociates ($d);
       &saveToFile ($d, "tmp/resolveAssociates/$f2");
+
+      &Inline::inlineContainedSubroutines ($d);
+      &saveToFile ($d, "tmp/inlineContainedSubroutines/$f2");
 
       &Loop::removeJlonLoops ($d);
       &saveToFile ($d, "tmp/removeJlonLoops/$f2");

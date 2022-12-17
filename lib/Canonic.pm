@@ -7,6 +7,7 @@ use Intrinsic;
 use Ref;
 use Decl;
 use Associate;
+use Construct;
 
 sub makeCanonicReferences
 {
@@ -47,9 +48,10 @@ sub makeCanonic
 {
   my $d = shift;
 
+  &Associate::resolveAssociates ($d);
   &makeCanonicReferences ($d);
   &Decl::forceSingleDecl ($d);
-  &Associate::resolveAssociates ($d);
+  &Construct::changeIfStatementsInIfConstructs ($d);
 
   return;
 
