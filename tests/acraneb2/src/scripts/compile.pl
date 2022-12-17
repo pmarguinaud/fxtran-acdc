@@ -13,6 +13,7 @@ use Data::Dumper;
 use Getopt::Long;
 use Bt;
 use PATH;
+use Compare;
 
 
 my %opts;
@@ -99,7 +100,7 @@ sub preProcessIfNewer
     }
 }
 
-my @opts_f = qw (update compile kernels single-block);
+my @opts_f = qw (update compile compare compare-prompt);
 my @opts_s = qw (arch);
 
 &GetOptions
@@ -147,7 +148,10 @@ if ($opts{compile})
     system ('make -j4 main.x') and die;
   }
 
-
+if ($opts{compare})
+  {
+    &Compare::compare ("../compare.$opts{arch}", "../compile.$opts{arch}", %opts);
+  }
 
 
 
