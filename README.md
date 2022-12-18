@@ -1,6 +1,4 @@
 
-# fxtran-acdc
-
-Adaptation des Codes à Divers Calculateurs
+# Adaptation des Codes à Divers Calculateurs
 
 ![](./images/ACDC.png)
