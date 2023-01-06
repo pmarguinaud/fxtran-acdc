@@ -18,6 +18,7 @@ use Common;
 use Canonic;
 use Fxtran;
 use PATH;
+use Compare;
 
 
 my %opts;
@@ -250,7 +251,7 @@ sub preProcessIfNewer
     }
 }
 
-my @opts_f = qw (update compile external-drhook);
+my @opts_f = qw (update compile external-drhook compare compare-prompt);
 my @opts_s = qw (arch);
 
 &GetOptions
@@ -304,6 +305,11 @@ if ($opts{update})
 if ($opts{compile})
   {
     system ('make -j4 wrap_cpg_dia_flux.x') and die;
+  }
+
+if ($opts{compare})
+  {
+    &Compare::compare ("../compare.$opts{arch}", "../compile.$opts{arch}", %opts);
   }
 
 
