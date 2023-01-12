@@ -154,6 +154,7 @@ EOF
       }
   }
 
+
 for my $h (grep { ! m/\.intfb\.h$/o } <*.h>)
   {
     (my $ok = $h) =~ s/\.h$/.ok/o;
@@ -187,6 +188,17 @@ EOF
 
     push @subobj, $obj if ($kind ne 'MODULE');
   }
+
+for my $c (<*.c>)
+  {
+    (my $o = $c) =~ s/\.c$/.o/o;
+    push @obj, $o;
+    $fh->print (<< "EOF");
+$o: $c
+	\$(CC) -c $c
+EOF
+  }
+
 
 for my $prg (@prg)
   {

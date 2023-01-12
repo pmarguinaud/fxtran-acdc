@@ -127,6 +127,18 @@ sub setJLON
 {
   my ($expr, $nd) = @_;
 
+  if (my $p = &Fxtran::expr ($expr))
+    {
+      if ($p->nodeName eq 'named-E')
+        {
+          my ($n) = &F ('./N', $p, 1);
+          if ($n eq 'PRESENT') # Do not force JLON indexing for PRESENT (X)
+            {
+              return;
+            }
+        }
+    }
+
   my ($rlt) = &F ('./R-LT', $expr);
 
   unless ($rlt)

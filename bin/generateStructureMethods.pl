@@ -227,7 +227,7 @@ sub process_types
   my ($mod) = &F ('.//module-stmt/module-N/N/n/text()', $doc);
   
   my @tconst = &F ('.//T-construct', $doc);
-  
+
   for my $tconst (@tconst)
     {
       my ($name) = &F ('.//T-stmt/T-N/N/n/text()', $tconst, 1);
@@ -648,7 +648,7 @@ sub parseSkipOnly
 
 my $F90 = shift;
 
-my $doc = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 800)], dir => $opts{tmp});
+my $doc = &Fxtran::parse (location => $F90, fopts => [qw (-construct-tag -line-length 800)], dir => $opts{tmp});
 
 if ($opts{load} || $opts{save} || $opts{size} || $opts{copy})
   {

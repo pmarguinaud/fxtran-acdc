@@ -30,12 +30,21 @@ sub addStack
         }
       my ($argspec) = &F ('./arg-spec', $call);
       $argspec->appendChild (&t (', '));
-      $argspec->appendChild (&e ($YLSTACK));
+
+      my $arg = &n ('<arg/>');
+
+      $arg->appendChild (&n ('<arg-N n="YDSTACK"><k>YDSTACK</k></arg-N>'));
+      $arg->appendChild (&t ('='));
+      $arg->appendChild (&e ($YLSTACK));
+
+      $argspec->appendChild ($arg);
     }
 
   my ($dummy_arg_lt) = &F ('.//subroutine-stmt/dummy-arg-LT', $d);
 
-  my ($last) = &F ('./arg-N[last()]', $dummy_arg_lt, 1);
+  my @args = &F ('./arg-N', $dummy_arg_lt, 1);
+
+  my $last = $args[-1];
 
   $dummy_arg_lt->appendChild (&t (', '));
   $dummy_arg_lt->appendChild (&n ("<arg-N><N><n>YDSTACK</n></N></arg-N>"));
@@ -77,15 +86,20 @@ sub addStack
 
   my @KLON = qw (KLON YDCPG_OPTS%KLON);
 
+  my %args = map { ($_, 1) } @args;
+
   for my $KLON (@KLON)
     {
-      my @en_decl = &F ('.//T-decl-stmt[not(string(.//attribute-N)="INTENT")]'
+      my @en_decl = &F ('.//T-decl-stmt'
                       . '//EN-decl[./array-spec/shape-spec-LT/shape-spec[string(./upper-bound)="?"]]', 
                       $KLON, $d);
       
+
       for my $en_decl (@en_decl)
         {
           my ($n) = &F ('./EN-N', $en_decl, 1);
+
+          next if ($args{$n});
 
           my $stmt = &Fxtran::stmt ($en_decl);
       
