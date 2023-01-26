@@ -26,5 +26,7 @@ for (@d)
     &Inline::inlineExternalSubroutine ($d, $_);
   }
 
+$d->normalize ();
+
 'FileHandle'->new (">$f.new")->print (&Canonic::indent ($d));
 

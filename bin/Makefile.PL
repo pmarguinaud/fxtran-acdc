@@ -58,7 +58,7 @@ sub deps
             }
         }
 
-      die $f if (grep { ! defined ($_) } @{ $deps{$f} });
+      die $f . "\n" . &Dumper ($deps{$f}) if (grep { ! defined ($_) } @{ $deps{$f} });
 
       @{ $deps{$f} } = &uniq (@{ $deps{$f} });
 

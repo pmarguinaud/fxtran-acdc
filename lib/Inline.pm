@@ -299,7 +299,14 @@ sub inlineSingleCall
           my $mess = "Dimensions mismatch while inlining $n2: " . $en_decl_da->textContent . " vs " . $en_decl_aa->textContent;
 
           die $mess unless (scalar (@ss_aa) == scalar (@ss_da));
-          die $mess if (grep { my $i = $_; $ss_aa[$i] ne $ss_da[$i] } (0 .. $#ss_da));
+ 
+          for my $i (0 .. $#ss_da)
+            {
+              $ss_aa[$i] =~ s/^1://o;
+              $ss_da[$i] =~ s/^1://o;
+              die $mess if ($ss_aa[$i] ne $ss_da[$i]);
+            }
+
 
 SKIP:
         }
