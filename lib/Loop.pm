@@ -31,6 +31,47 @@ sub removeJlonConstructs
     }
 }
 
+
+sub fixSUMIdiom
+{
+  my $d = shift;
+
+# The following is used sometimes (eg acbl89.F90)
+#
+# ZTESTM=SUM(ZTESTSAVE(KIDIA:KFDIA))
+#
+# DO JJLEV=JLEV,KTDIAN+1,-1
+#   IF (ZTESTM > 0.0_JPRB) THEN
+#     DO JLON=KIDIA,KFDIA
+#       ZDLUP1   = ZGDZF(JLON,JJLEV)
+#       ZZTHVL   =(ZTHETA (JLON,JJLEV)+ZTHETA (JLON,JJLEV-1))/2.0_JPRB
+#       ...
+#       ZEN   (JLON)=ZEN  (JLON)-ZINCR*ZTEST0
+#     ENDDO
+#     ZTESTM=SUM(ZTESTSAVE(KIDIA:KFDIA))
+#   ENDIF
+# ENDDO
+
+# my @sum = &F ('//E-2/named-E[string(N)="SUM"]', $d);
+
+  my @sum = &F 
+    ('//E-2/named-E[string(N)="SUM"]'
+   . '[./R-LT/parens-R/element-LT/element/named-E/R-LT/array-R/section-subscript-LT'
+   . '/section-subscript[string(.)="KIDIA:KFDIA"]]', 
+     $d);
+
+# So we need to replace the SUM by a scalar assignment
+
+  for my $sum (@sum)
+    {
+      my ($N) = &F ('./R-LT/parens-R/element-LT/element/named-E/N', $sum, 1);
+      my $N_JLON = &e ("$N(JLON)");
+      $sum->replaceNode ($N_JLON->cloneNode (1));
+    }
+
+}
+
+
 sub removeJlonLoops
 {
   my $d = shift;
@@ -38,6 +79,8 @@ sub removeJlonLoops
 
   my $noexec = &Scope::getNoExec ($d);
 
+  &fixSUMIdiom ($d);
+ 
   unless (&F ('.//T-decl-stmt[.//EN-decl[string(EN-N)="JLON"]]', $d))
     {
       my $indent = "\n" . (' ' x &Fxtran::getIndent ($noexec));

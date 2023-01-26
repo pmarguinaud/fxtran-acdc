@@ -22,6 +22,7 @@ sub reDim
       next if (&F ('.//attribute-N[string(.)="INTENT"]', $stmt));
       next if (&F ('.//call-stmt[.//named-E[string(N)="?"]', $N, $d));
   
+
       my ($as) = &F ('./array-spec', $en_decl);
 
       my @ss = &F ('./shape-spec-LT/shape-spec', $as);
