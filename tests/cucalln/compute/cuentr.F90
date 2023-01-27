@@ -1,0 +1,158 @@
+SUBROUTINE CUENTR &
+ & ( YDCST, YDECUMF,KIDIA,    KFDIA,    KLON,     KLEV, KSPPN2D, &
+ & KK,       KCBOT,     KTYPE,&
+ & LDCUM,    LDWORK,&
+ & PQSEN,    PAPH,     PGEOH,&
+ & PMFU,     PGP2DSPP, PDMFEN,   PDMFDE )  
+
+!          M.TIEDTKE         E.C.M.W.F.     12/89
+!          P.BECHTOLD        E.C.M.W.F.     06/07
+!          P.BECHTOLD        E.C.M.W.F.     03/12
+
+!          PURPOSE.
+!          --------
+!          THIS ROUTINE CALCULATES ENTRAINMENT/DETRAINMENT RATES
+!          FOR UPDRAFTS IN CUMULUS PARAMETERIZATION
+
+!          INTERFACE
+!          ---------
+
+!          THIS ROUTINE IS CALLED FROM *CUASC*.
+!          INPUT ARE ENVIRONMENTAL VALUES T,Q ETC
+!          AND UPDRAFT VALUES T,Q ETC
+!          IT RETURNS ENTRAINMENT/DETRAINMENT RATES
+
+!          METHOD.
+!          --------
+!          TURBULENT ENTRAINMENT IS SIMULATED BY A CONSTANT
+!          MULTIPLIED BY A VERTICAL SCALING FUNCTION
+
+!     PARAMETER     DESCRIPTION                                   UNITS
+!     ---------     -----------                                   -----
+!     INPUT PARAMETERS (INTEGER):
+
+!    *KIDIA*        START POINT
+!    *KFDIA*        END POINT
+!    *KLON*         NUMBER OF GRID POINTS PER PACKET
+!    *KLEV*         NUMBER OF LEVELS
+!    *KSPPN2D*      Number of 2D patterns in SPP scheme
+!    *KK*           CURRENT LEVEL
+!    *KCBOT*        CLOUD BASE LEVEL
+
+!    INPUT PARAMETERS (LOGICAL):
+
+!    *LDCUM*        FLAG: .TRUE. FOR CONVECTIVE POINTS
+
+!    INPUT PARAMETERS (REAL):
+
+!    *PQSEN*        SATURATION SPEC. HUMIDITY                   KG/KG
+!    *PAPH*         PROVISIONAL PRESSURE ON HALF LEVELS          PA
+!    *PGEOH*        PROVISIONAL GEOPOTENTIAL ON HALF LEVELS      PA
+!    *PMFU*         MASSFLUX IN UPDRAFTS                        KG/(M2*S)
+!    *PGP2DSPP*     Standard stochastic variable (mean=0, SD=1)
+
+!    OUTPUT PARAMETERS (REAL):
+
+!    *PDMFEN*       ENTRAINMENT RATE                            KG/(M2*S)
+!    *PDMFDE*       DETRAINMENT RATE                            KG/(M2*S)
+
+!          EXTERNALS
+!          ---------
+!          NONE
+!
+!
+!    MODIFICATIONS.
+!    --------------
+!
+!    M. Leutbecher & S.-J. Lock (Jan 2016) Introduced SPP scheme (LSPP)
+!     R. El Khatib 22-Jun-2022 A contribution to simplify phasing after the refactoring of YOMCLI/YOMCST/YOETHF.
+!----------------------------------------------------------------------
+
+USE PARKIND1 , ONLY : JPIM     ,JPRB
+USE YOMHOOK  , ONLY : LHOOK,   DR_HOOK
+
+USE YOMCST   , ONLY : TCST
+USE YOECUMF  , ONLY : TECUMF
+USE SPP_MOD  , ONLY : YSPP_CONFIG, YSPP
+
+IMPLICIT NONE
+
+TYPE(TCST)        ,INTENT(IN)    :: YDCST
+TYPE(TECUMF)      ,INTENT(IN)    :: YDECUMF
+INTEGER(KIND=JPIM),INTENT(IN)    :: KLON 
+INTEGER(KIND=JPIM),INTENT(IN)    :: KLEV 
+INTEGER(KIND=JPIM),INTENT(IN)    :: KSPPN2D
+INTEGER(KIND=JPIM),INTENT(IN)    :: KIDIA 
+INTEGER(KIND=JPIM),INTENT(IN)    :: KFDIA 
+INTEGER(KIND=JPIM),INTENT(IN)    :: KK 
+INTEGER(KIND=JPIM),INTENT(IN)    :: KCBOT(KLON) 
+INTEGER(KIND=JPIM),INTENT(IN)    :: KTYPE(KLON) 
+LOGICAL           ,INTENT(IN)    :: LDCUM(KLON) 
+LOGICAL           ,INTENT(IN)    :: LDWORK 
+REAL(KIND=JPRB)   ,INTENT(IN)    :: PQSEN(KLON,KLEV) 
+REAL(KIND=JPRB)   ,INTENT(IN)    :: PAPH(KLON,KLEV+1) 
+REAL(KIND=JPRB)   ,INTENT(IN)    :: PGEOH(KLON,KLEV+1) 
+REAL(KIND=JPRB)   ,INTENT(IN)    :: PMFU(KLON,KLEV) 
+REAL(KIND=JPRB)   ,INTENT(IN)    :: PGP2DSPP(KLON,KSPPN2D)
+REAL(KIND=JPRB)   ,INTENT(OUT)   :: PDMFEN(KLON) 
+REAL(KIND=JPRB)   ,INTENT(OUT)   :: PDMFDE(KLON) 
+
+LOGICAL ::  LLO1
+
+INTEGER(KIND=JPIM) :: JL
+INTEGER(KIND=JPIM) :: IPDETRPEN
+
+REAL(KIND=JPRB) :: ZDZ, ZENTR(KLON), ZMF, ZRG, ZMU, ZXDETRPEN
+REAL(KIND=JPRB) :: ZHOOK_HANDLE
+
+!----------------------------------------------------------------------
+
+!*    1.           CALCULATE ENTRAINMENT AND DETRAINMENT RATES
+!                  -------------------------------------------
+
+IF (LHOOK) CALL DR_HOOK('CUENTR',0,ZHOOK_HANDLE)
+ASSOCIATE(DETRPEN=>YDECUMF%DETRPEN, RG=>YDCST%RG)
+IF(LDWORK) THEN
+
+  ZRG=1.0_JPRB/RG
+
+  IF (YSPP_CONFIG%LSPP.AND.YSPP_CONFIG%LPERT_DETRPEN) THEN
+    IPDETRPEN=YSPP%MPDETRPEN
+    IF (YSPP_CONFIG%LLNN_MEAN1.OR.YSPP_CONFIG%LLNN_MEAN1_DETRPEN) THEN
+      ZMU = -0.5_JPRB * (YSPP_CONFIG%CMPERT_DETRPEN * YSPP_CONFIG%SDEV)**2  
+    ELSE
+      ZMU = 0._JPRB
+    ENDIF  
+  ENDIF
+
+  DO JL=KIDIA,KFDIA
+    PDMFEN(JL)=0.0_JPRB
+    PDMFDE(JL)=0.0_JPRB
+    ZENTR(JL)=0.0
+  ENDDO
+
+!*    1.1          SPECIFY ENTRAINMENT RATES
+!                  -------------------------
+
+  DO JL=KIDIA,KFDIA
+    IF(LDCUM(JL)) THEN
+      ZDZ=(PGEOH(JL,KK)-PGEOH(JL,KK+1))*ZRG
+      ZMF=PMFU(JL,KK+1)*ZDZ
+      LLO1=KK < KCBOT(JL)
+      IF(LLO1) THEN
+        IF (YSPP_CONFIG%LSPP.AND.YSPP_CONFIG%LPERT_DETRPEN) THEN
+          ZXDETRPEN=DETRPEN*EXP(ZMU+YSPP_CONFIG%CMPERT_DETRPEN*PGP2DSPP(JL, IPDETRPEN))
+        ELSE
+          ZXDETRPEN=DETRPEN
+        ENDIF
+        PDMFEN(JL)=ZENTR(JL)*ZMF
+        PDMFDE(JL)=ZXDETRPEN*ZMF
+      ENDIF
+    ENDIF
+  ENDDO
+
+ENDIF
+
+END ASSOCIATE
+IF (LHOOK) CALL DR_HOOK('CUENTR',1,ZHOOK_HANDLE)
+END SUBROUTINE CUENTR

@@ -1,0 +1,2 @@
+FC=nvfortran -mp -byteswapio -Mlarge_arrays -g -O2 -DUSE_STACK  -DARCH="'$(ARCH)'" -DPARKIND1_SINGLE
+CC=/bin/cc

@@ -1,0 +1,23 @@
+MODULE STACK_MOD
+
+IMPLICIT NONE
+
+TYPE STACK
+  INTEGER*8 :: L, U
+END TYPE
+
+CONTAINS
+
+SUBROUTINE SB (CDF)
+
+!$acc routine (SB) seq
+
+CHARACTER(LEN=*) :: CDF
+
+#include "abor1.intfb.h"
+
+CALL ABOR1 (CDF)
+
+END SUBROUTINE
+
+END MODULE
