@@ -337,41 +337,6 @@ sub expr
   return $expr;
 }
 
-# Index files in pack
-
-sub scanpack
-{
-  my $level = shift; $level ||= 0;
-  my $intfb = shift; $intfb ||= 0;
-
-  use File::Find;
-  use Cwd;
-
-  my @view = do { my $fh = 'FileHandle'->new ("<.gmkview"); <$fh> };
-  chomp for (@view);
-  shift (@view) for (1 .. $level);
-
-  my %scan;
-  for my $view (@view)
-    {
-      my $cwd = &cwd ();
-      chdir ("src/$view");
-      my $wanted = sub
-        {
-          my $f = $File::Find::name;
-          return unless (($f =~ m/\.F90$/o) || (($f =~ m/\.intfb\.h/o) && $intfb));
-          return if (($f =~ m/\.intfb/o) && (! $intfb));
-          return if ($scan{&basename ($f)});
-          $f =~ s,\.\/,,o;
-          $scan{&basename ($f)} = $scan{$f} = "src/$view/$f";
-        };
-      &find ({no_chdir => 1, wanted => $wanted}, '.');
-      chdir ($cwd);
-    }
-
-  return \%scan;
-}
-
 sub is_INTEGER
 {
   my $e = shift;

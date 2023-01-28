@@ -12,14 +12,14 @@ use Common;
 
 use Fxtran;
 use FieldAPI;
-use Parallel;
+use FieldAPI::Parallel;
 use Stack;
 
 for my $f (@ARGV)
   {
     my $d = &Fxtran::parse (location => $f, fopts => [qw (-line-length 500)]);
 
-    &Parallel::makeParallelSingleColumnFieldAPI ($d, stack => 1);
+    &FieldAPI::Parallel::makeParallelSingleColumnFieldAPI ($d, stack => 1);
     &Decl::changeIntent ($d, 'YDCPG_BNDS', 'INOUT');
     &Stack::addStack ($d, skip => sub { my ($proc, $call) = @_; return 1 if ($proc =~ m/_SYNC_HOST/o) });
 

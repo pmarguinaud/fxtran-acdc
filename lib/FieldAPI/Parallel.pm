@@ -1,4 +1,4 @@
-package Parallel;
+package FieldAPI::Parallel;
 #
 use strict;
 use FileHandle;

@@ -11,13 +11,13 @@ use lib "$Bin/../lib";
 use Common;
 
 use Fxtran;
-use Parallel;
+use FieldAPI::Parallel;
 
 my ($f) = @ARGV;
 
 my $d = &Fxtran::parse (location => $f, fopts => [qw (-line-length 500)]);
 
-&Parallel::makeParallelUpdateView ($d);
+&FieldAPI::Parallel::makeParallelUpdateView ($d);
 
 print $d->textContent;
 

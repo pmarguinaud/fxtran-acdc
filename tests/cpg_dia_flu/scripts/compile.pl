@@ -107,7 +107,7 @@ sub generateSYNCDEVICE
 sub generatePARALLEL
 {
   shift;
-  use Parallel;
+  use FieldAPI::Parallel;
   use Stack;
   use Decl;
 
@@ -115,7 +115,7 @@ sub generatePARALLEL
 
   return unless (&F ('.//parallel-section', $d));
 
-  &Parallel::makeParallel ($d, suffix => '_PARALLEL');
+  &FieldAPI::Parallel::makeParallel ($d, suffix => '_PARALLEL');
   &Decl::changeIntent ($d, 'YDCPG_BNDS', 'INOUT');
   &Stack::addStack ($d, 
                     local => 0,

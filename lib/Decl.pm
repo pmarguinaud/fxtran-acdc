@@ -126,4 +126,49 @@ sub changeIntent
 
 }
 
+sub getAttributes
+{
+  my ($stmt, @attr) = @_; 
+
+  my @v; 
+
+  for my $attr (@attr)
+    {   
+      my ($v) = &F ('.//attribute-N[string(.)="?"]', $attr, $stmt);
+      push @v, $v; 
+    }   
+
+  return @v; 
+}
+
+sub addAttributes
+{
+  my ($stmt, @attr) = @_; 
+  my $ts = $stmt->firstChild;
+
+  for my $attr (@attr)
+    {   
+      $stmt->insertAfter (&n ("<attribute><attribute-N>$attr</attribute-N></attribute>"), $ts);
+      $stmt->insertAfter (&t (', '), $ts);
+    }   
+}
+
+sub removeAttributes
+{
+  my ($stmt, @attr) = @_; 
+
+  my @v; 
+
+  for my $attr (@attr)
+    {   
+      next unless (my ($x) = &F ('.//attribute-N[string(.)="?"]', $attr, $stmt));
+      push @v, $x->parentNode;
+      $x->parentNode->previousSibling->unbindNode (); 
+      $x->parentNode->unbindNode (); 
+    }
+
+  return @v;
+}
+
+
 1;
