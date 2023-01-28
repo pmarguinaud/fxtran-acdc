@@ -2,6 +2,7 @@ package Call;
 
 use strict;
 use Fxtran;
+use Subroutine;
 
 sub addSuffix
 {
@@ -48,6 +49,99 @@ sub addSuffix
         }
     }   
 
+
+}
+
+sub getArgumentIntent
+{
+  my ($call, $expr, $find) = @_;
+
+  my ($proc) = &F ('./procedure-designator', $call, 1);
+
+  my $intf = &Subroutine::getInterface ($proc, $find);
+
+  my ($stmt) = &F ('.//program-unit/subroutine-stmt[string(subroutine-N)="?"]', $proc, $intf);
+  my $unit = $stmt->parentNode;
+
+  # Dummy arguments
+  my @argd = &F ('./dummy-arg-LT/arg-N', $stmt, 1); 
+
+  # Actual arguments
+  my @arga = &F ('./arg-spec/arg', $call); 
+
+  my $argn;
+
+  for my $i (0 .. $#arga)
+    {
+      my $arga  = $arga[$i];
+      my ($k) = &F ('./arg-N/k/text()', $arga, 1);
+      my ($e) = &F ('./ANY-E', $arga);
+      if ($expr->isEqual ($e))
+        {
+          $argn = $k || $argd[$i];
+          last;
+        }
+    }
+
+  return unless ($argn);
+
+  my ($intent) = &F ('.//T-decl-stmt[.//EN-decl[string(EN-N)="?"]]//intent-spec', $argn, $unit, 1);
+
+  return $intent;
+}
+
+sub grokIntent
+{
+  my ($expr, $pintent, $find) = @_;
+  
+  my ($r, $w);
+
+  if ($expr->parentNode->nodeName eq 'E-1')
+    {
+      $w = 1;
+    }
+  elsif ($expr->parentNode->nodeName eq 'arg')
+    {
+      my $stmt = &Fxtran::stmt ($expr);
+      if ($stmt->nodeName eq 'call-stmt')
+        {
+          my $intent = &getArgumentIntent ($stmt, $expr, $find) || 'INOUT';
+          if ($intent =~ m/IN/o)
+            {
+              $r = 1;
+            }
+          if ($intent =~ m/OUT/o)
+            {
+              $w = 1;
+            }
+        }
+      else
+        {
+          $r = 1;
+        }
+    }
+  else
+    {
+      $r = 1;
+    }
+  
+  if (defined ($$pintent))
+    {
+      $$pintent = 'INOUT' if ($w);
+    }
+  else
+    {
+      if ($r)
+        {
+          $$pintent = 'IN';
+        }
+      if ($w)
+        {
+          $$pintent = 'INOUT';
+        }
+    }
+
+  $$pintent ||= 'INOUT';
 
 }
 

@@ -1,18 +1,14 @@
 package Finder::Directory;
 
 use strict;
-
-sub new
-{
-  my $class = shift;
-  my $self = bless {@_}, $class;
-  return $self;
-}
+use base qw (Finder::Basic);
 
 sub resolve
 {
   my $self = shift;
-  return $self->{directory} . '/' . $_[0];
+  my %args = @_;
+  my $file = $args{file};
+  return $self->{directory} . '/' . $file;
 }
 
 

@@ -2,6 +2,7 @@ package Subroutine;
 
 use strict;
 use Fxtran;
+use FileHandle;
   
 sub addSuffix
 {
@@ -50,6 +51,14 @@ sub rename
   
 }
 
+sub getInterface
+{
+  my ($name, $find) = @_;
+  my $file = $find->getInterface (name => $name);
+  my $code = do { local $/ = undef; my $fh = 'FileHandle'->new ("<$file"); $fh or die ("Cannot open $file"); <$fh> };
+  my ($intf) = &Fxtran::parse (fragment => $code);
+  return $intf;
+}
 
 
 1;

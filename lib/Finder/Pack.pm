@@ -1,6 +1,8 @@
 package Finder::Pack;
 
 use strict;
+use base qw (Finder::Basic);
+
 use File::Spec;
 use File::Find;
 use Cwd;
@@ -51,7 +53,7 @@ sub scanpack
           my $wanted = sub
             {
               my $f = $File::Find::name;
-              return unless (($f =~ m/\.F90$/o) || (($f =~ m/\.intfb\.h/o)));
+              return unless (($f =~ m/\.F90$/o) || (($f =~ m/\.h/o)));
               return if ($scan->{&basename ($f)});
               $f =~ s,\.\/,,o;
               $scan->{&basename ($f)} = "$pack/src/$view/$f";
@@ -68,7 +70,7 @@ sub scanpack
   {
     local $Data::Dumper::Terse = 1;
     local $Data::Dumper::Sortkeys = 1;
-    'FileHandle'->new ("$pack/.scan.pl")->print (&Dumper ($scan));
+    'FileHandle'->new (">$pack/.scan.pl")->print (&Dumper ($scan));
   }
 
   $self->{scan} = $scan;
@@ -77,8 +79,9 @@ sub scanpack
 sub new
 {
   my $class = shift;
-  my $self = bless {@_}, $class;
+  my $self = $class->SUPER::new (@_);
 
+  $self->{pack} ||= '.';
   $self->{pack} = 'File::Spec'->rel2abs ($self->{pack});
 
   $self->scanpack ();
@@ -89,7 +92,9 @@ sub new
 sub resolve
 {
   my $self = shift;
-  return $self->{scan}{$_[0]};
+  my %args = @_;
+  my $file = $args{file};
+  return $self->{scan}{$file};
 }
 
 
