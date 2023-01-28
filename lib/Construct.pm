@@ -59,8 +59,12 @@ sub simplify
     {
       my ($e2) = grep { $_->unique_key != $e1->unique_key } &F ('./ANY-E', $e);
 
-      if (defined (my ($i1) = ($e1->textContent =~ m/^(\d+)$/o)) 
-       && $e2 && defined (my ($i2) =($e2->textContent =~ m/^(\d+)$/o)))
+      my ($i1, $i2);
+
+      ($i1) = ($e1->textContent =~ m/^(\d+)$/o);
+      ($i2) = $e2 ? ($e2->textContent =~ m/^(\d+)$/o) : ();
+
+      if (defined ($i1) && $e2 && defined ($i2))
         {
           if (defined ($i1) && defined ($i2))
             {
