@@ -3,23 +3,40 @@ package Pointer::Parallel::SymbolTable;
 use strict;
 use Fxtran;
 
-my @object = qw (YDMF_PHYS_BASE_STATE YDMF_PHYS_NEXT_STATE YDCPG_MISC YDCPG_PHY9
-                 YDCPG_PHY0 YDMF_PHYS YDCPG_DYN9 YDCPG_DYN0 YDMF_PHYS_SURF YDVARS
-                 YDCPG_SL1 YLMF_PHYS_NEXT_STATE YDCPG_GPAR);
-my %object = map { ($_, 1) } @object;
-my @skip = qw (PGFL PGFLT1 PGMVT1 PGPSDT2D);
-my %skip = map { ($_, 1) } @skip;
-
-my $conf0 = 
+sub getObjectList
 {
-  NPROMA => 'YDCPG_OPTS%KLON'
-};
+  my ($doc, $dir) = @_;
+
+  # Guess object list 
+
+  my @object = ();
+
+  my @decl = &F ('.//T-decl-stmt[_T-spec_/derived-T-spec', $doc);
+
+  for my $decl (@decl)
+    {
+      my ($type) = &F ('./_T-spec_/derived-T-spec/T-N', $decl, 1);
+      if (-f "$dir/$type.pl")
+        {
+          my @N = &F ('.//EN-N', $decl, 1);
+          push @object, @N;
+        }
+    }
+
+  return @object;
+}
 
 sub getSymbolTable
 {
-  my ($doc, $conf) = @_;
+  my ($doc, %opts) = @_;
 
-  $conf ||= $conf0;
+  my %skip = map { ($_, 1) } @{ $opts{skip} || [] };
+
+  my $nproma = $opts{nproma};
+
+  my @object = &getObjectList ($doc, $opts{'types-dir'});
+  my %object = map { ($_, 1) } @object;
+
 
   my @args = &F ('.//subroutine-stmt/dummy-arg-LT/arg-N/N/n/text()', $doc);
   my %args = map { ($_->textContent, $_) } @args;
@@ -39,7 +56,7 @@ sub getSymbolTable
       $t{$N} = {
                  object => $object{$N},
                  skip => $skip{$N},
-                 nproma => $as && $ss[0]->textContent eq $conf->{NPROMA},
+                 nproma => $as && $ss[0]->textContent eq $nproma,
                  arg => $args{$N} || 0, 
                  ts => $ts->cloneNode (1), 
                  as => $as ? $as->cloneNode (1) : undef, 

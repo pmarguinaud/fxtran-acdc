@@ -91,9 +91,9 @@ sub parseDirectives
 
 my $suffix = '_parallel';
 
-my %opts = ('types-dir' => 'types');
+my %opts = ('types-dir' => 'types', skip => 'PGFL,PGFLT1,PGMVT1,PGPSDT2D', nproma => 'YDCPG_OPTS%KLON');
 my @opts_f = qw (help);
-my @opts_s = qw ();
+my @opts_s = qw (skip nproma);
 
 &GetOptions
 (
@@ -110,6 +110,8 @@ if ($opts{help})
      "\n";
     exit (0);
   }
+
+$opts{skip} = [split (m/,/o, $opts{skip} || '')];
 
 my $F90 = shift;
 
@@ -138,7 +140,8 @@ my $doc = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 300 -no-i
           'TYPE(CPG_BNDS_TYPE) :: YLCPG_BNDS', 
           'REAL(KIND=JPRB) :: ZHOOK_HANDLE_FIELD_API');
 
-my $t = &Pointer::Parallel::SymbolTable::getSymbolTable ($doc);
+my $t = &Pointer::Parallel::SymbolTable::getSymbolTable 
+  ($doc, skip => $opts{skip}, nproma => $opts{nproma}, 'types-dir' => $opts{'types-dir'});
 
 for my $v (qw (JLON JLEV))
   {
