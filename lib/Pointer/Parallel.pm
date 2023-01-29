@@ -68,7 +68,7 @@ sub fieldifyDecl
 
 sub makeParallel
 {
-  my ($par, $t, $hook_suffix, $find) = @_;
+  my ($par, $t, $hook_suffix, $find, $types) = @_;
 
   # Add a loop nest on blocks
 
@@ -136,7 +136,7 @@ EOF
               my $decl;
               eval
                 {
-                  $decl = &Pointer::Parallel::Object::getObjectDecl ($key);
+                  $decl = &Pointer::Parallel::Object::getObjectDecl ($key, $types);
                 };
               if (my $c = $@)
                 {

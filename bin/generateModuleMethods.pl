@@ -15,13 +15,25 @@ use Fxtran::IO;
 
 
 my %opts = qw (dir .);
+my @opts_f = qw (save load copy help);
+my @opts_s = qw (dir out tmp);
 
 &GetOptions
 (
-  'dir=s' => \$opts{dir}, 'out=s' => \$opts{out},
-  save => \$opts{save}, load => \$opts{load}, copy => \$opts{copy},
-  'tmp=s' => \$opts{tmp},
+  (map { ($_, \$opts{$_}) } @opts_f),
+  (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
+
+if ($opts{help})
+  {
+    print
+     "Usage: " . &basename ($0) . "\n" .
+      join ('', map { "  --$_\n" } @opts_f) .
+      join ('', map { "  --$_=...\n" } @opts_f) .
+     "\n";
+    exit (0);
+  }
+
 
 ( -d $opts{dir}) or &mkpath ($opts{dir});
 

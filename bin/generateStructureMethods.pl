@@ -5,76 +5,38 @@ use strict;
 use Data::Dumper;
 use Getopt::Long;
 use File::Path;
+use File::Basename;
 use File::Spec;
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
 
 use Fxtran::IO;
+use FieldAPI::Register;
 use Common;
 use Fxtran;
 
-sub registerFieldAPI
-{
-  my ($tc, $opts, $class) = @_;
-
-  my %h;
-
-  my ($type) = &F ('.//T-stmt/T-N/N/n/text()', $tc, 1);
-
-  my ($abstract) = &F ('./T-stmt/attribute[string(attribute-N)="ABSTRACT"]', $tc);
-  my ($extends) = &F ('./T-stmt/attribute[string(attribute-N)="EXTENDS"]/N/n/text()', $tc);
-
-  my @en_decl = &F ('.//EN-decl', $tc);
-  my %en_decl;
-
-  for my $en_decl (@en_decl)
-    {
-      my ($name) = &F ('.//EN-N/N/n/text()', $en_decl, 1);
-      $en_decl{$name} = $en_decl;
-    }
-
-  for my $en_decl (@en_decl)
-    {
-      my ($name) = &F ('.//EN-N/N/n/text()', $en_decl, 1);
-      my ($stmt) = &Fxtran::stmt ($en_decl);
-      my %attr = map { ($_, 1) } &F ('.//attribute/attribute-N/text()', $stmt);
-
-      my ($tspec) = &F ('./_T-spec_', $stmt);
-      if (my ($tname) = &F ('./derived-T-spec/T-N/N/n/text()', $tspec, 1))
-        {
-          $h{$name} = \$tname unless ($tname =~ m/^FIELD_/o);
-        }
-      elsif ($class && (my $fam = $class->getFieldAPIMember ($type, $name, \%attr, \%en_decl)))
-        {
-          my @ss = &F ('./array-spec/shape-spec-LT/shape-spec', $en_decl);
-          $h{$name} = [$fam, scalar (@ss), $tspec->textContent];
-        }
-    }
-
-
-  my $update_view = 0;
-  if (&F ('./procedure-stmt/procedure-N-LT/rename[string(use-N)="UPDATE_VIEW"]', $tc))
-    {
-      $update_view = 1;
-    }
-
-  return {comp => \%h, name => $type, super => ($extends && $extends->textContent), update_view => $update_view};
-}
-
-my %opts = qw (dir .);
+my %opts = (dir => '.', 'types-dir' => 'types');
+my @opts_f = qw (size save load copy wipe field-api help);
+my @opts_s = qw (skip-components skip-types only-components only-types dir out no-allocate module-map field-api-class tmp types-dir);
 
 &GetOptions
 (
-  'skip-components=s' => \$opts{'skip-components'}, 'skip-types=s' => \$opts{'skip-types'},
-  'only-components=s' => \$opts{'only-components'}, 'only-types=s' => \$opts{'only-types'},
-  'dir=s' => \$opts{dir}, 'out=s' => \$opts{out},
-  size => \$opts{size}, save => \$opts{save}, load => \$opts{load}, copy => \$opts{copy}, wipe => \$opts{wipe},
-  'no-allocate=s' => \$opts{'no-allocate'}, 'module-map=s' => \$opts{'module-map'},
-  'field-api' => \$opts{'field-api'}, 'field-api-class=s' => \$opts{'field-api-class'},
-  'tmp=s' => \$opts{tmp},
+  (map { ($_, \$opts{$_}) } @opts_f),
+  (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
 
+if ($opts{help})
+  {
+    print
+     "Usage: " . &basename ($0) . "\n" .
+      join ('', map { "  --$_\n" } @opts_f) .
+      join ('', map { "  --$_=...\n" } @opts_f) .
+     "\n";
+    exit (0);
+  }
+
 ( -d $opts{dir}) or &mkpath ($opts{dir});
+( -d $opts{'types-dir'}) or &mkpath ($opts{'types-dir'});
 
 if (! $opts{'no-allocate'})
   {
@@ -165,28 +127,12 @@ my $doc = &Fxtran::parse (location => $F90, fopts => [qw (-construct-tag -no-inc
 
 if ($opts{load} || $opts{save} || $opts{size} || $opts{copy})
   {
-    &Fxtran::IO::process_types ($doc, \%opts);
+    &Fxtran::IO::processTypes ($doc, \%opts);
   }
 
 if ($opts{'field-api'})
   {
-    my $class;
-
-    if ($class = $opts{'field-api-class'})
-      {
-        eval "use $class";
-        my $c = $@;
-        $c && die ($c);
-      }
-
-    my @tc = &F ('.//T-construct', $doc);
-    
-    for my $tc (@tc)
-      {
-        my ($type) = &F ('.//T-stmt/T-N/N/n/text()', $tc, 1);
-        next if ($opts{'skip-types'}->($type));
-        my $h = &registerFieldAPI ($tc, \%opts, $class);
-        local $Data::Dumper::Sortkeys = 1;
-        'FileHandle'->new (">types/$type.pl")->print (&Dumper ($h));
-    }
+    &FieldAPI::Register::registerFieldAPI ($doc, \%opts);
   }
+
+

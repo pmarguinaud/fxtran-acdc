@@ -1,18 +1,41 @@
 #!/usr/bin/perl -w
-#
+
 use strict;
 use FileHandle;
 use Data::Dumper;
 use File::Basename;
 use Storable;
+use Getopt::Long;
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
 
 use Common;
 
+my %opts = ('types-dir' => 'types');
+my @opts_f = qw (help);
+my @opts_s = qw (types-dir);
+
+&GetOptions
+(
+  (map { ($_, \$opts{$_}) } @opts_f),
+  (map { ("$_=s", \$opts{$_}) } @opts_s),
+);
+
+if ($opts{help})
+  {
+    print
+     "Usage: " . &basename ($0) . "\n" .
+      join ('', map { "  --$_\n" } @opts_f) .
+      join ('', map { "  --$_=...\n" } @opts_f) .
+     "\n";
+    exit (0);
+  }
+
+my $dir = $opts{'types-dir'};
+
 my %T;
 
-for my $f (<types/*.pl>)
+for my $f (<$dir/*.pl>)
   {
     my $T = &basename ($f, qw (.pl));
     $T{$T} = do ("./$f");
@@ -70,7 +93,35 @@ for my $T (keys (%T))
     $UU{$T} = $T{$T}{update_view};
   }
 
-#print &Dumper (\%UU);
+&Storable::nstore (\%TT, "$dir/types.dat");
+&Storable::nstore (\%UU, "$dir/update_view.dat");
 
-&Storable::nstore (\%TT, "$Bin/types.dat");
-&Storable::nstore (\%UU, "$Bin/update_view.dat");
+sub walk
+{
+  my ($p, $h, $r) = @_;
+
+  if (ref ($h) eq 'ARRAY')
+    {
+      my ($k) = ($p =~ m/%(\w+)$/o);
+      $r->{$p} = $h->[2] . ' :: ' . $k . '(' . join (',', (':') x $h->[1]) . ')';
+    }
+  elsif (ref ($h) eq 'HASH')
+    {
+      for my $k (sort keys (%$h))
+        {
+          &walk ($p . '%' . $k, $h->{$k}, $r);
+        }
+    }
+
+}
+
+my %RR;
+
+for my $t (sort keys (%TT))
+  {
+    &walk ($t, $TT{$t}, \%RR);
+  }
+
+&Storable::nstore (\%RR, "$dir/decls.dat");
+
+

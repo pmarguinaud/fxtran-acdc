@@ -5,6 +5,7 @@ use local::lib;
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
 
+use Getopt::Long;
 use Data::Dumper;
 use FileHandle;
 use File::Basename;
@@ -90,9 +91,31 @@ sub parseDirectives
 
 my $suffix = '_parallel';
 
+my %opts = ('types-dir' => 'types');
+my @opts_f = qw (help);
+my @opts_s = qw ();
+
+&GetOptions
+(
+  (map { ($_, \$opts{$_}) } @opts_f),
+  (map { ("$_=s", \$opts{$_}) } @opts_s),
+);
+
+if ($opts{help})
+  {
+    print
+     "Usage: " . &basename ($0) . "\n" .
+      join ('', map { "  --$_\n" } @opts_f) .
+      join ('', map { "  --$_=...\n" } @opts_f) .
+     "\n";
+    exit (0);
+  }
+
 my $F90 = shift;
 
 my $find = 'Finder::Pack'->new ();
+
+my $types = &Storable::retrieve ("$opts{'types-dir'}/decls.dat");
 
 my $doc = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 300 -no-include -no-cpp -construct-tag)]);
 
@@ -140,7 +163,7 @@ my @par = &F ('.//parallel-section', $doc);
 
 for my $par (@par)
   {
-    &Pointer::Parallel::makeParallel ($par, $t, '', $find);
+    &Pointer::Parallel::makeParallel ($par, $t, '', $find, $types);
   }
 
 # Process call to parallel routines

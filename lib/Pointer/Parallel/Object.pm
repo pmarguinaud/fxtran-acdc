@@ -3,16 +3,18 @@ package Pointer::Parallel::Object;
 use strict;
 use Fxtran;
 use Data::Dumper;
+use Storable;
 use Carp qw (croak);
 
 {
 
-my $h = do ('./h.pl');
 my %decl;
 
 sub getObjectDecl
 {
-  my $key = shift;
+  my ($key, $types) = @_;
+
+  my $h = $types;
 
   unless ($decl{$key}) 
     {
@@ -37,15 +39,6 @@ sub getObjectType
   return $type{$obj};
 }
 
-}
-
-sub getObjectAS
-{
-  my ($key) = @_;
-
-  my $decl = &getObjectDecl ($key);
-
-  return &asFromDecl ($decl);
 }
 
 sub asFromDecl

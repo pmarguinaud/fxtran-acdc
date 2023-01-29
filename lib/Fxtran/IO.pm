@@ -235,7 +235,7 @@ sub w
   'FileHandle'->new (">$f")->print ($_[0]);
 }
 
-sub process_types1
+sub processTypes1
 {
   my ($doc, $opts) = @_;
 
@@ -522,11 +522,11 @@ EOF
   return \%code;
 }
 
-sub process_types
+sub processTypes
 {
   my ($doc, $opts) = @_;
 
-  my $code = &process_types1 ($doc, $opts);
+  my $code = &processTypes1 ($doc, $opts);
   my @file = sort keys (%$code);
 
   if ($opts->{out})
@@ -567,7 +567,7 @@ sub process_module
 
   $doc = &Fxtran::parse (location => $F90, fopts => [qw (-construct-tag -no-include -line-length 800)]);
 
-  my $code = &process_types1 ($doc, $opts);
+  my $code = &processTypes1 ($doc, $opts);
   my @file = sort keys (%$code);
 
   for (values ($code))
