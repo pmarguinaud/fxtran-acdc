@@ -68,7 +68,7 @@ sub fieldifyDecl
 
 sub makeParallel
 {
-  my ($par, $t, $hook_suffix, $find, $types) = @_;
+  my ($par, $t, $find, $types, $NAME) = @_;
 
   # Add a loop nest on blocks
 
@@ -181,10 +181,10 @@ EOF
 
   $par->insertBefore (&t ("\n" . (' ' x $indent)), $loop);
 
-  $par->insertBefore (&s ("IF (LHOOK) CALL DR_HOOK ('GET_DATA$hook_suffix',0,ZHOOK_HANDLE_FIELD_API)"), $loop);
+  $par->insertBefore (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:GET_DATA',0,ZHOOK_HANDLE_FIELD_API)"), $loop);
   $par->insertBefore (&t ("\n" . (' ' x $indent)), $loop);
 
-  $par->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('NULLIFY$hook_suffix',1,ZHOOK_HANDLE_FIELD_API)"), $loop);
+  $par->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:NULLIFY',1,ZHOOK_HANDLE_FIELD_API)"), $loop);
   $par->insertAfter (&t ("\n" . (' ' x $indent)), $loop);
 
   for my $ptr (reverse (sort keys (%intent)))
@@ -199,10 +199,10 @@ EOF
       $par->insertAfter (&s ("$ptr => NULL ()"), $loop);
       $par->insertAfter (&t ("\n" . (' ' x $indent)), $loop);
     }
-  $par->insertBefore (&s ("IF (LHOOK) CALL DR_HOOK ('GET_DATA$hook_suffix',1,ZHOOK_HANDLE_FIELD_API)"), $loop);
+  $par->insertBefore (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:GET_DATA',1,ZHOOK_HANDLE_FIELD_API)"), $loop);
   $par->insertBefore (&t ("\n" . (' ' x $indent)), $loop);
 
-  $par->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('NULLIFY$hook_suffix',0,ZHOOK_HANDLE_FIELD_API)"), $loop);
+  $par->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:NULLIFY',0,ZHOOK_HANDLE_FIELD_API)"), $loop);
   $par->insertAfter (&t ("\n" . (' ' x $indent)), $loop);
 
   $par->insertBefore (&t ("\n" . (' ' x $indent)), $loop);

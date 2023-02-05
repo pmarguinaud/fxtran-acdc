@@ -21,6 +21,7 @@ use Associate;
 use Subroutine;
 use Finder::Pack;
 use Include;
+use DIR;
 
 sub updateFile
 {
@@ -50,7 +51,7 @@ sub parseDirectives
       ($bdir, my $opts) = ($bdir =~ m/^(\w+)\s*(?:\(\s*(\S.*\S)\s*\)\s*)?$/goms);
       my %opts = $opts ? split (m/\s*[=,]\s*/o, $opts) : ();
 
-      $opts{TARGET} ||= 'OPENMP';
+      $opts{TARGET} ||= 'OpenMP';
 
       $bdir = lc ($bdir);
       my ($tag) = ($bdir =~ m/^(\w+)/o);
@@ -89,6 +90,119 @@ sub parseDirectives
     }
 }
 
+sub makeParallelOpenMP
+{
+  my ($par, $t) = @_;
+  &Pointer::Parallel::setOpenMPDirective ($par, $t);
+  return $par;
+}
+
+sub makeParallelOpenACC
+{
+  my ($par, $t) = @_;
+  &Pointer::Parallel::setOpenMPDirective ($par, $t);
+  return $par;
+}
+
+sub makeParallelOpenMPSingleColumn
+{
+  my ($par, $t) = @_;
+
+  &DIR::removeDIR ($par);
+
+  my ($do) = &F ('./do-construct', $par);
+
+  die unless ($do);
+
+  &Loop::removeJlonConstructs ($par);
+
+
+  my @x = &F ('./node()', $do);
+
+  for my $x (@x)
+    {
+      $x->unbindNode ();
+    }
+
+  my ($do_jlon) = &Fxtran::parse (fragment => << 'EOF');
+DO JLON = 1, MIN (YDCPG_BNDS%KLON, YDCPG_BNDS%KGPCOMP - (JBLK - 1) * YDCPG_BNDS%KLON)
+ENDDO
+EOF
+
+  my $in_do_jlon = 0;
+
+  my $indent = 0;
+
+  while (my $x = shift (@x))
+    {
+
+      if (($x->nodeName eq 'call-stmt') && ($x->textContent =~ m/^CALL YLCPG_BNDS%UPDATE/o))
+        {
+          $do->appendChild ($do_jlon);
+          $indent = &Fxtran::getIndent ($do_jlon);
+
+          $do->insertBefore (&t ("\n" . (' ' x $indent)), $do_jlon);
+          $do->insertBefore (&t ("\n" . (' ' x $indent)), $do_jlon);
+
+          $do_jlon->insertAfter (&s ("YLSTACK%U = stack_u (YSTACK, JBLK, YDCPG_OPTS%KGPBLKS)"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&s ("YLSTACK%L = stack_l (YSTACK, JBLK, YDCPG_OPTS%KGPBLKS)"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+
+          $do_jlon->insertAfter (&s ("YLCPG_BNDS%KFDIA = JLON"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&s ("YLCPG_BNDS%KIDIA = JLON"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+
+
+          $in_do_jlon = 1;
+          $do->appendChild (shift (@x));
+          next;
+        }
+      elsif ($x->nodeName eq 'end-do-stmt')
+        {
+          $do_jlon->insertBefore (&t (' ' x $indent), $do_jlon->lastChild);
+          $do->appendChild ($x);
+        }
+      elsif ($in_do_jlon)
+        {
+          $do_jlon->insertBefore ($x, $do_jlon->lastChild);
+        }
+      else
+        {
+          $do->appendChild ($x);
+        }
+
+    }
+
+
+  for my $N (&F ('.//named-E[R-LT/array-R/section-subscript-LT[string(section-subscript[1])=":"]]/N', $do))
+    {
+      next unless ($t->{$N->textContent}{nproma});    # Skip non-NPROMA stuff
+      my $expr = $N->parentNode;
+      next if ($expr->parentNode->nodeName eq 'arg'); # Skip routine arguments
+      my ($ss) = &F ('./R-LT/array-R/section-subscript-LT/section-subscript[1]', $expr);
+      $ss->replaceNode (&n ('<section-subscript><lower-bound><named-E><N><n>JLON</n></N></named-E></lower-bound></section-subscript>'));
+    }
+
+  my @call = &F ('.//call-stmt', $do_jlon);
+
+  for my $call (@call)
+    {
+      my ($proc) = &F ('./procedure-designator/named-E/N/n/text()', $call);
+      $proc->setData ($proc->textContent . '_OPENACC');
+      my ($argspec) = &F ('./arg-spec', $call);
+      $argspec->appendChild (&t (','));
+      $argspec->appendChild (&n ('<arg><arg-N><k>YDSTACK</k></arg-N>=<named-E><N><n>YLSTACK</n></N></named-E></arg>'));
+    }
+
+
+  &Pointer::Parallel::setOpenMPDirective ($par, $t);
+
+
+  return $par;
+}
+
 my $suffix = '_parallel';
 
 my %opts = ('types-dir' => 'types', skip => 'PGFL,PGFLT1,PGMVT1,PGPSDT2D', nproma => 'YDCPG_OPTS%KLON');
@@ -114,12 +228,15 @@ if ($opts{help})
 $opts{skip} = [split (m/,/o, $opts{skip} || '')];
 
 my $F90 = shift;
+(my $F90out = $F90) =~ s/.F90$/$suffix.F90/o;
+my $NAME = uc (&basename ($F90out, qw (.F90)));
 
 my $find = 'Finder::Pack'->new ();
 
 my $types = &Storable::retrieve ("$opts{'types-dir'}/decls.dat");
 
 my $doc = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 300 -no-include -no-cpp -construct-tag)]);
+&Subroutine::rename ($doc, sub { return $_[0] . uc ($suffix) });
 
 # Prepare the code
 
@@ -131,14 +248,18 @@ my $doc = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 300 -no-i
 
 # Add modules
 
-&Decl::use ($doc, map { "USE $_" } qw (FIELD_MODULE FIELD_REGISTRY_MOD FIELD_HELPER_MODULE));
+&Decl::use ($doc, map { "USE $_" } qw (FIELD_MODULE FIELD_REGISTRY_MOD FIELD_HELPER_MODULE YOMPARALLELMETHOD STACK_MOD));
 
 # Add local variables
 
-&Decl::declare ($doc,  
-          'INTEGER(KIND=JPIM) :: JBLK',
-          'TYPE(CPG_BNDS_TYPE) :: YLCPG_BNDS', 
-          'REAL(KIND=JPRB) :: ZHOOK_HANDLE_FIELD_API');
+&Decl::declare 
+($doc,  
+  'INTEGER(KIND=JPIM) :: JBLK',
+  'TYPE(CPG_BNDS_TYPE) :: YLCPG_BNDS', 
+  'REAL(KIND=JPRB) :: ZHOOK_HANDLE_FIELD_API',
+  'REAL(KIND=JPRB) :: ZHOOK_HANDLE_PARALLEL',
+  'TYPE(STACK) :: YLSTACK',
+);
 
 my $t = &Pointer::Parallel::SymbolTable::getSymbolTable 
   ($doc, skip => $opts{skip}, nproma => $opts{nproma}, 'types-dir' => $opts{'types-dir'});
@@ -164,9 +285,11 @@ for (&F ('.//skip-section', $doc))
 my @par = &F ('.//parallel-section', $doc);
 
 
-for my $par (@par)
+for my $ipar (0 .. $#par)
   {
-    &Pointer::Parallel::makeParallel ($par, $t, '', $find, $types);
+    my $par = $par[$ipar];
+    my $name = $par->getAttribute ('name') || $ipar;
+    &Pointer::Parallel::makeParallel ($par, $t, $find, $types, "$NAME:$name");
   }
 
 # Process call to parallel routines
@@ -215,29 +338,114 @@ for my $n (sort keys (%$t))
 
 &Include::removeUnusedIncludes ($doc);
 
-#print &Dumper ($t);
 
-for my $par (@par)
+
+for my $ipar (0 .. $#par)
   {
+    my $par = $par[$ipar];
+
     my $target = $par->getAttribute ('target');
-    if ($target eq 'OPENACC')
+    my $name = $par->getAttribute ('name') || $ipar;
+    my @target = split (m/\//o, $target);
+
+    my ($if_construct) = &Fxtran::parse (fragment => << "EOF");
+IF (LLCOND) THEN
+!
+ELSEIF (LLCOND) THEN
+!
+ELSE
+  CALL ABOR1 ('$NAME: NOT METHOD WAS FOUND')
+ENDIF
+EOF
+
+    my ($if_block, $elseif_block) = &F ('./if-block', $if_construct);
+    $elseif_block->unbindNode ();
+
+    $par->replaceNode ($if_construct);
+
+    my @block;
+    
+    for my $itarget (0 .. $#target)
       {
-#       use SingleDirective;
-#       &Loop::arraySyntaxLoop ($par, $t);
-#       &SingleDirective::hoistJlonLoops ($par);
+        my $target = $target[$itarget];
+
+        my $method = 'makeParallel' . $target;
+        my $par1 = do { no strict 'refs'; &{$method} ($par->cloneNode (1), $t); };
+        
+        my $block;
+        if ($itarget == 0)
+          {
+            $block = $if_block;
+          }
+        else
+          {
+            $block = $elseif_block->cloneNode (1);
+            $if_construct->insertAfter ($block, $block[-1]);
+          }
+        
+        my ($cond) = &F ('./ANY-stmt/condition-E/ANY-E', $block);
+        $cond->replaceNode (&e ("LPARALLELMETHOD ('$target','$NAME:$name')"));
+
+        my ($C) = &F ('./C', $block);
+
+        $C->replaceNode ($par1);
+
+        push @block, $block;
       }
-    elsif ($target eq 'OPENMP')
-      {
-        &Pointer::Parallel::setOpenMPDirective ($par, $t);
-      }
+
+    $if_construct->parentNode->insertBefore (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:$name',0,ZHOOK_HANDLE_PARALLEL)"), $if_construct);
+    $if_construct->parentNode->insertBefore (&t ("\n"), $if_construct);
+
+
+    $if_construct->parentNode->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:$name',1,ZHOOK_HANDLE_PARALLEL)"), $if_construct);
+    $if_construct->parentNode->insertAfter (&t ("\n"), $if_construct);
+
   }
 
 
-&Subroutine::rename ($doc, sub { return $_[0] . uc ($suffix) });
+my @called = &F ('.//call-stmt/procedure-designator', $doc, 1);
 
-$F90 =~ s/.F90$/$suffix.F90/o;
+my @include = &F ('.//include', $doc);
 
-&updateFile ($F90, $doc->textContent);
+for my $include (@include)
+  {
+    my ($proc) = &F ('./filename', $include, 2);
+    for ($proc)
+      {
+        s/\.intfb\.h$//o;
+        s/\.h$//o;
+        $_ = uc ($_);
+      }
+    $proc .= '_OPENACC';
+ 
+    if (grep { $proc eq $_ } @called)
+      {
+        my $include_openacc = &n ('<include>#include "<filename>' . lc ($proc) . '.intfb.h</filename>"</include>');
+        $include->parentNode->insertAfter ($include_openacc, $include);
+        $include->parentNode->insertAfter (&t ("\n"), $include);
+      }
+    
+  }
+
+if (@par)
+  {
+    # Add abor1.intfb.h
+
+    unless (&F ('.//include[string(filename)="abor1.intfb.h"]', $doc))
+      {
+        &Include::addInclude ($doc, 'abor1.intfb.h');
+      }
+  }
+
+# include stack.h
+
+my ($implicit) = &F ('.//implicit-none-stmt', $doc);
+
+$implicit->parentNode->insertBefore (&n ('<include>#include "<filename>stack.h</filename>"</include>'), $implicit);
+$implicit->parentNode->insertBefore (&t ("\n"), $implicit);
+
+
+&updateFile ($F90out, $doc->textContent);
 
 
 
