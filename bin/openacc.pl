@@ -115,6 +115,12 @@ if ($opts{jljk2jlonjlev})
 
 &DrHook::remove ($d) unless ($opts{drhook});
 
+my $version = &Fxtran::getVersion ();
+
+my ($file) = &F ('./object/file', $d);
+$file->appendChild (&n ("<C>! $version</C>"));
+$file->appendChild (&t ("\n"));
+
 &updateFile ($F90out, &Canonic::indent ($d));
 
 &Fxtran::intfb ($F90out, $opts{dir});

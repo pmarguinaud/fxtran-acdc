@@ -17,6 +17,38 @@ use strict;
 use base qw (Exporter);
 our @EXPORT = qw (s e F f n t TRUE FALSE);
 
+{
+my $version;
+sub getVersion
+{
+  use FindBin qw ($Bin);
+  use Cwd;
+
+=pod
+
+commit b9206730bbe52494d44b39b5d3a701868f334be0
+Author: Philippe Marguinaud <philippe.marguinaud@meteo.fr>
+Date:   Sun Feb 5 16:09:41 2023 +0000
+
+    Add OpenMPSingleColumn transform
+
+=cut
+
+  unless ($version)
+    {
+      my $cwd = &cwd ();
+     
+      chdir ($Bin);
+      my @log = split (m/\n/o, `git log -n1`);
+      chdir ($cwd);
+     
+      ($version) = ($log[0] =~ m/commit\s+(\w+)/o);
+    }
+
+  return $version;
+}
+
+}
 
 sub removeListElement
 {
