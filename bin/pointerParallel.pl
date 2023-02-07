@@ -32,6 +32,7 @@ sub updateFile
   
   if ((! defined ($c)) || ($c ne $code))
     {
+      unlink ($F90);
       'FileHandle'->new (">$F90")->print ($code);
     }
 }
@@ -94,7 +95,7 @@ sub parseDirectives
 my $suffix = '_parallel';
 
 my %opts = ('types-dir' => 'types', skip => 'PGFL,PGFLT1,PGMVT1,PGPSDT2D', nproma => 'YDCPG_OPTS%KLON');
-my @opts_f = qw (help only-if-newer);
+my @opts_f = qw (help only-if-newer version);
 my @opts_s = qw (skip nproma);
 
 &GetOptions
@@ -350,11 +351,13 @@ my ($implicit) = &F ('.//implicit-none-stmt', $doc);
 $implicit->parentNode->insertBefore (&n ('<include>#include "<filename>stack.h</filename>"</include>'), $implicit);
 $implicit->parentNode->insertBefore (&t ("\n"), $implicit);
 
-my $version = &Fxtran::getVersion ();
-
-my ($file) = &F ('./object/file', $doc);
-$file->appendChild (&n ("<C>! $version</C>"));
-$file->appendChild (&t ("\n"));
+if ($opts{version})
+  {
+    my $version = &Fxtran::getVersion ();
+    my ($file) = &F ('./object/file', $doc);
+    $file->appendChild (&n ("<C>! $version</C>"));
+    $file->appendChild (&t ("\n"));
+  }
 
 
 &updateFile ($F90out, $doc->textContent);

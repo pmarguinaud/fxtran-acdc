@@ -34,6 +34,7 @@ sub updateFile
   
   if ((! defined ($c)) || ($c ne $code))
     {
+      unlink ($F90);
       'FileHandle'->new (">$F90")->print ($code);
     }
 }
@@ -41,7 +42,7 @@ sub updateFile
 my $SUFFIX = '_OPENACC';
 
 my %opts = ();
-my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev);
+my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version);
 my @opts_s = qw (dir nocompute);
 
 &GetOptions
@@ -95,8 +96,10 @@ if ($opts{jljk2jlonjlev})
 &Construct::changeIfStatementsInIfConstructs ($d);
 &Construct::apply 
 ($d, 
-  '//named-E[string(N)="LMUSCLFA"]',        &e ('.FALSE.'),
-  '//named-E[string(.)="YDLDDH%LFLEXDIA"]', &e ('.FALSE.'),
+  '//named-E[string(N)="LMUSCLFA"]',                          &e ('.FALSE.'),
+  '//named-E[string(.)="YDLDDH%LFLEXDIA"]',                   &e ('.FALSE.'),
+  '//named-E[string(.)="YDMODEL%YRML_DIAG%YRLDDH%LFLEXDIA"]', &e ('.FALSE.'),
+  '//named-E[string(.)="YSPP_CONFIG%LSPP"]',                  &e ('.FALSE.'),
 );
 
 &DIR::removeDIR ($d);
@@ -115,11 +118,13 @@ if ($opts{jljk2jlonjlev})
 
 &DrHook::remove ($d) unless ($opts{drhook});
 
-my $version = &Fxtran::getVersion ();
-
-my ($file) = &F ('./object/file', $d);
-$file->appendChild (&n ("<C>! $version</C>"));
-$file->appendChild (&t ("\n"));
+if ($opts{version})
+  {
+    my $version = &Fxtran::getVersion ();
+    my ($file) = &F ('./object/file', $d);
+    $file->appendChild (&n ("<C>! $version</C>"));
+    $file->appendChild (&t ("\n"));
+  }
 
 &updateFile ($F90out, &Canonic::indent ($d));
 
