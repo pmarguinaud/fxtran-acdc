@@ -20,8 +20,8 @@ my @opts_s = qw (dir out tmp);
 
 &GetOptions
 (
-  (map { ($_, \$opts{$_}) } @opts_f),
-  (map { ("$_=s", \$opts{$_}) } @opts_s),
+  (map { ($_, \$opts{$_}) } @opts_f),
+  (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
 
 if ($opts{help})

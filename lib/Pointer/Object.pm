@@ -1,4 +1,4 @@
-package Pointer::Parallel::Object;
+package Pointer::Object;
 
 use strict;
 use Fxtran;

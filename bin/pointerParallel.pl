@@ -13,8 +13,8 @@ use File::stat;
 
 use Fxtran;
 use Decl;
-use Pointer::Parallel::Object;
-use Pointer::Parallel::SymbolTable;
+use Pointer::Object;
+use Pointer::SymbolTable;
 use Pointer::Parallel;
 use Loop;
 use Call;
@@ -23,6 +23,8 @@ use Subroutine;
 use Finder::Pack;
 use Include;
 use DIR;
+use Bt;
+use Canonic;
 
 sub updateFile
 {
@@ -95,7 +97,7 @@ sub parseDirectives
 my $suffix = '_parallel';
 
 my %opts = ('types-dir' => 'types', skip => 'PGFL,PGFLT1,PGMVT1,PGPSDT2D', nproma => 'YDCPG_OPTS%KLON');
-my @opts_f = qw (help only-if-newer version);
+my @opts_f = qw (help only-if-newer version acdc);
 my @opts_s = qw (skip nproma);
 
 &GetOptions
@@ -135,7 +137,17 @@ my $find = 'Finder::Pack'->new ();
 
 my $types = &Storable::retrieve ("$opts{'types-dir'}/decls.dat");
 
-my $doc = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 300 -no-include -no-cpp -construct-tag)]);
+my $doc;
+
+if ($opts{acdc})
+  {
+    $doc = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 300 -no-include -no-cpp -construct-tag -directive ACDC -canonic)]);
+  }
+else
+  {
+    $doc = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 300 -no-include -no-cpp -construct-tag)]);
+  }
+
 &Subroutine::rename ($doc, sub { return $_[0] . uc ($suffix) });
 
 # Prepare the code
@@ -144,7 +156,17 @@ my $doc = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 300 -no-i
 
 &Decl::forceSingleDecl ($doc);
 
-&parseDirectives ($doc);
+if ($opts{acdc})
+  {
+    use Directive;
+    &Directive::parseDirectives ($doc, name => 'ACDC');
+  }
+else
+  {
+    &parseDirectives ($doc);
+  }
+
+
 
 # Add modules
 
@@ -161,7 +183,7 @@ my $doc = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 300 -no-i
   'TYPE(STACK) :: YLSTACK',
 );
 
-my $t = &Pointer::Parallel::SymbolTable::getSymbolTable 
+my $t = &Pointer::SymbolTable::getSymbolTable 
   ($doc, skip => $opts{skip}, nproma => $opts{nproma}, 'types-dir' => $opts{'types-dir'});
 
 for my $v (qw (JLON JLEV))
@@ -246,7 +268,7 @@ for my $ipar (0 .. $#par)
 
     my $target = $par->getAttribute ('target');
     my $name = $par->getAttribute ('name') || $ipar;
-    my @target = split (m/\//o, $target);
+    my @target = split (m/\//o, $target || 'OpenMP');
 
     my ($if_construct) = &Fxtran::parse (fragment => << "EOF");
 IF (LLCOND) THEN
@@ -269,14 +291,8 @@ EOF
       {
         my $target = $target[$itarget];
 
-        my $class = "Pointer::Parallel::$target";
+        my $class = 'Pointer::Parallel'->class ($target);
 
-        eval "use $class";
-        if (my $c = $@)
-          {
-            die $c;
-          }
-        
         my $par1 = $class->makeParallel ($par->cloneNode (1), $t);
         
         my $block;
@@ -359,8 +375,14 @@ if ($opts{version})
     $file->appendChild (&t ("\n"));
   }
 
-
-&updateFile ($F90out, $doc->textContent);
+if ($opts{acdc})
+  {
+    &updateFile ($F90out, &Canonic::indent ($doc));
+  }
+else
+  {
+    &updateFile ($F90out, $doc->textContent);
+  }
 
 
 

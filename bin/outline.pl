@@ -16,7 +16,7 @@ use Decl;
 
 my $f = shift;
 
-my $d = &Fxtran::parse (location => $f, fopts => [qw (-line-length 500)]);
+my $d = &Fxtran::parse (location => $f, fopts => [qw (-construct-tag -no-include -line-length 500 -directive ACDC -canonic)]);
 
 &Decl::forceSingleDecl ($d);
 my @o = &Outline::outline ($d);

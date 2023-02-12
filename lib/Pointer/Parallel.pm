@@ -4,6 +4,40 @@ use strict;
 use Fxtran;
 use Decl;
 use Call;
+use Data::Dumper;
+use File::Basename;
+
+my %class;
+
+sub class
+{
+  my $class = shift;
+  my $target = shift;
+
+  $target ||= 'OpenMP';
+
+  unless (%class)
+    {
+      my $pm = join ('/', split (m/::/o, $class)) . '.pm';
+      ($pm = $INC{$pm}) =~ s/\.pm//o;
+      for my $pm (map { &basename ($_, qw (.pm)) } <$pm/*.pm>)
+        {
+          $class{uc ($pm)} = "$class\::$pm";
+        }
+    }
+  
+  $class = $class{uc ($target)};
+
+  die "$target was not found" unless ($class);
+
+  eval " use $class";
+  if (my $c = $@)
+    {
+      die $c;
+    }
+
+  return $class;
+}
 
 sub fieldifyDecl
 {
@@ -40,7 +74,7 @@ sub fieldifyDecl
   
       &Decl::addAttributes ($stmt, qw (POINTER));
   
-      my $type_fld = &Pointer::Parallel::SymbolTable::getFieldType ($s->{nd}, $s->{ts});
+      my $type_fld = &Pointer::SymbolTable::getFieldType ($s->{nd}, $s->{ts});
       $type_fld or die "Unknown type : " . $s->{ts}->textContent;
   
       my $decl_fld;
@@ -132,11 +166,11 @@ EOF
           # we record the pointer wich will be used to access the object component
           unless ($t->{$ptr})
             {
-              my $key = join ('%', &Pointer::Parallel::Object::getObjectType ($s, $N), @ctl);
+              my $key = join ('%', &Pointer::Object::getObjectType ($s, $N), @ctl);
               my $decl;
               eval
                 {
-                  $decl = &Pointer::Parallel::Object::getObjectDecl ($key, $types);
+                  $decl = &Pointer::Object::getObjectDecl ($key, $types);
                 };
               if (my $c = $@)
                 {
@@ -155,7 +189,7 @@ EOF
                              ts => $ts,
                              as => $as,
                              nd => $nd,
-                             field => &Pointer::Parallel::Object::getFieldFromObjectComponents ($N, @ctl),
+                             field => &Pointer::Object::getFieldFromObjectComponents ($N, @ctl),
                              object_based => 1, # postpone pointer declaration
                            };
             }
@@ -291,7 +325,7 @@ sub callParallelRoutine
           my @ctl = &F ('./R-LT/component-R/ct', $expr, 1);
           if (@ctl)
             {
-              my $e = &Pointer::Parallel::Object::getFieldFromObjectComponents ($arg->textContent, @ctl);
+              my $e = &Pointer::Object::getFieldFromObjectComponents ($arg->textContent, @ctl);
               $expr->replaceNode ($e);
             }
         }

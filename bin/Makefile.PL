@@ -12,11 +12,14 @@ use Common;
 
 use Fxtran;
 
-my @sys = qw (OMP_LIB CUDAFOR IEEE_ARITHMETIC ISO_C_BINDING OPENACC);
+my @sys = qw (OMP_LIB CUDAFOR IEEE_ARITHMETIC ISO_C_BINDING OPENACC ECCODES);
+my @extern_mod = qw (YOMHOOK MPL_MODULE PARKIND1 OML_MOD EC_LUN MPL_MPIF MPL_MODULE MPL_BARRIER_MOD);
+my @extern_inc = qw (setup_trans.h setup_trans0.h inv_trans.h gath_grid.h gath_spec.h);
 
-unless (-f 'yomhook.F90')
+for my $mod (@extern_mod)
   {
-    push @sys, 'YOMHOOK';
+    next if (-f lc ($mod) . '.F90');
+    push @sys, $mod;
   }
 
 my %slurp;
@@ -40,10 +43,14 @@ sub deps
 
   my %sys = map { ($_, 1) } @sys;
 
+  my %extern_inc = map { ($_, 1) } @extern_inc;
+
   unless ($deps{$f})
     {
       my $code = &slurp ($f);
       my @inc = ($code =~ m/\n\s*#include\s+"(.*?)"/goms);
+      @inc = grep { ! $extern_inc{$_} } @inc;
+
       my @use = map { uc ($_) } ($code =~ m/\n\s*use\s+(\w+)/gomis);
       @use = grep { ! $sys{$_} } @use;
       my @mod = map { lc ($_) . '.mod' } @use;
@@ -58,7 +65,7 @@ sub deps
             }
         }
 
-      die $f . "\n" . &Dumper ($deps{$f}) if (grep { ! defined ($_) } @{ $deps{$f} });
+      die $f . "\n" . &Dumper ([$f, $deps{$f}]) if (grep { ! defined ($_) } @{ $deps{$f} });
 
       @{ $deps{$f} } = &uniq (@{ $deps{$f} });
 
@@ -84,7 +91,16 @@ sub kind
   unless ($kind{$f})
     {
       my $code = &slurp ($f);
-      my ($kind) = ($code =~ m/^(PROGRAM|SUBROUTINE|MODULE)/igoms);
+      my @code = split (m/\n/o, $code);
+      for (@code)
+        {
+          s/^#.*//o;
+          s/^\s*!.*//o;
+        }
+      @code = grep { length ($_) } @code;
+      $code = join ("\n", @code, "");
+      my ($kind) = ($code =~ m/^\s*(PROGRAM|SUBROUTINE|MODULE|FUNCTION)/igoms);
+      $kind or die &Dumper ([$f, $code]);
       $kind{$f} = uc ($kind);
     }
 
@@ -103,9 +119,11 @@ sub newer
 
 for my $fypp (<*.fypp>)
   {
+    my $code = &slurp ($fypp);
+    my @field_config = ($code =~ m/field_config/goms ? qw (-m -field_config) : ());
     (my $F90 = $fypp) =~ s/\.fypp/.F90/o;
     next if (&newer ($F90, $fypp));
-    system (qw (/opt/softs/anaconda3/bin/fypp -m os -M . -m yaml -m field_config), "./$fypp", $F90) and die ($fypp);
+    system (qw (/opt/softs/anaconda3/bin/fypp -m os -M . -m yaml), @field_config, "./$fypp", $F90) and die ($fypp);
   }
 
 my @F90 = <*.F90>;

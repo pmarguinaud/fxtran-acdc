@@ -1,4 +1,4 @@
-package Pointer::Parallel::SymbolTable;
+package Pointer::SymbolTable;
 
 use strict;
 use Fxtran;

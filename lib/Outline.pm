@@ -340,7 +340,7 @@ sub outline
 {
   my $d = shift;
   
-  my @s = &Directive::parseDirectives ($d);
+  my @s = &Directive::parseDirectives ($d, name => 'ACDC');
 
   my @o;
 
