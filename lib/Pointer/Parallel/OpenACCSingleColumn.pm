@@ -1,14 +1,16 @@
-package Pointer::Parallel::OpenMPSingleColumn;
+package Pointer::Parallel::OpenACCSingleColumn;
 
 use strict;
 use Pointer::Parallel;
 use Fxtran;
 use DIR;
 use Loop;
+use OpenACC;
+use Data::Dumper;
 
 sub getDefaultWhere
 {
-  'host';
+  'device';
 }
 
 sub makeParallel
@@ -108,9 +110,20 @@ EOF
       $argspec->appendChild (&n ('<arg><arg-N><k>YDSTACK</k></arg-N>=<named-E><N><n>YLSTACK</n></N></named-E></arg>'));
     }
 
+  my @NPROMA = sort grep { $t->{$_}{nproma} } &F ('.//named-E/N', $do_jlon, 1);
 
-  &Pointer::Parallel::setOpenMPDirective ($par, $t);
+  my ($do_jblk) = &F ('./do-construct/do-stmt[string(do-V)="JBLK"]', $par);
 
+  my @const = &Pointer::Parallel::getConstantObjects ($do_jlon, $t);
+
+  &OpenACC::parallelLoopGang ($do_jblk, 
+                              PRIVATE => ['JBLK'], 
+                              PRESENT => [@NPROMA, @const, 'YSTACK'], 
+                              VECTOR_LENGTH => ['YDCPG_OPTS%KLON']);
+
+  my @priv = &Pointer::Parallel::getPrivateVariables ($do_jlon, $t);
+
+  &OpenACC::loopVector ($do_jlon, PRIVATE => \@priv);
 
   return $par;
 }

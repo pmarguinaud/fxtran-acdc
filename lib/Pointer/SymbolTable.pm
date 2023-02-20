@@ -3,7 +3,7 @@ package Pointer::SymbolTable;
 use strict;
 use Fxtran;
 
-sub getObjectList
+sub getFieldAPIList
 {
   my ($doc, $dir) = @_;
 
@@ -26,6 +26,29 @@ sub getObjectList
   return @object;
 }
 
+sub getConstantList
+{
+  my ($doc, $dir) = @_;
+ 
+  # Guess constant list 
+
+  my @constant = ();
+
+  my @decl = &F ('.//T-decl-stmt[_T-spec_/derived-T-spec', $doc);
+
+  for my $decl (@decl)
+    {
+      my ($type) = &F ('./_T-spec_/derived-T-spec/T-N', $decl, 1);
+      if (-f "$dir/$type.pl")
+        {
+          my @N = &F ('.//EN-N', $decl, 1);
+          push @constant, @N;
+        }
+    }
+
+  return @constant;
+}
+
 sub getSymbolTable
 {
   my ($doc, %opts) = @_;
@@ -34,9 +57,11 @@ sub getSymbolTable
 
   my $nproma = $opts{nproma};
 
-  my @object = &getObjectList ($doc, $opts{'types-dir'});
-  my %object = map { ($_, 1) } @object;
+  my @fieldapi = &getFieldAPIList ($doc, $opts{'types-fieldapi-dir'});
+  my %fieldapi = map { ($_, 1) } @fieldapi;
 
+  my @constant = &getConstantList ($doc, $opts{'types-constant-dir'});
+  my %constant = map { ($_, 1) } @constant;
 
   my @args = &F ('.//subroutine-stmt/dummy-arg-LT/arg-N/N/n/text()', $doc);
   my %args = map { ($_->textContent, $_) } @args;
@@ -54,7 +79,8 @@ sub getSymbolTable
       my @ss = $as ? &F ('./shape-spec-LT/shape-spec', $as) : ();
       my $nd = scalar (@ss);
       $t{$N} = {
-                 object => $object{$N},
+                 object => $fieldapi{$N},
+                 constant => $constant{$N},
                  skip => $skip{$N},
                  nproma => $as && $ss[0]->textContent eq $nproma,
                  arg => $args{$N} || 0, 

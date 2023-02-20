@@ -39,6 +39,21 @@ sub updateFile
     }
 }
 
+sub useABOR1_ACC
+{
+  my $d = shift;
+  my @abor1 = &F ('.//call-stmt/procedure-designator/named-E/N/n/text()[string(.)="ABOR1"]', $d);
+  for my $abor1 (@abor1)
+    {
+      $abor1->setData ('ABOR1_ACC');
+    }
+  my @include = &F ('.//include[string(filename)="abor1.intfb.h"]', $d);
+  for (@include)
+    {
+      $_->unbindNode ();
+    }
+}
+
 my $SUFFIX = '_OPENACC';
 
 my %opts = ();
@@ -100,6 +115,7 @@ if ($opts{jljk2jlonjlev})
   '//named-E[string(.)="YDLDDH%LFLEXDIA"]',                   &e ('.FALSE.'),
   '//named-E[string(.)="YDMODEL%YRML_DIAG%YRLDDH%LFLEXDIA"]', &e ('.FALSE.'),
   '//named-E[string(.)="YSPP_CONFIG%LSPP"]',                  &e ('.FALSE.'),
+  '//named-E[string(.)="LMCAPEA"]',                           &e ('.FALSE.'),
 );
 
 &DIR::removeDIR ($d);
@@ -117,6 +133,8 @@ if ($opts{jljk2jlonjlev})
 &Stack::addStack ($d, skip => sub { my $proc = shift; grep ({ $_ eq $proc } @{ $opts{nocompute} }) });
 
 &DrHook::remove ($d) unless ($opts{drhook});
+
+&useABOR1_ACC ($d);
 
 if ($opts{version})
   {

@@ -11,9 +11,9 @@ use lib "$Bin/../lib";
 
 use Common;
 
-my %opts = ('types-dir' => 'types');
+my %opts = ('types-fieldapi-dir' => 'types-fieldapi');
 my @opts_f = qw (help);
-my @opts_s = qw (types-dir);
+my @opts_s = qw (types-fieldapi-dir);
 
 &GetOptions
 (
@@ -31,7 +31,7 @@ if ($opts{help})
     exit (0);
   }
 
-my $dir = $opts{'types-dir'};
+my $dir = $opts{'types-fieldapi-dir'};
 
 my %T;
 

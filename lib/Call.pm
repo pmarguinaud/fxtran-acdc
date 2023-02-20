@@ -103,6 +103,7 @@ sub grokIntent
   elsif ($expr->parentNode->nodeName eq 'arg')
     {
       my $stmt = &Fxtran::stmt ($expr);
+
       if ($stmt->nodeName eq 'call-stmt')
         {
           my $intent = &getArgumentIntent ($stmt, $expr, $find) || 'INOUT';

@@ -20,6 +20,7 @@ sub scanpack
 
   my @view = do { my $fh = 'FileHandle'->new ("<$pack/.gmkview"); <$fh> };
   chomp for (@view);
+  @view = reverse (@view);
 
   my $scan;
 
@@ -54,7 +55,6 @@ sub scanpack
             {
               my $f = $File::Find::name;
               return unless (($f =~ m/\.F90$/o) || (($f =~ m/\.h/o)));
-              return if ($scan->{&basename ($f)});
               $f =~ s,\.\/,,o;
               $scan->{&basename ($f)} = "$pack/src/$view/$f";
             };
@@ -73,7 +73,9 @@ sub scanpack
     'FileHandle'->new (">$pack/.scan.pl")->print (&Dumper ($scan));
   }
 
+
   $self->{scan} = $scan;
+
 }
 
 sub new

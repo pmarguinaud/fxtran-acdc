@@ -14,14 +14,21 @@ sub insertDirective
 
   my @d = (" $d ");
 
-  my $N = 5;
-
   for my $c (sort keys (%c))
     {
       next unless (my @l = sort &uniq (@{ $c{$c} }));
       my $f = 1;
-      while (my @x = splice (@l, 0, $N))
+
+      while (@l)
         {
+          my @x;
+
+          while (my $l = shift (@l))
+            {
+              push @x, $l;
+              last if (length (join ('', @x)) > 50);
+            }
+
           push @d, join (', ', @x); $d[-1] .= ', ' if (scalar (@l));
           if ($f)
             {

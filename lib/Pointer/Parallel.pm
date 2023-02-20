@@ -102,7 +102,7 @@ sub fieldifyDecl
 
 sub makeParallel
 {
-  my ($par, $t, $find, $types, $NAME) = @_;
+  my ($par, $t, $find, $types, $NAME, $POST) = @_;
 
   # Add a loop nest on blocks
 
@@ -214,33 +214,62 @@ EOF
   my %intent2access = qw (IN RDONLY INOUT RDWR OUT WRONLY);
 
   $par->insertBefore (&t ("\n" . (' ' x $indent)), $loop);
+  $par->insertBefore (my $prep = &n ('<prep/>'), $loop);
 
-  $par->insertBefore (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:GET_DATA',0,ZHOOK_HANDLE_FIELD_API)"), $loop);
-  $par->insertBefore (&t ("\n" . (' ' x $indent)), $loop);
-
-  $par->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:NULLIFY',1,ZHOOK_HANDLE_FIELD_API)"), $loop);
+  $par->insertAfter (my $post = &n ('<post/>'), $loop);
   $par->insertAfter (&t ("\n" . (' ' x $indent)), $loop);
 
-  for my $ptr (reverse (sort keys (%intent)))
+  $prep->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:GET_DATA',0,ZHOOK_HANDLE_FIELD_API)"));
+  $prep->appendChild (&t ("\n" . (' ' x $indent)));
+
+  if ($POST eq 'nullify')
+    {
+      $post->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:NULLIFY',0,ZHOOK_HANDLE_FIELD_API)"));
+      $post->appendChild (&t ("\n" . (' ' x $indent)));
+    }
+  elsif ($POST eq 'synchost')
+    {
+      $post->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:SYNCHOST',0,ZHOOK_HANDLE_FIELD_API)"));
+      $post->appendChild (&t ("\n" . (' ' x $indent)));
+    }
+    
+
+  for my $ptr (sort keys (%intent))
     {
       my $s = $t->{$ptr};
       my $access = $intent2access{$intent{$ptr}};
       my $var = $s->{field}->textContent;
       my $stmt = &s ("$ptr => GET_HOST_DATA_$access ($var)");
-      $par->insertBefore ($stmt, $loop);
-      $par->insertBefore (&t ("\n" . (' ' x $indent)), $loop);
+      $prep->appendChild ($stmt);
+      $prep->appendChild (&t ("\n" . (' ' x $indent)));
 
-      $par->insertAfter (&s ("$ptr => NULL ()"), $loop);
-      $par->insertAfter (&t ("\n" . (' ' x $indent)), $loop);
+      if ($POST eq 'nullify')
+        {
+          $post->appendChild (&s ("$ptr => NULL ()"));
+          $post->appendChild (&t ("\n" . (' ' x $indent)));
+        }
+      elsif ($POST eq 'synchost')
+        {
+          $post->appendChild (&s ("$ptr => GET_HOST_DATA_RDWR ($var)"));
+          $post->appendChild (&t ("\n" . (' ' x $indent)));
+        }
     }
-  $par->insertBefore (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:GET_DATA',1,ZHOOK_HANDLE_FIELD_API)"), $loop);
-  $par->insertBefore (&t ("\n" . (' ' x $indent)), $loop);
+  $prep->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:GET_DATA',1,ZHOOK_HANDLE_FIELD_API)"));
+  $prep->appendChild (&t ("\n" . (' ' x $indent)));
 
-  $par->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:NULLIFY',0,ZHOOK_HANDLE_FIELD_API)"), $loop);
-  $par->insertAfter (&t ("\n" . (' ' x $indent)), $loop);
+  if ($POST eq 'nullify')
+    {
+      $post->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:NULLIFY',1,ZHOOK_HANDLE_FIELD_API)"));
+      $post->appendChild (&t ("\n" . (' ' x $indent)));
+    }
+  elsif ($POST eq 'synchost')
+    {
+      $post->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:SYNCHOST',1,ZHOOK_HANDLE_FIELD_API)"));
+      $post->appendChild (&t ("\n" . (' ' x $indent)));
+    }
 
-  $par->insertBefore (&t ("\n" . (' ' x $indent)), $loop);
-  $par->insertAfter (&t ("\n" . (' ' x $indent)), $loop);
+  $prep->appendChild (&t ("\n" . (' ' x $indent)));
+  $post->appendChild (&t ("\n" . (' ' x $indent)));
 
 
 }
@@ -402,7 +431,7 @@ sub setupLocalFields
 
 }
 
-sub setOpenMPDirective
+sub getPrivateVariables
 {
   my ($par, $t) = @_;
 
@@ -421,11 +450,39 @@ sub setOpenMPDirective
       $priv{$n}++ if (($p->nodeName eq 'E-1') || ($p->nodeName eq 'do-V'));
     }
 
+  return sort keys (%priv);
+}
+
+sub getConstantObjects
+{
+  my ($par, $t) = @_;
+
+  my @N = &F ('.//named-E/N', $par);
+
+  my %const;
+
+  for my $N (@N)
+    {
+      my $n = $N->textContent;
+      my $s = $t->{$n};
+      next unless ($s->{constant});
+      $const{$n}++;
+    }
+
+  return sort keys (%const);
+}
+
+sub setOpenMPDirective
+{
+  my ($par, $t) = @_;
+
+  my @priv = &getPrivateVariables ($par, $t);
+
   my ($do) = &F ('.//do-construct[./do-stmt[string(do-V)="JBLK"]]', $par);
 
   my $indent = &Fxtran::getIndent ($do);
 
-  my $C = &n ('<C>!$OMP PARALLEL DO PRIVATE (' . join (', ', sort keys (%priv))  . ')</C>');
+  my $C = &n ('<C>!$OMP PARALLEL DO PRIVATE (' . join (', ', @priv)  . ')</C>');
   
   $do->parentNode->insertBefore ($C, $do);
   $do->parentNode->insertBefore (&t ("\n" . (' ' x $indent)), $do);

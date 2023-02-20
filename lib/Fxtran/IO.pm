@@ -5,6 +5,7 @@ use strict;
 use Data::Dumper;
 use File::Path;
 use File::Spec;
+use Cwd;
 use Common;
 use Fxtran;
 
@@ -517,27 +518,31 @@ $CONTAINS_SIZE
 END MODULE
 EOF
 
+    
+      if (my $dir = $opts->{'types-constant-dir'})
+        {
+          'FileHandle'->new (">$dir/$name.pl");
+        }
     }
 
-  return \%code;
+  return (\@file, \%code);
 }
 
 sub processTypes
 {
   my ($doc, $opts) = @_;
 
-  my $code = &processTypes1 ($doc, $opts);
-  my @file = sort keys (%$code);
+  my ($file, $code) = &processTypes1 ($doc, $opts);
 
   if ($opts->{out})
     {
-      &w ("$opts->{dir}/$opts->{out}", join ('', map { $code->{$_} } @file));
+      &w ("$opts->{dir}/$opts->{out}", join ('', map { $code->{$_} } @$file));
     }
   else
     {
-      for my $file (@file)
+      for my $f (@$file)
         {
-          &w ("$opts->{dir}/$file", $code->{$file});
+          &w ("$opts->{dir}/$f", $code->{$f});
         }
     }
 
@@ -567,8 +572,7 @@ sub process_module
 
   $doc = &Fxtran::parse (location => $F90, fopts => [qw (-construct-tag -no-include -line-length 800)]);
 
-  my $code = &processTypes1 ($doc, $opts);
-  my @file = sort keys (%$code);
+  my ($file, $code) = &processTypes1 ($doc, $opts);
 
   for (values ($code))
     {
@@ -582,13 +586,13 @@ sub process_module
 
   if ($opts->{out})
     {
-      &w ("$opts->{dir}/$opts->{out}", join ('', map { $code->{$_} } @file));
+      &w ("$opts->{dir}/$opts->{out}", join ('', map { $code->{$_} } @$file));
     }
   else
     {
-      for my $file (@file)
+      for my $f (@$file)
         {
-          &w ("$opts->{dir}/$file", $code->{$file});
+          &w ("$opts->{dir}/$f", $code->{$f});
         }
     }
 

@@ -25,6 +25,7 @@ use Include;
 use DIR;
 use Bt;
 use Canonic;
+use Directive;
 
 sub updateFile
 {
@@ -39,66 +40,14 @@ sub updateFile
     }
 }
 
-sub parseDirectives
-{
-
-# Add tags for each section
-
-  my $d = shift;
-
-  my @C = &F ('//C[starts-with(string (.),"!=")]', $d);
-  
-  while (my $C  = shift (@C))
-    {
-      (my $bdir = $C->textContent) =~ s/^!=\s*//o;
-
-      ($bdir, my $opts) = ($bdir =~ m/^(\w+)\s*(?:\(\s*(\S.*\S)\s*\)\s*)?$/goms);
-      my %opts = $opts ? split (m/\s*[=,]\s*/o, $opts) : ();
-
-      $opts{TARGET} ||= 'OpenMP';
-
-      $bdir = lc ($bdir);
-      my ($tag) = ($bdir =~ m/^(\w+)/o);
-  
-      my @node;
-      for (my $node = $C->nextSibling; ; $node = $node->nextSibling)
-        {
-          $node or die $C->textContent;
-          if (($node->nodeName eq 'C') && (index ($node->textContent, '!=') == 0))
-            {
-              my $C = shift (@C);
-              (my $edir = $C->textContent) =~ s/^!=\s*//o;
-              $edir = lc ($edir);
-
-              die unless ($edir =~ s/^end\s+//o);
-              die unless ($edir eq $tag);
-
-              $C->unbindNode ();
-              
-              last;
-            }
-
-          push @node, $node;
-
-        }
-
-      my $e = &n ("<$tag-section " . join (' ', map { sprintf ('%s="%s"', lc ($_), $opts{$_}) } keys (%opts))  . "/>");
- 
-      for my $node (@node)
-        {
-          $e->appendChild ($node);
-        }
-
-      $C->replaceNode ($e);
-
-    }
-}
 
 my $suffix = '_parallel';
 
-my %opts = ('types-dir' => 'types', skip => 'PGFL,PGFLT1,PGMVT1,PGPSDT2D', nproma => 'YDCPG_OPTS%KLON');
-my @opts_f = qw (help only-if-newer version acdc);
-my @opts_s = qw (skip nproma);
+my %opts = ('types-fieldapi-dir' => 'types-fieldapi', skip => 'PGFL,PGFLT1,PGMVT1,PGPSDT2D', 
+             nproma => 'YDCPG_OPTS%KLON', 'types-constant-dir' => 'types-constant',
+             'post-parallel' => 'nullify');
+my @opts_f = qw (help only-if-newer version stdout);
+my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel);
 
 &GetOptions
 (
@@ -135,18 +84,9 @@ my $NAME = uc (&basename ($F90out, qw (.F90)));
 
 my $find = 'Finder::Pack'->new ();
 
-my $types = &Storable::retrieve ("$opts{'types-dir'}/decls.dat");
+my $types = &Storable::retrieve ("$opts{'types-fieldapi-dir'}/decls.dat");
 
-my $doc;
-
-if ($opts{acdc})
-  {
-    $doc = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 300 -no-include -no-cpp -construct-tag -directive ACDC -canonic)]);
-  }
-else
-  {
-    $doc = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 300 -no-include -no-cpp -construct-tag)]);
-  }
+my $doc = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 300 -no-include -no-cpp -construct-tag -directive ACDC -canonic)]);
 
 &Subroutine::rename ($doc, sub { return $_[0] . uc ($suffix) });
 
@@ -156,16 +96,7 @@ else
 
 &Decl::forceSingleDecl ($doc);
 
-if ($opts{acdc})
-  {
-    use Directive;
-    &Directive::parseDirectives ($doc, name => 'ACDC');
-  }
-else
-  {
-    &parseDirectives ($doc);
-  }
-
+&Directive::parseDirectives ($doc, name => 'ACDC');
 
 
 # Add modules
@@ -184,7 +115,9 @@ else
 );
 
 my $t = &Pointer::SymbolTable::getSymbolTable 
-  ($doc, skip => $opts{skip}, nproma => $opts{nproma}, 'types-dir' => $opts{'types-dir'});
+  ($doc, skip => $opts{skip}, nproma => $opts{nproma}, 
+   'types-fieldapi-dir' => $opts{'types-fieldapi-dir'},
+   'types-constant-dir' => $opts{'types-constant-dir'});
 
 for my $v (qw (JLON JLEV))
   {
@@ -211,7 +144,7 @@ for my $ipar (0 .. $#par)
   {
     my $par = $par[$ipar];
     my $name = $par->getAttribute ('name') || $ipar;
-    &Pointer::Parallel::makeParallel ($par, $t, $find, $types, "$NAME:$name");
+    &Pointer::Parallel::makeParallel ($par, $t, $find, $types, "$NAME:$name", $opts{'post-parallel'});
   }
 
 # Process call to parallel routines
@@ -252,14 +185,13 @@ for my $n (sort keys (%$t))
   }
 
 
-&Decl::declare($doc, @decl);
+&Decl::declare ($doc, @decl);
 
 # Create/delete fields for local arrays
 
 &Pointer::Parallel::setupLocalFields ($doc, $t, '');
 
 &Include::removeUnusedIncludes ($doc);
-
 
 
 for my $ipar (0 .. $#par)
@@ -291,7 +223,14 @@ EOF
       {
         my $target = $target[$itarget];
 
+        $target =~ s/\%(\w+)$//o;
+        my $where = $1;
+
         my $class = 'Pointer::Parallel'->class ($target);
+
+        $where ||= $class->getDefaultWhere ();
+
+        $where = uc ($where);
 
         my $par1 = $class->makeParallel ($par->cloneNode (1), $t);
         
@@ -313,7 +252,18 @@ EOF
 
         $C->replaceNode ($par1);
 
+        if ($where ne 'HOST')
+          {
+            my @get = &F ('./prep//named-E[string(N)="GET_HOST_DATA_RDONLY" or string(N)="GET_HOST_DATA_RDWR"]/N/n/text()', $par1);
+            for my $get (@get)
+              {
+                (my $t = $get->data) =~ s/_HOST_/_${where}_/go;
+                $get->setData ($t);
+              }
+          }
+
         push @block, $block;
+
       }
 
     $if_construct->parentNode->insertBefore (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:$name',0,ZHOOK_HANDLE_PARALLEL)"), $if_construct);
@@ -375,13 +325,13 @@ if ($opts{version})
     $file->appendChild (&t ("\n"));
   }
 
-if ($opts{acdc})
+if ($opts{stdout})
   {
-    &updateFile ($F90out, &Canonic::indent ($doc));
+    print &Canonic::indent ($doc);
   }
 else
   {
-    &updateFile ($F90out, $doc->textContent);
+    &updateFile ($F90out, &Canonic::indent ($doc));
   }
 
 

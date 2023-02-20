@@ -4,6 +4,11 @@ use strict;
 use Pointer::Parallel;
 use Fxtran;
 
+sub getDefaultWhere
+{
+  'host';
+}
+
 sub makeParallel
 {
   shift;
