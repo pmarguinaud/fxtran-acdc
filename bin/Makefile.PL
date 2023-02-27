@@ -2,6 +2,7 @@
 
 use strict;
 
+use Getopt::Long;
 use FileHandle;
 use List::MoreUtils qw (uniq);
 use Data::Dumper;
@@ -11,6 +12,18 @@ use lib "$Bin/../lib";
 use Common;
 
 use Fxtran;
+
+my %opts = qw (out Makefile include Makefile.inc);
+my @opts_f = qw ();
+my @opts_s = qw (out include);
+
+&GetOptions
+(
+  (map { ($_, \$opts{$_}) } @opts_f),
+  (map { ("$_=s", \$opts{$_}) } @opts_s),
+);
+
+$opts{include} = [split (m/,/o, $opts{include})];
 
 my @sys = qw (OMP_LIB CUDAFOR IEEE_ARITHMETIC ISO_C_BINDING OPENACC ECCODES CUBLAS);
 my @extern_mod = qw (YOMHOOK MPL_MODULE PARKIND1 OML_MOD EC_LUN MPL_MPIF MPL_MODULE MPL_BARRIER_MOD);
@@ -128,12 +141,10 @@ for my $fypp (<*.fypp>)
 
 my @F90 = <*.F90>;
 
-my $fh = 'FileHandle'->new (">Makefile");
+my $fh = 'FileHandle'->new (">$opts{out}");
 
-$fh->print (<< "EOF");
-include Makefile.inc
 
-EOF
+$fh->print (join ("\n", map ({ "include $_"  } @{ $opts{include} }), '', ''));
 
 my (@obj, @prg);
 
@@ -161,7 +172,7 @@ for my $F90 (@F90)
         (my $ok = $intfb) =~ s/\.h$/.ok/o;
         my @deps = &deps ($intfb);
         $fh->print (<< "EOF");
-$ok: $intfb @deps
+$ok: \$(SRC)/$intfb @deps
 	touch $ok
 
 EOF
@@ -177,7 +188,7 @@ for my $h (grep { ! m/\.intfb\.h$/o } <*.h>)
   {
     (my $ok = $h) =~ s/\.h$/.ok/o;
     $fh->print (<< "EOF");
-$ok: $h
+$ok: \$(SRC)/$h
 	touch $ok
 EOF
   }
@@ -197,8 +208,8 @@ for my $F90 (@F90)
       }
 
     $fh->print (<< "EOF");
-$obj: $F90 @deps
-	\$(FC) -c $F90
+$obj: \$(SRC)/$F90 @deps
+	\$(FC) -c \$(SRC)/$F90
 
 EOF
 
@@ -213,7 +224,7 @@ for my $c (<*.c>)
     push @obj, $o;
     $fh->print (<< "EOF");
 $o: $c
-	\$(CC) -c $c
+	\$(CC) -c \$(SRC)/$c
 EOF
   }
 
@@ -230,16 +241,10 @@ EOF
   }
 
 
-my @F90_fypp = map { (my $F90 = $_) =~ s/\.fypp/.F90/o; $F90 } <*.fypp>;
-
-
 $fh->print (<< "EOF");
 
 subclean:
 	\\rm -f @subobj
-
-fyppclean: 
-	\\rm -f @F90_fypp
 
 clean: 
 	\\rm -f *.o *.xml *.a *.x *.mod *.optrpt 
