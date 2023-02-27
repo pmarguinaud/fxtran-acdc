@@ -11,8 +11,12 @@ use Fxtran;
 sub reDim
 {
   my $d = shift;
+  my %args = @_;
+
+  my @KLON = @{ $args{KLON} || ['KLON'] };
   
-  my @en_decl = &F ('.//EN-decl[./array-spec/shape-spec-LT[string(shape-spec)="?"]]', 'KLON', $d);
+  my @en_decl = 
+    (map { my $n = $_; &F ('.//EN-decl[./array-spec/shape-spec-LT[string(shape-spec)="?"]]', $n, $d) } @KLON);
   
   EN_DECL : for my $en_decl (@en_decl)
     {

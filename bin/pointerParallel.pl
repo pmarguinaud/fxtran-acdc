@@ -26,6 +26,7 @@ use DIR;
 use Bt;
 use Canonic;
 use Directive;
+use Cycle48;
 
 sub updateFile
 {
@@ -40,13 +41,31 @@ sub updateFile
     }
 }
 
+sub addYDCPG_OPTS
+{
+  my $d = shift;
+  my ($arglist) = &F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT', $d);
+  $arglist->appendChild (&t (','));
+  $arglist->appendChild (&n ('<arg-N><N><n>YDCPG_OPTS</n></N></arg-N>'));
+  &Decl::declare ($d, 'TYPE (CPG_OPTS), INTENT (IN) :: YDCPG_OPTS');
+  &Decl::use ($d, 'USE CPG_OPTS_TYPE_MOD');
+
+  my @expr = &F ('//named-E[string(N)="KIDIA" or string(N)="KFDIA"]', $d);
+
+  for my $expr (@expr)
+    {
+      my $N = $expr->textContent;
+      $expr->replaceNode (&e ("YDCPG_BNDS%$N"));
+    }
+}
+
 
 my $suffix = '_parallel';
 
 my %opts = ('types-fieldapi-dir' => 'types-fieldapi', skip => 'PGFL,PGFLT1,PGMVT1,PGPSDT2D', 
              nproma => 'YDCPG_OPTS%KLON', 'types-constant-dir' => 'types-constant',
              'post-parallel' => 'nullify');
-my @opts_f = qw (help only-if-newer version stdout);
+my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS);
 my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel);
 
 &GetOptions
@@ -86,27 +105,34 @@ my $find = 'Finder::Pack'->new ();
 
 my $types = &Storable::retrieve ("$opts{'types-fieldapi-dir'}/decls.dat");
 
-my $doc = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 300 -no-include -no-cpp -construct-tag -directive ACDC -canonic)]);
+my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 800 -no-include -no-cpp -construct-tag -directive ACDC -canonic)]);
 
-&Subroutine::rename ($doc, sub { return $_[0] . uc ($suffix) });
+&Subroutine::rename ($d, sub { return $_[0] . uc ($suffix) });
 
 # Prepare the code
 
-&Associate::resolveAssociates ($doc);
+&Associate::resolveAssociates ($d);
 
-&Decl::forceSingleDecl ($doc);
+&Cycle48::simplify ($d);
 
-&Directive::parseDirectives ($doc, name => 'ACDC');
 
+if ($opts{addYDCPG_OPTS})
+  {
+    &addYDCPG_OPTS ($d);
+  }
+
+&Decl::forceSingleDecl ($d);
+
+&Directive::parseDirectives ($d, name => 'ACDC');
 
 # Add modules
 
-&Decl::use ($doc, map { "USE $_" } qw (FIELD_MODULE FIELD_REGISTRY_MOD FIELD_HELPER_MODULE YOMPARALLELMETHOD STACK_MOD));
+&Decl::use ($d, map { "USE $_" } qw (FIELD_MODULE FIELD_REGISTRY_MOD FIELD_HELPER_MODULE YOMPARALLELMETHOD STACK_MOD));
 
 # Add local variables
 
 &Decl::declare 
-($doc,  
+($d,  
   'INTEGER(KIND=JPIM) :: JBLK',
   'TYPE(CPG_BNDS_TYPE) :: YLCPG_BNDS', 
   'REAL(KIND=JPRB) :: ZHOOK_HANDLE_FIELD_API',
@@ -115,30 +141,29 @@ my $doc = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 300 -no-i
 );
 
 my $t = &Pointer::SymbolTable::getSymbolTable 
-  ($doc, skip => $opts{skip}, nproma => $opts{nproma}, 
+  ($d, skip => $opts{skip}, nproma => $opts{nproma}, 
    'types-fieldapi-dir' => $opts{'types-fieldapi-dir'},
    'types-constant-dir' => $opts{'types-constant-dir'});
 
 for my $v (qw (JLON JLEV))
   {
-    &Decl::declare ($doc, "INTEGER(KIND=JPIM) :: $v") unless ($t->{$v});
+    &Decl::declare ($d, "INTEGER(KIND=JPIM) :: $v") unless ($t->{$v});
   }
 
 # Remove SKIP sections
 
-for (&F ('.//skip-section', $doc))
+for (&F ('.//skip-section', $d))
   {
     $_->unbindNode ();
   }
 
 # Transform NPROMA fields into a pair of (FIELD API object, Fortran pointer)
 
-&Pointer::Parallel::fieldifyDecl ($doc, $t);
+&Pointer::Parallel::fieldifyDecl ($d, $t);
 
 # Process parallel sections
 
-my @par = &F ('.//parallel-section', $doc);
-
+my @par = &F ('.//parallel-section', $d);
 
 for my $ipar (0 .. $#par)
   {
@@ -152,7 +177,7 @@ for my $ipar (0 .. $#par)
 my @call = &F ('.//call-stmt[not(ancestor::parallel-section)]' # Skip calls in parallel sections
             . '[not(string(procedure-designator)="DR_HOOK")]'  # Skip DR_HOOK calls
             . '[not(procedure-designator/named-E/R-LT)]'       # Skip objects calling methods
-            . '[not(ancestor::serial-section)]', $doc);        # Skip calls in serial sections
+            . '[not(ancestor::serial-section)]', $d);          # Skip calls in serial sections
 
 my %seen;
 
@@ -164,7 +189,7 @@ for my $call (@call)
         my ($name) = &F ('./procedure-designator/named-E/N/n/text()', $call);
         unless ($seen{$name->textContent}++)
           {
-            my ($include) = &F ('.//include[./filename[string(.)="?"]]', lc ($name) . '.intfb.h', $doc);
+            my ($include) = &F ('.//include[./filename[string(.)="?"]]', lc ($name) . '.intfb.h', $d);
             $include->parentNode->insertAfter (&n ('<include>#include "<filename>' . lc ($name) . '_parallel.intfb.h</filename>"</include>'), $include);
             $include->parentNode->insertAfter (&t ("\n"), $include);
           }
@@ -185,13 +210,13 @@ for my $n (sort keys (%$t))
   }
 
 
-&Decl::declare ($doc, @decl);
+&Decl::declare ($d, @decl);
 
 # Create/delete fields for local arrays
 
-&Pointer::Parallel::setupLocalFields ($doc, $t, '');
+&Pointer::Parallel::setupLocalFields ($d, $t, '');
 
-&Include::removeUnusedIncludes ($doc);
+&Include::removeUnusedIncludes ($d);
 
 
 for my $ipar (0 .. $#par)
@@ -276,9 +301,9 @@ EOF
   }
 
 
-my @called = &F ('.//call-stmt/procedure-designator', $doc, 1);
+my @called = &F ('.//call-stmt/procedure-designator', $d, 1);
 
-my @include = &F ('.//include', $doc);
+my @include = &F ('.//include', $d);
 
 for my $include (@include)
   {
@@ -304,15 +329,15 @@ if (@par)
   {
     # Add abor1.intfb.h
 
-    unless (&F ('.//include[string(filename)="abor1.intfb.h"]', $doc))
+    unless (&F ('.//include[string(filename)="abor1.intfb.h"]', $d))
       {
-        &Include::addInclude ($doc, 'abor1.intfb.h');
+        &Include::addInclude ($d, 'abor1.intfb.h');
       }
   }
 
 # include stack.h
 
-my ($implicit) = &F ('.//implicit-none-stmt', $doc);
+my ($implicit) = &F ('.//implicit-none-stmt', $d);
 
 $implicit->parentNode->insertBefore (&n ('<include>#include "<filename>stack.h</filename>"</include>'), $implicit);
 $implicit->parentNode->insertBefore (&t ("\n"), $implicit);
@@ -320,18 +345,18 @@ $implicit->parentNode->insertBefore (&t ("\n"), $implicit);
 if ($opts{version})
   {
     my $version = &Fxtran::getVersion ();
-    my ($file) = &F ('./object/file', $doc);
+    my ($file) = &F ('./object/file', $d);
     $file->appendChild (&n ("<C>! $version</C>"));
     $file->appendChild (&t ("\n"));
   }
 
 if ($opts{stdout})
   {
-    print &Canonic::indent ($doc);
+    print &Canonic::indent ($d);
   }
 else
   {
-    &updateFile ($F90out, &Canonic::indent ($doc));
+    &updateFile ($F90out, &Canonic::indent ($d));
   }
 
 

@@ -35,7 +35,7 @@ sub makeParallel
     }
 
   my ($do_jlon) = &Fxtran::parse (fragment => << 'EOF');
-DO JLON = 1, MIN (YDCPG_BNDS%KLON, YDCPG_BNDS%KGPCOMP - (JBLK - 1) * YDCPG_BNDS%KLON)
+DO JLON = 1, MIN (YDCPG_OPTS%KLON, YDCPG_OPTS%KGPCOMP - (JBLK - 1) * YDCPG_OPTS%KLON)
 ENDDO
 EOF
 
@@ -46,11 +46,7 @@ EOF
   while (my $x = shift (@x))
     {
 
-      if (($x->nodeName eq 'a-stmt') && ($x->textContent =~ m/^YLCPG_BNDS\s*=\s*YDCPG_BNDS$/o))
-        {
-          # Skip
-        }
-      elsif (($x->nodeName eq 'call-stmt') && ($x->textContent =~ m/^CALL YLCPG_BNDS%UPDATE/o))
+      if (($x->nodeName eq 'call-stmt') && ($x->textContent =~ m/^CALL YLCPG_BNDS%UPDATE/o))
         {
           $do->appendChild ($do_jlon);
           $indent = &Fxtran::getIndent ($do_jlon);
@@ -113,15 +109,17 @@ EOF
   my @NPROMA = sort grep { $t->{$_}{nproma} } &F ('.//named-E/N', $do_jlon, 1);
 
   my ($do_jblk) = &F ('./do-construct/do-stmt[string(do-V)="JBLK"]', $par);
+  my @priv = &Pointer::Parallel::getPrivateVariables ($do_jlon, $t);
+  my %priv = map { ($_, 1) } @priv;
 
-  my @const = &Pointer::Parallel::getConstantObjects ($do_jlon, $t);
+  my @const = grep { ! $priv{$_} } &Pointer::Parallel::getConstantObjects ($do_jlon, $t);
+
 
   &OpenACC::parallelLoopGang ($do_jblk, 
                               PRIVATE => ['JBLK'], 
                               PRESENT => [@NPROMA, @const, 'YSTACK'], 
                               VECTOR_LENGTH => ['YDCPG_OPTS%KLON']);
 
-  my @priv = &Pointer::Parallel::getPrivateVariables ($do_jlon, $t);
 
   &OpenACC::loopVector ($do_jlon, PRIVATE => \@priv);
 

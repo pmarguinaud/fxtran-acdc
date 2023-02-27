@@ -11,6 +11,23 @@ sub getDefaultWhere
   'host';
 }
 
+sub setOpenMPDirective
+{
+  my ($par, $t) = @_;
+
+  my @priv = &Pointer::Parallel::getPrivateVariables ($par, $t);
+
+  my ($do) = &F ('.//do-construct[./do-stmt[string(do-V)="JBLK"]]', $par);
+
+  my $indent = &Fxtran::getIndent ($do);
+
+  my $C = &n ('<C>!$OMP PARALLEL DO PRIVATE (' . join (', ', @priv)  . ')</C>');
+  
+  $do->parentNode->insertBefore ($C, $do);
+  $do->parentNode->insertBefore (&t ("\n" . (' ' x $indent)), $do);
+
+}
+
 sub makeParallel
 {
   shift;
@@ -33,7 +50,7 @@ sub makeParallel
     }
 
   my ($do_jlon) = &Fxtran::parse (fragment => << 'EOF');
-DO JLON = 1, MIN (YDCPG_BNDS%KLON, YDCPG_BNDS%KGPCOMP - (JBLK - 1) * YDCPG_BNDS%KLON)
+DO JLON = 1, MIN (YDCPG_OPTS%KLON, YDCPG_OPTS%KGPCOMP - (JBLK - 1) * YDCPG_OPTS%KLON)
 ENDDO
 EOF
 
@@ -44,11 +61,7 @@ EOF
   while (my $x = shift (@x))
     {
 
-      if (($x->nodeName eq 'a-stmt') && ($x->textContent =~ m/^YLCPG_BNDS\s*=\s*YDCPG_BNDS$/o))
-        {
-          # Skip
-        }
-      elsif (($x->nodeName eq 'call-stmt') && ($x->textContent =~ m/^CALL YLCPG_BNDS%UPDATE/o))
+      if (($x->nodeName eq 'call-stmt') && ($x->textContent =~ m/^CALL YLCPG_BNDS%UPDATE/o))
         {
           $do->appendChild ($do_jlon);
           $indent = &Fxtran::getIndent ($do_jlon);
@@ -109,7 +122,7 @@ EOF
     }
 
 
-  &Pointer::Parallel::setOpenMPDirective ($par, $t);
+  &setOpenMPDirective ($par, $t);
 
 
   return $par;

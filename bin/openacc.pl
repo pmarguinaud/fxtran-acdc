@@ -25,6 +25,9 @@ use Call;
 use Canonic;
 use DrHook;
 use Identifier;
+use Cycle48;
+use Decl;
+use Dimension;
 
 sub updateFile
 {
@@ -57,7 +60,7 @@ sub useABOR1_ACC
 my $SUFFIX = '_OPENACC';
 
 my %opts = ();
-my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version);
+my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout);
 my @opts_s = qw (dir nocompute);
 
 &GetOptions
@@ -108,21 +111,18 @@ if ($opts{jljk2jlonjlev})
 
 &Associate::resolveAssociates ($d);
 
-&Construct::changeIfStatementsInIfConstructs ($d);
-&Construct::apply 
-($d, 
-  '//named-E[string(N)="LMUSCLFA"]',                          &e ('.FALSE.'),
-  '//named-E[string(.)="YDLDDH%LFLEXDIA"]',                   &e ('.FALSE.'),
-  '//named-E[string(.)="YDMODEL%YRML_DIAG%YRLDDH%LFLEXDIA"]', &e ('.FALSE.'),
-  '//named-E[string(.)="YSPP_CONFIG%LSPP"]',                  &e ('.FALSE.'),
-  '//named-E[string(.)="LMCAPEA"]',                           &e ('.FALSE.'),
-);
+&Dimension::attachArraySpecToEntity ($d);
+&Decl::forceSingleDecl ($d);
+
+&Cycle48::simplify ($d);
 
 &DIR::removeDIR ($d);
 
 &Loop::removeJlonLoops ($d);
 
-&ReDim::reDim ($d);
+my @KLON = ('KLON', 'YDGEOMETRY%YRDIM%NPROMA', 'YDCPG_OPTS%KLON');
+
+&ReDim::reDim ($d, KLON => \@KLON);
 
 &Subroutine::addSuffix ($d, $SUFFIX);
 
@@ -130,7 +130,9 @@ if ($opts{jljk2jlonjlev})
 
 &OpenACC::routineSeq ($d);
 
-&Stack::addStack ($d, skip => sub { my $proc = shift; grep ({ $_ eq $proc } @{ $opts{nocompute} }) });
+&Stack::addStack ($d, 
+  skip => sub { my $proc = shift; grep ({ $_ eq $proc } @{ $opts{nocompute} }) },
+  KLON => \@KLON);
 
 &DrHook::remove ($d) unless ($opts{drhook});
 
@@ -144,7 +146,13 @@ if ($opts{version})
     $file->appendChild (&t ("\n"));
   }
 
-&updateFile ($F90out, &Canonic::indent ($d));
-
-&Fxtran::intfb ($F90out, $opts{dir});
+if ($opts{stdout})
+  {
+    print &Canonic::indent ($d);
+  }
+else
+  {
+    &updateFile ($F90out, &Canonic::indent ($d));
+    &Fxtran::intfb ($F90out, $opts{dir});
+  }
 

@@ -32,7 +32,7 @@ sub changeIfStatementsInIfConstructs
       $stmt = $stmt->textContent;
       my $if = $if_stmt->textContent;
 
-      my ($if_construct) = &Fxtran::parse (fragment => << "EOF");
+      my ($if_construct) = &Fxtran::parse (fragment => << "EOF", fopts => [qw (-line-length 800 -construct-tag)]);
 $if THEN
   $stmt
 ENDIF

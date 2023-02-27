@@ -114,7 +114,6 @@ sub makeParallel
 
   my ($loop) = &Fxtran::parse (fragment => << "EOF");
 DO JBLK = 1, YDCPG_OPTS%KGPBLKS
-${str}  YLCPG_BNDS = YDCPG_BNDS
 ${str}  CALL YLCPG_BNDS%UPDATE (JBLK)
 ${str}ENDDO
 EOF
@@ -134,8 +133,6 @@ EOF
 
   my @expr = &F ('.//named-E/N/n[string(.)="YDCPG_BNDS"]/text()', $par);
 
-  shift (@expr);
-
   for my $expr (@expr)
     {
       $expr->setData ('YLCPG_BNDS');
@@ -147,6 +144,7 @@ EOF
 
   for my $expr (&F ('.//named-E', $par))
     {
+
       my ($N) = &F ('./N', $expr, 1);
       my $s = $t->{$N};
       next if ($s->{skip});
@@ -327,6 +325,23 @@ sub callParallelRoutine
   my $text = $call->textContent;
 
   my @arg = &F ('./arg-spec/arg/named-E/N/n/text()', $call);
+  
+  my $ydcpg_opts = 0;
+  for my $arg (@arg)
+    {
+      if ($arg->textContent eq 'YDCPG_OPTS')
+        {
+          my $expr = &Fxtran::expr ($arg);
+          $ydcpg_opts++ if ($expr->textContent eq 'YDCPG_OPTS');
+        }
+    }
+
+  unless ($ydcpg_opts)
+    {
+      my ($arg_spec) = &F ('./arg-spec', $call);
+      $arg_spec->appendChild (&t (','));
+      $arg_spec->appendChild (&n ('<arg><arg-N><k>YDCPG_OPTS</k></arg-N>=<named-E><N><n>YDCPG_OPTS</n></N></named-E></arg>'));
+    }
 
   my $found = 0;
   for my $arg (@arg)
@@ -470,23 +485,6 @@ sub getConstantObjects
     }
 
   return sort keys (%const);
-}
-
-sub setOpenMPDirective
-{
-  my ($par, $t) = @_;
-
-  my @priv = &getPrivateVariables ($par, $t);
-
-  my ($do) = &F ('.//do-construct[./do-stmt[string(do-V)="JBLK"]]', $par);
-
-  my $indent = &Fxtran::getIndent ($do);
-
-  my $C = &n ('<C>!$OMP PARALLEL DO PRIVATE (' . join (', ', @priv)  . ')</C>');
-  
-  $do->parentNode->insertBefore ($C, $do);
-  $do->parentNode->insertBefore (&t ("\n" . (' ' x $indent)), $do);
-
 }
 
 1;

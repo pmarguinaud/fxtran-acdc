@@ -9,6 +9,8 @@ sub addStack
 {
   my ($d, %args) = @_;
 
+  my @KLON = @{ $args{KLON} || [qw (KLON YDCPG_OPTS%KLON)] };
+
   my $skip = $args{skip};
   my $local = exists $args{local} ? $args{local} : 1;
 
@@ -84,7 +86,6 @@ sub addStack
       $C->parentNode->insertBefore (&t ("\n"), $C);
     }
 
-  my @KLON = qw (KLON YDCPG_OPTS%KLON);
 
   my %args = map { ($_, 1) } @args;
 
