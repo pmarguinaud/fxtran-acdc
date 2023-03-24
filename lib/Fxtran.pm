@@ -1300,6 +1300,7 @@ sub intfb_body
       
       for my $stmt (@stmt)
         {
+          next if ($stmt->nodeName eq 'implicit-none-stmt');
           $stmt->unbindNode () unless ($stmt{$stmt});
         }
   

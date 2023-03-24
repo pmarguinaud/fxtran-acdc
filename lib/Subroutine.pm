@@ -61,5 +61,4 @@ sub getInterface
   return $intf;
 }
 
-
 1;

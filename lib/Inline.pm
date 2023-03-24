@@ -263,6 +263,8 @@ sub inlineSingleCall
 
           goto SKIP unless ($as_aa);
 
+          die $da unless ($as_da);
+
           my @ss_aa = &F ('./shape-spec-LT/shape-spec', $as_aa, 1);
           my @ss_da = &F ('./shape-spec-LT/shape-spec', $as_da, 1);
 
@@ -296,17 +298,19 @@ sub inlineSingleCall
                 }
             }
  
-          my $mess = "Dimensions mismatch while inlining $n2: " . $en_decl_da->textContent . " vs " . $en_decl_aa->textContent;
-
-          die $mess unless (scalar (@ss_aa) == scalar (@ss_da));
- 
-          for my $i (0 .. $#ss_da)
+          unless ($opts{skipDimensionCheck})
             {
-              $ss_aa[$i] =~ s/^1://o;
-              $ss_da[$i] =~ s/^1://o;
-              die $mess if ($ss_aa[$i] ne $ss_da[$i]);
-            }
+               my $mess = "Dimensions mismatch while inlining $n2: " . $en_decl_da->textContent . " vs " . $en_decl_aa->textContent;
 
+               die $mess unless (scalar (@ss_aa) == scalar (@ss_da));
+ 
+               for my $i (0 .. $#ss_da)
+                 {
+                   $ss_aa[$i] =~ s/^1://o;
+                   $ss_da[$i] =~ s/^1://o;
+                   die $mess if ($ss_aa[$i] ne $ss_da[$i]);
+                 }
+            }
 
 SKIP:
         }
@@ -537,7 +541,7 @@ sub inlineExternalSubroutine
             }
         }
 
-      &inlineSingleCall ($d1, $DD2, $SS2, $n2, $call, %opts, inlineDeclarations => 1);
+      &inlineSingleCall ($d1, $DD2, $SS2, $n2, $call, %opts, inlineDeclarations => 1, skipDimensionCheck => $opts{skipDimensionCheck});
     }
 
   my %N;

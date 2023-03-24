@@ -151,7 +151,7 @@ sub indent
             }
         }
       $text = join ("&\n&", @text);
-      my $name = $stmt->nodeName;
+      $name = $stmt->nodeName;
       my $t = &t ($text);
       my $s = &n ("<$name/>");
       $s->appendChild ($t);
