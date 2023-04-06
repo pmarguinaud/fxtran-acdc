@@ -574,7 +574,7 @@ sub process_module
 
   my ($file, $code) = &processTypes1 ($doc, $opts);
 
-  for (values ($code))
+  for ($code)
     {
       s/\bYD%//goms;
       s/_TYPE_MODULE/_$mod/goms;
