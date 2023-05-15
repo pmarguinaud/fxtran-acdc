@@ -16,7 +16,7 @@ use Common;
 use Fxtran;
 
 my %opts = (dir => '.', 'types-fieldapi-dir' => 'types-fieldapi', 'types-constant-dir' => 'types-constant');
-my @opts_f = qw (size save load copy wipe field-api help);
+my @opts_f = qw (size save load copy host wipe field-api help);
 my @opts_s = qw (skip-components skip-types only-components only-types 
                  dir out no-allocate module-map field-api-class tmp 
                  types-fieldapi-dir types-constant-dir);
