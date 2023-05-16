@@ -154,17 +154,17 @@ sub process_decl
 #     my $LDPRINT = @J ? ".FALSE." : "LDPRINT";
       my $LDPRINT = '.FALSE.';
       push @BODY_SAVE, ('  ' x scalar (@ss)) 
-                   . "CALL SAVE (KLUN, $prefix$name" . $J . ")\n";
+                   . "CALL SAVE_$tname (KLUN, $prefix$name" . $J . ")\n";
       push @BODY_LOAD, ('  ' x scalar (@ss)) 
-                   . "CALL LOAD (KLUN, $prefix$name" . $J . ")\n";
+                   . "CALL LOAD_$tname (KLUN, $prefix$name" . $J . ")\n";
       push @BODY_HOST, ('  ' x scalar (@ss)) 
-                   . "CALL HOST ($prefix$name" . $J . ")\n";
+                   . "CALL HOST_$tname ($prefix$name" . $J . ")\n";
       push @BODY_COPY, ('  ' x scalar (@ss)) 
-                   . "CALL COPY ($prefix$name" . $J . ", LDCREATED=.TRUE.)\n";
+                   . "CALL COPY_$tname ($prefix$name" . $J . ", LDCREATED=.TRUE.)\n";
       push @BODY_WIPE, ('  ' x scalar (@ss)) 
-                   . "CALL WIPE ($prefix$name" . $J . ", LDDELETED=.TRUE.)\n";
+                   . "CALL WIPE_$tname ($prefix$name" . $J . ", LDDELETED=.TRUE.)\n";
       push @BODY_SIZE, ('  ' x scalar (@ss))
-                   . "ISIZE = SIZE ($prefix$name" . $J . ", CDPATH//'%$name', $LDPRINT)\n", 
+                   . "ISIZE = SIZE_$tname ($prefix$name" . $J . ", CDPATH//'%$name', $LDPRINT)\n", 
                      "JSIZE = JSIZE + ISIZE\n",
                      "KSIZE = KSIZE + ISIZE\n";
       for (my $i = $#ss; $i >= 0; $i--)
@@ -436,10 +436,9 @@ $type ($name), INTENT (OUT), TARGET :: YD
 EOF
 
       $CONTAINS_HOST .= << "EOF";
-SUBROUTINE HOST_$name (KLUN, YD)
+SUBROUTINE HOST_$name (YD)
 $USE_HOST
 IMPLICIT NONE
-INTEGER, INTENT (IN) :: KLUN
 $type ($name), INTENT (OUT), TARGET :: YD
 EOF
 

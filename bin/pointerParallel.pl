@@ -176,6 +176,7 @@ for my $ipar (0 .. $#par)
 
 my @call = &F ('.//call-stmt[not(ancestor::parallel-section)]' # Skip calls in parallel sections
             . '[not(string(procedure-designator)="DR_HOOK")]'  # Skip DR_HOOK calls
+            . '[not(string(procedure-designator)="ABOR1")]'    # Skip ABOR1 calls
             . '[not(procedure-designator/named-E/R-LT)]'       # Skip objects calling methods
             . '[not(ancestor::serial-section)]', $d);          # Skip calls in serial sections
 
