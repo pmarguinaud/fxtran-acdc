@@ -26,6 +26,7 @@ use Canonic;
 use DrHook;
 use Identifier;
 use Cycle48;
+use Cycle49;
 use Decl;
 use Dimension;
 
@@ -59,9 +60,9 @@ sub useABOR1_ACC
 
 my $SUFFIX = '_OPENACC';
 
-my %opts = ();
+my %opts = (cycle => 48);
 my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout);
-my @opts_s = qw (dir nocompute);
+my @opts_s = qw (dir nocompute cycle);
 
 &GetOptions
 (
@@ -114,7 +115,14 @@ if ($opts{jljk2jlonjlev})
 &Dimension::attachArraySpecToEntity ($d);
 &Decl::forceSingleDecl ($d);
 
-&Cycle48::simplify ($d);
+if ($opts{cycle} eq '48')
+  {
+    &Cycle48::simplify ($d);
+  }
+elsif ($opts{cycle} eq '49')
+  {
+    &Cycle49::simplify ($d);
+  }
 
 &DIR::removeDIR ($d);
 

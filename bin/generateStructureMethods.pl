@@ -128,7 +128,7 @@ my $F90 = shift;
 
 my $doc = &Fxtran::parse (location => $F90, fopts => [qw (-construct-tag -no-include -line-length 800)], dir => $opts{tmp});
 
-if ($opts{load} || $opts{save} || $opts{size} || $opts{copy})
+if ($opts{load} || $opts{save} || $opts{size} || $opts{copy} || $opts{host})
   {
     &Fxtran::IO::processTypes ($doc, \%opts);
   }

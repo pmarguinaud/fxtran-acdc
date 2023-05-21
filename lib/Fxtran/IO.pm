@@ -439,7 +439,7 @@ EOF
 SUBROUTINE HOST_$name (YD)
 $USE_HOST
 IMPLICIT NONE
-$type ($name), INTENT (OUT), TARGET :: YD
+$type ($name), TARGET :: YD
 EOF
 
       $CONTAINS_COPY .= << "EOF";
