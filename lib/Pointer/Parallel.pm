@@ -104,6 +104,8 @@ sub makeParallel
 {
   my ($par, $t, $find, $types, $NAME, $POST) = @_;
 
+  my %POST = map { ($_, 1) } grep { $_ } split (m/,/o, $POST || '');
+
   # Add a loop nest on blocks
 
   my ($stmt) = &F ('.//ANY-stmt', $par);
@@ -214,21 +216,38 @@ EOF
   $par->insertBefore (&t ("\n" . (' ' x $indent)), $loop);
   $par->insertBefore (my $prep = &n ('<prep/>'), $loop);
 
-  $par->insertAfter (my $post = &n ('<post/>'), $loop);
+  $par->insertAfter (my $nullify = &n ('<nullify/>'), $loop);
+  $par->insertAfter (&t ("\n" . (' ' x $indent)), $loop);
+
+  my $synchost;
+
+  if ($POST{synchost}) 
+    {
+      my ($if_construct) = &fxtran::parse (fragment => << "EOF");
+IF (LSYNCHOST ('$NAME')) THEN
+ENDIF
+EOF
+      $par->insertAfter ($if_construct, $loop);
+      my $if_block = $if_construct->firstChild;
+      my $if_then = $if_block->firstChild;
+      $if_block->insertAfter ($synchost = &n ('<synchost/>'), $if_then);
+      $if_block->insertAfter (&t ("\n"), $if_then);
+    }
+
   $par->insertAfter (&t ("\n" . (' ' x $indent)), $loop);
 
   $prep->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:GET_DATA',0,ZHOOK_HANDLE_FIELD_API)"));
   $prep->appendChild (&t ("\n" . (' ' x $indent)));
 
-  if ($POST eq 'nullify')
+  if ($POST{synchost})
     {
-      $post->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:NULLIFY',0,ZHOOK_HANDLE_FIELD_API)"));
-      $post->appendChild (&t ("\n" . (' ' x $indent)));
+      $synchost->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:SYNCHOST',0,ZHOOK_HANDLE_FIELD_API)"));
+      $synchost->appendChild (&t ("\n" . (' ' x $indent)));
     }
-  elsif ($POST eq 'synchost')
+  if ($POST{nullify})
     {
-      $post->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:SYNCHOST',0,ZHOOK_HANDLE_FIELD_API)"));
-      $post->appendChild (&t ("\n" . (' ' x $indent)));
+      $nullify->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:NULLIFY',0,ZHOOK_HANDLE_FIELD_API)"));
+      $nullify->appendChild (&t ("\n" . (' ' x $indent)));
     }
     
 
@@ -241,33 +260,34 @@ EOF
       $prep->appendChild ($stmt);
       $prep->appendChild (&t ("\n" . (' ' x $indent)));
 
-      if ($POST eq 'nullify')
+      if ($POST{nullify})
         {
-          $post->appendChild (&s ("$ptr => NULL ()"));
-          $post->appendChild (&t ("\n" . (' ' x $indent)));
+          $nullify->appendChild (&s ("$ptr => NULL ()"));
+          $nullify->appendChild (&t ("\n" . (' ' x $indent)));
         }
-      elsif ($POST eq 'synchost')
+      if ($POST{synchost})
         {
-          $post->appendChild (&s ("$ptr => GET_HOST_DATA_RDWR ($var)"));
-          $post->appendChild (&t ("\n" . (' ' x $indent)));
+          $synchost->appendChild (&s ("$ptr => GET_HOST_DATA_RDWR ($var)"));
+          $synchost->appendChild (&t ("\n" . (' ' x $indent)));
         }
     }
   $prep->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:GET_DATA',1,ZHOOK_HANDLE_FIELD_API)"));
   $prep->appendChild (&t ("\n" . (' ' x $indent)));
 
-  if ($POST eq 'nullify')
+  if ($POST{nullify})
     {
-      $post->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:NULLIFY',1,ZHOOK_HANDLE_FIELD_API)"));
-      $post->appendChild (&t ("\n" . (' ' x $indent)));
+      $nullify->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:NULLIFY',1,ZHOOK_HANDLE_FIELD_API)"));
+      $nullify->appendChild (&t ("\n" . (' ' x $indent)));
+      $nullify->appendChild (&t ("\n" . (' ' x $indent)));
     }
-  elsif ($POST eq 'synchost')
+  if ($POST{synchost})
     {
-      $post->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:SYNCHOST',1,ZHOOK_HANDLE_FIELD_API)"));
-      $post->appendChild (&t ("\n" . (' ' x $indent)));
+      $synchost->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:SYNCHOST',1,ZHOOK_HANDLE_FIELD_API)"));
+      $synchost->appendChild (&t ("\n" . (' ' x $indent)));
+      $synchost->appendChild (&t ("\n" . (' ' x $indent)));
     }
 
   $prep->appendChild (&t ("\n" . (' ' x $indent)));
-  $post->appendChild (&t ("\n" . (' ' x $indent)));
 
 
 }
