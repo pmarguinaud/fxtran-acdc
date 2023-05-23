@@ -12,6 +12,7 @@ sub removeUnusedIncludes
     {   
       my ($filename) = &F ('./filename', $include, 2); 
       (my $name = $filename) =~ s/\.intfb.h$//o;
+      next if ($name =~ m/\.func\.h$/o);
       $name = uc ($name);
       next if (&F ('.//call-stmt[string(procedure-designator)="?"]', $name, $doc));
       my $next = $include->nextSibling;

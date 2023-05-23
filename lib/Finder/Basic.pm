@@ -1,6 +1,7 @@
 package Finder::Basic;
 
 use strict;
+use Data::Dumper;
 
 sub new
 {
@@ -16,7 +17,17 @@ sub getInterface
 
   my $name = lc ($args{name});
 
-  return $self->resolve (file => "$name.intfb.h") || $self->resolve (file => "$name.h");
+  # ARPEGE/IFS
+
+  my $intf = $self->resolve (file => "$name.intfb.h") || $self->resolve (file => "$name.h");
+
+  $intf && return $intf;
+
+  # MesoNH
+
+  my $modi = $self->resolve (file => "modi_$name.F90");
+
+  return $modi;
 }
 
 1;
