@@ -165,6 +165,22 @@ for (&F ('.//skip-section', $d))
 
 my @par = &F ('.//parallel-section', $d);
 
+
+my $MESONH;
+
+for my $par (@par)
+  {
+    next unless (my $style = $par->getAttribute ('style'));
+    $MESONH ||= $style eq 'MESONH';
+  }
+
+if ($MESONH && (my ($D) = &F ('.//EN-decl[string(.)="D"]', $d)))
+  {
+    my $lst = $D->parentNode;
+    $lst->appendChild (&t (', '));
+    $lst->appendChild (&n ("<EN-decl><EN-N><N><n>DD</n></N></EN-N></EN-decl>"));
+  }
+
 for my $ipar (0 .. $#par)
   {
     my $par = $par[$ipar];
@@ -325,6 +341,21 @@ for my $include (@include)
       }
     
   }
+
+my @modi = &F ('.//use-stmt[starts-with(string(module-N),"MODI_")]', $d);
+
+for my $modi (@modi)
+{
+  my ($proc) = &F ('./module-N', $modi, 1);
+  $proc =~ s/^MODI_//o;
+  if (grep { $proc eq $_ } @called)
+    {
+      $proc .= '_OPENACC';
+      my ($use) = &s ("USE MODI_$proc");
+      $modi->parentNode->insertAfter ($use, $modi);
+      $modi->parentNode->insertAfter (&t ("\n"), $modi);
+    }
+}
 
 if (@par)
   {

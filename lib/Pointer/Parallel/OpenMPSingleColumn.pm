@@ -5,6 +5,7 @@ use Pointer::Parallel;
 use Fxtran;
 use DIR;
 use Loop;
+use Data::Dumper;
 
 sub getDefaultWhere
 {
@@ -15,13 +16,23 @@ sub setOpenMPDirective
 {
   my ($par, $t) = @_;
 
+  my $style = $par->getAttribute ('style') || 'ARPIFS';
+
   my @priv = &Pointer::Parallel::getPrivateVariables ($par, $t);
 
   my ($do) = &F ('.//do-construct[./do-stmt[string(do-V)="JBLK"]]', $par);
 
   my $indent = &Fxtran::getIndent ($do);
 
-  my $C = &n ('<C>!$OMP PARALLEL DO PRIVATE (' . join (', ', @priv)  . ')</C>');
+  my $firstprivate = '';
+
+  if ($style eq 'MESONH')
+    {
+      $firstprivate = " FIRSTPRIVATE (D)";
+      @priv = grep { $_ ne 'D' } @priv;
+    }
+
+  my $C = &n ('<C>!$OMP PARALLEL DO PRIVATE (' . join (', ', @priv)  . ')' . $firstprivate . '</C>');
   
   $do->parentNode->insertBefore ($C, $do);
   $do->parentNode->insertBefore (&t ("\n" . (' ' x $indent)), $do);
@@ -32,6 +43,8 @@ sub makeParallel
 {
   shift;
   my ($par, $t) = @_;
+
+  my $style = $par->getAttribute ('style') || 'ARPIFS';
 
   &DIR::removeDIR ($par);
 
@@ -74,11 +87,18 @@ EOF
           $do_jlon->insertAfter (&s ("YLSTACK%L = stack_l (YSTACK, JBLK, YDCPG_OPTS%KGPBLKS)"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
 
+          if ($style eq 'MESONH')
+            {
+              $do_jlon->insertAfter (&s ("D%NIE = JLON"), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&s ("D%NIB = JLON"), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+            }
+
           $do_jlon->insertAfter (&s ("YLCPG_BNDS%KFDIA = JLON"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
           $do_jlon->insertAfter (&s ("YLCPG_BNDS%KIDIA = JLON"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
-
 
           $in_do_jlon = 1;
           $do->appendChild (shift (@x));

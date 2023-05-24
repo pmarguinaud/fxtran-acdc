@@ -77,6 +77,12 @@ sub removeJlonLoops
   my $d = shift;
   my %opts = @_;
 
+  my @KLON = qw (YDCPG_OPTS%KLON KLON);
+  my $KIDIA = 'KIDIA';
+
+  @KLON = @{ $opts{KLON} } if ($opts{KLON} );
+  $KIDIA = $opts{KIDIA} if ($opts{KIDIA});
+
   my $noexec = &Scope::getNoExec ($d);
 
   &fixSUMIdiom ($d);
@@ -92,7 +98,7 @@ sub removeJlonLoops
 
   my ($YDCPG_BNDS) = &F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="YDCPG_BNDS"]', $d);
 
-  $noexec->parentNode->insertAfter ($YDCPG_BNDS ? &s ("JLON = YDCPG_BNDS%KIDIA") : &s ("JLON = KIDIA"), $noexec);
+  $noexec->parentNode->insertAfter ($YDCPG_BNDS ? &s ("JLON = YDCPG_BNDS%KIDIA") : &s ("JLON = $KIDIA"), $noexec);
   $noexec->parentNode->insertAfter (&t ("\n"), $noexec);
   $noexec->parentNode->insertAfter (&t ("\n"), $noexec);
   
@@ -100,8 +106,12 @@ sub removeJlonLoops
   
   # NPROMA variables
 
-  my @en_decl = (&F ('.//EN-decl[./array-spec/shape-spec-LT/shape-spec[string(upper-bound)="YDCPG_OPTS%KLON"]]', $d),
-                 &F ('.//EN-decl[./array-spec/shape-spec-LT/shape-spec[string(upper-bound)="KLON"]]', $d));
+  my @en_decl;
+
+  for my $KLON (@KLON)
+    {
+      push @en_decl, &F ('.//EN-decl[./array-spec/shape-spec-LT/shape-spec[string(upper-bound)="?"]]', $KLON, $d);
+    }
 
   my %NPROMA;
 

@@ -18,6 +18,8 @@ sub makeParallel
   shift;
   my ($par, $t) = @_;
 
+  my $style = $par->getAttribute ('style') || 'ARPIFS';
+
   &DIR::removeDIR ($par);
 
   my ($do) = &F ('./do-construct', $par);
@@ -26,6 +28,14 @@ sub makeParallel
 
   &Loop::removeJlonConstructs ($par);
 
+  if ($style eq 'MESONH')
+    {
+      my @D = &F ('.//named-E[string(N)="D"]/N/n/text()', $par);
+      for my $D (@D)
+        {
+          $D->setData ('DD');
+        }
+    }
 
   my @x = &F ('./node()', $do);
 
@@ -58,6 +68,16 @@ EOF
           $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
           $do_jlon->insertAfter (&s ("YLSTACK%L = stack_l (YSTACK, JBLK, YDCPG_OPTS%KGPBLKS)"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+
+          if ($style eq 'MESONH')
+            {
+              $do_jlon->insertAfter (&s ("DD%NIE = JLON"), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&s ("DD%NIB = JLON"), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&s ("DD = D"), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+            }
 
           $do_jlon->insertAfter (&s ("YLCPG_BNDS%KFDIA = JLON"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
@@ -139,7 +159,9 @@ EOF
   my @NPROMA = sort grep { $t->{$_}{nproma} } &F ('.//named-E/N', $do_jlon, 1);
 
   my ($do_jblk) = &F ('./do-construct/do-stmt[string(do-V)="JBLK"]', $par);
+
   my @priv = &Pointer::Parallel::getPrivateVariables ($do_jlon, $t);
+
   my %priv = map { ($_, 1) } @priv;
 
   my @const = grep { ! $priv{$_} } &Pointer::Parallel::getConstantObjects ($do_jlon, $t);
@@ -147,9 +169,9 @@ EOF
 
   &OpenACC::parallelLoopGang ($do_jblk, 
                               PRIVATE => ['JBLK'], 
+                              ($style eq 'MESONH' ? (COPYIN => ['D']) : ()),
                               PRESENT => [@NPROMA, @const, 'YSTACK'], 
                               VECTOR_LENGTH => ['YDCPG_OPTS%KLON']);
-
 
   &OpenACC::loopVector ($do_jlon, PRIVATE => \@priv);
 

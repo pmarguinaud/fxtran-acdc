@@ -13,7 +13,15 @@ sub setOpenMPDirective
 {
   my ($par, $t) = @_;
 
+  my $style = $par->getAttribute ('style') || 'ARPIFS';
+
   my @firstprivate = ('YLCPG_BNDS');
+
+  if ($style eq 'MESONH')
+    {
+      push @firstprivate, 'D';
+    }
+
   my %firstprivate = map { ($_, 1) } @firstprivate;
 
   my @priv = &Pointer::Parallel::getPrivateVariables ($par, $t);
@@ -35,8 +43,20 @@ sub makeParallel
   shift;
   my ($par, $t) = @_;
 
+  my $style = $par->getAttribute ('style') || 'ARPIFS';
+
   my $init = &s ('CALL YLCPG_BNDS%INIT (YDCPG_OPTS)');
   my ($do) = &F ('./do-construct', $par);
+
+  if ($style eq 'MESONH')
+    {
+      my ($update) = &F ('.//call-stmt[string(procedure-designator)="YLCPG_BNDS%UPDATE"]', $do);
+      my $p = $update->parentNode;
+      $p->insertAfter (&s ("D%NIE = YLCPG_BNDS%KFDIA"), $update);
+      $p->insertAfter (&t ("\n"), $update);
+      $p->insertAfter (&s ("D%NIB = YLCPG_BNDS%KIDIA"), $update);
+      $p->insertAfter (&t ("\n"), $update);
+    }
 
   $par->insertBefore ($init, $do);
   $par->insertBefore (&t ("\n"), $do);

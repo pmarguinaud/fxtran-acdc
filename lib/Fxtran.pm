@@ -1351,6 +1351,35 @@ sub intfb_body
 
 sub intfb
 {
+  my ($F90, $dir, $ext) = @_;
+  
+  $dir ||= '.';
+  $ext ||= '.intfb.h';
+
+  my $doc = &Fxtran::parse (location => $F90, fopts => ['-construct-tag', '-no-include', '-line-length' => 500]);
+  
+  &intfb_body ($doc);
+
+  # Strip empty lines
+  
+  my $text = $doc->textContent ();
+  
+  $text =~ s/^\s*\n$//goms;
+  
+  my $sub = &basename ($F90, qw (.F90));
+  
+  
+  &Fxtran::save_to_file ("$dir/$sub$ext", << "EOF");
+INTERFACE
+$text
+END INTERFACE
+EOF
+
+  return "$dir/$sub$ext";
+}
+
+sub modi
+{
   my ($F90, $dir) = @_;
   
   $dir ||= '.';
@@ -1366,15 +1395,17 @@ sub intfb
   $text =~ s/^\s*\n$//goms;
   
   my $sub = &basename ($F90, qw (.F90));
+  my $SUB = uc ($sub);
   
-  
-  &Fxtran::save_to_file ("$dir/$sub.intfb.h", << "EOF");
+  &Fxtran::save_to_file ("$dir/modi_$sub.F90", << "EOF");
+MODULE MODI_$SUB
 INTERFACE
 $text
 END INTERFACE
+END MODULE
 EOF
 
-  return "$dir/$sub.intfb.h";
+  return "$dir/modi_$sub.F90";
 }
 
 1;

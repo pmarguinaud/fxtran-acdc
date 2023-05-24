@@ -29,6 +29,7 @@ use Cycle48;
 use Cycle49;
 use Decl;
 use Dimension;
+use Include;
 
 sub updateFile
 {
@@ -60,9 +61,9 @@ sub useABOR1_ACC
 
 my $SUFFIX = '_OPENACC';
 
-my %opts = (cycle => 48);
-my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout);
-my @opts_s = qw (dir nocompute cycle);
+my %opts = (cycle => 48, 'include-ext' => '.intfb.h');
+my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh remove-unused-includes modi);
+my @opts_s = qw (dir nocompute cycle include-ext);
 
 &GetOptions
 (
@@ -78,6 +79,13 @@ if ($opts{help})
       join ('', map { "  --$_=...\n" } @opts_f) .
      "\n";
     exit (0);
+  }
+
+if ($opts{mesonh})
+  {
+    $opts{jijk2jlonjlev} = 1;
+    $opts{'include-ext'} = '.h';
+    $opts{'remove-unused-includes'} = 1;
   }
 
 
@@ -110,6 +118,11 @@ if ($opts{jljk2jlonjlev})
     &Identifier::rename ($d, JL => 'JLON', JK => 'JLEV');
   }
 
+if ($opts{jijk2jlonjlev})
+  {
+    &Identifier::rename ($d, JI => 'JLON', JK => 'JLEV');
+  }
+
 &Associate::resolveAssociates ($d);
 
 &Dimension::attachArraySpecToEntity ($d);
@@ -126,9 +139,14 @@ elsif ($opts{cycle} eq '49')
 
 &DIR::removeDIR ($d);
 
-&Loop::removeJlonLoops ($d);
-
 my @KLON = ('KLON', 'YDGEOMETRY%YRDIM%NPROMA', 'YDCPG_OPTS%KLON');
+push @KLON, 'D%NIT' if ($opts{mesonh});
+
+my $KIDIA = 'KIDIA';
+
+$KIDIA = 'D%NIB' if ($opts{mesonh});
+
+&Loop::removeJlonLoops ($d, KLON => \@KLON, KIDIA => $KIDIA);
 
 &ReDim::reDim ($d, KLON => \@KLON);
 
@@ -143,6 +161,8 @@ my @KLON = ('KLON', 'YDGEOMETRY%YRDIM%NPROMA', 'YDCPG_OPTS%KLON');
   KLON => \@KLON);
 
 &DrHook::remove ($d) unless ($opts{drhook});
+
+&Include::removeUnusedIncludes ($d) if ($opts{'remove-unused-includes'});
 
 &useABOR1_ACC ($d);
 
@@ -161,6 +181,13 @@ if ($opts{stdout})
 else
   {
     &updateFile ($F90out, &Canonic::indent ($d));
-    &Fxtran::intfb ($F90out, $opts{dir});
+    if ($opts{modi})
+      {
+        &Fxtran::modi ($F90out, $opts{dir});
+      }
+     else
+      {
+        &Fxtran::intfb ($F90out, $opts{dir}, $opts{'include-ext'});
+      }
   }
 

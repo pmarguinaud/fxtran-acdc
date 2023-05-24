@@ -32,20 +32,24 @@ sub addSuffix
 
   for my $proc (keys (%proc))
     {   
-      next unless (my ($include) = &F ('.//include[string(filename)="?"]', lc ($proc) . '.intfb.h', $d));
 
-      if (&F ('.//call-stmt[string(procedure-designator)="?"]', $proc, $d))
+      for my $ext (qw (.intfb.h .h))
         {
-          my $include1 = $include->cloneNode (1);
-          my ($t) = &F ('./filename/text()', $include1); 
-          $t->setData (lc ($proc) . lc ($suffix) . '.intfb.h');
-          $include->parentNode->insertBefore ($include1, $include);
-          $include->parentNode->insertBefore (&t ("\n"), $include);
-        }
-      else
-        {
-          my ($t) = &F ('./filename/text()', $include); 
-          $t->setData (lc ($proc) . lc ($suffix) . '.intfb.h');
+          next unless (my ($include) = &F ('.//include[string(filename)="?"]', lc ($proc) . $ext, $d));
+
+          if (&F ('.//call-stmt[string(procedure-designator)="?"]', $proc, $d))
+            {
+              my $include1 = $include->cloneNode (1);
+              my ($t) = &F ('./filename/text()', $include1); 
+              $t->setData (lc ($proc) . lc ($suffix) . $ext);
+              $include->parentNode->insertBefore ($include1, $include);
+              $include->parentNode->insertBefore (&t ("\n"), $include);
+            }
+          else
+            {
+              my ($t) = &F ('./filename/text()', $include); 
+              $t->setData (lc ($proc) . lc ($suffix) . $ext);
+            }
         }
     }   
 
