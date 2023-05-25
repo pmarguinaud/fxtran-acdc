@@ -1,5 +1,12 @@
 package Pointer::Parallel::OpenMPSingleColumn;
 
+#
+# Copyright 2022 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
+
 use strict;
 use Pointer::Parallel;
 use Fxtran;

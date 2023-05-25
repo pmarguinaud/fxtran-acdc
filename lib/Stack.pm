@@ -1,5 +1,12 @@
 package Stack;
 
+#
+# Copyright 2022 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
+
 use Fxtran;
 use strict;
 use Data::Dumper;

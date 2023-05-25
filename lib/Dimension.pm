@@ -1,5 +1,12 @@
 package Dimension;
 
+#
+# Copyright 2022 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
+
 use strict;
 use Fxtran;
 

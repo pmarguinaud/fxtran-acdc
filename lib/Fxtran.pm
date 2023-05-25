@@ -1,5 +1,12 @@
 package Fxtran;
 
+#
+# Copyright 2022 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
+
 use XML::LibXML;
 use Data::Dumper;
 use List::Util qw (max);
