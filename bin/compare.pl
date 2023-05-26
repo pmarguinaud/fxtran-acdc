@@ -1,5 +1,12 @@
 #!/usr/bin/perl -w
 
+#
+# Copyright 2022 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
+
 use strict;
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
