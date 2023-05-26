@@ -51,18 +51,30 @@ sub makeParallel
   my ($par, $t) = @_;
 
   my $style = $par->getAttribute ('style') || 'ARPIFS';
+  my $FILTER = $par->getAttribute ('filter');
 
-  my $init = &s ('CALL YLCPG_BNDS%INIT (YDCPG_OPTS)');
+  my $init;
+  
+  if ($FILTER)
+    {
+      $init = &s ('CALL YLCPG_BNDS%INIT (YL_FGS%KLON, YL_FGS%KGPTOT)');
+    }
+  else
+    {
+      $init = &s ('CALL YLCPG_BNDS%INIT (YDCPG_OPTS)');
+    }
+
   my ($do) = &F ('./do-construct', $par);
+  my $indent = &Fxtran::getIndent ($do);
 
   if ($style eq 'MESONH')
     {
       my ($update) = &F ('.//call-stmt[string(procedure-designator)="YLCPG_BNDS%UPDATE"]', $do);
       my $p = $update->parentNode;
       $p->insertAfter (&s ("D%NIE = YLCPG_BNDS%KFDIA"), $update);
-      $p->insertAfter (&t ("\n"), $update);
+      $p->insertAfter (&t ("\n" . (' ' x $indent)), $update);
       $p->insertAfter (&s ("D%NIB = YLCPG_BNDS%KIDIA"), $update);
-      $p->insertAfter (&t ("\n"), $update);
+      $p->insertAfter (&t ("\n" . (' ' x $indent)), $update);
     }
 
   $par->insertBefore ($init, $do);

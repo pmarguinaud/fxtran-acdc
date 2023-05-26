@@ -52,6 +52,7 @@ sub makeParallel
   my ($par, $t) = @_;
 
   my $style = $par->getAttribute ('style') || 'ARPIFS';
+  my $FILTER = $par->getAttribute ('filter');
 
   &DIR::removeDIR ($par);
 
@@ -69,8 +70,21 @@ sub makeParallel
       $x->unbindNode ();
     }
 
-  my ($do_jlon) = &Fxtran::parse (fragment => << 'EOF');
-DO JLON = 1, MIN (YDCPG_OPTS%KLON, YDCPG_OPTS%KGPCOMP - (JBLK - 1) * YDCPG_OPTS%KLON)
+  my ($KLON, $KGPTOT);
+
+  if ($FILTER)
+    {
+      $KLON = 'YL_FGS%KLON';
+      $KGPTOT = 'YL_FGS%KGPTOT';
+    }
+  else
+    {
+      $KLON = 'YDCPG_OPTS%KLON';
+      $KGPTOT = 'YDCPG_OPTS%KGPCOMP';
+    }
+
+  my ($do_jlon) = &Fxtran::parse (fragment => << "EOF");
+DO JLON = 1, MIN ($KLON, $KGPTOT - (JBLK - 1) * $KLON)
 ENDDO
 EOF
 

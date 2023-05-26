@@ -113,6 +113,8 @@ sub makeParallel
 
   my %POST = map { ($_, 1) } grep { $_ } split (m/,/o, $POST || '');
 
+  my $FILTER = $par->getAttribute ('filter');
+
   # Add a loop nest on blocks
 
   my ($stmt) = &F ('.//ANY-stmt', $par);
@@ -121,8 +123,19 @@ sub makeParallel
 
   my $str = ' ' x $indent;
 
+  my $KGPBLKS;
+
+  if ($FILTER)
+    {
+      $KGPBLKS = 'YL_FGS%KGPBLKS';
+    }
+  else
+    {
+      $KGPBLKS = 'YDCPG_OPTS%KGPBLKS';
+    }
+
   my ($loop) = &Fxtran::parse (fragment => << "EOF");
-DO JBLK = 1, YDCPG_OPTS%KGPBLKS
+DO JBLK = 1, $KGPBLKS
 ${str}  CALL YLCPG_BNDS%UPDATE (JBLK)
 ${str}ENDDO
 EOF
@@ -243,6 +256,14 @@ EOF
 
   $par->insertAfter (&t ("\n" . (' ' x $indent)), $loop);
 
+  if ($FILTER)
+    {
+      $par->insertAfter (&s ("CALL YL_FGS%SCATTER ()"), $loop);
+      $par->insertAfter (&t ("\n" . (' ' x $indent)), $loop);
+      $prep->appendChild (&s ("CALL YL_FGS%INIT (YL_$FILTER, YDCPG_OPTS%KGPTOT)"));
+      $prep->appendChild (&t ("\n" . (' ' x $indent)));
+    }
+
   $prep->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:GET_DATA',0,ZHOOK_HANDLE_FIELD_API)"));
   $prep->appendChild (&t ("\n" . (' ' x $indent)));
 
@@ -263,7 +284,16 @@ EOF
       my $s = $t->{$ptr};
       my $access = $intent2access{$intent{$ptr}};
       my $var = $s->{field}->textContent;
-      my $stmt = &s ("$ptr => GET_HOST_DATA_$access ($var)");
+
+      my $stmt;
+      if ($FILTER)
+        {
+          $stmt = &s ("$ptr => GATHER_HOST_DATA_$access (YL_FGS, $var)");
+        }
+      else
+        {
+          $stmt = &s ("$ptr => GET_HOST_DATA_$access ($var)");
+        }
       $prep->appendChild ($stmt);
       $prep->appendChild (&t ("\n" . (' ' x $indent)));
 

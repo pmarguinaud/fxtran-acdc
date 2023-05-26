@@ -173,12 +173,18 @@ for (&F ('.//skip-section', $d))
 my @par = &F ('.//parallel-section', $d);
 
 
-my $MESONH;
+my ($MESONH, $FILTER);
 
 for my $par (@par)
   {
-    next unless (my $style = $par->getAttribute ('style'));
-    $MESONH ||= $style eq 'MESONH';
+    if (my $style = $par->getAttribute ('style'))
+      {
+        $MESONH ||= $style eq 'MESONH';
+      }
+    if (my $filter = $par->getAttribute ('filter'))
+      {
+        $FILTER ||= 1;
+      }
   }
 
 if ($MESONH && (my ($D) = &F ('.//EN-decl[string(.)="D"]', $d)))
@@ -186,6 +192,12 @@ if ($MESONH && (my ($D) = &F ('.//EN-decl[string(.)="D"]', $d)))
     my $lst = $D->parentNode;
     $lst->appendChild (&t (', '));
     $lst->appendChild (&n ("<EN-decl><EN-N><N><n>DD</n></N></EN-N></EN-decl>"));
+  }
+
+if ($FILTER)
+  {
+    &Decl::use ($d, "USE FIELD_GATHSCAT_MODULE");
+    &Decl::declare ($d, 'TYPE(FIELD_GATHSCAT) :: YL_FGS');
   }
 
 for my $ipar (0 .. $#par)
@@ -303,7 +315,11 @@ EOF
 
         if ($where ne 'HOST')
           {
-            my @get = &F ('./prep//named-E[string(N)="GET_HOST_DATA_RDONLY" or string(N)="GET_HOST_DATA_RDWR"]/N/n/text()', $par1);
+            my @get = &F ('./prep//named-E[string(N)="GET_HOST_DATA_RDONLY" '
+                                .     ' or string(N)="GET_HOST_DATA_RDWR" '
+                                .     ' or string(N)="GATHER_HOST_DATA_RDONLY" '
+                                .     ' or string(N)="GATHER_HOST_DATA_RDWR" '
+                                .     ' ]/N/n/text()', $par1);
             for my $get (@get)
               {
                 (my $t = $get->data) =~ s/_HOST_/_${where}_/go;
