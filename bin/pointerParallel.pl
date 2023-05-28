@@ -73,7 +73,7 @@ my %opts = ('types-fieldapi-dir' => 'types-fieldapi', skip => 'PGFL,PGFLT1,PGMVT
              nproma => 'YDCPG_OPTS%KLON', 'types-constant-dir' => 'types-constant',
              'post-parallel' => 'nullify');
 my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS);
-my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel);
+my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel dir);
 
 &GetOptions
 (
@@ -95,6 +95,13 @@ $opts{skip} = [split (m/,/o, $opts{skip} || '')];
 
 my $F90 = shift;
 (my $F90out = $F90) =~ s/.F90$/$suffix.F90/o;
+
+unless ($opts{dir})
+  {
+    $opts{dir} = &dirname ($F90out);
+  }
+
+$F90out = 'File::Spec'->catpath ('', $opts{dir}, &basename ($F90out));
 
 if ($opts{'only-if-newer'})
   {
