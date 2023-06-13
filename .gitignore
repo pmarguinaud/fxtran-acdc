@@ -12,3 +12,4 @@ drhook_lock
 *.svg
 attic
 slurm-*.out
+.*.swp

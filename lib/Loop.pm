@@ -61,21 +61,24 @@ sub fixSUMIdiom
 
 # my @sum = &F ('//E-2/named-E[string(N)="SUM"]', $d);
 
-  my @sum = &F 
-    ('//E-2/named-E[string(N)="SUM"]'
-   . '[./R-LT/parens-R/element-LT/element/named-E/R-LT/array-R/section-subscript-LT'
-   . '/section-subscript[string(.)="KIDIA:KFDIA"]]', 
-     $d);
+  for my $R ('parens', 'function')
+    {
+      my @sum = 
+      (
+        &F ('//E-2/named-E[string(N)="SUM"]'
+       . "[./R-LT/$R-R/element-LT/element/named-E/R-LT/array-R/section-subscript-LT"
+       . '/section-subscript[string(.)="KIDIA:KFDIA"]]', $d),
+      );
 
 # So we need to replace the SUM by a scalar assignment
 
-  for my $sum (@sum)
-    {
-      my ($N) = &F ('./R-LT/parens-R/element-LT/element/named-E/N', $sum, 1);
-      my $N_JLON = &e ("$N(JLON)");
-      $sum->replaceNode ($N_JLON->cloneNode (1));
+      for my $sum (@sum)
+        {
+          my ($N) = &F ("./R-LT/$R-R/element-LT/element/named-E/N", $sum, 1);
+          my $N_JLON = &e ("$N(JLON)");
+          $sum->replaceNode ($N_JLON->cloneNode (1));
+        }
     }
-
 }
 
 

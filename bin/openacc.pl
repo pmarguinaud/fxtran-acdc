@@ -37,6 +37,8 @@ use Cycle49;
 use Decl;
 use Dimension;
 use Include;
+use Inline;
+use Finder::Pack;
 
 sub updateFile
 {
@@ -70,7 +72,7 @@ my $SUFFIX = '_OPENACC';
 
 my %opts = (cycle => 48, 'include-ext' => '.intfb.h');
 my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh remove-unused-includes modi);
-my @opts_s = qw (dir nocompute cycle include-ext);
+my @opts_s = qw (dir nocompute cycle include-ext inlined);
 
 &GetOptions
 (
@@ -95,6 +97,14 @@ if ($opts{mesonh})
     $opts{'remove-unused-includes'} = 1;
   }
 
+if ($opts{inlined})
+  {
+    $opts{inlined} = [split (m/,/o, $opts{inlined})];
+  }
+else
+  {
+    $opts{inlined} = [];
+  }
 
 $opts{nocompute} = [$opts{nocompute} ? split (m/,/o, $opts{nocompute}) : ()];
 
@@ -119,6 +129,18 @@ if ($opts{'only-if-newer'})
 
 
 my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag -no-include -no-cpp -line-length 500)]);
+
+&Canonic::makeCanonic ($d);
+
+my $find = 'Finder::Pack'->new ();
+for my $in (@{ $opts{inlined} })
+  {
+    my $f90in = $find->resolve (file => $in);
+    my $di = &Fxtran::parse (location => $f90in, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]);
+    &Canonic::makeCanonic ($di);
+    &Inline::inlineExternalSubroutine ($d, $di);
+  }
+
 
 if ($opts{jljk2jlonjlev})
   {

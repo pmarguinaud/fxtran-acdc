@@ -488,7 +488,7 @@ sub suffixVariables
   my @args = &F ('./subroutine-stmt/dummy-arg-LT/arg-N', $pu, 1);
   my @en_decl = &F ('.//T-decl-stmt/EN-decl-LT/EN-decl/EN-N/N/n/text()', $pu);
 
-  my @skip = qw (JL JLON JLEV);
+  my @skip = qw (JL JLON JLEV JI);
   my %skip = map { ($_, 1) } (@skip, @args);
   
   my %N;
