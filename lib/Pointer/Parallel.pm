@@ -264,6 +264,10 @@ EOF
       $prep->appendChild (&t ("\n" . (' ' x $indent)));
     }
 
+  $par->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)"), $loop);
+  $par->insertAfter (&t ("\n" . (' ' x $indent)), $loop);
+
+
   $prep->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:GET_DATA',0,ZHOOK_HANDLE_FIELD_API)"));
   $prep->appendChild (&t ("\n" . (' ' x $indent)));
 
@@ -309,6 +313,9 @@ EOF
         }
     }
   $prep->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:GET_DATA',1,ZHOOK_HANDLE_FIELD_API)"));
+  $prep->appendChild (&t ("\n" . (' ' x $indent)));
+
+  $prep->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:COMPUTE',0,ZHOOK_HANDLE_COMPUTE)"));
   $prep->appendChild (&t ("\n" . (' ' x $indent)));
 
   if ($POST{nullify})
