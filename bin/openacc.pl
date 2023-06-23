@@ -91,7 +91,7 @@ sub useABOR1_ACC
 my $SUFFIX = '_OPENACC';
 
 my %opts = (cycle => 48, 'include-ext' => '.intfb.h');
-my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh remove-unused-includes modi value-attribute redim-arguments);
+my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh remove-unused-includes modi value-attribute redim-arguments stack84);
 my @opts_s = qw (dir nocompute cycle include-ext inlined);
 
 &GetOptions
@@ -214,6 +214,7 @@ if ($opts{'value-attribute'})
 
 &Stack::addStack ($d, 
   skip => sub { my $proc = shift; grep ({ $_ eq $proc } @{ $opts{nocompute} }) },
+  stack84 => $opts{stack84},
   KLON => \@KLON);
 
 &DrHook::remove ($d) unless ($opts{drhook});

@@ -14,6 +14,7 @@ use DIR;
 use Loop;
 use Data::Dumper;
 use ReDim;
+use Stack;
 
 sub getDefaultWhere
 {
@@ -50,7 +51,7 @@ sub setOpenMPDirective
 sub makeParallel
 {
   shift;
-  my ($par, $t, $redim) = @_;
+  my ($par, $t, %opts) = @_;
 
   my $style = $par->getAttribute ('style') || 'ARPIFS';
   my $FILTER = $par->getAttribute ('filter');
@@ -106,11 +107,8 @@ EOF
           $do->insertBefore (&t ("\n" . (' ' x $indent)), $do_jlon);
           $do->insertBefore (&t ("\n" . (' ' x $indent)), $do_jlon);
 
-          $do_jlon->insertAfter (&s ("YLSTACK%U = stack_u (YSTACK, JBLK, $KGPBLKS)"), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&s ("YLSTACK%L = stack_l (YSTACK, JBLK, $KGPBLKS)"), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
-
+          &Stack::iniStack ($do_jlon, $indent, $opts{stack84});
+          
           if ($style eq 'MESONH')
             {
               $do_jlon->insertAfter (&s ("D%NIE = JLON"), $do_jlon->firstChild);
@@ -168,7 +166,7 @@ EOF
 
   &setOpenMPDirective ($par, $t);
 
-  &ReDim::redimArguments ($par) if ($redim);
+  &ReDim::redimArguments ($par) if ($opts{'redim-arguments'});
 
   return $par;
 }

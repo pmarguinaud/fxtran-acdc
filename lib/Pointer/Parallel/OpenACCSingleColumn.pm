@@ -15,6 +15,8 @@ use Loop;
 use OpenACC;
 use Data::Dumper;
 use ReDim;
+use Stack;
+use ACPY;
 
 
 sub getDefaultWhere
@@ -25,7 +27,7 @@ sub getDefaultWhere
 sub makeParallel
 {
   shift;
-  my ($par, $t, $redim) = @_;
+  my ($par, $t, %opts) = @_;
 
   my $style = $par->getAttribute ('style') || 'ARPIFS';
   my $FILTER = $par->getAttribute ('filter');
@@ -87,10 +89,7 @@ EOF
           $do->insertBefore (&t ("\n" . (' ' x $indent)), $do_jlon);
           $do->insertBefore (&t ("\n" . (' ' x $indent)), $do_jlon);
 
-          $do_jlon->insertAfter (&s ("YLSTACK%U = stack_u (YSTACK, JBLK, YDCPG_OPTS%KGPBLKS)"), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&s ("YLSTACK%L = stack_l (YSTACK, JBLK, YDCPG_OPTS%KGPBLKS)"), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+          &Stack::iniStack ($do_jlon, $indent, $opts{stack84});
 
           if ($style eq 'MESONH')
             {
@@ -149,35 +148,7 @@ EOF
       $argspec->appendChild (&n ('<arg><arg-N><k>YDSTACK</k></arg-N>=<named-E><N><n>YLSTACK</n></N></named-E></arg>'));
     }
 
-  if (1)
-    {
-      my @acpy = &F ('.//a-stmt'
-                   . '[E-1/named-E/R-LT/array-R/section-subscript-LT/section-subscript[string(lower-bound)="JLON"]]' 
-                   . '[E-2/named-E/R-LT/array-R/section-subscript-LT/section-subscript[string(lower-bound)="JLON"]]'
-                   , $do_jlon);
-     
-      for my $acpy (@acpy)
-        {
-          my ($E1) = &F ('./E-1/named-E', $acpy);
-          my ($E2) = &F ('./E-2/named-E', $acpy);
-
-          my @lb1 = &F ('./R-LT/array-R/section-subscript-LT/section-subscript', $E1); 
-          my @lb2 = &F ('./R-LT/array-R/section-subscript-LT/section-subscript', $E2); 
-
-          my @dd1 = map { &F ('./text()[contains(string(.),":")]', $_) } @lb1;
-          my @dd2 = map { &F ('./text()[contains(string(.),":")]', $_) } @lb2;
-
-          die if (@dd1 && (! @dd2));
-          die if (@dd2 && (! @dd1));
-          next unless (@dd1 && @dd2);
-
-          $lb1[0]->replaceNode (&n ('<section-subscript>:</section-subscript>'));
-          $lb2[0]->replaceNode (&n ('<section-subscript>:</section-subscript>'));
-
-          $acpy->replaceNode (&s ('CALL ACPY (JLON, ' . $E1->textContent . ', ' . $E2->textContent . ')'));
-        }
-    }
-
+  &ACPY::useAcpy ($do_jlon) if ($opts{'use-acpy'});
 
   my @NPROMA = sort grep { $t->{$_}{nproma} } &F ('.//named-E/N', $do_jlon, 1);
 
@@ -209,7 +180,7 @@ EOF
 
   &OpenACC::loopVector ($do_jlon, PRIVATE => \@priv);
 
-  &ReDim::redimArguments ($par) if ($redim);
+  &ReDim::redimArguments ($par) if ($opts{'redim-arguments'});
 
   return $par;
 }

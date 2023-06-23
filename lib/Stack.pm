@@ -12,14 +12,39 @@ use strict;
 use Data::Dumper;
 use Scope;
 
+sub iniStack
+{
+  my ($do_jlon, $indent, $stack84) = @_;
+
+  if ($stack84)
+    {
+      for my $size (4, 8)
+        {
+          $do_jlon->insertAfter (&s ("YLSTACK%U${size} = stack_u${size} (YSTACK, JBLK, YDCPG_OPTS%KGPBLKS)"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&s ("YLSTACK%L${size} = stack_l${size} (YSTACK, JBLK, YDCPG_OPTS%KGPBLKS)"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+        }
+    }
+  else
+    {
+      $do_jlon->insertAfter (&s ("YLSTACK%U = stack_u (YSTACK, JBLK, YDCPG_OPTS%KGPBLKS)"), $do_jlon->firstChild);
+      $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+      $do_jlon->insertAfter (&s ("YLSTACK%L = stack_l (YSTACK, JBLK, YDCPG_OPTS%KGPBLKS)"), $do_jlon->firstChild);
+      $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+    }
+
+
+}
+
 sub addStack
 {
-  my ($d, %args) = @_;
+  my ($d, %opts) = @_;
 
-  my @KLON = @{ $args{KLON} || [qw (KLON YDCPG_OPTS%KLON)] };
+  my @KLON = @{ $opts{KLON} || [qw (KLON YDCPG_OPTS%KLON)] };
 
-  my $skip = $args{skip};
-  my $local = exists $args{local} ? $args{local} : 1;
+  my $skip = $opts{skip};
+  my $local = exists $opts{local} ? $opts{local} : 1;
 
   my @call = &F ('.//call-stmt[string(procedure-designator)!="ABOR1" and string(procedure-designator)!="REDUCE"]', $d);
 
@@ -127,7 +152,24 @@ sub addStack
                   $temp->parentNode->insertAfter (&t ("\n"), $temp);
                 }
       
-              $C->parentNode->insertBefore (&t ("alloc ($n)\n"), $C);
+              if ($opts{stack84})
+                {
+                  my ($if) = &fxtran::parse (fragment => << "EOF");
+IF (KIND ($n) == 8) THEN
+  alloc8 ($n)
+ELSEIF (KIND ($n) == 4) THEN
+  alloc4 ($n)
+ELSE
+  STOP 1
+ENDIF
+EOF
+                  $C->parentNode->insertBefore ($if, $C);
+                  $C->parentNode->insertBefore (&t ("\n"), $C);
+                }
+              else
+                {
+                  $C->parentNode->insertBefore (&t ("alloc ($n)\n"), $C);
+                }
             }
           else
             {

@@ -72,7 +72,7 @@ my $suffix = '_parallel';
 my %opts = ('types-fieldapi-dir' => 'types-fieldapi', skip => 'PGFL,PGFLT1,PGMVT1,PGPSDT2D', 
              nproma => 'YDCPG_OPTS%KLON', 'types-constant-dir' => 'types-constant',
              'post-parallel' => 'nullify');
-my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments);
+my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments stack84 use-acpy);
 my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel dir);
 
 &GetOptions
@@ -141,7 +141,14 @@ if ($opts{addYDCPG_OPTS})
 
 # Add modules
 
-&Decl::use ($d, map { "USE $_" } qw (FIELD_MODULE FIELD_REGISTRY_MOD FIELD_HELPER_MODULE YOMPARALLELMETHOD STACK_MOD ACPY_MOD));
+my @use = qw (FIELD_MODULE FIELD_REGISTRY_MOD FIELD_HELPER_MODULE YOMPARALLELMETHOD STACK_MOD);
+
+if ($opts{'use-acpy'})
+  {
+    push @use, 'ACPY_MOD';
+  }
+
+&Decl::use ($d, map { "USE $_" } @use);
 
 # Add local variables
 
@@ -301,7 +308,7 @@ EOF
 
         $where = uc ($where);
 
-        my $par1 = $class->makeParallel ($par->cloneNode (1), $t, $opts{'redim-arguments'});
+        my $par1 = $class->makeParallel ($par->cloneNode (1), $t, %opts);
         
         my $block;
         if ($itarget == 0)
