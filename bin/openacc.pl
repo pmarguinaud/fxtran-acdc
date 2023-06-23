@@ -47,7 +47,7 @@ sub addValueAttribute
   my @intent = &F ('.//T-decl-stmt'    
                  . '[_T-spec_/intrinsic-T-spec[string(T-N)="REAL" or string(T-N)="INTEGER" or string(T-N)="LOGICAL"]]' # Only REAL/INTEGER/LOGICAL
                  . '[not(.//array-spec)]'                                                                              # Without dimensions
-                 . '//attribute[string(attribute-N)="INTENT"]'                                                         # Only arguments
+                 . '//attribute[string(intent-spec)="IN"]'                                                             # Only arguments
                  , $d); 
 
   for my $intent (@intent)
@@ -105,7 +105,7 @@ if ($opts{help})
     print
      "Usage: " . &basename ($0) . "\n" .
       join ('', map { "  --$_\n" } @opts_f) .
-      join ('', map { "  --$_=...\n" } @opts_f) .
+      join ('', map { "  --$_=...\n" } @opts_s) .
      "\n";
     exit (0);
   }
