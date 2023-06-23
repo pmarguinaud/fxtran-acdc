@@ -14,6 +14,8 @@ use DIR;
 use Loop;
 use OpenACC;
 use Data::Dumper;
+use ReDim;
+
 
 sub getDefaultWhere
 {
@@ -23,7 +25,7 @@ sub getDefaultWhere
 sub makeParallel
 {
   shift;
-  my ($par, $t) = @_;
+  my ($par, $t, $redim) = @_;
 
   my $style = $par->getAttribute ('style') || 'ARPIFS';
   my $FILTER = $par->getAttribute ('filter');
@@ -206,6 +208,8 @@ EOF
                               VECTOR_LENGTH => ['YDCPG_OPTS%KLON']);
 
   &OpenACC::loopVector ($do_jlon, PRIVATE => \@priv);
+
+  &ReDim::redimArguments ($par) if ($redim);
 
   return $par;
 }

@@ -40,6 +40,26 @@ use Include;
 use Inline;
 use Finder::Pack;
 
+sub addValueAttribute
+{
+  my $d = shift;
+
+  my @intent = &F ('.//T-decl-stmt'    
+                 . '[_T-spec_/intrinsic-T-spec[string(T-N)="REAL" or string(T-N)="INTEGER" or string(T-N)="LOGICAL"]]' # Only REAL/INTEGER/LOGICAL
+                 . '[not(.//array-spec)]'                                                                              # Without dimensions
+                 . '//attribute[string(attribute-N)="INTENT"]'                                                         # Only arguments
+                 , $d); 
+
+  for my $intent (@intent)
+    {
+      for my $x (&t (' '), &n ('<attribute><attribute-N>VALUE</attribute-N></attribute>'), &t (', '))
+        {
+          $intent->parentNode->insertAfter ($x, $intent);
+        }
+    }
+
+}
+
 sub updateFile
 {
   my ($F90, $code) = @_;
@@ -71,7 +91,7 @@ sub useABOR1_ACC
 my $SUFFIX = '_OPENACC';
 
 my %opts = (cycle => 48, 'include-ext' => '.intfb.h');
-my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh remove-unused-includes modi);
+my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh remove-unused-includes modi value-attribute redim-arguments);
 my @opts_s = qw (dir nocompute cycle include-ext inlined);
 
 &GetOptions
@@ -177,7 +197,14 @@ $KIDIA = 'D%NIB' if ($opts{mesonh});
 
 &Loop::removeJlonLoops ($d, KLON => \@KLON, KIDIA => $KIDIA);
 
-&ReDim::reDim ($d, KLON => \@KLON);
+&ReDim::reDim ($d, KLON => \@KLON, 'redim-arguments' => $opts{'redim-arguments'});
+
+
+if ($opts{'value-attribute'})
+  {
+    &addValueAttribute ($d);
+  }
+
 
 &Subroutine::addSuffix ($d, $SUFFIX);
 

@@ -72,7 +72,7 @@ my $suffix = '_parallel';
 my %opts = ('types-fieldapi-dir' => 'types-fieldapi', skip => 'PGFL,PGFLT1,PGMVT1,PGPSDT2D', 
              nproma => 'YDCPG_OPTS%KLON', 'types-constant-dir' => 'types-constant',
              'post-parallel' => 'nullify');
-my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS);
+my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments);
 my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel dir);
 
 &GetOptions
@@ -301,7 +301,7 @@ EOF
 
         $where = uc ($where);
 
-        my $par1 = $class->makeParallel ($par->cloneNode (1), $t);
+        my $par1 = $class->makeParallel ($par->cloneNode (1), $t, $opts{'redim-arguments'});
         
         my $block;
         if ($itarget == 0)

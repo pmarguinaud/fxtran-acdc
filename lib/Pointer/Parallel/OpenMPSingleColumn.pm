@@ -13,6 +13,7 @@ use Fxtran;
 use DIR;
 use Loop;
 use Data::Dumper;
+use ReDim;
 
 sub getDefaultWhere
 {
@@ -49,7 +50,7 @@ sub setOpenMPDirective
 sub makeParallel
 {
   shift;
-  my ($par, $t) = @_;
+  my ($par, $t, $redim) = @_;
 
   my $style = $par->getAttribute ('style') || 'ARPIFS';
   my $FILTER = $par->getAttribute ('filter');
@@ -167,6 +168,7 @@ EOF
 
   &setOpenMPDirective ($par, $t);
 
+  &ReDim::redimArguments ($par) if ($redim);
 
   return $par;
 }

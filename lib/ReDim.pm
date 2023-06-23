@@ -30,8 +30,11 @@ sub reDim
       my ($N) = &F ('./EN-N', $en_decl, 1);
       my ($stmt) = &Fxtran::stmt ($en_decl);
 
-      next if (&F ('.//attribute-N[string(.)="INTENT"]', $stmt));
-      next if (&F ('.//call-stmt[.//named-E[string(N)="?"]', $N, $d));
+      unless ($args{'redim-arguments'})
+        {
+          next if (&F ('.//attribute-N[string(.)="INTENT"]', $stmt));
+          next if (&F ('.//call-stmt[.//named-E[string(N)="?"]', $N, $d));
+        }
   
 
       my ($as) = &F ('./array-spec', $en_decl);
@@ -97,6 +100,21 @@ sub reDim
             }
         }
   
+    }
+}
+
+sub redimArguments
+{
+  my $d = shift;
+
+  my @ss = &F ('.//named-E/R-LT/array-R/section-subscript-LT[count(./section-subscript)=2]' # Two subscripts
+             . '[./section-subscript[string(.)="JBLK"]]'                                    # Second one is JBLK
+             . '/section-subscript[string(.)=":"]/text()'                                   # First is :
+             , $d);
+
+  for my $ss (@ss)
+    {
+      $ss->replaceNode (&n ('<lower-bound><named-E><N><n>JLON</n></N></named-E></lower-bound>'));
     }
 }
 
