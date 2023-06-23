@@ -107,9 +107,11 @@ sub redimArguments
 {
   my $d = shift;
 
-  my @ss = &F ('.//named-E/R-LT/array-R/section-subscript-LT[count(./section-subscript)=2]' # Two subscripts
-             . '[./section-subscript[string(.)="JBLK"]]'                                    # Second one is JBLK
-             . '/section-subscript[string(.)=":"]/text()'                                   # First is :
+  my @ss = &F ('.//arg/named-E/R-LT/array-R/section-subscript-LT'     # Subroutine argument
+             . '[count(./section-subscript/text()[string(.)=":"])=1]' # Single ':'
+             . '[./section-subscript[1]/text()[string(.)=":"]]'       # First subscript is :
+             . '[./section-subscript[last()][string(.)="JBLK"]]'      # Last subscript is JBLK
+             . '/section-subscript[1]/text()'                         # Get ':'
              , $d);
 
   for my $ss (@ss)
