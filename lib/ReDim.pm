@@ -30,12 +30,26 @@ sub reDim
       my ($N) = &F ('./EN-N', $en_decl, 1);
       my ($stmt) = &Fxtran::stmt ($en_decl);
 
-      unless ($args{'redim-arguments'})
+      unless ($args{'redim-arguments'}) # Skip arguments
         {
           next if (&F ('.//attribute-N[string(.)="INTENT"]', $stmt));
           next if (&F ('.//call-stmt[.//named-E[string(N)="?"]', $N, $d));
         }
-  
+
+      if ($args{'redim-arguments'}) # Change : to JLON for actual arguments where actual dimension is 1 (ie we have a single ':')
+        {
+          my @ss = &F ('.//arg/named-E[string(N)="?"]/R-LT/array-R/section-subscript-LT'     # Subroutine argument
+                     . '[count(./section-subscript/text()[string(.)=":"])=1]'                # Single ':'
+                     . '[./section-subscript[1]/text()[string(.)=":"]]'                      # First subscript is :
+                     . '/section-subscript[1]/text()'                                        # Get ':'
+                     , $N, $d);
+
+          for my $ss (@ss)
+            {
+              $ss->replaceNode (&n ('<lower-bound><named-E><N><n>JLON</n></N></named-E></lower-bound>'));
+            }
+
+        }
 
       my ($as) = &F ('./array-spec', $en_decl);
 
