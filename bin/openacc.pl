@@ -13,6 +13,7 @@ use FileHandle;
 use Data::Dumper;
 use Getopt::Long;
 use File::stat;
+use File::Path;
 use File::Basename;
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
@@ -69,7 +70,11 @@ sub updateFile
   if ((! defined ($c)) || ($c ne $code))
     {
       unlink ($F90);
-      'FileHandle'->new (">$F90")->print ($code);
+      &mkpath (&dirname ($F90));
+      my $fh = 'FileHandle'->new (">$F90"); 
+      $fh or die ("Cannot write to $F90");
+      $fh->print ($code); 
+      $fh->close ();
     }
 }
 

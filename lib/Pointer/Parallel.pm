@@ -90,12 +90,12 @@ sub fieldifyDecl
         {
           &Decl::removeAttributes ($stmt, 'INTENT');
           $s->{arg}->setData ("YD_$N");
-          ($decl_fld) = &s ("TYPE ($type_fld), POINTER :: YD_$N");
+          ($decl_fld) = &s ("CLASS ($type_fld), POINTER :: YD_$N");
           $s->{field} = &n ("<named-E><N><n>YD_$N</n></N></named-E>");
         }
       else
         {
-          ($decl_fld) = &s ("TYPE ($type_fld), POINTER :: YL_$N");
+          ($decl_fld) = &s ("CLASS ($type_fld), POINTER :: YL_$N");
           $s->{field} = &n ("<named-E><N><n>YL_$N</n></N></named-E>");
         }
   
@@ -444,9 +444,9 @@ sub callParallelRoutine
 
 sub setupLocalFields
 {
-# Use CREATE_TEMPORARY at the beginning of the routine (after the call to DR_HOOK) to create
+# Use FIELD_NEW at the beginning of the routine (after the call to DR_HOOK) to create
 # FIELD API objects backing local NPROMA arrays
-# Use DELETE_TEMPORARY to delete these FIELD API objects
+# Use FIELD_DELETE to delete these FIELD API objects
 
   my ($doc, $t, $hook_suffix) = @_;
 
@@ -492,10 +492,10 @@ sub setupLocalFields
                   ? 'LBOUNDS=[' . join (', ', @lb) . '], '
                   : '';
 
-      $p1->insertAfter (&s ("CALL CREATE_TEMPORARY_LU ($f, ${ubounds}${lbounds}PERSISTENT=.TRUE.)"), $drhook1);
+      $p1->insertAfter (&s ("CALL FIELD_NEW ($f, ${ubounds}${lbounds}PERSISTENT=.TRUE.)"), $drhook1);
       $p1->insertAfter (&t ("\n" . (' ' x $ind1)), $drhook1);
 
-      $p2->insertBefore (&s ("IF (ASSOCIATED ($f)) CALL DELETE_TEMPORARY ($f)"), $drhook2);
+      $p2->insertBefore (&s ("IF (ASSOCIATED ($f)) CALL FIELD_DELETE ($f)"), $drhook2);
       $p2->insertBefore (&t ("\n" . (' ' x $ind2)), $drhook2);
       
 

@@ -393,6 +393,7 @@ sub processTypes1
         }
   
       my @U = map { "UTIL_${_}_MOD" } sort keys (%U);
+
       @U = map { (exists ($opts->{'module-map'}{$_}) ? $opts->{'module-map'}{$_} : $_) } @U;
       %U = map { ($_, 1) } @U;
       @U = sort keys (%U);

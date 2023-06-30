@@ -109,11 +109,11 @@ sub getFieldType
 
   ($ts = $ts->textContent) =~ s/\s+//go;
 
-  my %ts = ('INTEGER(KIND=JPIM)' => 'INT', 'REAL(KIND=JPRB)' => '', LOGICAL => 'LOG');
+  my %ts = ('INTEGER(KIND=JPIM)' => 'IM', 'REAL(KIND=JPRB)' => 'RB', LOGICAL => 'LM');
 
   return unless (defined ($ts{$ts}));
 
-  return "FIELD_$ts{$ts}${nd}D";
+  return "FIELD_${nd}$ts{$ts}";
 }
 
 1;
