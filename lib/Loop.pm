@@ -36,6 +36,23 @@ sub removeJlonConstructs
         }
       $do->unbindNode ();
     }
+
+
+
+
+}
+
+sub removeJlonArraySyntax
+{
+  my $d = shift;
+
+  my @ss = &F ('.//section-subscript[string(.)="1:YDCPG_OPTS%KLON"]', $d);
+
+  for my $ss (@ss)
+    {
+      $ss->replaceNode (&n ('<section-subscript><lower-bound><named-E><N><n>JLON</n></N></named-E></lower-bound></section-subscript>'));
+    }
+
 }
 
 

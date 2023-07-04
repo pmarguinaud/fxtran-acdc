@@ -39,6 +39,7 @@ sub makeParallel
   die unless ($do);
 
   &Loop::removeJlonConstructs ($par);
+  &Loop::removeJlonArraySyntax ($par);
 
   if ($style eq 'MESONH')
     {

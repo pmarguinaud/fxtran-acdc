@@ -63,6 +63,7 @@ sub makeParallel
   die unless ($do);
 
   &Loop::removeJlonConstructs ($par);
+  &Loop::removeJlonArraySyntax ($par);
 
 
   my @x = &F ('./node()', $do);
