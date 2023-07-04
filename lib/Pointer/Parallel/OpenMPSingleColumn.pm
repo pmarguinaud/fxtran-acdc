@@ -108,7 +108,7 @@ EOF
           $do->insertBefore (&t ("\n" . (' ' x $indent)), $do_jlon);
           $do->insertBefore (&t ("\n" . (' ' x $indent)), $do_jlon);
 
-          &Stack::iniStack ($do_jlon, $indent, $opts{stack84});
+          &Stack::iniStack ($do_jlon, $indent, $opts{stack84}, $KGPBLKS);
           
           if ($style eq 'MESONH')
             {

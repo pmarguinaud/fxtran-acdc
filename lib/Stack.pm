@@ -14,23 +14,23 @@ use Scope;
 
 sub iniStack
 {
-  my ($do_jlon, $indent, $stack84) = @_;
+  my ($do_jlon, $indent, $stack84, $KGPBLKS) = @_;
 
   if ($stack84)
     {
       for my $size (4, 8)
         {
-          $do_jlon->insertAfter (&s ("YLSTACK%U${size} = stack_u${size} (YSTACK, JBLK, YDCPG_OPTS%KGPBLKS)"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&s ("YLSTACK%U${size} = stack_u${size} (YSTACK, JBLK, $KGPBLKS)"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&s ("YLSTACK%L${size} = stack_l${size} (YSTACK, JBLK, YDCPG_OPTS%KGPBLKS)"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&s ("YLSTACK%L${size} = stack_l${size} (YSTACK, JBLK, $KGPBLKS)"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
         }
     }
   else
     {
-      $do_jlon->insertAfter (&s ("YLSTACK%U = stack_u (YSTACK, JBLK, YDCPG_OPTS%KGPBLKS)"), $do_jlon->firstChild);
+      $do_jlon->insertAfter (&s ("YLSTACK%U = stack_u (YSTACK, JBLK, $KGPBLKS)"), $do_jlon->firstChild);
       $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
-      $do_jlon->insertAfter (&s ("YLSTACK%L = stack_l (YSTACK, JBLK, YDCPG_OPTS%KGPBLKS)"), $do_jlon->firstChild);
+      $do_jlon->insertAfter (&s ("YLSTACK%L = stack_l (YSTACK, JBLK, $KGPBLKS)"), $do_jlon->firstChild);
       $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
     }
 
