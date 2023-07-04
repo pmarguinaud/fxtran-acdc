@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -x
+set -e
 
 mkdir -p /tmp/$USER
 export PATH=/home/gmap/mrpm/marguina/fxtran-acdc/bin:$PATH
@@ -192,6 +193,8 @@ do
   done
 done
 
+
+set -x
 
 #generateStructureMethods.pl \
 #  --wipe --copy --load --save --dir src/local/ifsaux/util --out util_cpg_opts_type_mod.F90 \

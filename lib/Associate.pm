@@ -19,11 +19,11 @@ sub resolveAssociates
   my %args = @_;
 
   my @assoc = $args{outer} ? &F ('ancestor::associate-construct', $d) : &F ('.//associate-construct', $d);
-  
+
   for my $assoc (@assoc)
     {
       my @as = &F ('./associate-stmt/associate-LT/associate', $assoc);
-  
+
       # Apply association rules
   
       for my $as (@as)
@@ -31,7 +31,7 @@ sub resolveAssociates
           my ($n) = &F ('./associate-N/n/text()', $as, 1);
           my ($e) = &F ('./selector/named-E', $as);
   
-          my @expr = &F ('.//named-E[./N/n/text()="?"]', $n, $assoc);
+          my @expr = reverse (&F ('.//named-E[./N/n/text()="?"]', $n, $assoc));
   
           for my $expr (@expr)
             {

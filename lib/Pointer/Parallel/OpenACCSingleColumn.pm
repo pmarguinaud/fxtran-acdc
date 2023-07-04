@@ -57,17 +57,19 @@ sub makeParallel
       $x->unbindNode ();
     }
 
-  my ($KLON, $KGPTOT);
+  my ($KLON, $KGPTOT, $KGPBLKS);
 
   if ($FILTER)
     {
       $KLON = 'YL_FGS%KLON';
       $KGPTOT = 'YL_FGS%KGPTOT';
+      $KGPBLKS = 'YL_FGS%KGPBLKS';
     }
   else
     {
       $KLON = 'YDCPG_OPTS%KLON';
       $KGPTOT = 'YDCPG_OPTS%KGPCOMP';
+      $KGPBLKS = 'YDCPG_OPTS%KGPBLKS';
     }
 
   my ($do_jlon) = &Fxtran::parse (fragment => << "EOF");
