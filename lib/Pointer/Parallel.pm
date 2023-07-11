@@ -114,6 +114,20 @@ sub makeParallel
   my %POST = map { ($_, 1) } grep { $_ } split (m/,/o, $POST || '');
 
   my $FILTER = $par->getAttribute ('filter');
+  my $SUBROUTINE = $FILTER && $par->getAttribute ('subroutine');
+
+  if ($SUBROUTINE)
+    {
+      my @proc = &F ('.//procedure-designator/named-E/N/n/text()[string(.)="?"]', $SUBROUTINE, $par);
+      for my $proc (@proc)
+        {
+          my $stmt = &Fxtran::stmt ($proc);
+          my @arg = &F ('./arg-spec/arg', $stmt);
+          &Fxtran::removeListElement ($arg[-1]);
+          (my $tt = $proc->textContent) =~ s/_SELECT$//o;
+          $proc->setData ($tt);
+        }
+    }
 
   # Add a loop nest on blocks
 
