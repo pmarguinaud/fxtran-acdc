@@ -187,7 +187,6 @@ for (&F ('.//skip-section', $d))
 
 my @par = &F ('.//parallel-section', $d);
 
-
 my ($MESONH, $FILTER);
 
 for my $par (@par)
@@ -215,12 +214,6 @@ if ($FILTER)
     &Decl::declare ($d, 'TYPE(FIELD_GATHSCAT) :: YL_FGS');
   }
 
-for my $ipar (0 .. $#par)
-  {
-    my $par = $par[$ipar];
-    my $name = $par->getAttribute ('name') || $ipar;
-    &Pointer::Parallel::makeParallel ($par, $t, $find, $types, "$NAME:$name", $opts{'post-parallel'});
-  }
 
 # Process call to parallel routines
 
@@ -248,26 +241,13 @@ for my $call (@call)
       }
   }
 
-# Declare pointers required for parallel sections
-
-my @decl;
-
-for my $n (sort keys (%$t))
-  {
-    my $s = $t->{$n};
-    next unless ($s->{object_based});
-    my $decl = &s ($s->{ts}->textContent . ", POINTER :: " . $n . "(" . join (',', (':') x ($s->{nd} + 1)) . ")");
-    push @decl, $decl;
-  }
-
-
-&Decl::declare ($d, @decl);
-
 # Create/delete fields for local arrays
 
 &Pointer::Parallel::setupLocalFields ($d, $t, '');
 
 &Include::removeUnusedIncludes ($d);
+
+my $useUtilMod = 0;
 
 
 for my $ipar (0 .. $#par)
@@ -275,7 +255,7 @@ for my $ipar (0 .. $#par)
     my $par = $par[$ipar];
 
     my $target = $par->getAttribute ('target');
-    my $name = $par->getAttribute ('name') || $ipar;
+
     my @target = split (m/\//o, $target || 'OpenMP');
 
     my ($if_construct) = &Fxtran::parse (fragment => << "EOF");
@@ -295,20 +275,37 @@ EOF
 
     my @block;
     
+    my $name = $par->getAttribute ('name') || $ipar;
+
+    
+    # Do it once for all sections
+
+    my %par;
     for my $itarget (0 .. $#target)
       {
-        my $target = $target[$itarget];
-
-        $target =~ s/\%(\w+)$//o;
-        my $where = $1;
-
+        'Pointer::Parallel'->getWhereTargetFromTarget (my $target = $target[$itarget], my $where);
         my $class = 'Pointer::Parallel'->class ($target);
+        my $onlySimpleFields = $class->onlySimpleFields ();
 
+        my $par1 = $par->cloneNode (1);
+        $par{$onlySimpleFields} ||= 
+          &Pointer::Parallel::makeParallel ($par1, $t, $find, $types, "$NAME:$name", $opts{'post-parallel'}, $onlySimpleFields);
+
+        $useUtilMod ||= $class->requireUtilMod ();
+      }
+
+    for my $itarget (0 .. $#target)
+      {
+        'Pointer::Parallel'->getWhereTargetFromTarget (my $target = $target[$itarget], my $where);
+        my $class = 'Pointer::Parallel'->class ($target);
         $where ||= $class->getDefaultWhere ();
-
         $where = uc ($where);
 
-        my $par1 = $class->makeParallel ($par->cloneNode (1), $t, %opts);
+        my $onlySimpleFields = $class->onlySimpleFields ();
+
+        my $par1 = $par{$onlySimpleFields}->cloneNode (1);
+
+        $par1 = $class->makeParallel ($par1, $t, %opts);
         
         my $block;
         if ($itarget == 0)
@@ -355,6 +352,30 @@ EOF
 
   }
 
+# Declare pointers required for parallel sections
+
+my (@decl, @use_util);
+
+for my $n (sort keys (%$t))
+  {
+    my $s = $t->{$n};
+    if ($s->{object_based})
+      {
+        my $decl = &s ($s->{ts}->textContent . ", POINTER :: " . $n . "(" . join (',', (':') x ($s->{nd} + 1)) . ")");
+        push @decl, $decl;
+      }
+    if ($s->{object})
+      {
+        my ($tn) = &F ('./T-N', $s->{ts}, 1);
+        push @use_util, &s ("USE UTIL_${tn}_MOD");
+      }
+  }
+
+
+&Decl::declare ($d, @decl);
+&Decl::use ($d, @use_util) if ($useUtilMod);
+
+# Include *_openacc.intfb.h interfaces
 
 my @called = &F ('.//call-stmt/procedure-designator', $d, 1);
 
@@ -380,6 +401,8 @@ for my $include (@include)
     
   }
 
+# Include MODI_* interfaces
+
 my @modi = &F ('.//use-stmt[starts-with(string(module-N),"MODI_")]', $d);
 
 for my $modi (@modi)
@@ -394,6 +417,8 @@ for my $modi (@modi)
       $modi->parentNode->insertAfter (&t ("\n"), $modi);
     }
 }
+
+
 
 if (@par)
   {

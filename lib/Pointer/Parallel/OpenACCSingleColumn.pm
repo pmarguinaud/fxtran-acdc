@@ -24,26 +24,36 @@ sub getDefaultWhere
   'device';
 }
 
+sub onlySimpleFields
+{
+  0;
+}
+
+sub requireUtilMod
+{
+  0;
+}
+
 sub makeParallel
 {
   shift;
-  my ($par, $t, %opts) = @_;
+  my ($par1, $t, %opts) = @_;
 
-  my $style = $par->getAttribute ('style') || 'ARPIFS';
-  my $FILTER = $par->getAttribute ('filter');
+  my $style = $par1->getAttribute ('style') || 'ARPIFS';
+  my $FILTER = $par1->getAttribute ('filter');
 
-  &DIR::removeDIR ($par);
+  &DIR::removeDIR ($par1);
 
-  my ($do) = &F ('./do-construct', $par);
+  my ($do) = &F ('./do-construct', $par1);
 
   die unless ($do);
 
-  &Loop::removeJlonConstructs ($par);
-  &Loop::removeJlonArraySyntax ($par);
+  &Loop::removeJlonConstructs ($par1);
+  &Loop::removeJlonArraySyntax ($par1);
 
   if ($style eq 'MESONH')
     {
-      my @D = &F ('.//named-E[string(N)="D"]/N/n/text()', $par);
+      my @D = &F ('.//named-E[string(N)="D"]/N/n/text()', $par1);
       for my $D (@D)
         {
           $D->setData ('DD');
@@ -155,7 +165,7 @@ EOF
 
   my @NPROMA = sort grep { $t->{$_}{nproma} } &F ('.//named-E/N', $do_jlon, 1);
 
-  my ($do_jblk) = &F ('./do-construct/do-stmt[string(do-V)="JBLK"]', $par);
+  my ($do_jblk) = &F ('./do-construct/do-stmt[string(do-V)="JBLK"]', $par1);
 
   my @priv = &Pointer::Parallel::getPrivateVariables ($do_jlon, $t);
 
@@ -183,9 +193,9 @@ EOF
 
   &OpenACC::loopVector ($do_jlon, PRIVATE => \@priv);
 
-  &ReDim::redimArguments ($par) if ($opts{'redim-arguments'});
+  &ReDim::redimArguments ($par1) if ($opts{'redim-arguments'});
 
-  return $par;
+  return $par1;
 }
 
 1;

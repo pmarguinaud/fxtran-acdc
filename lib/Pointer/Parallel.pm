@@ -14,6 +14,13 @@ use Call;
 use Data::Dumper;
 use File::Basename;
 
+sub getWhereTargetFromTarget
+{
+  my $class = shift;
+  $_[0] =~ s/\%(\w+)$//o;
+  $_[1] = $1 if (scalar (@_) > 1);
+}
+
 my %class;
 
 sub class
@@ -109,7 +116,7 @@ sub fieldifyDecl
 
 sub makeParallel
 {
-  my ($par, $t, $find, $types, $NAME, $POST) = @_;
+  my ($par, $t, $find, $types, $NAME, $POST, $onlysimplefields) = @_;
 
   my %POST = map { ($_, 1) } grep { $_ } split (m/,/o, $POST || '');
 
@@ -180,13 +187,12 @@ EOF
 
   for my $expr (&F ('.//named-E', $par))
     {
-
       my ($N) = &F ('./N', $expr, 1);
       my $s = $t->{$N};
       next if ($s->{skip});
 
       # Object wrapping fields : replace by a pointer to data with all blocks
-      if ($s->{object})
+      if ($s->{object} && (! $onlysimplefields))
         {
           my ($name) = &F ('./N/n/text()', $expr); 
           my @ctl = &F ('./R-LT/component-R/ct', $expr, 1);
@@ -347,7 +353,7 @@ EOF
 
   $prep->appendChild (&t ("\n" . (' ' x $indent)));
 
-
+  return $par;
 }
 
 sub addExtraIndex

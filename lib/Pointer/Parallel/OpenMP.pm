@@ -16,6 +16,16 @@ sub getDefaultWhere
   'host';
 }
 
+sub onlySimpleFields
+{
+  0;
+}
+
+sub requireUtilMod
+{
+  0;
+}
+
 sub setOpenMPDirective
 {
   my ($par, $t) = @_;
@@ -48,10 +58,10 @@ sub setOpenMPDirective
 sub makeParallel
 {
   shift;
-  my ($par, $t) = @_;
+  my ($par1, $t) = @_;
 
-  my $style = $par->getAttribute ('style') || 'ARPIFS';
-  my $FILTER = $par->getAttribute ('filter');
+  my $style = $par1->getAttribute ('style') || 'ARPIFS';
+  my $FILTER = $par1->getAttribute ('filter');
 
   my $init;
   
@@ -64,7 +74,7 @@ sub makeParallel
       $init = &s ('CALL YLCPG_BNDS%INIT (YDCPG_OPTS)');
     }
 
-  my ($do) = &F ('./do-construct', $par);
+  my ($do) = &F ('./do-construct', $par1);
   my $indent = &Fxtran::getIndent ($do);
 
   if ($style eq 'MESONH')
@@ -77,12 +87,12 @@ sub makeParallel
       $p->insertAfter (&t ("\n" . (' ' x $indent)), $update);
     }
 
-  $par->insertBefore ($init, $do);
-  $par->insertBefore (&t ("\n"), $do);
+  $par1->insertBefore ($init, $do);
+  $par1->insertBefore (&t ("\n"), $do);
 
-  &setOpenMPDirective ($par, $t);
+  &setOpenMPDirective ($par1, $t);
 
-  return $par;
+  return $par1;
 }
 
 

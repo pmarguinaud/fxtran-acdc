@@ -21,6 +21,16 @@ sub getDefaultWhere
   'host';
 }
 
+sub onlySimpleFields
+{
+  0;
+}
+
+sub requireUtilMod
+{
+  0;
+}
+
 sub setOpenMPDirective
 {
   my ($par, $t) = @_;
@@ -51,19 +61,19 @@ sub setOpenMPDirective
 sub makeParallel
 {
   shift;
-  my ($par, $t, %opts) = @_;
+  my ($par1, $t, %opts) = @_;
 
-  my $style = $par->getAttribute ('style') || 'ARPIFS';
-  my $FILTER = $par->getAttribute ('filter');
+  my $style = $par1->getAttribute ('style') || 'ARPIFS';
+  my $FILTER = $par1->getAttribute ('filter');
 
-  &DIR::removeDIR ($par);
+  &DIR::removeDIR ($par1);
 
-  my ($do) = &F ('./do-construct', $par);
+  my ($do) = &F ('./do-construct', $par1);
 
   die unless ($do);
 
-  &Loop::removeJlonConstructs ($par);
-  &Loop::removeJlonArraySyntax ($par);
+  &Loop::removeJlonConstructs ($par1);
+  &Loop::removeJlonArraySyntax ($par1);
 
 
   my @x = &F ('./node()', $do);
@@ -165,11 +175,11 @@ EOF
     }
 
 
-  &setOpenMPDirective ($par, $t);
+  &setOpenMPDirective ($par1, $t);
 
-  &ReDim::redimArguments ($par) if ($opts{'redim-arguments'});
+  &ReDim::redimArguments ($par1) if ($opts{'redim-arguments'});
 
-  return $par;
+  return $par1;
 }
 
 1;
