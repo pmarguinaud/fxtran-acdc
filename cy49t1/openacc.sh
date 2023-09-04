@@ -81,7 +81,7 @@ do
   dir=$(dirname $f)
   mkdir -p src/local/ifsaux/openacc/$dir
 #  --only-if-newer 
-  openacc.pl \
+  openacc.pl $* \
    --dir src/local/ifsaux/openacc/$dir \
    --nocompute ABOR1 --version \
    $(resolve $f)
@@ -113,7 +113,7 @@ do
   dir=$(dirname $f)
   mkdir -p src/local/ifsaux/openacc/$dir
 #  --only-if-newer \
-  openacc.pl \
+  openacc.pl $* \
    --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90 \
    --dir src/local/ifsaux/openacc/$dir \
    --nocompute ABOR1 --version \

@@ -31,7 +31,7 @@ mpa/conv/internals/convect_updraft_shal.F90 \
 mpa/conv/internals/convect_closure_shal.F90 
 do
   echo "==> $f <=="
-  openacc.pl --version --inlined convect_satmixratio.F90 --cycle 49 --mesonh --dir src/local/mpa/openacc $(resolve $f)
+  openacc.pl $* --version --inlined convect_satmixratio.F90 --cycle 49 --mesonh --dir src/local/mpa/openacc $(resolve $f)
 done
 
 for f in \
@@ -39,7 +39,7 @@ mpa/conv/externals/shallow_convection_part1.F90 \
 mpa/conv/externals/shallow_convection_part2.F90
 do
   echo "==> $f <=="
-  openacc.pl --version --cycle 49 --mesonh --dir src/local/mpa/openacc --modi $(resolve $f)
+  openacc.pl $* --version --cycle 49 --mesonh --dir src/local/mpa/openacc --modi $(resolve $f)
 done
 
 
