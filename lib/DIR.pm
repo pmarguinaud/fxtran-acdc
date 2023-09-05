@@ -17,7 +17,9 @@ sub removeDIR
   # !DIR$ 
   # !DEC$
 
-  my @dir = &F ('.//C[starts-with(string(.),"!DIR$") or starts-with(string(.),"!DEC$")]', $d);
+  my @dir = &F ('.//C[starts-with(string(.),"!DIR$") or '
+              .      'starts-with(string(.),"!DEC$") or '
+              .      'starts-with(string(.),"!NEC$")]', $d);
 
   for (@dir)
     {   

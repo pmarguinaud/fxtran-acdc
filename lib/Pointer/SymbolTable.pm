@@ -9,6 +9,7 @@ package Pointer::SymbolTable;
 
 use strict;
 use Fxtran;
+use Data::Dumper;
 
 sub getFieldAPIList
 {
@@ -77,6 +78,8 @@ sub getSymbolTable
 
   my %t;
 
+  my @pointer;
+
   for my $en_decl (@en_decl)
     {
       my ($N) = &F ('.//EN-N', $en_decl, 1);
@@ -96,7 +99,29 @@ sub getSymbolTable
                  nd => $nd,
                  en_decl => $en_decl,
                };
+      my ($pointer) = &F ('.//attribute-N[string(.)="POINTER"]', $stmt);
+      if ($pointer)
+        {
+          push @pointer, $en_decl;
+          $t{$N}{pointer} = 1;
+        }
     }
+
+  # Second pass : examine pointers who points to NPROMA data, they will get the nproma attribute
+
+  for my $en_decl (@en_decl)
+    {
+      my ($N) = &F ('.//EN-N', $en_decl, 1);
+      my @ta = &F ('.//pointer-a-stmt[./E-1/named-E[string(.)="?"]]/E-2/named-E/N', $N, $doc, 1);
+      for my $ta (@ta)
+        {
+          $t{$N}{nproma} = $t{$ta}{nproma};
+          $t{$N}{nd}     = $t{$ta}{nd};
+          $t{$N}{as}     = $t{$ta}{as}->cloneNode (1);
+          last;
+        }
+    }
+
 
   return \%t;
 }

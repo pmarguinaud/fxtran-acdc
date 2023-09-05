@@ -87,6 +87,7 @@ sub fieldifyDecl
         }
   
       &Decl::addAttributes ($stmt, qw (POINTER));
+      &Decl::removeAttributes ($stmt, qw (TARGET CONTIGUOUS));
   
       my $type_fld = &Pointer::SymbolTable::getFieldType ($s->{nd}, $s->{ts});
       $type_fld or die "Unknown type : " . $s->{ts}->textContent;
@@ -112,6 +113,45 @@ sub fieldifyDecl
   
     }
 
+  # Look for pointer assignements and optional arguments
+
+  for my $N (keys (%$t))
+    {
+      my $s = $t->{$N};
+      next unless ($s->{nproma});
+      if ($s->{arg})
+        {
+          my @present = &F ('.//named-E[string(.)="?"]', "PRESENT ($N)", $doc);
+ 
+          # Presentness for the field replaces presentness of array
+   
+          for my $present (@present)
+            {
+              $present->replaceNode (&e ('PRESENT(' . $s->{field}->textContent . ')'));
+            }
+        }
+      elsif ($s->{pointer})
+        {
+          my @pa = &F ('.//pointer-a-stmt[string(E-1)="?"]', $N, $doc);
+          for my $pa (@pa)
+            {
+
+              # Replace array pointer assignments by field pointer assignments
+
+              my ($E2) = &F ('./E-2/ANY-E', $pa, 1);
+              if ($E2 eq 'NULL()')
+                {
+                  $pa->replaceNode (&s ($s->{field}->textContent . " => NULL ()"));
+                }
+              else
+                {
+                  die $pa unless (my $s2 = $t->{$E2});
+                  die &Dumper ($s2) unless ($s2->{field});
+                  $pa->replaceNode (&s ($s->{field}->textContent . " => " . $s2->{field}->textContent));
+                }
+            }
+        }
+    }
 }
 
 sub makeParallel
@@ -488,6 +528,8 @@ sub setupLocalFields
       my $s = $t->{$n};
 
       next unless ($s->{nproma});
+      next if ($s->{pointer});
+
       next if ($s->{object_based} || $s->{arg});
       my @ss = &F ('./shape-spec-LT/shape-spec', $s->{as});
 
