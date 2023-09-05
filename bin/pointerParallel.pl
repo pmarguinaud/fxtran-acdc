@@ -34,6 +34,7 @@ use Bt;
 use Canonic;
 use Directive;
 use Cycle48;
+use Cycle49;
 
 sub updateFile
 {
@@ -71,9 +72,9 @@ my $suffix = '_parallel';
 
 my %opts = ('types-fieldapi-dir' => 'types-fieldapi', skip => 'PGFL,PGFLT1,PGMVT1,PGPSDT2D', 
              nproma => 'YDCPG_OPTS%KLON', 'types-constant-dir' => 'types-constant',
-             'post-parallel' => 'nullify');
-my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments stack84 use-acpy);
-my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel dir);
+             'post-parallel' => 'nullify', cycle => '49');
+my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments stack84 use-acpy arpege);
+my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel dir cycle);
 
 &GetOptions
 (
@@ -129,7 +130,14 @@ my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 800 -no-inc
 
 &Associate::resolveAssociates ($d);
 
-&Cycle48::simplify ($d);
+if ($opts{cycle} == 48)
+  {
+    &Cycle48::simplify ($d);
+  }
+elsif ($opts{cycle} == 49)
+  {
+    &Cycle49::simplify ($d, arpege => $opts{arpege});
+  }
 
 
 if ($opts{addYDCPG_OPTS})

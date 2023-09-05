@@ -96,7 +96,9 @@ sub useABOR1_ACC
 my $SUFFIX = '_OPENACC';
 
 my %opts = (cycle => 48, 'include-ext' => '.intfb.h');
-my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh remove-unused-includes modi value-attribute redim-arguments stack84);
+my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh 
+                 remove-unused-includes modi value-attribute redim-arguments stack84 arpege
+                 cpg_dyn);
 my @opts_s = qw (dir nocompute cycle include-ext inlined);
 
 &GetOptions
@@ -177,6 +179,11 @@ if ($opts{jijk2jlonjlev})
     &Identifier::rename ($d, JI => 'JLON', JK => 'JLEV');
   }
 
+if ($opts{cpg_dyn})
+  {
+    &Identifier::rename ($d, JROF => 'JLON');
+  }
+
 &Associate::resolveAssociates ($d);
 
 &Dimension::attachArraySpecToEntity ($d);
@@ -188,7 +195,7 @@ if ($opts{cycle} eq '48')
   }
 elsif ($opts{cycle} eq '49')
   {
-    &Cycle49::simplify ($d);
+    &Cycle49::simplify ($d, arpege => $opts{arpege});
   }
 
 &DIR::removeDIR ($d);
@@ -199,6 +206,8 @@ push @KLON, 'D%NIT' if ($opts{mesonh});
 my $KIDIA = 'KIDIA';
 
 $KIDIA = 'D%NIB' if ($opts{mesonh});
+
+$KIDIA = 'KSTART' if ($opts{cpg_dyn});
 
 &Loop::removeJlonLoops ($d, KLON => \@KLON, KIDIA => $KIDIA);
 
