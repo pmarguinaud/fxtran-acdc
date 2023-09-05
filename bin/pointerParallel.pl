@@ -81,6 +81,8 @@ my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
 
+$opts{nproma} = [split (m/,/o, $opts{nproma})];
+
 if ($opts{help})
   {
     print

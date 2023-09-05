@@ -62,7 +62,7 @@ sub getSymbolTable
 
   my %skip = map { ($_, 1) } @{ $opts{skip} || [] };
 
-  my $nproma = $opts{nproma};
+  my %nproma = map { ($_, 1)} @{ $opts{nproma} };
 
   my @fieldapi = &getFieldAPIList ($doc, $opts{'types-fieldapi-dir'});
   my %fieldapi = map { ($_, 1) } @fieldapi;
@@ -89,7 +89,7 @@ sub getSymbolTable
                  object => $fieldapi{$N},
                  constant => $constant{$N},
                  skip => $skip{$N},
-                 nproma => $as && $ss[0]->textContent eq $nproma,
+                 nproma => $as && $nproma{$ss[0]->textContent},
                  arg => $args{$N} || 0, 
                  ts => $ts->cloneNode (1), 
                  as => $as ? $as->cloneNode (1) : undef, 
