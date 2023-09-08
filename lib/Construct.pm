@@ -67,9 +67,16 @@ sub simplify
       my ($e2) = grep { $_->unique_key != $e1->unique_key } &F ('./ANY-E', $e);
 
       my ($i1, $i2);
+      my ($r1, $r2);
 
-      ($i1) = ($e1->textContent =~ m/^(\d+)$/o);
+      ($i1) =       ($e1->textContent =~ m/^(\d+)$/o);
       ($i2) = $e2 ? ($e2->textContent =~ m/^(\d+)$/o) : ();
+
+      ($r1) =       ($e1->textContent =~ m/^(\d*\.\d*)(?:_\w+)?$/o);
+      ($r2) = $e2 ? ($e2->textContent =~ m/^(\d*\.\d*)(?:_\w+)?$/o) : ();
+
+      $i1 = $r1 if (defined ($r1));
+      $i2 = $r2 if (defined ($r2));
 
       if (defined ($i1) && $e2 && defined ($i2))
         {
@@ -83,6 +90,10 @@ sub simplify
               elsif (($op eq '==') || ($op eq '.EQ.'))
                 {
                   $nn = &e ($i1 == $i2 ? '.TRUE.' : '.FALSE.');
+                }
+              elsif (($op eq '/=') || ($op eq '.NE.'))
+                {
+                  $nn = &e ($i1 == $i2 ? '.FALSE.' : '.TRUE.');
                 }
             }
         }
@@ -151,6 +162,8 @@ sub apply
       my @expr = &F ($k, $d);
       for my $expr (@expr)
         {
+          my $p = $expr->parentNode ();
+          next if ($p->nodeName eq 'E-1');
           $expr->replaceNode ($v->cloneNode (1));
         } 
     }
@@ -189,7 +202,7 @@ sub apply
 
   for my $expr (@expr)
     {
-      next unless ($expr->textContent =~ m/^(?:\.TRUE\.|\.FALSE\.|\d+)$/o);
+      next unless ($expr->textContent =~ m/^(?:\.TRUE\.|\.FALSE\.|\d+|\d*\.\d*(?:_\w+)?)$/o);
       next unless (&Fxtran::stmt ($expr));
       &simplify ($expr);
     }

@@ -88,6 +88,8 @@ sub fieldifyDecl
   
       &Decl::addAttributes ($stmt, qw (POINTER));
       &Decl::removeAttributes ($stmt, qw (TARGET CONTIGUOUS));
+
+      my $optional = &Decl::removeAttributes ($stmt, 'OPTIONAL') ? ", OPTIONAL " : "";
   
       my $type_fld = &Pointer::SymbolTable::getFieldType ($s->{nd}, $s->{ts});
       $type_fld or die "Unknown type : " . $s->{ts}->textContent;
@@ -98,7 +100,7 @@ sub fieldifyDecl
         {
           &Decl::removeAttributes ($stmt, 'INTENT');
           $s->{arg}->setData ("YD_$N");
-          ($decl_fld) = &s ("CLASS ($type_fld), POINTER :: YD_$N");
+          ($decl_fld) = &s ("CLASS ($type_fld), POINTER$optional :: YD_$N");
           $s->{field} = &n ("<named-E><N><n>YD_$N</n></N></named-E>");
         }
       else
@@ -152,6 +154,7 @@ sub fieldifyDecl
             }
         }
     }
+
 }
 
 sub makeParallel
@@ -179,6 +182,8 @@ sub makeParallel
   # Add a loop nest on blocks
 
   my ($stmt) = &F ('.//ANY-stmt', $par);
+
+  $stmt or return;
 
   my $indent = &Fxtran::getIndent ($stmt);
 
@@ -234,13 +239,9 @@ EOF
       # Object wrapping fields : replace by a pointer to data with all blocks
       if ($s->{object} && (! $onlysimplefields))
         {
-          my ($name) = &F ('./N/n/text()', $expr); 
-          my @ctl = &F ('./R-LT/component-R/ct', $expr, 1);
-          my $e = $expr->cloneNode (1);
           my @r = &F ('./R-LT/component-R', $expr);
-          $_->unbindNode for (@r);
+          my @ctl = &F ('./R-LT/component-R/ct', $expr, 1);
           my $ptr = join ('_', 'Z', $N, @ctl);
-          $name->setData ($ptr);
 
           # Create new entry in symbol table 
           # we record the pointer wich will be used to access the object component
@@ -250,31 +251,63 @@ EOF
               my $decl;
               eval
                 {
-                  $decl = &Pointer::Object::getObjectDecl ($key, $types);
+                  $decl = &Pointer::Object::getObjectDecl ($key, $types, allowConstant => 1);
                 };
               if (my $c = $@)
                 {
                   my $stmt = &Fxtran::stmt ($expr); 
                   die $c . $stmt->textContent;
                 }
-              my ($as) = &F ('.//array-spec', $decl);
-              my ($ts) = &F ('./_T-spec_/*', $decl);
-              my @ss = &F ('./shape-spec-LT/shape-spec', $as);
-              my $nd = scalar (@ss);
-              $t->{$ptr} = {
-                             object => 0,
-                             skip => 0,
-                             nproma => 1,
-                             arg => 0,
-                             ts => $ts,
-                             as => $as,
-                             nd => $nd,
-                             field => &Pointer::Object::getFieldFromObjectComponents ($N, @ctl),
-                             object_based => 1, # postpone pointer declaration
-                           };
+
+              if ($decl)
+                {
+                  my ($as) = &F ('.//array-spec', $decl);
+                  my ($ts) = &F ('./_T-spec_/*', $decl);
+                  my @ss = &F ('./shape-spec-LT/shape-spec', $as);
+                  my $nd = scalar (@ss);
+                  $t->{$ptr} = {
+                                 object => 0,
+                                 skip => 0,
+                                 nproma => 1,
+                                 arg => 0,
+                                 ts => $ts,
+                                 as => $as,
+                                 nd => $nd,
+                                 field => &Pointer::Object::getFieldFromExpr ($expr),
+                                 object_based => 1, # postpone pointer declaration
+                               };
+                }
+              else
+                {
+                  # This member is not backed by field api, it must be a constant
+                  $ptr = undef;
+                }
             }
-          $N = $ptr;
-          $s = $t->{$ptr};
+
+          if ($ptr)
+            {
+              # Backed by field api : remove all references other than last array references
+
+              my @r = &F ('./R-LT/ANY-R', $expr);
+
+              if (($r[-1]->nodeName eq 'array-R') or ($r[-1]->nodeName eq 'parens-R'))
+                {
+                  pop (@r);
+                }
+
+              $_->unbindNode for (@r);
+
+              my ($name) = &F ('./N/n/text()', $expr); 
+              $name->setData ($ptr);
+
+              $N = $ptr;
+              $s = $t->{$ptr};
+            }
+          else
+            {
+              $N = undef;
+              $s = undef;
+            }
         }
       # Local NPROMA array
       elsif ($s->{nproma})
@@ -286,9 +319,11 @@ EOF
           next;
         }
 
-      &addExtraIndex ($expr, &n ("<named-E><N><n>JBLK</n></N></named-E>"), $s);
-
-      &Call::grokIntent ($expr, \$intent{$N}, $find);
+      if ($s)
+        {
+          &addExtraIndex ($expr, &n ("<named-E><N><n>JBLK</n></N></named-E>"), $s);
+          &Call::grokIntent ($expr, \$intent{$N}, $find);
+        }
     }
 
   my %intent2access = qw (IN RDONLY INOUT RDWR OUT WRONLY);
@@ -403,6 +438,13 @@ sub addExtraIndex
   # Add reference list if needed
   
   my ($rlt) = &F ('./R-LT', $expr);
+
+  if ($rlt && (! &F ('./ANY-R', $rlt)))
+    {
+      $rlt->unbindNode ();
+      $rlt = undef;
+    }
+
   unless ($rlt)
     {
       $expr->appendChild ($rlt = &n ('<R-LT/>'));
@@ -411,6 +453,7 @@ sub addExtraIndex
   # Add array reference if needed
 
   my $r = $rlt->lastChild;
+
   unless ($r)
     {
       $rlt->appendChild ($r = &n ('<array-R>(<section-subscript-LT>' . join (',', ('<section-subscript>:</section-subscript>') x $s->{nd}) 
@@ -422,17 +465,21 @@ sub addExtraIndex
   if ($r->nodeName eq 'array-R')
     {
       my ($sslt) = &F ('./section-subscript-LT', $r);
-      $sslt->appendChild (&t (','));
+      $sslt->appendChild (&t (', '));
       $sslt->appendChild (&n ('<section-subscript><lower-bound><named-E><N><n>JBLK</n></N></named-E></lower-bound></section-subscript>'));
     }
   elsif ($r->nodeName eq 'parens-R')
     {
       my ($elt) = &F ('./element-LT', $r);
-      $elt->appendChild (&t (','));
+      $elt->appendChild (&t (', '));
       $elt->appendChild (&n ('<named-E><N><n>JBLK</n></N></named-E>'));
     }
   else
     {
+      my $stmt = &Fxtran::stmt ($expr);
+      print $expr, "\n";
+      print $expr->textContent, "\n";
+      print $stmt->textContent, "\n";
       die $r;
     }
 
@@ -450,6 +497,9 @@ sub callParallelRoutine
 
   my @arg = &F ('./arg-spec/arg/named-E/N/n/text()', $call);
   
+
+  # Append YDCPG_OPTS to parallel routines argument list if the argument does not exist
+
   my $ydcpg_opts = 0;
   for my $arg (@arg)
     {
@@ -473,11 +523,13 @@ sub callParallelRoutine
       my $s = $t->{$arg};
       next if ($s->{skip});
       $found++ if ($s->{object});
-   
+
+      my ($Arg) = &F ('ancestor::arg', $arg);
+
+      my ($k) = &F ('./arg-N/k/text()', $Arg);
 
       # Is the actual argument a dummy argument of the current routine ?
       my $isArg = $s->{arg};
-
 
       if ($s->{nproma})
         {
@@ -485,6 +537,12 @@ sub callParallelRoutine
           die ("No array reference allowed in CALL statement:\n$text\n") if (&F ('./R-LT', $expr));
           $s->{field} or die &Dumper ([$arg->textContent, $s, $text]);
           $expr->replaceNode ($s->{field}->cloneNode (1));
+
+          if ($k)
+            {
+              $k->setData ('YD_' . $k->textContent);
+            }
+
           $found++;
         }
       elsif ($s->{object})

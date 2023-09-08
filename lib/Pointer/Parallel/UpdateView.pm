@@ -61,6 +61,12 @@ sub makeParallel
 
   my ($prep) = &F ('./prep', $par1);
 
+  my $init = &s ('CALL YLCPG_BNDS%INIT (YDCPG_OPTS)');
+
+  $par1->insertBefore ($init, $do);
+  $par1->insertBefore (&t ("\n"), $do);
+
+
   my @prep_stmt = &F ('./ANY-stmt', $prep);
   my $first = $prep_stmt[0];
 

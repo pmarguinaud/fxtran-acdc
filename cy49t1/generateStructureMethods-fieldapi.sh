@@ -47,6 +47,24 @@ dir=src/local/ifsaux/util
 # -wipe --copy --load --save
 
 generateStructureMethods.pl \
+  --host --dir $dir --skip-components info_var --no-allocate $no_alloc \
+  --module-map $module_map --field-api --field-api-class info_var --tmp /tmp/$USER \
+  $(resolve .fypp/arpifs/module/variable_module.F90)
+
+if [ 0 -eq 1 ]
+then
+
+generateStructureMethods.pl \
+  --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
+  --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
+  field_array_module.F90
+
+generateStructureMethods.pl \
+  --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
+  --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
+  $(resolve arpifs/module/cpg_slmisc_type_mod.F90)
+
+generateStructureMethods.pl \
   --host --dir $dir --tmp /tmp/$USER \
   $(resolve arpifs/module/type_fluxes.F90)
 
@@ -69,11 +87,6 @@ generateStructureMethods.pl \
   --host --dir $dir --skip-components info_flu --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_flu --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/yomcfu_type.F90)
-
-generateStructureMethods.pl \
-  --host --dir $dir --skip-components info_var --no-allocate $no_alloc \
-  --module-map $module_map --field-api --field-api-class info_var --tmp /tmp/$USER \
-  $(resolve .fypp/arpifs/module/variable_module.F90)
 
 generateStructureMethods.pl \
   --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
@@ -125,5 +138,7 @@ generateStructureMethods.pl \
 
 generateStructureMethods.pl \
   --field-api --field-api-class info_cpg $(resolve .fypp/arpifs/module/mf_phys_next_state_type_mod.F90)
+
+fi
 
 linkTypes.pl

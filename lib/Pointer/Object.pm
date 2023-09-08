@@ -11,7 +11,6 @@ use strict;
 use Fxtran;
 use Data::Dumper;
 use Storable;
-use Carp qw (croak);
 
 {
 
@@ -19,13 +18,23 @@ my %decl;
 
 sub getObjectDecl
 {
-  my ($key, $types) = @_;
+  my ($key, $types, %opts) = @_;
 
   my $h = $types;
 
   unless ($decl{$key}) 
     {
-      $h->{$key} or &croak ($key);
+      unless ($h->{$key})
+        {
+          if ($opts{allowConstant})
+            {
+              return;
+            }
+          else
+            {
+              die $key;
+            }
+        }
       ($decl{$key}) = &s ($h->{$key});
     }
 
@@ -55,6 +64,70 @@ sub asFromDecl
   my ($as) = &F ('.//EN-decl/array-spec', $decl);
 
   return $as;
+}
+
+sub getFieldFromExpr
+{
+  my ($expr) = @_;
+
+  my @Ctl = &F ('./R-LT/component-R/ct/text()', $expr);
+  my $ctl = @Ctl ? $Ctl[-1]->textContent : undef;
+
+  my ($obj) = &F ('.//N', $expr, 1);
+
+  if (($obj eq 'YDVARS') && $ctl && ($ctl eq 'RCP'))
+     {
+     }
+  elsif (($obj eq 'YDVARS') && $ctl && ($ctl eq 'LT1'))
+     {
+     }
+  elsif (($obj eq 'YDVARS') && $ctl && ($ctl eq 'P'))
+     {
+       $ctl = 'FT0';
+     }
+  elsif ($ctl =~ m/^(?:T[019]|(?:DM|DL)[019]?)$/o)
+    {
+      $ctl = 'F' . $ctl; 
+    }
+  elsif ($obj eq 'YDMF_PHYS_SURF') 
+    {
+      if ($ctl =~ m/^P(\w+)_T[019]$/o)
+        {
+          $ctl =~ s/^P/F_/o;
+        }
+      else
+        {
+          $ctl =~ s/^P/F_/o;
+        }
+    }
+  else
+    {
+      $ctl = 'F_' . $ctl; 
+    }
+
+  my $e = $expr->cloneNode (1);
+  my ($RLT) = &F ('./R-LT', $e);
+
+  @Ctl = &F ('./component-R/ct/text()', $RLT);
+  if ($ctl)
+    {
+      $Ctl[-1]->setData ($ctl);
+    }
+
+  @Ctl = &F ('./ANY-R', $RLT);
+
+  while (my $Ctl = pop (@Ctl))
+    {
+      last unless (($Ctl->nodeName eq 'array-R') or ($Ctl->nodeName eq 'parens-R'));
+      $Ctl->unbindNode ();
+    }
+
+  if ($RLT->lastChild->nodeName eq '#text')
+    {
+      $RLT->lastChild->unbindNode ();
+    }
+
+  return $e;
 }
 
 sub getFieldFromObjectComponents

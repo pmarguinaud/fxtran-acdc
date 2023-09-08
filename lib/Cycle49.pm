@@ -29,7 +29,7 @@ sub simplify
       (
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYN%NCURRENT_ITER"]'  => $zero,
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYN%RINTOPT"]'        => &e ('1._JPRB'),
-        '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYN%NSPLTHOI"]'       => &e ('0'),
+        '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYN%NSPLTHOI"]'       => $zero,
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYN%LADVF"]'          => &e ('.TRUE.'),
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYN%LRHS_CURV"]'      => &e ('.FALSE.'),
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYN%LSPLTHOIGFL"]'    => &e ('.FALSE.'),
@@ -46,13 +46,26 @@ sub simplify
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYNA%LNHQE"]'         => &e ('.FALSE.'),
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYNA%LELTRA"]'        => &e ('.FALSE.'),
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYNA%LSVTSM"]'        => &e ('.FALSE.'),
-        '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYNA%LVERTFE"]'       => &e ('.TRUE.'),
+        '//named-E[string(.)="YDGEOMETRY%YRCVER%LVERTFE"]'             => &e ('.TRUE.'),
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYNA%LSPRT"]'         => &e ('.TRUE.'),
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYNA%NVDVAR"]'        => &e ('3'),
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYNA%ND4SYS"]'        => &e ('2'),
+        '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYNA%LSLINL"]'        => &e ('.FALSE.'),
         '//named-E[string(.)="LLCT"]'                                  => &e ('.FALSE.'),
         '//named-E[string(.)="LLCTC"]'                                 => &e ('.FALSE.'),
+        '//named-E[string(.)="YDMODEL%YRML_PHY_EC%YREPHY%LSLPHY"]'     => &e ('.FALSE.'),
       );
+
+      my @tmp = @arpege;
+
+      while (my ($k, $v) = splice (@tmp, 0, 2))
+        {
+          $k =~ s/YDMODEL%YRML_DYN/YDML_DYN/o;
+          push @arpege, ($k, $v->cloneNode (1));
+          $k =~ s/YDML_DYN%YRDYN/YDDYN/o;
+          push @arpege, ($k, $v->cloneNode (1));
+        }
+
     }
 
   &Construct::apply 

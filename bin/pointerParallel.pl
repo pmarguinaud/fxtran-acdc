@@ -124,6 +124,11 @@ my $types = &Storable::retrieve ("$opts{'types-fieldapi-dir'}/decls.dat");
 
 my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 800 -no-include -no-cpp -construct-tag -directive ACDC -canonic)]);
 
+for my $unseen (&F ('.//unseen', $d))
+  {
+    $d->unbindNode ();
+  }
+
 &Subroutine::rename ($d, sub { return $_[0] . uc ($suffix) });
 
 # Prepare the code
@@ -230,6 +235,7 @@ if ($FILTER)
 my @call = &F ('.//call-stmt[not(ancestor::parallel-section)]' # Skip calls in parallel sections
             . '[not(string(procedure-designator)="DR_HOOK")]'  # Skip DR_HOOK calls
             . '[not(string(procedure-designator)="ABOR1")]'    # Skip ABOR1 calls
+            . '[not(string(procedure-designator)="ABORT")]'    # Skip ABORT calls
             . '[not(procedure-designator/named-E/R-LT)]'       # Skip objects calling methods
             . '[not(ancestor::serial-section)]', $d);          # Skip calls in serial sections
 
@@ -313,7 +319,15 @@ EOF
 
         my $onlySimpleFields = $class->onlySimpleFields ();
 
-        my $par1 = $par{$onlySimpleFields}->cloneNode (1);
+        my $par1 = $par{$onlySimpleFields};
+
+        unless ($par1)
+          {
+            $if_construct->unbindNode ();
+            next;
+          }
+
+        $par1 = $par1->cloneNode (1);
 
         $par1 = $class->makeParallel ($par1, $t, %opts);
         

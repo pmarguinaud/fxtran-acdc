@@ -153,8 +153,10 @@ sub addAttributes
   my ($stmt, @attr) = @_; 
   my $ts = $stmt->firstChild;
 
+  my %attr = map { ($_, 1) } (&F ('.//attribute-N', $stmt, 1));
   for my $attr (@attr)
     {   
+      next if ($attr{$attr});
       $stmt->insertAfter (&n ("<attribute><attribute-N>$attr</attribute-N></attribute>"), $ts);
       $stmt->insertAfter (&t (', '), $ts);
     }   

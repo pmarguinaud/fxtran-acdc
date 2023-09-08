@@ -18,8 +18,6 @@ sub skip
   
   return unless ($attr->{POINTER});
 
-  return 1 if ($comp eq 'P');
-
   return $class->getFieldAPIMember (@_);
 }
 
@@ -29,6 +27,11 @@ sub getFieldAPIMember
   my ($type, $comp, $attr, $en_decl_hash) = @_;
   
   return unless ($attr->{POINTER});
+
+  if ($comp eq 'P')
+    {
+      $comp = 'T0';
+    }
 
   if (my $en_decl = $en_decl_hash->{"F$comp"})
     {
