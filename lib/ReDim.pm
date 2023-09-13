@@ -10,6 +10,7 @@ package ReDim;
 use strict;
 use FileHandle;
 use Data::Dumper;
+use List::MoreUtils qw (uniq);
 
 use FindBin qw ($Bin);
 use lib $Bin;
@@ -20,11 +21,11 @@ sub reDim
   my $d = shift;
   my %args = @_;
 
-  my @KLON = @{ $args{KLON} || ['KLON'] };
+  my @KLON = &uniq (@{ $args{KLON} || ['KLON'] });
   
   my @en_decl = 
     (map { my $n = $_; &F ('.//EN-decl[./array-spec/shape-spec-LT[string(shape-spec)="?"]]', $n, $d) } @KLON);
-  
+
   EN_DECL : for my $en_decl (@en_decl)
     {
       my ($N) = &F ('./EN-N', $en_decl, 1);
@@ -115,6 +116,7 @@ sub reDim
         }
   
     }
+
 }
 
 sub redimArguments
