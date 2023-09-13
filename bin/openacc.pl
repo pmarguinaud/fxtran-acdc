@@ -81,7 +81,9 @@ sub updateFile
 sub useABOR1_ACC
 {
   my $d = shift;
+
   my @abor1 = &F ('.//call-stmt/procedure-designator/named-E/N/n/text()[string(.)="ABOR1"]', $d);
+
   for my $abor1 (@abor1)
     {
       $abor1->setData ('ABOR1_ACC');
@@ -91,6 +93,20 @@ sub useABOR1_ACC
     {
       $_->unbindNode ();
     }
+}
+
+sub changeWRITEintoPRINT
+{
+  my $d = shift;
+
+  my @write = &F ('.//write-stmt[string(./io-control-spec/io-control)="NULERR" or string(./io-control-spec/io-control)="NULOUT"]', $d);
+  
+  for my $write (@write)
+    {
+      my ($output) = &F ('./output-item-LT', $write, 1);
+      $write->replaceNode (&s ("PRINT *, $output"));
+    }
+
 }
 
 my $SUFFIX = '_OPENACC';
@@ -237,6 +253,7 @@ if ($opts{'value-attribute'})
 &Include::removeUnusedIncludes ($d) if ($opts{'remove-unused-includes'});
 
 &useABOR1_ACC ($d);
+&changeWRITEintoPRINT ($d);
 
 if ($opts{version})
   {
