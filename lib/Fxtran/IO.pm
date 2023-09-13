@@ -37,11 +37,27 @@ sub process_decl
   
   my $skip = $opts->{'skip-components'}->($sname, $name, \%attr, $en_decl_hash);
 
+  if (my $fac = $opts->{'field-api-class'})
+    {
+      eval "use $fac";
+      if (my $c = $@)
+        {
+          die $c;
+        }
+      my $fam = $fac->getFieldAPIMember ($sname, $name, \%attr, $en_decl_hash);
+      $skip = 1 if ($fam);
+    }
+
   if ($skip)
     {
       if ($attr{POINTER})
         {
           push @BODY_LOAD, "NULLIFY ($prefix$name)";
+#         push @BODY_COPY, "!\$acc serial present (YD)",
+#                          "NULLIFY ($prefix$name)",
+#                          "!\$acc end serial",
+#                          "\n";
+                           
         }
       goto RETURN;
     }
@@ -70,7 +86,8 @@ sub process_decl
       @ss = &F ('.//attribute/array-spec/shape-spec-LT/shape-spec', $stmt, 1);
     }
   
-  
+  my $isFieldAPI = $ttspec =~ m/^CLASS\(FIELD_\w+\)$/o;
+
   if ($attr{POINTER} || $attr{ALLOCATABLE})
     {
       my $func = $attr{POINTER} ? 'ASSOCIATED' : 'ALLOCATED';
@@ -84,8 +101,8 @@ sub process_decl
       $L{$name} = 1;
       push @BODY_SAVE, "IF (L$name) THEN\n";
       push @BODY_LOAD, "IF (L$name) THEN\n";
-      push @BODY_COPY, "IF (L$name) THEN\n";
-      push @BODY_WIPE, "IF (L$name) THEN\n";
+      push @BODY_COPY, $isFieldAPI ? "IF (L$name .AND. LLFIELDAPI) THEN\n" : "IF (L$name) THEN\n";
+      push @BODY_WIPE, $isFieldAPI ? "IF (L$name .AND. LLFIELDAPI) THEN\n" : "IF (L$name) THEN\n";
       push @BODY_SIZE, "IF (L$name) THEN\n";
       push @BODY_HOST, "IF (L$name) THEN\n" unless ($intrinsic);
       if (@ss)
@@ -102,9 +119,13 @@ sub process_decl
         {
           push @BODY_LOAD, "ALLOCATE ($prefix$name)\n" unless ($tname && grep { $_ eq $tname } @{ $opts->{'no-allocate'} });
         }
-      push @BODY_COPY, "!\$acc enter data create ($prefix$name)\n";
-      push @BODY_COPY, "!\$acc update device ($prefix$name)\n";
-      push @BODY_WIPE, "!\$acc exit data detach ($prefix$name)\n";
+
+      if (! $isFieldAPI)
+        {
+          push @BODY_COPY, "!\$acc enter data create ($prefix$name)\n",
+                           "!\$acc update device ($prefix$name)\n";
+          push @BODY_WIPE, "!\$acc exit data detach ($prefix$name)\n";
+        }
     }
   
 
@@ -166,10 +187,22 @@ sub process_decl
                    . "CALL LOAD_$tname (KLUN, $prefix$name" . $J . ")\n";
       push @BODY_HOST, ('  ' x scalar (@ss)) 
                    . "CALL HOST_$tname ($prefix$name" . $J . ")\n";
-      push @BODY_COPY, ('  ' x scalar (@ss)) 
-                   . "CALL COPY_$tname ($prefix$name" . $J . ", LDCREATED=.TRUE.)\n";
-      push @BODY_WIPE, ('  ' x scalar (@ss)) 
-                   . "CALL WIPE_$tname ($prefix$name" . $J . ", LDDELETED=.TRUE.)\n";
+
+      if ($isFieldAPI)
+        {
+          push @BODY_COPY, ('  ' x scalar (@ss)) 
+                       . "CALL COPY_$tname ($prefix$name" . $J . ", LDCREATED=.TRUE.)\n";
+          push @BODY_WIPE, ('  ' x scalar (@ss)) 
+                       . "CALL WIPE_$tname ($prefix$name" . $J . ", LDDELETED=.TRUE.)\n";
+        }
+      else
+        {
+          push @BODY_COPY, ('  ' x scalar (@ss)) 
+                       . "CALL COPY_$tname ($prefix$name" . $J . ", LDCREATED=.TRUE., LDFIELDAPI=LDFIELDAPI)\n";
+          push @BODY_WIPE, ('  ' x scalar (@ss)) 
+                       . "CALL WIPE_$tname ($prefix$name" . $J . ", LDDELETED=.TRUE., LDFIELDAPI=LDFIELDAPI)\n";
+        }
+
       push @BODY_SIZE, ('  ' x scalar (@ss))
                    . "ISIZE = SIZE_$tname ($prefix$name" . $J . ", CDPATH//'%$name', $LDPRINT)\n", 
                      "JSIZE = JSIZE + ISIZE\n",
@@ -198,10 +231,13 @@ sub process_decl
           push @BODY_LOAD, "ELSE\n", "NULLIFY ($prefix$name)\n";
         }
       push @BODY_LOAD, "ENDIF\n";
-      push @BODY_COPY, "!\$acc enter data attach ($prefix$name)\n";
-      push @BODY_COPY, "ENDIF\n";
+      push @BODY_COPY, "!\$acc enter data attach ($prefix$name)\n",
+                       "ENDIF\n";
+      if (! $isFieldAPI)
+        {
+          push @BODY_WIPE, "!\$acc exit data delete ($prefix$name)\n";
+        }
       push @BODY_HOST, "ENDIF\n" unless ($intrinsic);
-      push @BODY_WIPE, "!\$acc exit data delete ($prefix$name)\n";
       push @BODY_WIPE, "ENDIF\n";
       push @BODY_SIZE, "ENDIF\n";
     }
@@ -290,7 +326,18 @@ sub processTypes1
   
       my (@BODY_SAVE, @BODY_LOAD, @BODY_COPY, @BODY_WIPE, @BODY_SIZE, @BODY_HOST);
 
-      push @BODY_COPY, "LLCREATED = .FALSE.\n",
+      push @BODY_WIPE,  
+                       "LLFIELDAPI = .FALSE.\n",
+                       "IF (PRESENT (LDFIELDAPI)) THEN\n",
+                       "LLFIELDAPI = LDFIELDAPI\n",
+                       "ENDIF\n";
+      push @BODY_COPY,  
+                       "LLFIELDAPI = .FALSE.\n",
+                       "IF (PRESENT (LDFIELDAPI)) THEN\n",
+                       "LLFIELDAPI = LDFIELDAPI\n",
+                       "ENDIF\n";
+      push @BODY_COPY,  
+                       "LLCREATED = .FALSE.\n",
                        "IF (PRESENT (LDCREATED)) THEN\n",
                        "LLCREATED = LDCREATED\n",
                        "ENDIF\n",
@@ -308,9 +355,9 @@ sub processTypes1
             }
           push @BODY_SAVE, "CALL SAVE_$extends (KLUN, YLSUPER)\n";
           push @BODY_LOAD, "CALL LOAD_$extends (KLUN, YLSUPER)\n";
-          push @BODY_COPY, "CALL COPY_$extends (YLSUPER, LDCREATED=.TRUE.)\n";
+          push @BODY_COPY, "CALL COPY_$extends (YLSUPER, LDCREATED=.TRUE., LDFIELDAPI=LDFIELDAPI)\n";
           push @BODY_HOST, "CALL HOST_$extends (YLSUPER)\n";
-          push @BODY_WIPE, "CALL WIPE_$extends (YLSUPER, LDDELETED=.TRUE.)\n";
+          push @BODY_WIPE, "CALL WIPE_$extends (YLSUPER, LDDELETED=.TRUE., LDFIELDAPI=LDFIELDAPI)\n";
           push @BODY_SIZE, "KSIZE = KSIZE + SIZE_$extends (YLSUPER, CDPATH, LDPRINT)\n";
         }
     
@@ -341,9 +388,9 @@ sub processTypes1
   
       my $DECL_SAVE = '';
       my $DECL_LOAD = '';
-      my $DECL_COPY = "LOGICAL :: LLCREATED\n";
+      my $DECL_COPY = "LOGICAL :: LLCREATED\n"; $DECL_COPY .= "LOGICAL :: LLFIELDAPI\n";
       my $DECL_HOST = '';
-      my $DECL_WIPE = "LOGICAL :: LLDELETED\n";
+      my $DECL_WIPE = "LOGICAL :: LLDELETED\n"; $DECL_WIPE .= "LOGICAL :: LLFIELDAPI\n";
       my $DECL_SIZE = "INTEGER*8 :: ISIZE, JSIZE\n";
 
       if ($extends)
@@ -451,19 +498,19 @@ $type ($name), TARGET :: YD
 EOF
 
       $CONTAINS_COPY .= << "EOF";
-SUBROUTINE COPY_$name (YD, LDCREATED)
+SUBROUTINE COPY_$name (YD, LDCREATED, LDFIELDAPI)
 $USE_COPY
 IMPLICIT NONE
 $type ($name), INTENT (IN), TARGET :: YD
-LOGICAL, OPTIONAL, INTENT (IN) :: LDCREATED
+LOGICAL, OPTIONAL, INTENT (IN) :: LDCREATED, LDFIELDAPI
 EOF
 
       $CONTAINS_WIPE .= << "EOF";
-SUBROUTINE WIPE_$name (YD, LDDELETED)
+SUBROUTINE WIPE_$name (YD, LDDELETED, LDFIELDAPI)
 $USE_WIPE
 IMPLICIT NONE
 $type ($name), INTENT (IN), TARGET :: YD
-LOGICAL, OPTIONAL, INTENT (IN) :: LDDELETED
+LOGICAL, OPTIONAL, INTENT (IN) :: LDDELETED, LDFIELDAPI
 EOF
 
       $CONTAINS_SIZE .= << "EOF";

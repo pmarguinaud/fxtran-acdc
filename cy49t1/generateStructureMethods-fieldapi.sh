@@ -47,9 +47,22 @@ dir=src/local/ifsaux/util
 # -wipe --copy --load --save
 
 generateStructureMethods.pl \
-  --host --dir $dir --skip-components info_var --no-allocate $no_alloc \
+  --wipe --copy --host --dir $dir --skip-components info_var --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_var --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/variable_module.F90)
+
+
+generateStructureMethods.pl \
+  --wipe --copy --host --dir $dir \
+  --field-api --tmp /tmp/$USER \
+  $(resolve .fypp/arpifs/module/field_variables_mod.F90)
+
+exit
+
+generateStructureMethods.pl \
+  --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
+  --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
+  $(resolve .fypp/arpifs/module/cpg_ddh_tnd_type_mod.F90)
 
 if [ 0 -eq 1 ]
 then
@@ -92,11 +105,6 @@ generateStructureMethods.pl \
   --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/cpg_type_mod.F90)
-
-generateStructureMethods.pl \
-  --host --dir $dir \
-  --field-api --tmp /tmp/$USER \
-  $(resolve .fypp/arpifs/module/field_variables_mod.F90)
 
 generateStructureMethods.pl \
   --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc --tmp /tmp/$USER \

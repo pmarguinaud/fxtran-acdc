@@ -72,9 +72,9 @@ my $suffix = '_parallel';
 
 my %opts = ('types-fieldapi-dir' => 'types-fieldapi', skip => 'PGFL,PGFLT1,PGMVT1,PGPSDT2D', 
              nproma => 'YDCPG_OPTS%KLON', 'types-constant-dir' => 'types-constant',
-             'post-parallel' => 'nullify', cycle => '49');
+             'post-parallel' => 'nullify', cycle => '49', 'jlon', 'JLON');
 my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments stack84 use-acpy arpege);
-my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel dir cycle);
+my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel dir cycle jlon);
 
 &GetOptions
 (
@@ -123,6 +123,15 @@ my $find = 'Finder::Pack'->new ();
 my $types = &Storable::retrieve ("$opts{'types-fieldapi-dir'}/decls.dat");
 
 my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 800 -no-include -no-cpp -construct-tag -directive ACDC -canonic)]);
+
+if ($opts{jlon} ne 'JLON')
+  {
+    my @expr = &F ('.//named-E[string(N)="?"]/N/n/text()', $opts{jlon}, $d);
+    for (@expr) 
+      {
+        $_->setData ('JLON');
+      }
+  }
 
 for my $unseen (&F ('.//unseen', $d))
   {

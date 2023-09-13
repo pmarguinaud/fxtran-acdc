@@ -46,7 +46,7 @@ sub removeJlonArraySyntax
 {
   my $d = shift;
 
-  my @ss = &F ('.//section-subscript[string(.)="1:YDCPG_OPTS%KLON"]', $d);
+  my @ss = &F ('.//section-subscript[string(.)="1:YDCPG_OPTS%KLON" or string(.)="YLCPG_BNDS%KIDIA:YLCPG_BNDS%KFDIA"]', $d);
 
   for my $ss (@ss)
     {

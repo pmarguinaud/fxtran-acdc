@@ -202,12 +202,13 @@ elsif ($opts{cycle} eq '49')
 
 my @KLON = ('KLON', 'YDGEOMETRY%YRDIM%NPROMA', 'YDCPG_OPTS%KLON');
 push @KLON, 'D%NIT' if ($opts{mesonh});
+push @KLON, ('YDGEOMETRY%YRDIM%NPROMA', 'KPROMA') if ($opts{cpg_dyn});
 
 my $KIDIA = 'KIDIA';
 
 $KIDIA = 'D%NIB' if ($opts{mesonh});
 
-$KIDIA = 'KSTART' if ($opts{cpg_dyn});
+$KIDIA = 'KST' if ($opts{cpg_dyn});
 
 &Loop::removeJlonLoops ($d, KLON => \@KLON, KIDIA => $KIDIA);
 
