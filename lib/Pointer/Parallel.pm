@@ -115,7 +115,7 @@ sub fieldifyDecl
   
     }
 
-  # Look for pointer assignements and optional arguments
+  # Look for pointer assignments and optional arguments
 
   for my $N (keys (%$t))
     {
@@ -147,7 +147,7 @@ sub fieldifyDecl
                 }
               else
                 {
-                  die $pa unless (my $s2 = $t->{$E2});
+                  die $pa->textContent unless (my $s2 = $t->{$E2});
                   die &Dumper ($s2) unless ($s2->{field});
                   $pa->replaceNode (&s ($s->{field}->textContent . " => " . $s2->{field}->textContent));
                 }
@@ -496,7 +496,6 @@ sub callParallelRoutine
   my $text = $call->textContent;
 
   my @arg = &F ('./arg-spec/arg/named-E/N/n/text()', $call);
-  
 
   # Append YDCPG_OPTS to parallel routines argument list if the argument does not exist
 
@@ -553,8 +552,15 @@ sub callParallelRoutine
             {
               my $e = &Pointer::Object::getFieldFromObjectComponents ($arg->textContent, @ctl);
               $expr->replaceNode ($e);
+              if ($k)
+                {
+                  $k->setData ('YD_' . $k->textContent);
+                }
             }
         }
+
+
+
     }
 
   return $found;

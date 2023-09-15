@@ -19,6 +19,41 @@ sub simplify
 
   &Construct::changeIfStatementsInIfConstructs ($d);
  
+
+  # Do not use inner pointers of YDGEOMETRY : please fix the code
+  #  
+  # The following pointers of YDGEOMETRY :
+  #     TYPE(TVAB),POINTER     :: YRVAB => NULL()    
+  #     TYPE(TVETA),POINTER    :: YRVETA => NULL()
+  #     TYPE(TVFE),POINTER     :: YRVFE => NULL()
+  #     TYPE(TCVER),POINTER    :: YRCVER => NULL()
+  #     LOGICAL,POINTER  :: LNONHYD_GEOM => NULL()  
+  # point to the inner member of this member :
+  #     TYPE(TVERTICAL_GEOM) :: YRVERT_GEOM
+
+  
+  my $die = 0;
+
+  for my $m (qw (LNONHYD_GEOM YRVAB YRVETA YRVFE YRCVER))
+    {
+      my @expr = &F ('.//named-E[string(./N)="YDGEOMETRY"][./R-LT/component-R[string(./ct)="YRCVER"]]', $d);
+      for my $expr (@expr)
+        {
+          my @ct = &F ('./R-LT/component-R/ct/text()', $expr, 1);
+
+          if ($ct[0] eq $m)
+            {
+              print $expr->textContent, "\n"; $die++;
+             
+              my ($rlt) = &F ('./R-LT', $expr);
+#             $rlt->insertBefore (&n ('<component-R>%<ct>YRVERT_GEOM</ct></component-R>'), $rlt->firstChild);
+            }
+
+        }
+    }
+
+  die "Fix the code !" if ($die);
+
   my @arpege;
 
   if ($opts{arpege})
@@ -47,13 +82,19 @@ sub simplify
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYNA%LELTRA"]'        => &e ('.FALSE.'),
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYNA%LSVTSM"]'        => &e ('.FALSE.'),
         '//named-E[string(.)="YDGEOMETRY%YRCVER%LVERTFE"]'             => &e ('.TRUE.'),
+        '//named-E[string(.)="YDGEOMETRY%YRVERT_GEOM%YRCVER%LVERTFE"]' => &e ('.TRUE.'),
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYNA%LSPRT"]'         => &e ('.TRUE.'),
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYNA%NVDVAR"]'        => &e ('3'),
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYNA%ND4SYS"]'        => &e ('2'),
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYNA%LSLINL"]'        => &e ('.FALSE.'),
+        '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYNA%LSACC"]'         => &e ('.FALSE.'),
         '//named-E[string(.)="LLCT"]'                                  => &e ('.FALSE.'),
         '//named-E[string(.)="LLCTC"]'                                 => &e ('.FALSE.'),
         '//named-E[string(.)="YDMODEL%YRML_PHY_EC%YREPHY%LSLPHY"]'     => &e ('.FALSE.'),
+        '//named-E[string(.)="YDCPG_OPTS%LSFORC"]'                     => &e ('.FALSE.'),
+        '//named-E[string(.)="LGWDIAGS_ON"]'                           => &e ('.FALSE.'),
+        '//named-E[string(.)="YDMODEL%YRML_DYN%YRSPNG%LNSPONGE"]'      => &e ('.FALSE.'),
+        '//named-E[string(.)="YDCPG_OPTS%LNUDG"]'                      => &e ('.FALSE.'),
       );
 
       my @tmp = @arpege;

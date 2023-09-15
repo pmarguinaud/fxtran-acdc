@@ -83,6 +83,7 @@ my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel
 );
 
 $opts{nproma} = [split (m/,/o, $opts{nproma})];
+$opts{jlon} = [split (m/,/o, $opts{jlon})];
 
 if ($opts{help})
   {
@@ -124,9 +125,9 @@ my $types = &Storable::retrieve ("$opts{'types-fieldapi-dir'}/decls.dat");
 
 my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 800 -no-include -no-cpp -construct-tag -directive ACDC -canonic)]);
 
-if ($opts{jlon} ne 'JLON')
+for my $jlon  (@{ $opts{jlon} })
   {
-    my @expr = &F ('.//named-E[string(N)="?"]/N/n/text()', $opts{jlon}, $d);
+    my @expr = &F ('.//named-E[string(N)="?"]/N/n/text()', $jlon, $d);
     for (@expr) 
       {
         $_->setData ('JLON');
@@ -259,6 +260,7 @@ for my $call (@call)
         unless ($seen{$name->textContent}++)
           {
             my ($include) = &F ('.//include[./filename[string(.)="?"]]', lc ($name) . '.intfb.h', $d);
+            $include or die $call;
             $include->parentNode->insertAfter (&n ('<include>#include "<filename>' . lc ($name) . '_parallel.intfb.h</filename>"</include>'), $include);
             $include->parentNode->insertAfter (&t ("\n"), $include);
           }
