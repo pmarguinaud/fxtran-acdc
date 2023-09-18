@@ -40,6 +40,7 @@ use Dimension;
 use Include;
 use Inline;
 use Finder::Pack;
+use Pointer;
 
 sub addValueAttribute
 {
@@ -114,7 +115,7 @@ my $SUFFIX = '_OPENACC';
 my %opts = (cycle => 48, 'include-ext' => '.intfb.h');
 my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh 
                  remove-unused-includes modi value-attribute redim-arguments stack84 arpege
-                 cpg_dyn);
+                 cpg_dyn pointers);
 my @opts_s = qw (dir nocompute cycle include-ext inlined);
 
 &GetOptions
@@ -220,13 +221,26 @@ my @KLON = ('KLON', 'YDGEOMETRY%YRDIM%NPROMA', 'YDCPG_OPTS%KLON');
 push @KLON, 'D%NIT' if ($opts{mesonh});
 push @KLON, ('YDGEOMETRY%YRDIM%NPROMA', 'KPROMA') if ($opts{cpg_dyn});
 
-my $KIDIA = 'KIDIA';
+my ($KIDIA, $KFDIA) = qw (KIDIA KFDIA);
 
-$KIDIA = 'D%NIB' if ($opts{mesonh});
+if ($opts{mesonh})
+  {
+    ($KIDIA, $KFDIA) = ('D%NIB', 'D%NIE');
+  }
 
-$KIDIA = 'KST' if ($opts{cpg_dyn});
+if ($opts{cpg_dyn})
+  {
+    ($KIDIA, $KFDIA) = ('KST', 'KEND')
+  }
 
-&Loop::removeJlonLoops ($d, KLON => \@KLON, KIDIA => $KIDIA);
+
+my @pointer;
+
+
+@pointer = &Pointer::setPointersDimensions ($d)
+  if ($opts{pointers});
+
+&Loop::removeJlonLoops ($d, KLON => \@KLON, KIDIA => $KIDIA, KFDIA => $KFDIA, pointer => \@pointer);
 
 &ReDim::reDim ($d, KLON => \@KLON, 'redim-arguments' => $opts{'redim-arguments'});
 
@@ -243,10 +257,17 @@ if ($opts{'value-attribute'})
 
 &OpenACC::routineSeq ($d);
 
-&Stack::addStack ($d, 
+&Stack::addStack 
+(
+  $d, 
   skip => sub { my $proc = shift; grep ({ $_ eq $proc } @{ $opts{nocompute} }) },
   stack84 => $opts{stack84},
-  KLON => \@KLON);
+  KLON => \@KLON,
+  pointer => \@pointer,
+);
+
+&Pointer::handleAssociations ($d, pointers => \@pointer)
+  if ($opts{pointers});
 
 &DrHook::remove ($d) unless ($opts{drhook});
 

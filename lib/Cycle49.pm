@@ -28,7 +28,7 @@ sub simplify
   #     TYPE(TVFE),POINTER     :: YRVFE => NULL()
   #     TYPE(TCVER),POINTER    :: YRCVER => NULL()
   #     LOGICAL,POINTER  :: LNONHYD_GEOM => NULL()  
-  # point to the inner member of this member :
+  # Point to the inner members of this component :
   #     TYPE(TVERTICAL_GEOM) :: YRVERT_GEOM
 
   
@@ -36,7 +36,7 @@ sub simplify
 
   for my $m (qw (LNONHYD_GEOM YRVAB YRVETA YRVFE YRCVER))
     {
-      my @expr = &F ('.//named-E[string(./N)="YDGEOMETRY"][./R-LT/component-R[string(./ct)="YRCVER"]]', $d);
+      my @expr = &F ('.//named-E[string(./N)="YDGEOMETRY"][./R-LT/component-R[string(./ct)="?"]]', $m, $d);
       for my $expr (@expr)
         {
           my @ct = &F ('./R-LT/component-R/ct/text()', $expr, 1);

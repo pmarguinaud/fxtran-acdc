@@ -58,7 +58,10 @@ sub removeJlonArraySyntax
 
 sub fixSUMIdiom
 {
-  my $d = shift;
+  my ($d, %opts) = @_;
+
+  my $KIDIA = $opts{KIDIA} || 'KIDIA';
+  my $KFDIA = $opts{KFDIA} || 'KFDIA';
 
 # The following is used sometimes (eg acbl89.F90)
 #
@@ -80,14 +83,15 @@ sub fixSUMIdiom
 
   for my $R ('parens', 'function')
     {
-      my @sum = 
-      (
-        &F ('//E-2/named-E[string(N)="SUM"]'
-       . "[./R-LT/$R-R/element-LT/element/named-E/R-LT/array-R/section-subscript-LT"
-       . '/section-subscript[string(.)="KIDIA:KFDIA"]]', $d),
-      );
 
-# So we need to replace the SUM by a scalar assignment
+      my $xpath =
+         '//E-2/named-E[string(N)="SUM"]'
+       . "[./R-LT/$R-R/element-LT/element/named-E/R-LT/array-R/section-subscript-LT"
+       . "/section-subscript[string(.)=\"$KIDIA:$KFDIA\"]]";
+
+      my @sum = &F ($xpath, $d);
+
+# So we need to replace the SUM by a scalar expression
 
       for my $sum (@sum)
         {
@@ -105,14 +109,19 @@ sub removeJlonLoops
   my %opts = @_;
 
   my @KLON = qw (YDCPG_OPTS%KLON KLON);
-  my $KIDIA = 'KIDIA';
+  my ($KIDIA, $KFDIA) = qw (KIDIA KFDIA);
+  my @pointer = @{ $opts{pointer} || [] };
 
   @KLON = @{ $opts{KLON} } if ($opts{KLON} );
-  $KIDIA = $opts{KIDIA} if ($opts{KIDIA});
+
+  if ($opts{KIDIA})
+    {
+      ($KIDIA, $KFDIA) = @opts{qw (KIDIA KFDIA)};
+    }
 
   my $noexec = &Scope::getNoExec ($d);
 
-  &fixSUMIdiom ($d);
+  &fixSUMIdiom ($d, KIDIA => $KIDIA, KFDIA => $KFDIA);
  
   unless (&F ('.//T-decl-stmt[.//EN-decl[string(EN-N)="JLON"]]', $d))
     {
@@ -153,7 +162,6 @@ sub removeJlonLoops
     {
       &removeJlonLoopsFieldAPI ($d, $d);
     }
-
 
   for my $NPROMA (sort keys (%NPROMA))
     {
@@ -216,6 +224,15 @@ sub setJLON
             {
               return;
             }
+        }
+    }
+  
+  # Do not change anything in pointer assignment statements
+  if (my $p = $expr->parentNode)
+    {
+      if (($p->nodeName =~ m/^E-[12]$/o) && (my $q = $p->parentNode))
+        {
+          return if ($q->nodeName eq 'pointer-a-stmt');
         }
     }
 

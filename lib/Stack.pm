@@ -43,6 +43,8 @@ sub addStack
 
   my @KLON = @{ $opts{KLON} || [qw (KLON YDCPG_OPTS%KLON)] };
 
+  my @pointer = @{ $opts{pointer} || [] };
+
   my $skip = $opts{skip};
   my $local = exists $opts{local} ? $opts{local} : 1;
 
@@ -152,9 +154,11 @@ sub addStack
                   $temp->parentNode->insertAfter (&t ("\n"), $temp);
                 }
       
-              if ($opts{stack84})
+              if (! grep { $n eq $_ } @pointer)
                 {
-                  my ($if) = &fxtran::parse (fragment => << "EOF");
+                  if ($opts{stack84})
+                    {
+                      my ($if) = &fxtran::parse (fragment => << "EOF");
 IF (KIND ($n) == 8) THEN
   alloc8 ($n)
 ELSEIF (KIND ($n) == 4) THEN
@@ -163,12 +167,14 @@ ELSE
   STOP 1
 ENDIF
 EOF
-                  $C->parentNode->insertBefore ($if, $C);
-                  $C->parentNode->insertBefore (&t ("\n"), $C);
-                }
-              else
-                {
-                  $C->parentNode->insertBefore (&t ("alloc ($n)\n"), $C);
+                      $C->parentNode->insertBefore ($if, $C);
+                      $C->parentNode->insertBefore (&t ("\n"), $C);
+                    }
+                  else
+                    {
+                      $C->parentNode->insertBefore (&t ("alloc ($n)\n"), $C);
+                    }
+
                 }
             }
           else
