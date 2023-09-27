@@ -36,7 +36,10 @@ sub rename
 {
   my ($doc, $sub) = @_; 
 
-  my @name = &F ('.//subroutine-N/N/n/text()', $doc);
+  my @name = (
+               &F ('./object/file/program-unit/subroutine-stmt/subroutine-N/N/n/text()', $doc),
+               &F ('./object/file/program-unit/end-subroutine-stmt/subroutine-N/N/n/text()', $doc),
+             );
   my $name = $name[0]->textContent;
 
   my $name1 = $sub->($name);

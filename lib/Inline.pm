@@ -191,7 +191,6 @@ sub inlineSingleCall
 {
   my ($d1, $d2, $s2, $n2, $call, %opts) = @_;
 
-
   my @da = &F ('./dummy-arg-LT/arg-N/N/n/text()', $s2, 1);
 
   # Dummy arguments to actual arguments
@@ -448,7 +447,7 @@ sub inlineContainedSubroutine
   
   # Subroutine calls to be replaced by subroutine contents
   my @call = &F ('.//call-stmt[./procedure-designator/named-E/N/n/text()="?"]', $n2, $d1);
-  
+
   for my $call (@call)
     {
       &inlineSingleCall ($d1, $D2->cloneNode (1), $S2->cloneNode (1), $n2, $call, %opts);

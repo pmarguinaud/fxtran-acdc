@@ -17,6 +17,7 @@ use Data::Dumper;
 use FileHandle;
 use File::Basename;
 use File::stat;
+use List::MoreUtils qw (uniq);
 
 use Fxtran;
 use Decl;
@@ -33,6 +34,8 @@ use DIR;
 use Bt;
 use Canonic;
 use Directive;
+use Inline;
+
 use Cycle48;
 use Cycle49;
 
@@ -73,7 +76,7 @@ my $suffix = '_parallel';
 my %opts = ('types-fieldapi-dir' => 'types-fieldapi', skip => 'PGFL,PGFLT1,PGMVT1,PGPSDT2D', 
              nproma => 'YDCPG_OPTS%KLON', 'types-constant-dir' => 'types-constant',
              'post-parallel' => 'nullify', cycle => '49', 'jlon', 'JLON');
-my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments stack84 use-acpy arpege);
+my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments stack84 use-acpy arpege inline-contains);
 my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel dir cycle jlon);
 
 &GetOptions
@@ -144,6 +147,12 @@ for my $unseen (&F ('.//unseen', $d))
 # Prepare the code
 
 &Associate::resolveAssociates ($d);
+
+if ($opts{'inline-contains'})
+  {
+    &Construct::changeIfStatementsInIfConstructs ($d);
+    &Inline::inlineContainedSubroutines ($d, skipDimensionCheck => 1);
+  }
 
 if ($opts{cycle} == 48)
   {
@@ -253,7 +262,7 @@ my %seen;
 
 for my $call (@call)
   {
-    if (&Pointer::Parallel::callParallelRoutine ($call, $t))
+    if (&Pointer::Parallel::callParallelRoutine ($call, $t, $types))
       {
         # Add include for the parallel CALL
         my ($name) = &F ('./procedure-designator/named-E/N/n/text()', $call);
@@ -402,9 +411,18 @@ for my $n (sort keys (%$t))
     if ($s->{object})
       {
         my ($tn) = &F ('./T-N', $s->{ts}, 1);
-        push @use_util, &s ("USE UTIL_${tn}_MOD");
+        if ($tn =~ m/^FIELD_\w+_ARRAY$/o)
+          {
+            push @use_util, &s ("USE FIELD_ARRAY_UTIL_MODULE");
+          }
+        else
+          {
+            push @use_util, &s ("USE UTIL_${tn}_MOD");
+          }
       }
   }
+
+@use_util = &uniq (@use_util);
 
 
 &Decl::declare ($d, @decl);

@@ -57,6 +57,30 @@ generateStructureMethods.pl \
   --field-api --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/field_variables_mod.F90)
 
+generateStructureMethods.pl \
+  --wipe --copy --host --dir $dir --tmp /tmp/$USER \
+  $(resolve arpifs/module/type_fluxes.F90)
+
+generateStructureMethods.pl \
+  --wipe --copy --host --dir $dir --skip-components info_flu --no-allocate $no_alloc \
+  --module-map $module_map --field-api --field-api-class info_flu --tmp /tmp/$USER \
+  $(resolve .fypp/arpifs/module/ptrxfu_type.F90)
+
+generateStructureMethods.pl \
+  --wipe --copy --host --dir $dir --skip-components info_flu --no-allocate $no_alloc \
+  --module-map $module_map --field-api --field-api-class info_flu --tmp /tmp/$USER \
+  $(resolve .fypp/arpifs/module/ptrgfu_type.F90)
+
+generateStructureMethods.pl \
+  --wipe --copy --host --dir $dir --skip-components info_flu --no-allocate $no_alloc \
+  --module-map $module_map --field-api --field-api-class info_flu --tmp /tmp/$USER \
+  $(resolve .fypp/arpifs/module/yomxfu_type.F90)
+
+generateStructureMethods.pl \
+  --wipe --copy --host --dir $dir --skip-components info_flu --no-allocate $no_alloc \
+  --module-map $module_map --field-api --field-api-class info_flu --tmp /tmp/$USER \
+  $(resolve .fypp/arpifs/module/yomcfu_type.F90)
+
 exit
 
 generateStructureMethods.pl \
@@ -76,30 +100,6 @@ generateStructureMethods.pl \
   --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
   $(resolve arpifs/module/cpg_slmisc_type_mod.F90)
-
-generateStructureMethods.pl \
-  --host --dir $dir --tmp /tmp/$USER \
-  $(resolve arpifs/module/type_fluxes.F90)
-
-generateStructureMethods.pl \
-  --host --dir $dir --skip-components info_flu --no-allocate $no_alloc \
-  --module-map $module_map --field-api --field-api-class info_flu --tmp /tmp/$USER \
-  $(resolve .fypp/arpifs/module/ptrxfu_type.F90)
-
-generateStructureMethods.pl \
-  --host --dir $dir --skip-components info_flu --no-allocate $no_alloc \
-  --module-map $module_map --field-api --field-api-class info_flu --tmp /tmp/$USER \
-  $(resolve .fypp/arpifs/module/ptrgfu_type.F90)
-
-generateStructureMethods.pl \
-  --host --dir $dir --skip-components info_flu --no-allocate $no_alloc \
-  --module-map $module_map --field-api --field-api-class info_flu --tmp /tmp/$USER \
-  $(resolve .fypp/arpifs/module/yomxfu_type.F90)
-
-generateStructureMethods.pl \
-  --host --dir $dir --skip-components info_flu --no-allocate $no_alloc \
-  --module-map $module_map --field-api --field-api-class info_flu --tmp /tmp/$USER \
-  $(resolve .fypp/arpifs/module/yomcfu_type.F90)
 
 generateStructureMethods.pl \
   --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \

@@ -20,14 +20,14 @@ use Fxtran;
 use Inline;
 use Canonic;
 
-my ($f) = @ARGV;
+my $f = shift;
 
 my $d = &Fxtran::parse (location => $f, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]);
 
 &Canonic::makeCanonic ($d);
 
-&Inline::inlineContainedSubroutines ($d);
+&Inline::inlineContainedSubroutines ($d, @ARGV);
 
-print (&Canonic::indent ($d));
-#'FileHandle'->new (">$f.new")->print ($d->textContent ());
+#print (&Canonic::indent ($d));
+'FileHandle'->new (">$f.new")->print (&Canonic::indent ($d));
 

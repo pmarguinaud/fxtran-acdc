@@ -57,6 +57,21 @@ sub getObjectType
 
 }
 
+sub isField
+{
+  my ($types, $s, @ctl) = @_;
+
+  my $ts = $s->{ts};
+
+  die unless ($ts->textContent =~ m/^(?:TYPE|CLASS)\s*\(\s*(\w+)\s*\)$/o);
+  
+  my $t = $1;
+
+  my $k = join ('%', $t, @ctl);
+
+  return $types->{$k};
+}
+
 sub asFromDecl
 {
   my $decl = shift;

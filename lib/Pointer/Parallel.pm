@@ -491,7 +491,7 @@ sub callParallelRoutine
 # Process CALL statement outside PARALLEL sections
 # Replace NPROMA array arguments by field descriptor arguments; no array section allowed
 
-  my ($call, $t) = @_;
+  my ($call, $t, $types) = @_;
 
   my $text = $call->textContent;
 
@@ -547,8 +547,10 @@ sub callParallelRoutine
       elsif ($s->{object})
         {
           my ($expr) = &Fxtran::expr ($arg);
+
           my @ctl = &F ('./R-LT/component-R/ct', $expr, 1);
-          if (@ctl)
+
+          if (@ctl && &Pointer::Object::isField ($types, $s, @ctl))
             {
               my $e = &Pointer::Object::getFieldFromObjectComponents ($arg->textContent, @ctl);
               $expr->replaceNode ($e);
