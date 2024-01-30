@@ -186,24 +186,9 @@ for my $in (@{ $opts{inlined} })
     &Inline::inlineExternalSubroutine ($d, $di);
   }
 
-if ($opts{'inline-contained'} && (my ($contains) = &F ('.//contains-stmt', $d)))
+if ($opts{'inline-contained'})
   {
-    my @include = &F ('following-sibling::include-stmt', $contains);
-    $contains->unbindNode ();
-
-    for my $include (@include)
-      {
-        my ($filename) = &F ('./filename', $include, 2);
-        $filename =~ s/"//go;
-        my $f90in = $find->resolve (file => $filename);
-        my $f90 = &basename ($f90in) . '.F90';
-        &copy ($f90in, $f90);
-        my $di = &Fxtran::parse (location => $f90, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]);
-        &Canonic::makeCanonic ($di);
-        &Inline::inlineExternalSubroutine ($d, $di);
-        $include->unbindNode ();
-      }
-
+    &Inline::inlineContainedSubroutines ($d, find => $find, inlineDeclarations => 1);
   }
 
 
