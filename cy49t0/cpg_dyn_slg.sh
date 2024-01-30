@@ -3,7 +3,24 @@
 set -x
 set -e
 
-. $(dirname $0)/prolog.sh
+
+export PATH=/home/gmap/mrpm/marguina/fxtran-acdc/cy49t1:$PATH
+export PATH=/home/gmap/mrpm/marguina/fxtran-acdc/bin:$PATH
+
+
+function resolve ()
+{
+  f=$1
+  for view in $(cat .gmkview)
+  do  
+    g="src/$view/$f"
+    if [ -f $g ]
+    then
+      echo $g
+      break
+    fi  
+  done
+}
 
 for f in \
   arpifs/adiab/gpmpfc_expl_part2.F90 \
@@ -33,7 +50,7 @@ print &dirname ($f)
 ' $f)
 
 pointerParallel.pl \
-  $* --jlon JROF --nproma YDCPG_OPTS%KLON,YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIM%NPROMNH --cycle 49 --arpege --use-acpy \
+  --jlon JROF --nproma YDCPG_OPTS%KLON,YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIM%NPROMNH --cycle 49 --arpege --use-acpy \
   --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify --version --dir \
   src/local/$dir $(resolve $f)
 
@@ -67,7 +84,7 @@ for f in \
 do
 
 dir=$(dirname $f)
-openacc.pl $* --cycle 49 --pointers --nocompute ABOR1 --version --cpg_dyn --dir src/local/ifsaux/openacc/$dir $(resolve $f)
+openacc.pl --cycle 49 --pointers --nocompute ABOR1 --version --cpg_dyn --dir src/local/ifsaux/openacc/$dir $(resolve $f)
 
 done
 
@@ -77,7 +94,10 @@ for f in \
 do
 
 dir=$(dirname $f)
-openacc.pl $* --cycle 49 --pointers --nocompute ABOR1 --version --dir src/local/ifsaux/openacc/$dir $(resolve $f)
+openacc.pl --cycle 49 --pointers --nocompute ABOR1 --version --dir src/local/ifsaux/openacc/$dir $(resolve $f)
 
 done
+
+~/gpupack/scripts/parallelmethod.pl
+
 

@@ -35,7 +35,7 @@ $f =~ s,^\.fypp/,,o;
 print &dirname ($f) 
 ' $f)
 
-pointerParallel.pl $* \
+pointerParallel.pl \
   --nproma YDCPG_OPTS%KLON --cycle 49 --arpege --use-acpy \
   --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify --version --dir \
   src/local/$dir $(resolve $f)
@@ -45,6 +45,6 @@ done
 for f in arpifs/dia/cpxfu.F90 arpifs/dia/cpcfu.F90
 do
   dir=$(dirname $f)
-  pointerParallel.pl $* --inline-contains --nproma YDCPG_OPTS%KLON --cycle 49 --use-acpy  \
+  pointerParallel.pl  --inline-contains --nproma YDCPG_OPTS%KLON --cycle 49 --use-acpy  \
     --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify --version --dir src/local/$dir $(resolve $f)
 done

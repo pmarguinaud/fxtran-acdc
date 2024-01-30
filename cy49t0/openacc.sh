@@ -1,15 +1,23 @@
 #!/bin/bash
 
-set -e
-set -x
+export PATH=/home/gmap/mrpm/marguina/fxtran-acdc/bin:$PATH
 
-. $(dirname $0)/prolog.sh
+function resolve ()
+{
+  f=$1
+  for view in $(cat .gmkview)
+  do
+    g="src/$view/$f"
+    if [ -f $g ]
+    then
+      echo $g
+      break
+    fi
+  done
+}
+
 
 for f in \
-   arpifs/phys_dmn/actke1.F90                      \
-   arpifs/phys_dmn/apl_arpege_turbulence_part2.F90 \
-   arpifs/phys_dmn/acprod.F90                      \
-   arpifs/phys_dmn/actke2.F90                      \
    arpifs/phys_dmn/actke.F90                       \
    arpifs/phys_dmn/acbl89.F90                      \
    arpifs/phys_dmn/acturb.F90                      \
@@ -76,35 +84,26 @@ do
   openacc.pl $* \
    --dir src/local/ifsaux/openacc/$dir \
    --nocompute ABOR1 --version \
-   $(resolve $f 1)
+   $(resolve $f)
 done
 
 
 for f in \
-   arpifs/phys_ec/cuentr.F90                       \
-   arpifs/phys_ec/cubasmcn.F90                     \
-   arpifs/phys_ec/cuadjtq.F90                      \
-   arpifs/phys_ec/cuadjtqs.F90                     
-do
-  resolve $f 1
-done
-
-for f in \
-   arpifs/phys_ec/cuentr.F90                       \
-   arpifs/phys_ec/cubasmcn.F90                     \
-   arpifs/phys_ec/cuadjtq.F90                      \
-   arpifs/phys_ec/cuadjtqs.F90                     \
    arpifs/phys_dmn/cucalln_mf.F90                  \
+   arpifs/phys_ec/cuadjtq.F90                      \
    arpifs/phys_ec/cuascn.F90                       \
    arpifs/phys_ec/cubasen.F90                      \
    arpifs/phys_ec/cuddrafn.F90                     \
    arpifs/phys_ec/cudlfsn.F90                      \
    arpifs/phys_ec/cududv.F90                       \
    arpifs/phys_ec/cuinin.F90                       \
+   arpifs/phys_ec/cuadjtqs.F90                     \
+   arpifs/phys_ec/cubasmcn.F90                     \
    arpifs/phys_ec/cubidiag.F90                     \
    arpifs/phys_ec/cuccdia.F90                      \
    arpifs/phys_ec/cuctracer.F90                    \
    arpifs/phys_ec/cudtdqn.F90                      \
+   arpifs/phys_ec/cuentr.F90                       \
    arpifs/phys_ec/cuflxn.F90                       \
    arpifs/phys_ec/cumastrn.F90                     \
    arpifs/phys_ec/culight.F90                      \
@@ -119,10 +118,6 @@ do
    --dir src/local/ifsaux/openacc/$dir \
    --nocompute ABOR1 --version \
    --jljk2jlonjlev --cycle 49 \
-   $(resolve $f 1)
+   $(resolve $f)
 done
 
-f=arpifs/adiab/smpos_parall.F90
-dir=$(dirname $f)
-mkdir -p src/local/ifsaux/openacc/$dir
-openacc.pl $* --cycle 49 --pointers --nocompute ABOR1 --version --cpg_dyn --dir src/local/ifsaux/openacc/$dir $(resolve $f)

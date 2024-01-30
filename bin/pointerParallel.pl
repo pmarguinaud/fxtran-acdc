@@ -255,6 +255,7 @@ my @call = &F ('.//call-stmt[not(ancestor::parallel-section)]' # Skip calls in p
             . '[not(string(procedure-designator)="DR_HOOK")]'  # Skip DR_HOOK calls
             . '[not(string(procedure-designator)="ABOR1")]'    # Skip ABOR1 calls
             . '[not(string(procedure-designator)="ABORT")]'    # Skip ABORT calls
+            . '[not(string(procedure-designator)="GETENV")]'   # Skip ABORT calls
             . '[not(procedure-designator/named-E/R-LT)]'       # Skip objects calling methods
             . '[not(ancestor::serial-section)]', $d);          # Skip calls in serial sections
 
@@ -269,7 +270,7 @@ for my $call (@call)
         unless ($seen{$name->textContent}++)
           {
             my ($include) = &F ('.//include[./filename[string(.)="?"]]', lc ($name) . '.intfb.h', $d);
-            $include or die $call;
+            $include or die $call->textContent;
             $include->parentNode->insertAfter (&n ('<include>#include "<filename>' . lc ($name) . '_parallel.intfb.h</filename>"</include>'), $include);
             $include->parentNode->insertAfter (&t ("\n"), $include);
           }

@@ -14,6 +14,7 @@ use Data::Dumper;
 use Getopt::Long;
 use File::stat;
 use File::Path;
+use File::Copy;
 use File::Basename;
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
@@ -115,7 +116,7 @@ my $SUFFIX = '_OPENACC';
 my %opts = (cycle => 48, 'include-ext' => '.intfb.h');
 my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh 
                  remove-unused-includes modi value-attribute redim-arguments stack84 arpege
-                 cpg_dyn pointers);
+                 cpg_dyn pointers inline-contained);
 my @opts_s = qw (dir nocompute cycle include-ext inlined);
 
 &GetOptions
@@ -183,6 +184,26 @@ for my $in (@{ $opts{inlined} })
     my $di = &Fxtran::parse (location => $f90in, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]);
     &Canonic::makeCanonic ($di);
     &Inline::inlineExternalSubroutine ($d, $di);
+  }
+
+if ($opts{'inline-contained'} && (my ($contains) = &F ('.//contains-stmt', $d)))
+  {
+    my @include = &F ('following-sibling::include-stmt', $contains);
+    $contains->unbindNode ();
+
+    for my $include (@include)
+      {
+        my ($filename) = &F ('./filename', $include, 2);
+        $filename =~ s/"//go;
+        my $f90in = $find->resolve (file => $filename);
+        my $f90 = &basename ($f90in) . '.F90';
+        &copy ($f90in, $f90);
+        my $di = &Fxtran::parse (location => $f90, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]);
+        &Canonic::makeCanonic ($di);
+        &Inline::inlineExternalSubroutine ($d, $di);
+        $include->unbindNode ();
+      }
+
   }
 
 

@@ -53,8 +53,6 @@ sub resolveArrayRef
 {
   my ($ra, $re) = @_;
 
-# print &Dumper ([$ra->textContent, $ra->toString, $re->textContent, $re->toString]);
-
   $ra = $ra->cloneNode (1);
 
   my $ee = sub
@@ -88,8 +86,6 @@ sub resolveArrayRef
     
   
 
-# print &Dumper ([$ra->textContent]);
-
   $re->replaceNode ($ra);
 }
 
@@ -103,6 +99,12 @@ sub replaceDummyArgumentByActualNamedE
   my @re = &F ('./R-LT/ANY-R', $e);
   my @ra = &F ('./R-LT/ANY-R', $a);
 
+  if (! @re)
+    {
+      $e->replaceNode ($a->cloneNode (1));
+      goto END;
+    }
+
   my $se = $e->toString; my $te = $e->textContent;
   my $sa = $a->toString; my $ta = $a->textContent;
 
@@ -110,7 +112,7 @@ sub replaceDummyArgumentByActualNamedE
 
   $ne->replaceNode (&t ($na->textContent));
 
-  return unless (@ra);
+  goto END unless (@ra);
 
   my ($rlte) = &F ('./R-LT', $e);
   unless ($rlte)
@@ -137,11 +139,13 @@ sub replaceDummyArgumentByActualNamedE
               $rlte->appendChild ($ra->cloneNode (1));
             }
         }
-      else
+      elsif ($re)
         {
           die &Dumper ([$e->textContent, $a->textContent]);
         }
     }
+
+END: 
 
 }
 

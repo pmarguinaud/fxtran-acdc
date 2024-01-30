@@ -3,43 +3,29 @@
 set -x
 set -e
 
-. $(dirname $0)/prolog.sh
+mkdir -p /tmp/$USER
+export PATH=/home/gmap/mrpm/marguina/fxtran-acdc/bin:$PATH
+
 
 mkdir -p src/local/ifsaux/util
 
-for f in \
-phyex/aux/modd_misc.F90 \
-phyex/aux/modd_phyex.F90 \
-phyex/aux/modd_cst.F90 \
-phyex/micro/modd_param_icen.F90 \
-phyex/micro/modd_rain_ice_descrn.F90 \
-phyex/micro/modd_rain_ice_paramn.F90 \
-phyex/micro/modd_cloudparn.F90 \
-phyex/turb/modd_param_mfshalln.F90 \
-phyex/turb/modd_cturb.F90 \
-phyex/turb/modd_turbn.F90 \
-phyex/micro/modd_nebn.F90 \
-phyex/micro/modd_param_lima.F90 \
-phyex/micro/modd_param_lima_warm.F90 \
-phyex/micro/modd_param_lima_cold.F90 \
-phyex/micro/modd_param_lima_mixed.F90 \
-phyex/aux/modd_nsv.F90 \
-phyex/aux/modd_field.F90
-do
-  set -x
-  generateStructureMethods.pl \
-     --skip-components MISC_T%TBUCONF \
-     --dir src/local/phyex/util --tmp /tmp/$USER \
-     --host --copy --wipe --save --load $(resolve $f)
-  set +x
-done
+function resolve ()
+{
+  f=$1
+  for view in $(cat .gmkview)
+  do
+    g="src/$view/$f"
+    if [ -f $g ]
+    then
+      echo $g
+      break
+    fi
+  done
+}
+
+set +x
 
 for f in \
-arpifs/module/yoaiop.F90 \
-arpifs/module/yomnrtaer.F90 \
-arpifs/module/yomdgradient.F90 \
-arpifs/module/yomnrtaer.F90 \
-arpifs/module/yomdwet.F90 \
 arpifs/module/yomcape.F90 \
 arpifs/module/yoeozoc.F90 \
 arpifs/module/cplng_types_mod.F90 \
@@ -60,6 +46,7 @@ arpifs/module/type_model.F90 \
 arpifs/module/yomprad.F90 \
 arpifs/module/eint_mod.F90 \
 arpifs/module/yomsphyhist.F90 \
+arpifs/module/type_acv.F90 \
 arpifs/module/yomarphy.F90 \
 arpifs/module/intdynsl_mod.F90 \
 arpifs/module/yomcddh.F90 \
@@ -189,14 +176,21 @@ arpifs/module/type_ecv.F90 \
 arpifs/module/yommoderrmod.F90 \
 arpifs/module/spp_gen_mod.F90 \
 arpifs/module/spp_def_mod.F90 \
-arpifs/module/yom_ygfl.F90 
+arpifs/module/yom_ygfl.F90
 do
-  set -x
-  generateStructureMethods.pl \
-     --skip-components TYPE_GFL_COMP%PREVIOUS,MODEL_PHYSICS_STOCHAST_TYPE%YR_RANDOM_STREAMS,TEPHY%YSURF,TRADIATION%RAD_CONFIG,TECUCONVCA%YD_RANDOM_STREAM_CA,GEOMETRY%YRCSGEOMAD_NB,GEOMETRY%YRGSGEOMAD_NB,MODEL%YRML_SPP,MODEL%YRML_SPPT,GEOMETRY%YRCSGEOM_NB,GEOMETRY%YRCSGEOM,GEOMETRY%YRCSGEOM_B,GEOMETRY%YRGSGEOM_NB,GEOMETRY%YRGSGEOM,GEOMETRY%YRGSGEOM_B,GEOMETRY%YRVETA,GEOMETRY%LNONHYD_GEOM,GEOMETRY%YRVAB,GEOMETRY%YRVFE,GEOMETRY%YRCVER  \
-     --dir src/local/ifsaux/util --tmp /tmp/$USER \
-     --host --copy --wipe --save --load $(resolve $f)
-  set +x
+  for view in $(cat .gmkview)
+  do
+    if [ -f "src/$view/$f" ]
+    then
+    set -x
+    generateStructureMethods.pl \
+       --skip-components TYPE_GFL_COMP%PREVIOUS,MODEL_PHYSICS_STOCHAST_TYPE%YR_RANDOM_STREAMS,TEPHY%YSURF,TRADIATION%RAD_CONFIG,TECUCONVCA%YD_RANDOM_STREAM_CA,GEOMETRY%YRCSGEOMAD_NB,GEOMETRY%YRGSGEOMAD_NB,MODEL%YRML_SPP,MODEL%YRML_SPPT,GEOMETRY%YRCSGEOM_NB,GEOMETRY%YRCSGEOM,GEOMETRY%YRCSGEOM_B,GEOMETRY%YRGSGEOM_NB,GEOMETRY%YRGSGEOM,GEOMETRY%YRGSGEOM_B,GEOMETRY%YRVETA,GEOMETRY%LNONHYD_GEOM,GEOMETRY%YRVAB,GEOMETRY%YRVFE,GEOMETRY%YRCVER  \
+       --dir src/local/ifsaux/util --tmp /tmp/$USER \
+       --host --copy --wipe --save --load $(resolve $f)
+    set +x
+    break
+    fi
+  done
 done
 
 
