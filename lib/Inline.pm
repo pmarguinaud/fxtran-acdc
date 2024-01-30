@@ -441,6 +441,135 @@ SKIP:
   
 }
 
+sub loopElementalSingleCall
+{
+  my ($d1, $call) = @_;
+
+  my %dim2ind = 
+  (
+    'D%NIT'  => 'JI',
+    'D%NIJT' => 'JIJ',
+    'D%NKT'  => 'JK',
+    'KLON'   => 'JLON',
+    'KLEV'   => 'JLEV',
+  );
+  my %dim2bnd =
+  (
+    'D%NIT'  => [qw (D%NIB D%NIE)],
+    'D%NIJT' => [qw (D%NIJB D%NIJE)],
+    'KLON'   => [qw (KIDIA KFDIA)],
+  );
+
+  my @expr = &F ('./arg-spec/arg/named-E[not(R-LT/component-R)]', $call);
+
+  my @X;
+
+  for my $expr (@expr)
+    {
+      my ($N) = &F ('./N', $expr, 1);
+      my ($ar) = &F ('./R-LT/array-R', $expr);
+      my ($en_decl) = &F ('.//T-decl-stmt//EN-decl[string (EN-N)="?"]', $N, $d1);
+      my ($as) = &F ('./array-spec', $en_decl);
+      unless ($as)
+        {
+          my ($decl) = &Fxtran::stmt ($en_decl);
+          ($as) = &F ('./attribute/array-spec', $decl);
+        }
+      push @X, [$N, $expr, $ar, $as] if ($ar || $as);
+    }
+
+  return unless (@X);
+
+  my (@DIM, @IND, @LBND, @UBND);
+
+  for my $X (@X)
+    {
+      my ($N, $expr, $ar, $as) = @$X;
+      die "$N" unless ($ar);
+      die "$N" unless ($as);
+
+      my @ssu = &F ('./section-subscript-LT/section-subscript', $ar);
+      my @ssp = &F ('./shape-spec-LT/shape-spec', $as);
+
+      for my $ssu (@ssu)
+        {
+          die unless ($ssu->textContent eq ':');
+        }
+
+      my (@dim, @ind, @lbnd, @ubnd);
+
+      for my $i (0 .. $#ssu)
+        {
+          my $ssu = $ssu[$i];
+          my $dim = $ssp[$i];
+
+          $dim = $dim->textContent;
+          $ssu = $ssu->firstChild;
+
+          (my $ind = $dim2ind{$dim}) or die;
+          $ssu->replaceNode (&e ($ind));
+
+          push @ind, $ind;
+          push @dim, $dim;
+
+          if (exists $dim2bnd{$dim})
+            {
+              my ($lbnd, $ubnd) = @{ $dim2bnd{$dim} };
+              push @lbnd, $lbnd;
+              push @ubnd, $ubnd;
+            }
+          else
+            {
+              push @lbnd, '1';
+              push @ubnd, $dim;
+            }
+        }
+
+      # Check same indices for all arrays
+      if (@IND)
+        {
+          die unless (scalar (@IND) == scalar (@ind));
+          for my $i (0 .. $#IND)
+            {
+              die "$N: $IND[$i], $ind[$i]" unless ($IND[$i] eq $ind[$i]);
+            }
+        }
+      else
+        {
+          @IND = @ind;
+          @DIM = @dim;
+          @LBND = @lbnd;
+          @UBND = @ubnd;
+        }
+    }
+
+  my $do_construct;
+  
+  $do_construct = join ("\n", 
+                        map ({ "DO $IND[$_] = $LBND[$_], $UBND[$_]" } reverse (0 .. $#DIM)),
+                        "!",
+                        map ({ "ENDDO" } reverse (0 .. $#DIM)));
+
+  ($do_construct) = &Fxtran::parse (fragment => $do_construct, fopts => [qw (-line-length 800 -construct-tag)]);
+
+  my ($C) = &F ('.//C', $do_construct);
+  
+  $call->replaceNode ($do_construct);
+
+  $C->replaceNode ($call);
+
+}
+
+sub loopElemental
+{
+  my ($d1, $n2) = @_;
+  my @call = &F ('.//call-stmt[string(procedure-designator)="?"]', $n2, $d1);
+  for my $call (@call)
+    {
+      &loopElementalSingleCall ($d1, $call);
+    }
+}
+
 sub inlineContainedSubroutine
 {
   my ($d1, $n2, %opts) = @_;
@@ -448,6 +577,11 @@ sub inlineContainedSubroutine
   # Subroutine to be inlined
   my ($D2) = &F ('.//program-unit[./subroutine-stmt[./subroutine-N/N/n/text()="?"]]', $n2, $d1);
   my ($S2) = &F ('.//subroutine-stmt', $D2);
+
+  if (&F ('./prefix[string(.)="ELEMENTAL"]', $S2))
+    {
+      &loopElemental ($d1, $n2);
+    }
   
   # Subroutine calls to be replaced by subroutine contents
   my @call = &F ('.//call-stmt[./procedure-designator/named-E/N/n/text()="?"]', $n2, $d1);

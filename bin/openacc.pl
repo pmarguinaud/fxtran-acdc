@@ -199,7 +199,7 @@ if ($opts{jljk2jlonjlev})
 
 if ($opts{jijk2jlonjlev})
   {
-    &Identifier::rename ($d, JI => 'JLON', JK => 'JLEV');
+    &Identifier::rename ($d, JI => 'JLON', JK => 'JLEV', 'JIJ' => 'JLON');
   }
 
 if ($opts{cpg_dyn})
