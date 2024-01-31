@@ -116,7 +116,7 @@ my $SUFFIX = '_OPENACC';
 my %opts = (cycle => 48, 'include-ext' => '.intfb.h');
 my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh 
                  remove-unused-includes modi value-attribute redim-arguments stack84 arpege
-                 cpg_dyn pointers inline-contained);
+                 cpg_dyn pointers inline-contained debug);
 my @opts_s = qw (dir nocompute cycle include-ext inlined);
 
 &GetOptions
@@ -224,7 +224,7 @@ elsif ($opts{cycle} eq '49')
 &DIR::removeDIR ($d);
 
 my @KLON = ('KLON', 'YDGEOMETRY%YRDIM%NPROMA', 'YDCPG_OPTS%KLON');
-push @KLON, 'D%NIT' if ($opts{mesonh});
+push @KLON, 'D%NIT', 'D%NIJT' if ($opts{mesonh});
 push @KLON, ('YDGEOMETRY%YRDIM%NPROMA', 'KPROMA') if ($opts{cpg_dyn});
 
 my ($KIDIA, $KFDIA) = qw (KIDIA KFDIA);
@@ -240,7 +240,10 @@ if ($opts{cpg_dyn})
   }
 
 
-
+if ($opts{debug})
+  {
+    &updateFile ('inlined.F90', &Canonic::indent ($d));
+  }
 
 
 my @pointer;

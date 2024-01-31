@@ -267,6 +267,7 @@ sub setJLON
     }
 
   my @ss = &F ('./section-subscript-LT/section-subscript', $ar);
+
   $ss[0]->replaceNode (&n ('<section-subscript><lower-bound><named-E><N><n>JLON</n></N></named-E></lower-bound></section-subscript>'));
 
 }

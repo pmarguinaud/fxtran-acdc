@@ -510,7 +510,7 @@ sub loopElementalSingleCall
           $dim = $dim->textContent;
 
           (my $ind = $dim2ind{$dim}) or die;
-          $ssu->replaceNode (&n ("<shape-spec><lower-bound><named-E><N><n>$ind</n></N></named-E></lower-bound></shape-spec>"));
+          $ssu->replaceNode (&n ("<section-subscript><lower-bound><named-E><N><n>$ind</n></N></named-E></lower-bound></section-subscript>"));
 
           push @ind, $ind;
           push @dim, $dim;
@@ -606,7 +606,7 @@ sub inlineContainedSubroutine
     {
       &loopElemental ($d1, $n2);
     }
-  
+
   # Subroutine calls to be replaced by subroutine contents
   my @call = &F ('.//call-stmt[./procedure-designator/named-E/N/n/text()="?"]', $n2, $d1);
 
@@ -725,6 +725,7 @@ sub inlineContainedSubroutines
     {
       $_->unbindNode ();
     }
+
 }
 
 sub suffixVariables
