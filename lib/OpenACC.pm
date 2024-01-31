@@ -91,10 +91,31 @@ sub loopVector
   &insertDirective ($p, 'LOOP VECTOR', %c);
 }
 
+sub getProgramUnit
+{
+  my $d = shift;
+
+  my $pu;
+
+  if ($d->isa ('XML::LibXML::Document'))
+    {
+      ($pu) = &F ('./object/file/program-unit', $d);
+    }
+  elsif ($d->nodeName eq 'program-unit')
+    {
+      $pu = $d;
+    }
+  else
+    {
+      die;
+    }
+  return $pu;
+}
+
 sub routineVector
 {
   my $d = shift;
-  my ($pu) = &F ('./object/file/program-unit', $d);
+  my $pu = &getProgramUnit ($d);
   my ($N) = &F ('./subroutine-stmt/subroutine-N', $pu, 1); 
   $pu->insertAfter (&n ("<C>!\$acc routine ($N) vector</C>"), $pu->firstChild);
   $pu->insertAfter (&t ("\n"), $pu->firstChild);
@@ -103,7 +124,7 @@ sub routineVector
 sub routineSeq
 {
   my $d = shift;
-  my ($pu) = &F ('./object/file/program-unit', $d);
+  my $pu = &getProgramUnit ($d);
   my ($N) = &F ('./subroutine-stmt/subroutine-N', $pu, 1); 
   $pu->insertAfter (&n ("<C>!\$acc routine ($N) seq</C>"), $pu->firstChild);
   $pu->insertAfter (&t ("\n"), $pu->firstChild);
