@@ -240,8 +240,10 @@ if ($opts{cpg_dyn})
   }
 
 
-my @pointer;
 
+
+
+my @pointer;
 
 @pointer = &Pointer::setPointersDimensions ($d)
   if ($opts{pointers});
@@ -255,7 +257,6 @@ if ($opts{'value-attribute'})
   {
     &addValueAttribute ($d);
   }
-
 
 &Subroutine::addSuffix ($d, $SUFFIX);
 
@@ -281,6 +282,10 @@ if ($opts{'value-attribute'})
 
 &useABOR1_ACC ($d);
 &changeWRITEintoPRINT ($d);
+
+
+
+
 
 if ($opts{version})
   {

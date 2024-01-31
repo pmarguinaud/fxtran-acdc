@@ -195,6 +195,8 @@ sub inlineSingleCall
 {
   my ($d1, $d2, $s2, $n2, $call, %opts) = @_;
 
+  &Decl::forceSingleDecl ($d2);
+
   my @da = &F ('./dummy-arg-LT/arg-N/N/n/text()', $s2, 1);
 
   # Dummy arguments to actual arguments
@@ -468,6 +470,9 @@ sub loopElementalSingleCall
     {
       my ($N) = &F ('./N', $expr, 1);
       my ($ar) = &F ('./R-LT/array-R', $expr);
+
+      my $dd = $ar && &F ('./section-subscript-LT/section-subscript/text()[string(.)=":"]', $ar);
+
       my ($en_decl) = &F ('.//T-decl-stmt//EN-decl[string (EN-N)="?"]', $N, $d1);
       my ($as) = &F ('./array-spec', $en_decl);
       unless ($as)
@@ -475,7 +480,8 @@ sub loopElementalSingleCall
           my ($decl) = &Fxtran::stmt ($en_decl);
           ($as) = &F ('./attribute/array-spec', $decl);
         }
-      push @X, [$N, $expr, $ar, $as] if ($ar || $as);
+
+      push @X, [$N, $expr, $ar, $as] if ((! $ar && $as) || ($dd));
     }
 
   return unless (@X);
@@ -491,23 +497,20 @@ sub loopElementalSingleCall
       my @ssu = &F ('./section-subscript-LT/section-subscript', $ar);
       my @ssp = &F ('./shape-spec-LT/shape-spec', $as);
 
-      for my $ssu (@ssu)
-        {
-          die unless ($ssu->textContent eq ':');
-        }
-
       my (@dim, @ind, @lbnd, @ubnd);
 
       for my $i (0 .. $#ssu)
         {
           my $ssu = $ssu[$i];
+
+          next unless (&F ('./text()[string(.)=":"]', $ssu));
+
           my $dim = $ssp[$i];
 
           $dim = $dim->textContent;
-          $ssu = $ssu->firstChild;
 
           (my $ind = $dim2ind{$dim}) or die;
-          $ssu->replaceNode (&e ($ind));
+          $ssu->replaceNode (&n ("<shape-spec><lower-bound><named-E><N><n>$ind</n></N></named-E></lower-bound></shape-spec>"));
 
           push @ind, $ind;
           push @dim, $dim;
@@ -515,14 +518,35 @@ sub loopElementalSingleCall
           if (exists $dim2bnd{$dim})
             {
               my ($lbnd, $ubnd) = @{ $dim2bnd{$dim} };
-              push @lbnd, $lbnd;
-              push @ubnd, $ubnd;
+              if ($ssu->textContent eq ':')
+                {
+                  push @lbnd, $lbnd;
+                  push @ubnd, $ubnd;
+                }
+              else
+                {
+                  my ($lb) = &F ('./lower-bound/ANY-E', $ssu); $lb or print $ssu;
+                  my ($ub) = &F ('./upper-bound/ANY-E', $ssu); $ub or print $ssu;
+                  push @lbnd, $lb->textContent;
+                  push @ubnd, $ub->textContent;
+                }
             }
           else
             {
-              push @lbnd, '1';
-              push @ubnd, $dim;
+              if ($ssu->textContent eq ':')
+                {
+                  push @lbnd, '1';
+                  push @ubnd, $dim;
+                }
+              else
+                {
+                  my ($lb) = &F ('./lower-bound/ANY-E', $ssu); $lb or print $ssu;
+                  my ($ub) = &F ('./upper-bound/ANY-E', $ssu); $ub or print $ssu;
+                  push @lbnd, $lb->textContent;
+                  push @ubnd, $ub->textContent;
+                }
             }
+
         }
 
       # Check same indices for all arrays
@@ -623,6 +647,59 @@ sub loadContainedIncludes
     }   
 }
 
+sub sortContainedSubroutines
+{
+  my @n2 = @_;
+
+  my %ref;
+
+  for my $n2 (@n2)
+    {
+      my @pu = &F ('ancestor::program-unit', $n2);
+      my $pu2 = pop (@pu);
+      for my $n (@n2)
+        {
+          $ref{$n2->textContent}{$n->textContent} = 
+          &F ('.//call-stmt[string(procedure-designator)="?"]', $n->textContent, $pu2) && 1;
+        }
+    }
+
+  my @s2;
+
+  while (%ref)
+    {
+
+      for my $n2 (@n2)
+        {
+          next unless (my $ref = $ref{$n2->textContent});
+ 
+          my $ok = 1;
+          for (values (%$ref))
+            {
+              $ok &&= ($_ == 0);
+            }
+ 
+          if ($ok)
+            {
+              unshift @s2, $n2;
+              delete $ref{$n2->textContent};
+            }
+
+        }
+
+      for my $s2 (@s2)
+        {
+          for my $ref (values (%ref))
+            {
+              $ref->{$s2->textContent} = 0;
+            }
+        }
+
+    }
+
+  return @s2;
+}
+
 sub inlineContainedSubroutines
 {
   my ($d1, %opts) = @_;
@@ -631,14 +708,17 @@ sub inlineContainedSubroutines
 
   my @n2 = &F ('.//program-unit//program-unit/subroutine-stmt/subroutine-N/N/n/text()', $d1);
 
+  @n2 = &sortContainedSubroutines (@n2);
+
   for my $n2 (@n2)
     {
+
       &inlineContainedSubroutine ($d1, $n2, %opts);
-    }
-  
-  for (&F ('.//program-unit//program-unit', $d1))
-    {
-      $_->unbindNode ();
+
+      my @pu = &F ('ancestor::program-unit', $n2);
+      my $pu2 = pop (@pu);
+      $pu2->unbindNode ();
+
     }
   
   for (&F ('.//program-unit//contains-stmt', $d1))
