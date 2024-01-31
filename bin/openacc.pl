@@ -30,6 +30,7 @@ use ReDim;
 use Construct;
 use DIR;
 use Subroutine;
+use Module;
 use Call;
 use Canonic;
 use DrHook;
@@ -268,6 +269,8 @@ $opts{nocompute} = [$opts{nocompute} ? split (m/,/o, $opts{nocompute}) : ()];
 
 my $F90 = shift;
 
+$opts{mode} = $opts{mesonh} && (&basename ($F90) =~ m/^mode_/o);
+
 $opts{dir} ||= &dirname ($F90);
 
 my $suffix = lc ($SUFFIX);
@@ -300,6 +303,7 @@ if ($opts{mode})
       {
         &processSingleRoutine ($pu, $find, %opts);
       }
+    &Module::addSuffix ($d, $SUFFIX);
   }
 else
   {
