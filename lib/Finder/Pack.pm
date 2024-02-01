@@ -61,6 +61,7 @@ sub scanpack
           my $wanted = sub
             {
               my $f = $File::Find::name;
+              return unless (-f $f);
               return unless (($f =~ m/\.F90$/o) || (($f =~ m/\.h/o)));
               $f =~ s,\.\/,,o;
               $scan->{&basename ($f)} = "$pack/src/$view/$f";
