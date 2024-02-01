@@ -56,6 +56,24 @@ sub removeJlonArraySyntax
 }
 
 
+sub fixCOUNTIdiom
+{
+  my $d = shift;
+
+  # MesoNH only (hopefully)
+ 
+  my @E2 = &F ('.//a-stmt/E-2/named-E[string(N)="COUNT"]', $d);
+
+  for my $E2 (@E2)
+    {
+      my ($T) = &F ('.//named-E[./R-LT/array-R[string(section-subscript-LT)="IIJB:IIJE"]]', $E2);
+      next unless ($T);
+      my ($N) = &F ('./N', $T, 1);
+      $E2->replaceNode (&e ("MERGE (1, 0, $N)"));
+    }
+
+}
+
 sub fixSUMIdiom
 {
   my ($d, %opts) = @_;
@@ -122,6 +140,7 @@ sub removeJlonLoops
   my $noexec = &Scope::getNoExec ($d);
 
   &fixSUMIdiom ($d, KIDIA => $KIDIA, KFDIA => $KFDIA);
+  &fixCOUNTIdiom ($d);
  
   unless (&F ('.//T-decl-stmt[.//EN-decl[string(EN-N)="JLON"]]', $d))
     {

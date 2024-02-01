@@ -76,7 +76,7 @@ do
   openacc.pl $* \
    --dir src/local/ifsaux/openacc/$dir \
    --nocompute ABOR1 --version \
-   $(resolve $f 1)
+   $(resolve --local $f)
 done
 
 
@@ -86,7 +86,7 @@ for f in \
    arpifs/phys_ec/cuadjtq.F90                      \
    arpifs/phys_ec/cuadjtqs.F90                     
 do
-  resolve $f 1
+  resolve --local $f 
 done
 
 for f in \
@@ -119,7 +119,7 @@ do
    --dir src/local/ifsaux/openacc/$dir \
    --nocompute ABOR1 --version \
    --jljk2jlonjlev --cycle 49 \
-   $(resolve $f 1)
+   $(resolve --local $f)
 done
 
 f=arpifs/adiab/smpos_parall.F90

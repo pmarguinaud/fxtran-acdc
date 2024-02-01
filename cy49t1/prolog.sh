@@ -6,8 +6,15 @@ export PATH=/home/gmap/mrpm/marguina/fxtran-acdc/bin:$PATH
 
 function resolve ()
 {
+  u=0
+
+  if [ "x$1" = "x--local" ]
+  then
+    u=1
+    shift
+  fi
+
   f=$1
-  u=$2
 
   g=""
 
