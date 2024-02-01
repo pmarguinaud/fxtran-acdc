@@ -266,7 +266,16 @@ sub inlineSingleCall
           goto SKIP if (scalar (@r) > 1); # Cannot check dimensions of structure members
 
           my ($n) = &F ('./N', $aa, 1);
-          my ($en_decl_aa) = &F ('./object/file/program-unit/T-decl-stmt/EN-decl-LT/EN-decl[string(EN-N)="?"]', $n, $d1);
+          my $en_decl_aa;
+ 
+          if ($d1->nodeName eq 'program-unit')
+            {
+              ($en_decl_aa) = &F ('./T-decl-stmt/EN-decl-LT/EN-decl[string(EN-N)="?"]', $n, $d1);
+            }
+          else 
+            {
+              ($en_decl_aa) = &F ('./object/file/program-unit/T-decl-stmt/EN-decl-LT/EN-decl[string(EN-N)="?"]', $n, $d1);
+            }
 
           die "Declaration of $n was not found" unless ($en_decl_aa);
 
@@ -706,7 +715,16 @@ sub inlineContainedSubroutines
 
   &loadContainedIncludes ($d1, %opts);
 
-  my @n2 = &F ('.//program-unit//program-unit/subroutine-stmt/subroutine-N/N/n/text()', $d1);
+  my @n2;
+  
+  if ($d1->nodeName eq 'program-unit')
+    {
+      @n2 = &F ('./program-unit/subroutine-stmt/subroutine-N/N/n/text()', $d1);
+    }
+  else
+    {
+      @n2 = &F ('./object/file/program-unit/program-unit/subroutine-stmt/subroutine-N/N/n/text()', $d1);
+    }
 
   @n2 = &sortContainedSubroutines (@n2);
 
@@ -721,9 +739,19 @@ sub inlineContainedSubroutines
 
     }
   
-  for (&F ('.//program-unit//contains-stmt', $d1))
+  if ($d1->nodeName eq 'program-unit')
     {
-      $_->unbindNode ();
+      for (&F ('./contains-stmt', $d1))
+        {
+          $_->unbindNode ();
+        }
+    }
+  else
+    {
+      for (&F ('.//program-unit//contains-stmt', $d1))
+        {
+          $_->unbindNode ();
+        }
     }
 
 }
@@ -813,7 +841,17 @@ sub inlineExternalSubroutine
 
   # Merge consistent declarations (and remove variable suffix)
 
-  my @ENN = &F ('./object/file/program-unit/T-decl-stmt//EN-N', $d1, 1);
+  my @ENN;
+  
+  if ($d1->nodeName eq 'program-unit')
+    {
+      @ENN = &F ('./T-decl-stmt//EN-N', $d1, 1);
+    }
+  else
+    {
+      @ENN = &F ('./object/file/program-unit/T-decl-stmt//EN-N', $d1, 1);
+    }
+
   my %ENN = map { ($_, 1) } @ENN;
 
   for my $N (sort keys (%N))
@@ -822,7 +860,17 @@ sub inlineExternalSubroutine
 
       my @N = @{ $N{$N} };
 
-      my @en_decl = map { &F ('./object/file/program-unit/T-decl-stmt//EN-decl[string(EN-N)="?"]', $_, $d1) } @N;
+      my @en_decl;
+
+      if ($d1->nodeName eq 'program-unit')
+        {
+          @en_decl = map { &F ('./T-decl-stmt//EN-decl[string(EN-N)="?"]', $_, $d1) } @N;
+        }
+      else
+        {
+          @en_decl = map { &F ('./object/file/program-unit/T-decl-stmt//EN-decl[string(EN-N)="?"]', $_, $d1) } @N;
+        }
+
       next unless (@en_decl); # May be an argument
 
       my @as = map { &F ('./array-spec', $_, 1) || '' } @en_decl;
@@ -851,8 +899,16 @@ sub inlineExternalSubroutine
 
   # Remove include of inlined subroutine
 
-  my ($include) = &F ('./object/file/program-unit/include[string(filename)="?"]', 
-                      lc ($n2) . '.intfb.h', $d1);
+  my $include;
+
+  if ($d1->nodeName eq 'program-unit')
+    {
+      ($include) = &F ('./include[string(filename)="?"]', lc ($n2) . '.intfb.h', $d1);
+    }
+  else
+    {
+      ($include) = &F ('./object/file/program-unit/include[string(filename)="?"]', lc ($n2) . '.intfb.h', $d1);
+    }
 
   $include && &removeStmt ($include);
 

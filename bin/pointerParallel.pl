@@ -152,6 +152,9 @@ if ($opts{'inline-contains'})
   {
     &Construct::changeIfStatementsInIfConstructs ($d);
     &Inline::inlineContainedSubroutines ($d, skipDimensionCheck => 1);
+
+'FileHandle'->new (">d.F90")->print ($d->textContent);
+
   }
 
 if ($opts{cycle} == 48)

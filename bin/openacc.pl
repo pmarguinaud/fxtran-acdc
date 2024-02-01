@@ -136,6 +136,93 @@ sub changePRINT_MSGintoPRINT
 
 }
 
+sub processSingleModule
+{
+  my ($d, $find, %opts) = @_;
+
+  my @pu = &F ('./program-unit', $d);
+
+  for my $pu (@pu)
+    {
+      &processSingleRoutine ($pu, $find, %opts);
+    }
+
+  if ($opts{interfaces})
+    {
+      my @pu = &F ('./interface-construct/program-unit', $d);
+     
+      for my $pu (@pu)
+        {
+          &processSingleInterface ($pu, $find, %opts);
+        }
+    }
+
+  &Module::addSuffix ($d, $SUFFIX);
+}
+
+sub processSingleInterface
+{
+  my ($d, $find, %opts) = @_;
+
+  my $end = $d->lastChild;
+
+  &Dimension::attachArraySpecToEntity ($d);
+  &Decl::forceSingleDecl ($d);
+  
+  my @KLON = ('KLON', 'YDGEOMETRY%YRDIM%NPROMA', 'YDCPG_OPTS%KLON');
+  push @KLON, 'D%NIT', 'D%NIJT' if ($opts{mesonh});
+  push @KLON, ('YDGEOMETRY%YRDIM%NPROMA', 'KPROMA') if ($opts{cpg_dyn});
+  
+  &ReDim::reDim ($d, KLON => \@KLON, 'redim-arguments' => $opts{'redim-arguments'});
+  
+  if ($opts{'value-attribute'})
+    {
+      &addValueAttribute ($d);
+    }
+  
+  &Subroutine::addSuffix ($d, $SUFFIX);
+  
+  &OpenACC::routineSeq ($d);
+  
+  my $exec = &s ("X = 0");
+  $d->insertBefore ($exec, $end);
+  $d->insertBefore (&t ("\n"), $end);
+  
+  &Stack::addStack 
+  (
+    $d, 
+    skip => sub { my $proc = shift; grep ({ $_ eq $proc } @{ $opts{nocompute} }) },
+    stack84 => $opts{stack84},
+    KLON => \@KLON,
+    local => 0,
+  );
+
+  $exec->unbindNode ();
+}
+
+sub saveDebug
+{
+  my ($d) = @_;
+  
+  my ($file, $line) = (caller (0))[1,2];
+
+  $file = &basename ($file);
+
+  my $count = 0;
+
+  my $F90;
+  while (1)
+    {
+      $F90 = "debug/$count.$file:$line.F90";
+      last unless (-f $F90);
+      $count++;
+    }
+
+  (-d 'debug') or mkdir ('debug');
+
+  'FileHandle'->new (">$F90")->print ($d->textContent);
+}
+
 sub processSingleRoutine
 {
   my ($d, $find, %opts) = @_;
@@ -152,7 +239,7 @@ sub processSingleRoutine
     {
       &Inline::inlineContainedSubroutines ($d, find => $find, inlineDeclarations => 1);
     }
-  
+
   if ($opts{jljk2jlonjlev})
     {
       &Identifier::rename ($d, JL => 'JLON', JK => 'JLEV');
@@ -206,7 +293,7 @@ sub processSingleRoutine
   @pointer = &Pointer::setPointersDimensions ($d)
     if ($opts{pointers});
   
-  &Loop::removeJlonLoops ($d, KLON => \@KLON, KIDIA => $KIDIA, KFDIA => $KFDIA, pointer => \@pointer);
+  &Loop::removeJlonLoops ($d, KLON => \@KLON, KIDIA => $KIDIA, KFDIA => $KFDIA, pointer => \@pointer, mesonh => $opts{mesonh});
   
   &ReDim::reDim ($d, KLON => \@KLON, 'redim-arguments' => $opts{'redim-arguments'});
   
@@ -249,8 +336,8 @@ sub processSingleRoutine
 
 my %opts = (cycle => 48, 'include-ext' => '.intfb.h');
 my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh 
-                 remove-unused-includes mode modi value-attribute redim-arguments stack84 arpege
-                 cpg_dyn pointers inline-contained debug);
+                 remove-unused-includes modi value-attribute redim-arguments stack84 arpege
+                 cpg_dyn pointers inline-contained debug interfaces);
 my @opts_s = qw (dir nocompute cycle include-ext inlined);
 
 &GetOptions
@@ -289,8 +376,6 @@ $opts{nocompute} = [$opts{nocompute} ? split (m/,/o, $opts{nocompute}) : ()];
 
 my $F90 = shift;
 
-$opts{mode} = $opts{mesonh} && (&basename ($F90) =~ m/^mode_/o);
-
 $opts{dir} ||= &dirname ($F90);
 
 my $suffix = lc ($SUFFIX);
@@ -316,18 +401,27 @@ my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag 
 my $find = 'Finder::Pack'->new ();
 
 
-if ($opts{mode})
+my @pu = &F ('./object/file/program-unit', $d);
+
+my $singleRoutine = scalar (@pu) == 1;
+
+for my $pu (@pu)
   {
-    my @pu = &F ('./object/file/program-unit/program-unit', $d);
-    for my $pu (@pu)
+    my $stmt = $pu->firstChild;
+    (my $kind = $stmt->nodeName) =~ s/-stmt$//o;
+    if ($kind eq 'module')
+      {
+        $singleRoutine = 0;
+        &processSingleModule ($pu, $find, %opts);
+      }
+    elsif ($kind eq 'subroutine')
       {
         &processSingleRoutine ($pu, $find, %opts);
       }
-    &Module::addSuffix ($d, $SUFFIX);
-  }
-else
-  {
-    &processSingleRoutine ($d, $find, %opts);
+    else
+      {
+        die;
+      }
   }
 
 
@@ -346,16 +440,17 @@ if ($opts{stdout})
 else
   {
     &updateFile ($F90out, &Canonic::indent ($d));
-    if ($opts{mode})
+
+    if ($singleRoutine)
       {
-      }
-    elsif ($opts{modi})
-      {
-        &Fxtran::modi ($F90out, $opts{dir});
-      }
-    else
-      {
-        &Fxtran::intfb ($F90out, $opts{dir}, $opts{'include-ext'});
+        if ($opts{modi})
+          {
+            &Fxtran::modi ($F90out, $opts{dir});
+          }
+        else
+          {
+            &Fxtran::intfb ($F90out, $opts{dir}, $opts{'include-ext'});
+          }
       }
   }
 
