@@ -11,5 +11,6 @@ generateStructureMethods.sh $*
 cpg.sh $*
 cpg_dyn_slg.sh $*
 mesonh.sh $*
+shallow_mf.sh $*
 openacc.sh $*
 parallel.sh $*
