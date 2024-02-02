@@ -8,7 +8,7 @@ function resolve ()
 {
   u=0
 
-  if [ "x$1" = "x--local" ]
+  if [ "x$1" = "x--user" ]
   then
     u=1
     shift
