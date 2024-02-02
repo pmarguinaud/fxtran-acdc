@@ -154,15 +154,7 @@ sub removeJlonLoops
     }
 
 
-  my $YDCPG_BNDS;
-  if ($d->nodeName eq 'program-unit')
-    {
-      ($YDCPG_BNDS) = &F ('./subroutine-stmt/dummy-arg-LT/arg-N[string(.)="YDCPG_BNDS"]', $d);
-    }
-  else
-    {
-      ($YDCPG_BNDS) = &F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="YDCPG_BNDS"]', $d);
-    }
+  my ($YDCPG_BNDS) = &F ('./subroutine-stmt/dummy-arg-LT/arg-N[string(.)="YDCPG_BNDS"]', $d);
 
   $noexec->parentNode->insertAfter ($YDCPG_BNDS ? &s ("JLON = YDCPG_BNDS%KIDIA") : &s ("JLON = $KIDIA"), $noexec);
   $noexec->parentNode->insertAfter (&t ("\n"), $noexec);

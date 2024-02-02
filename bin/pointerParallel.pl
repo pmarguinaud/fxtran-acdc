@@ -55,7 +55,7 @@ sub updateFile
 sub addYDCPG_OPTS
 {
   my $d = shift;
-  my ($arglist) = &F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT', $d);
+  my ($arglist) = &F ('./subroutine-stmt/dummy-arg-LT', $d);
   $arglist->appendChild (&t (','));
   $arglist->appendChild (&n ('<arg-N><N><n>YDCPG_OPTS</n></N></arg-N>'));
   &Decl::declare ($d, 'TYPE (CPG_OPTS), INTENT (IN) :: YDCPG_OPTS');

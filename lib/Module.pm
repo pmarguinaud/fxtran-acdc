@@ -11,34 +11,11 @@ use strict;
 use Fxtran;
 use FileHandle;
   
-sub getProgramUnit
-{
-  my $d = shift;
-
-  my $pu;
-  if ($d->isa ('XML::LibXML::Document'))
-    {
-      ($pu) = &F ('./object/file/program-unit', $d);
-    }
-  elsif ($d->nodeName eq 'program-unit')
-    {
-      $pu = $d;
-    }
-  else
-    {
-      die $d->nodeName;
-    }
-
-  return $pu;
-}
-
 sub addSuffix
 {
   my ($d, $suffix) = @_;
 
-  my $pu = &getProgramUnit ($d);
-
-  my @sn = &F ('./module-stmt/module-N/N/n/text()|./end-module-stmt/module-N/N/n/text()', $pu);
+  my @sn = &F ('./module-stmt/module-N/N/n/text()|./end-module-stmt/module-N/N/n/text()', $d);
 
   for my $sn (@sn) 
     {
@@ -51,11 +28,11 @@ sub rename
 {
   my ($d, $sub) = @_; 
 
-  my $pu = &getProgramUnit ($d);
+  my $d = &getProgramUnit ($d);
 
   my @name = (
-               &F ('./module-stmt/module-N/N/n/text()', $pu),
-               &F ('./end-module-stmt/module-N/N/n/text()', $pu),
+               &F ('./module-stmt/module-N/N/n/text()', $d),
+               &F ('./end-module-stmt/module-N/N/n/text()', $d),
              );
   my $name = $name[0]->textContent;
 
