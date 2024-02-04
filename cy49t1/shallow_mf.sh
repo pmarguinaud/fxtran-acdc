@@ -24,6 +24,6 @@ for f in \
    phyex/turb/mode_mf_turb_expl.F90
 do
   echo "==> $f <=="
-  openacc.pl $*  --nocompute PRINT_MSG  --interfaces --version --inline-contained --cycle 49 --mesonh --dir src/local/mpa/openacc $(resolve --user $f)
+  openacc.pl --stack84  --nocompute PRINT_MSG  --interfaces --version --inline-contained --cycle 49 --mesonh --dir src/local/mpa/openacc $(resolve --user $f)
 done
 

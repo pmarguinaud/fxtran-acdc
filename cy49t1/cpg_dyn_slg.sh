@@ -35,7 +35,7 @@ print &dirname ($f)
 ' $f)
 
 pointerParallel.pl \
-  $* --jlon JROF --nproma YDCPG_OPTS%KLON,YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIM%NPROMNH --cycle 49 --arpege --use-acpy \
+  --stack84 --jlon JROF --nproma YDCPG_OPTS%KLON,YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIM%NPROMNH --cycle 49 --arpege --use-acpy \
   --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify --version --dir \
   src/local/$dir $(resolve $f)
 
@@ -69,7 +69,7 @@ for f in \
 do
 
 dir=$(dirname $f)
-openacc.pl $* --cycle 49 --pointers --nocompute ABOR1 --version --cpg_dyn --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
+openacc.pl --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --cpg_dyn --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
 
 done
 
@@ -79,7 +79,7 @@ for f in \
 do
 
 dir=$(dirname $f)
-openacc.pl $* --cycle 49 --pointers --nocompute ABOR1 --version --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
+openacc.pl --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
 
 done
 
