@@ -24,6 +24,9 @@ phyex/micro/modd_param_lima_warm.F90 \
 phyex/micro/modd_param_lima_cold.F90 \
 phyex/micro/modd_param_lima_mixed.F90 \
 phyex/aux/modd_nsv.F90 \
+phyex/conv/modd_convpar.F90 \
+phyex/conv/modd_convparext.F90 \
+phyex/conv/modd_convpar_shal.F90 \
 phyex/aux/modd_field.F90
 do
   set -x
