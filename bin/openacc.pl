@@ -14,6 +14,7 @@ use Data::Dumper;
 use Getopt::Long;
 use File::stat;
 use File::Path;
+use File::Copy;
 use File::Basename;
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
@@ -29,6 +30,7 @@ use ReDim;
 use Construct;
 use DIR;
 use Subroutine;
+use Module;
 use Call;
 use Canonic;
 use DrHook;
@@ -41,6 +43,8 @@ use Include;
 use Inline;
 use Finder::Pack;
 use Pointer;
+
+my $SUFFIX = '_OPENACC';
 
 sub addValueAttribute
 {
@@ -74,9 +78,9 @@ sub updateFile
       &mkpath (&dirname ($F90));
       my $fh = 'FileHandle'->new (">$F90"); 
       $fh or die ("Cannot write to $F90");
-      $fh->print ($code); 
-      $fh->close ();
-    }
+        $fh->print ($code); 
+        $fh->close ();
+      }
 }
 
 sub useABOR1_ACC
@@ -110,12 +114,230 @@ sub changeWRITEintoPRINT
 
 }
 
-my $SUFFIX = '_OPENACC';
+sub changePRINT_MSGintoPRINT
+{
+  my $d = shift;
+
+  my @print_msg = &F ('.//call-stmt[string(procedure-designator)="PRINT_MSG"]', $d);
+  
+  for my $print_msg (@print_msg)
+    {
+      my @arg = &F ('./arg-spec/arg/ANY-E', $print_msg);
+
+      if ($arg[0]->textContent eq 'NVERB_FATAL')
+        {
+          $print_msg->replaceNode (&s ("CALL ABOR1_ACC (" . $arg[-1]->textContent . ")"));
+        }
+      else
+        {
+          $print_msg->replaceNode (&s ("PRINT *, " . $arg[-1]->textContent . ")"));
+        }
+    }
+
+}
+
+sub processSingleModule
+{
+  my ($d, $find, %opts) = @_;
+
+  my @pu = &F ('./program-unit', $d);
+
+  for my $pu (@pu)
+    {
+      &processSingleRoutine ($pu, $find, %opts);
+    }
+
+  if ($opts{interfaces})
+    {
+      my @pu = &F ('./interface-construct/program-unit', $d);
+     
+      for my $pu (@pu)
+        {
+          &processSingleInterface ($pu, $find, %opts);
+        }
+    }
+
+  &Module::addSuffix ($d, $SUFFIX);
+}
+
+sub processSingleInterface
+{
+  my ($d, $find, %opts) = @_;
+
+  my $end = $d->lastChild;
+
+  &Dimension::attachArraySpecToEntity ($d);
+  &Decl::forceSingleDecl ($d);
+  
+  my @KLON = ('KLON', 'YDGEOMETRY%YRDIM%NPROMA', 'YDCPG_OPTS%KLON');
+  push @KLON, 'D%NIT', 'D%NIJT' if ($opts{mesonh});
+  push @KLON, ('YDGEOMETRY%YRDIM%NPROMA', 'KPROMA') if ($opts{cpg_dyn});
+  
+  &ReDim::reDim ($d, KLON => \@KLON, 'redim-arguments' => $opts{'redim-arguments'});
+  
+  if ($opts{'value-attribute'})
+    {
+      &addValueAttribute ($d);
+    }
+  
+  &Subroutine::addSuffix ($d, $SUFFIX);
+  
+  &OpenACC::routineSeq ($d);
+  
+  my $exec = &s ("X = 0");
+  $d->insertBefore ($exec, $end);
+  $d->insertBefore (&t ("\n"), $end);
+  
+  &Stack::addStack 
+  (
+    $d, 
+    skip => sub { my $proc = shift; grep ({ $_ eq $proc } @{ $opts{nocompute} }) },
+    stack84 => $opts{stack84},
+    KLON => \@KLON,
+    local => 0,
+  );
+
+  $exec->unbindNode ();
+}
+
+sub saveDebug
+{
+  my ($d) = @_;
+  
+  my ($file, $line) = (caller (0))[1,2];
+
+  $file = &basename ($file);
+
+  my $count = 0;
+
+  my $F90;
+  while (1)
+    {
+      $F90 = "debug/$count.$file:$line.F90";
+      last unless (-f $F90);
+      $count++;
+    }
+
+  (-d 'debug') or mkdir ('debug');
+
+  'FileHandle'->new (">$F90")->print ($d->textContent);
+}
+
+sub processSingleRoutine
+{
+  my ($d, $find, %opts) = @_;
+  
+  for my $in (@{ $opts{inlined} })
+    {
+      my $f90in = $find->resolve (file => $in);
+      my $di = &Fxtran::parse (location => $f90in, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]);
+      &Canonic::makeCanonic ($di);
+      &Inline::inlineExternalSubroutine ($d, $di);
+    }
+  
+  if ($opts{'inline-contained'})
+    {
+      &Inline::inlineContainedSubroutines ($d, find => $find, inlineDeclarations => 1);
+    }
+
+  if ($opts{jljk2jlonjlev})
+    {
+      &Identifier::rename ($d, JL => 'JLON', JK => 'JLEV');
+    }
+  
+  if ($opts{jijk2jlonjlev})
+    {
+      &Identifier::rename ($d, JI => 'JLON', JK => 'JLEV', 'JIJ' => 'JLON');
+    }
+  
+  if ($opts{cpg_dyn})
+    {
+      &Identifier::rename ($d, JROF => 'JLON');
+    }
+  
+  
+  &Associate::resolveAssociates ($d);
+  
+  &Dimension::attachArraySpecToEntity ($d);
+  &Decl::forceSingleDecl ($d);
+  
+  if ($opts{cycle} eq '48')
+    {
+      &Cycle48::simplify ($d);
+    }
+  elsif ($opts{cycle} eq '49')
+    {
+      &Cycle49::simplify ($d, arpege => $opts{arpege});
+    }
+  
+  &DIR::removeDIR ($d);
+  
+  my @KLON = ('KLON', 'YDGEOMETRY%YRDIM%NPROMA', 'YDCPG_OPTS%KLON');
+  push @KLON, 'D%NIT', 'D%NIJT' if ($opts{mesonh});
+  push @KLON, ('YDGEOMETRY%YRDIM%NPROMA', 'KPROMA') if ($opts{cpg_dyn});
+  
+  my ($KIDIA, $KFDIA) = qw (KIDIA KFDIA);
+  
+  if ($opts{mesonh})
+    {
+      ($KIDIA, $KFDIA) = ('D%NIB', 'D%NIE');
+    }
+  
+  if ($opts{cpg_dyn})
+    {
+      ($KIDIA, $KFDIA) = ('KST', 'KEND')
+    }
+  
+  my @pointer;
+  
+  @pointer = &Pointer::setPointersDimensions ($d)
+    if ($opts{pointers});
+  
+  &Loop::removeJlonLoops ($d, KLON => \@KLON, KIDIA => $KIDIA, KFDIA => $KFDIA, pointer => \@pointer, mesonh => $opts{mesonh});
+  
+  &ReDim::reDim ($d, KLON => \@KLON, 'redim-arguments' => $opts{'redim-arguments'});
+  
+  
+  if ($opts{'value-attribute'})
+    {
+      &addValueAttribute ($d);
+    }
+  
+  &Subroutine::addSuffix ($d, $SUFFIX);
+  
+  &Call::addSuffix ($d, suffix => $SUFFIX, match => sub { my $proc = shift; ! grep ({ $_ eq $proc } @{ $opts{nocompute} })});
+  
+  &OpenACC::routineSeq ($d);
+  
+  &Stack::addStack 
+  (
+    $d, 
+    skip => sub { my $proc = shift; grep ({ $_ eq $proc } @{ $opts{nocompute} }) },
+    stack84 => $opts{stack84},
+    KLON => \@KLON,
+    pointer => \@pointer,
+  );
+  
+  &Pointer::handleAssociations ($d, pointers => \@pointer)
+    if ($opts{pointers});
+  
+  &DrHook::remove ($d) unless ($opts{drhook});
+  
+  &Include::removeUnusedIncludes ($d) if ($opts{'remove-unused-includes'});
+  
+  &useABOR1_ACC ($d);
+  &changeWRITEintoPRINT ($d);
+  &changePRINT_MSGintoPRINT ($d);
+
+}
+
+
+
 
 my %opts = (cycle => 48, 'include-ext' => '.intfb.h');
 my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh 
                  remove-unused-includes modi value-attribute redim-arguments stack84 arpege
-                 cpg_dyn pointers);
+                 cpg_dyn pointers inline-contained debug interfaces);
 my @opts_s = qw (dir nocompute cycle include-ext inlined);
 
 &GetOptions
@@ -177,104 +399,31 @@ my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag 
 &Canonic::makeCanonic ($d);
 
 my $find = 'Finder::Pack'->new ();
-for my $in (@{ $opts{inlined} })
+
+
+my @pu = &F ('./object/file/program-unit', $d);
+
+my $singleRoutine = scalar (@pu) == 1;
+
+for my $pu (@pu)
   {
-    my $f90in = $find->resolve (file => $in);
-    my $di = &Fxtran::parse (location => $f90in, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]);
-    &Canonic::makeCanonic ($di);
-    &Inline::inlineExternalSubroutine ($d, $di);
+    my $stmt = $pu->firstChild;
+    (my $kind = $stmt->nodeName) =~ s/-stmt$//o;
+    if ($kind eq 'module')
+      {
+        $singleRoutine = 0;
+        &processSingleModule ($pu, $find, %opts);
+      }
+    elsif ($kind eq 'subroutine')
+      {
+        &processSingleRoutine ($pu, $find, %opts);
+      }
+    else
+      {
+        die;
+      }
   }
 
-
-if ($opts{jljk2jlonjlev})
-  {
-    &Identifier::rename ($d, JL => 'JLON', JK => 'JLEV');
-  }
-
-if ($opts{jijk2jlonjlev})
-  {
-    &Identifier::rename ($d, JI => 'JLON', JK => 'JLEV');
-  }
-
-if ($opts{cpg_dyn})
-  {
-    &Identifier::rename ($d, JROF => 'JLON');
-  }
-
-&Associate::resolveAssociates ($d);
-
-&Dimension::attachArraySpecToEntity ($d);
-&Decl::forceSingleDecl ($d);
-
-if ($opts{cycle} eq '48')
-  {
-    &Cycle48::simplify ($d);
-  }
-elsif ($opts{cycle} eq '49')
-  {
-    &Cycle49::simplify ($d, arpege => $opts{arpege});
-  }
-
-&DIR::removeDIR ($d);
-
-my @KLON = ('KLON', 'YDGEOMETRY%YRDIM%NPROMA', 'YDCPG_OPTS%KLON');
-push @KLON, 'D%NIT' if ($opts{mesonh});
-push @KLON, ('YDGEOMETRY%YRDIM%NPROMA', 'KPROMA') if ($opts{cpg_dyn});
-
-my ($KIDIA, $KFDIA) = qw (KIDIA KFDIA);
-
-if ($opts{mesonh})
-  {
-    ($KIDIA, $KFDIA) = ('D%NIB', 'D%NIE');
-  }
-
-if ($opts{cpg_dyn})
-  {
-    ($KIDIA, $KFDIA) = ('KST', 'KEND')
-  }
-
-
-my @pointer;
-
-
-@pointer = &Pointer::setPointersDimensions ($d)
-  if ($opts{pointers});
-
-&Loop::removeJlonLoops ($d, KLON => \@KLON, KIDIA => $KIDIA, KFDIA => $KFDIA, pointer => \@pointer);
-
-&ReDim::reDim ($d, KLON => \@KLON, 'redim-arguments' => $opts{'redim-arguments'});
-
-
-if ($opts{'value-attribute'})
-  {
-    &addValueAttribute ($d);
-  }
-
-
-&Subroutine::addSuffix ($d, $SUFFIX);
-
-&Call::addSuffix ($d, suffix => $SUFFIX, match => sub { my $proc = shift; ! grep ({ $_ eq $proc } @{ $opts{nocompute} })});
-
-&OpenACC::routineSeq ($d);
-
-&Stack::addStack 
-(
-  $d, 
-  skip => sub { my $proc = shift; grep ({ $_ eq $proc } @{ $opts{nocompute} }) },
-  stack84 => $opts{stack84},
-  KLON => \@KLON,
-  pointer => \@pointer,
-);
-
-&Pointer::handleAssociations ($d, pointers => \@pointer)
-  if ($opts{pointers});
-
-&DrHook::remove ($d) unless ($opts{drhook});
-
-&Include::removeUnusedIncludes ($d) if ($opts{'remove-unused-includes'});
-
-&useABOR1_ACC ($d);
-&changeWRITEintoPRINT ($d);
 
 if ($opts{version})
   {
@@ -291,13 +440,17 @@ if ($opts{stdout})
 else
   {
     &updateFile ($F90out, &Canonic::indent ($d));
-    if ($opts{modi})
+
+    if ($singleRoutine)
       {
-        &Fxtran::modi ($F90out, $opts{dir});
-      }
-     else
-      {
-        &Fxtran::intfb ($F90out, $opts{dir}, $opts{'include-ext'});
+        if ($opts{modi})
+          {
+            &Fxtran::modi ($F90out, $opts{dir});
+          }
+        else
+          {
+            &Fxtran::intfb ($F90out, $opts{dir}, $opts{'include-ext'});
+          }
       }
   }
 

@@ -10,6 +10,7 @@ package Call;
 use strict;
 use Fxtran;
 use Subroutine;
+use Data::Dumper;
 
 sub addSuffix
 {
@@ -37,13 +38,14 @@ sub addSuffix
     }
 
 
-  for my $proc (keys (%proc))
-    {   
+           
 
+  PROC: for my $proc (keys (%proc))
+    {   
       for my $ext (qw (.intfb.h .h))
         {
           next unless (my ($include) = &F ('.//include[string(filename)="?"]', lc ($proc) . $ext, $d));
-
+  
           if (&F ('.//call-stmt[string(procedure-designator)="?"]', $proc, $d))
             {
               my $include1 = $include->cloneNode (1);
@@ -57,7 +59,28 @@ sub addSuffix
               my ($t) = &F ('./filename/text()', $include); 
               $t->setData (lc ($proc) . lc ($suffix) . $ext);
             }
+          next PROC;
         }
+
+      # MesoNH style
+      if (my ($mode) = &F ('.//use-stmt/module-N/N/n/text()[string(.)="?"]', "MODE_$proc", $d))
+        {
+          $mode->setData ("MODE_${proc}${suffix}");
+          my $use = &Fxtran::stmt ($mode);
+          my ($un) = &F ('./rename-LT/rename/use-N/N/n/text()[string(.)="?"]', $proc, $use);
+          $un->setData ("${proc}${suffix}");
+          next PROC;
+        }
+
+      if (my ($mode) = &F ('.//use-stmt[./rename-LT/rename/use-N/N/n/text()[string(.)="?"]]/module-N/N/n/text()', $proc, $d))
+        {
+          $mode->setData ($mode->data () . ${suffix}) unless ($mode->data () =~ m,$suffix$,);
+          my $use = &Fxtran::stmt ($mode);
+          my ($un) = &F ('./rename-LT/rename/use-N/N/n/text()[string(.)="?"]', $proc, $use);
+          $un->setData ("${proc}${suffix}");
+          next PROC;
+        }
+
     }   
 
 

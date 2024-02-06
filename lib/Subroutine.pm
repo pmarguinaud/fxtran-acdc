@@ -15,7 +15,7 @@ sub addSuffix
 {
   my ($d, $suffix) = @_;
 
-  my @sn = &F ('./object/file/program-unit/subroutine-stmt/subroutine-N/N/n/text()|./object/file/program-unit/end-subroutine-stmt/subroutine-N/N/n/text()', $d);
+  my @sn = &F ('./subroutine-stmt/subroutine-N/N/n/text()|./end-subroutine-stmt/subroutine-N/N/n/text()', $d);
 
   for my $sn (@sn) 
     {
@@ -34,11 +34,11 @@ sub addSuffix
 
 sub rename
 {
-  my ($doc, $sub) = @_; 
+  my ($d, $sub) = @_; 
 
   my @name = (
-               &F ('./object/file/program-unit/subroutine-stmt/subroutine-N/N/n/text()', $doc),
-               &F ('./object/file/program-unit/end-subroutine-stmt/subroutine-N/N/n/text()', $doc),
+               &F ('./subroutine-stmt/subroutine-N/N/n/text()', $d),
+               &F ('./end-subroutine-stmt/subroutine-N/N/n/text()', $d),
              );
   my $name = $name[0]->textContent;
 
@@ -49,7 +49,7 @@ sub rename
       $_->setData ($name1);
     }   
 
-  my @drhook = &F ('.//call-stmt[string(procedure-designator)="DR_HOOK"]', $doc);
+  my @drhook = &F ('.//call-stmt[string(procedure-designator)="DR_HOOK"]', $d);
 
   for my $drhook (@drhook)
     {   

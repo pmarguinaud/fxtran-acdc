@@ -56,6 +56,24 @@ sub removeJlonArraySyntax
 }
 
 
+sub fixCOUNTIdiom
+{
+  my $d = shift;
+
+  # MesoNH only (hopefully)
+ 
+  my @E2 = &F ('.//a-stmt/E-2/named-E[string(N)="COUNT"]', $d);
+
+  for my $E2 (@E2)
+    {
+      my ($T) = &F ('.//named-E[./R-LT/array-R[string(section-subscript-LT)="IIJB:IIJE"]]', $E2);
+      next unless ($T);
+      my ($N) = &F ('./N', $T, 1);
+      $E2->replaceNode (&e ("MERGE (1, 0, $N)"));
+    }
+
+}
+
 sub fixSUMIdiom
 {
   my ($d, %opts) = @_;
@@ -122,17 +140,21 @@ sub removeJlonLoops
   my $noexec = &Scope::getNoExec ($d);
 
   &fixSUMIdiom ($d, KIDIA => $KIDIA, KFDIA => $KFDIA);
+  &fixCOUNTIdiom ($d);
  
   unless (&F ('.//T-decl-stmt[.//EN-decl[string(EN-N)="JLON"]]', $d))
     {
       my $indent = "\n" . (' ' x &Fxtran::getIndent ($noexec));
-      $noexec->parentNode->insertAfter (my $decl = &s ("INTEGER (KIND=JPIM) :: JLON"), $noexec);
+
+      my $decl = $opts{mesonh} ? &s ("INTEGER :: JLON") : &s ("INTEGER (KIND=JPIM) :: JLON");
+
+      $noexec->parentNode->insertAfter ($decl, $noexec);
       $noexec->parentNode->insertAfter (&t ($indent), $noexec);
       $noexec = $decl;
     }
 
 
-  my ($YDCPG_BNDS) = &F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="YDCPG_BNDS"]', $d);
+  my ($YDCPG_BNDS) = &F ('./subroutine-stmt/dummy-arg-LT/arg-N[string(.)="YDCPG_BNDS"]', $d);
 
   $noexec->parentNode->insertAfter ($YDCPG_BNDS ? &s ("JLON = YDCPG_BNDS%KIDIA") : &s ("JLON = $KIDIA"), $noexec);
   $noexec->parentNode->insertAfter (&t ("\n"), $noexec);
@@ -267,6 +289,7 @@ sub setJLON
     }
 
   my @ss = &F ('./section-subscript-LT/section-subscript', $ar);
+
   $ss[0]->replaceNode (&n ('<section-subscript><lower-bound><named-E><N><n>JLON</n></N></named-E></lower-bound></section-subscript>'));
 
 }

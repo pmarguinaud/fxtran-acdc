@@ -40,7 +40,15 @@ sub getDummies
   if (@arg)
     {
       no warnings;
-      @en_decl = &F ('./object/file/program-unit/T-decl-stmt//EN-decl[' . join (' or ', map { "string(EN-N)='$_'" } @arg) . ']', $d);
+
+      my @AA = @arg;
+
+      while (my @aa = splice (@AA, 0, 10))
+        {
+          my $xpath = './object/file/program-unit/T-decl-stmt//EN-decl[' . join (' or ', map { "string(EN-N)='$_'" } @aa) . ']';
+          push @en_decl, &F ($xpath, $d);
+        }
+
     }
 
   my %optional;
@@ -65,6 +73,33 @@ sub getDummies
 }
 
 &memoize ('getDummies');
+
+sub getDimensions 
+{
+  my ($d, $n) = @_;
+
+  my ($as) = &F ('.//T-decl-stmt//EN-decl[string(EN-N)="?"]/array-spec', $n, $d, 1);
+
+  if ($as)
+    {
+      for ($as)
+        {
+          s/YDGEOMETRY%YRDIM%NPROMA/KLON/go;
+          s/YDGEOMETRY%YRDIM%NPROMM/KLON/go;
+          s/YDCPG_OPTS%KLON/KLON/go;
+          s/KPROMA/KLON/go;
+          s/YDGEOMETRY%YRDIMV%NFLEVG/KFLEVG/go;
+          s/YDCPG_OPTS%KFLEVG/KFLEVG/go;
+          s/\bKLEV\b/KFLEVG/go;
+          s/\b1://go;
+          s/YDCPG_OPTS%KTSSG/KTSSG/go;
+          s/YDCPG_OPTS%KSW/KSW/go;
+          s/YDDIMV%NFLEVG/KFLEVG/go;
+        }
+    }
+
+  return $as || '';
+}
 
 sub getActuals
 {
@@ -195,14 +230,21 @@ sub checkcall
       my %used;
   
       print &center ($name, 50), "\n";
-      printf ("   | %20s | %20s\n", &center ('DUMMY', 20), &center ('ACTUAL', 20));
+      printf ("     | %20s %60s | %20s %60s\n", &center ('DUMMY', 20), '', &center ('ACTUAL', 20), '');
       for my $actual (@actuals)
         {
           $used{$actual->{dummy}}++ if ($actual->{dummy});
   
           my $dummy = $actual->{dummy} || '-';
           my $value = $actual->{value}->textContent;
-          printf (" %s | %-20s | %-20s\n", &eqArg ($dummy, $value) ? '=' : ' ', $dummy, $value);
+
+          my $valueDims = &getDimensions ($caller_d, $value);
+          my $dummyDims = &getDimensions ($callee_d, $dummy);
+
+          printf(" %s %s | %-20s %-60s | %-20s %-60s \n", 
+                 ((($valueDims eq $dummyDims) or ((! $valueDims) or (! $dummyDims))) ? '=' : 'X'),
+                 (&eqArg ($dummy, $value) ? '=' : ' '), 
+                 $dummy, $dummyDims, $value, $valueDims);
         }
     
       for my $dummy (@dummies)

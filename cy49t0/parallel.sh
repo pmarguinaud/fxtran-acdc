@@ -3,7 +3,21 @@
 set -x
 set -e
 
-. $(dirname $0)/prolog.sh
+export PATH=/home/gmap/mrpm/marguina/fxtran-acdc/bin:$PATH
+
+function resolve ()
+{
+  f=$1
+  for view in $(cat .gmkview)
+  do
+    g="src/$view/$f"
+    if [ -f $g ]
+    then
+      echo $g
+      break
+    fi
+  done
+}
 
 for f in \
   arpifs/phys_dmn/apl_arpege_init.F90                                    \
@@ -40,7 +54,7 @@ for f in \
 do
 # pointerParallel.pl --types-fieldapi-dir types-fieldapi --post-parallel synchost --only-if-newer --version src/local/$f 
   dir=$(dirname $f)
-  pointerParallel.pl --stack84 --use-acpy --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify --version --dir src/local/$dir $(resolve --user $f)
+  pointerParallel.pl $* --use-acpy --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify --version --dir src/local/$dir $(resolve $f)
 done
 
 grep _parallel src/local/arpifs/phys_dmn/apl_arpege_parallel.F90

@@ -94,19 +94,17 @@ sub loopVector
 sub routineVector
 {
   my $d = shift;
-  my ($pu) = &F ('./object/file/program-unit', $d);
-  my ($N) = &F ('./subroutine-stmt/subroutine-N', $pu, 1); 
-  $pu->insertAfter (&n ("<C>!\$acc routine ($N) vector</C>"), $pu->firstChild);
-  $pu->insertAfter (&t ("\n"), $pu->firstChild);
+  my ($N) = &F ('./subroutine-stmt/subroutine-N', $d, 1); 
+  $d->insertAfter (&n ("<C>!\$acc routine ($N) vector</C>"), $d->firstChild);
+  $d->insertAfter (&t ("\n"), $d->firstChild);
 }
 
 sub routineSeq
 {
   my $d = shift;
-  my ($pu) = &F ('./object/file/program-unit', $d);
-  my ($N) = &F ('./subroutine-stmt/subroutine-N', $pu, 1); 
-  $pu->insertAfter (&n ("<C>!\$acc routine ($N) seq</C>"), $pu->firstChild);
-  $pu->insertAfter (&t ("\n"), $pu->firstChild);
+  my ($N) = &F ('./subroutine-stmt/subroutine-N', $d, 1); 
+  $d->insertAfter (&n ("<C>!\$acc routine ($N) seq</C>"), $d->firstChild);
+  $d->insertAfter (&t ("\n"), $d->firstChild);
 }
 
 sub serial
