@@ -83,6 +83,20 @@ sub updateFile
       }
 }
 
+sub removeTRIM
+{
+  my $expr = shift;
+
+  my @TRIM = &F ('.//named-E[string(N)="TRIM"]', $expr);
+
+  for my $TRIM (@TRIM)
+    {
+      my ($str) = &F ('./R-LT/array-R/section-subscript-LT/section-subscript/lower-bound/ANY-E', $TRIM);
+      $TRIM->replaceNode ($str);
+    }
+
+}
+
 sub useABOR1_ACC
 {
   my $d = shift;
@@ -124,13 +138,16 @@ sub changePRINT_MSGintoPRINT
     {
       my @arg = &F ('./arg-spec/arg/ANY-E', $print_msg);
 
+      my $mess = $arg[-1];
+      &removeTRIM ($mess);
+
       if ($arg[0]->textContent eq 'NVERB_FATAL')
         {
-          $print_msg->replaceNode (&s ("CALL ABOR1_ACC (" . $arg[-1]->textContent . ")"));
+          $print_msg->replaceNode (&s ("CALL ABOR1_ACC (" . $mess->textContent . ")"));
         }
       else
         {
-          $print_msg->replaceNode (&s ("PRINT *, " . $arg[-1]->textContent . ")"));
+          $print_msg->replaceNode (&s ("PRINT *, " . $mess->textContent . ")"));
         }
     }
 
