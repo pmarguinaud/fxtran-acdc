@@ -201,7 +201,7 @@ sub processSingleInterface
   
   &OpenACC::routineSeq ($d);
   
-  my $exec = &s ("X = 0");
+  my $exec = &s ("STOP");
   $d->insertBefore ($exec, $end);
   $d->insertBefore (&t ("\n"), $end);
   
