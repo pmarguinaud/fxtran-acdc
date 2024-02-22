@@ -81,10 +81,17 @@ sub makeParallel
     {
       my ($update) = &F ('.//call-stmt[string(procedure-designator)="YLCPG_BNDS%UPDATE"]', $do);
       my $p = $update->parentNode;
+
       $p->insertAfter (&s ("D%NIE = YLCPG_BNDS%KFDIA"), $update);
       $p->insertAfter (&t ("\n" . (' ' x $indent)), $update);
       $p->insertAfter (&s ("D%NIB = YLCPG_BNDS%KIDIA"), $update);
       $p->insertAfter (&t ("\n" . (' ' x $indent)), $update);
+
+      $p->insertAfter (&s ("D%NIJE = YLCPG_BNDS%KFDIA"), $update);
+      $p->insertAfter (&t ("\n" . (' ' x $indent)), $update);
+      $p->insertAfter (&s ("D%NIJB = YLCPG_BNDS%KIDIA"), $update);
+      $p->insertAfter (&t ("\n" . (' ' x $indent)), $update);
+
     }
 
   $par1->insertBefore ($init, $do);

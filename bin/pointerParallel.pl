@@ -327,7 +327,7 @@ sub processSingleRoutine
           my ($name) = &F ('./procedure-designator/named-E/N/n/text()', $call);
           unless ($seen{$name->textContent}++)
             {
-              my ($include) = &F ('.//include[./filename[string(.)="?"]]', lc ($name) . '.intfb.h', $d);
+              my ($include) = &F ('.//include[./filename[string(.)="?" or string(.)="?"]', lc ($name) . '.intfb.h', lc ($name) . '.h', $d);
               $include or die $call->textContent;
               $include->parentNode->insertAfter (&n ('<include>#include "<filename>' . lc ($name) . '_parallel.intfb.h</filename>"</include>'), $include);
               $include->parentNode->insertAfter (&t ("\n"), $include);

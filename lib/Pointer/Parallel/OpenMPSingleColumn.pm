@@ -126,6 +126,12 @@ EOF
               $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
               $do_jlon->insertAfter (&s ("D%NIB = JLON"), $do_jlon->firstChild);
               $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+
+              $do_jlon->insertAfter (&s ("D%NIJE = JLON"), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&s ("D%NIJB = JLON"), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+
             }
 
           $do_jlon->insertAfter (&s ("YLCPG_BNDS%KFDIA = JLON"), $do_jlon->firstChild);

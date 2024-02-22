@@ -36,6 +36,7 @@ for f in \
   arpifs/phys_dmn/mf_phys_save_phsurf_part1.F90                          \
   arpifs/phys_dmn/mf_phys_fpl_part2.F90                                  \
   arpifs/phys_dmn/mf_phys_fpl_part1.F90                                  \
+  arpifs/phys_dmn/arp_shallow_mf.F90                                     \
   arpifs/phys_dmn/acvppkf.F90
 do
 # pointerParallel.pl --types-fieldapi-dir types-fieldapi --post-parallel synchost --only-if-newer --version src/local/$f 

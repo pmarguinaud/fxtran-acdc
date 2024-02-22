@@ -28,7 +28,7 @@ sub getInterface
 
   my $intf = $self->resolve (file => "$name.intfb.h") || $self->resolve (file => "$name.h");
 
-  $intf && return $intf;
+  $intf && (-s $intf) && return $intf;
 
   # MesoNH
 
