@@ -95,6 +95,7 @@ sub getArgumentIntent
   my $intf = &Subroutine::getInterface ($proc, $find);
 
   my ($stmt) = &F ('.//program-unit/subroutine-stmt[string(subroutine-N)="?"]', $proc, $intf);
+
   my $unit = $stmt->parentNode;
 
   # Dummy arguments

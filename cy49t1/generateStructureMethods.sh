@@ -38,6 +38,7 @@ do
 done
 
 for f in \
+arpifs/module/yompertpar.F90 \
 arpifs/module/yoaiop.F90 \
 arpifs/module/yomnrtaer.F90 \
 arpifs/module/yomdgradient.F90 \

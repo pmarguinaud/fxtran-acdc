@@ -10,6 +10,7 @@ package Subroutine;
 use strict;
 use Fxtran;
 use FileHandle;
+use Data::Dumper;
   
 sub addSuffix
 {
@@ -67,7 +68,8 @@ sub getInterface
   my $file = $find->getInterface (name => $name);
   $file or die ("Could not find interface for $name");
   my $code = do { local $/ = undef; my $fh = 'FileHandle'->new ("<$file"); $fh or die ("Cannot open $file"); <$fh> };
-  my ($intf) = &Fxtran::parse (fragment => $code);
+  my @code = &Fxtran::parse (fragment => $code);
+  my ($intf) = grep { $_->nodeName =~ m/^(?:program-unit|interface-construct)$/o } @code;
   return $intf;
 }
 
