@@ -16,6 +16,25 @@ use Decl;
 use Associate;
 use Construct;
 
+sub removeIfDef
+{
+  my ($d, $t) = @_;
+  my @cpp = &F ("//cpp[string(.)='#ifdef $t']", $d);
+  for my $cpp (@cpp)
+    {
+      my @item;
+      for (my $item = $cpp; $item; $item = $item->nextSibling)
+        {
+          push @item, $item;
+          last if (($item->nodeName eq 'cpp') && ($item->textContent eq '#endif'));
+        }
+      for (@item)
+        {
+          $_->unbindNode ();
+        }
+    }
+}
+
 sub makeCanonicReferences
 {
   my $d = shift;
@@ -59,6 +78,8 @@ sub makeCanonic
   &makeCanonicReferences ($d);
   &Decl::forceSingleDecl ($d);
   &Construct::changeIfStatementsInIfConstructs ($d);
+  &removeIfDef ($d, '__INTEL_COMPILER');
+  &removeIfDef ($d, 'NECSX');
 
   return;
 

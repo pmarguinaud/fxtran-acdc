@@ -56,10 +56,11 @@ sub simplify
 
   my @arpege;
 
+  my $zero = &e ('1');
+  $zero->firstChild->firstChild->replaceNode (&t ('0'));
+
   if ($opts{arpege})
     {
-      my $zero = &e ('1');
-      $zero->firstChild->firstChild->replaceNode (&t ('0'));
       @arpege =
       (
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYN%NCURRENT_ITER"]'          => $zero,
@@ -120,17 +121,18 @@ sub simplify
 
   &Construct::apply 
   ($d, 
-    '//named-E[string(N)="LMUSCLFA"]'                           => &e ('.FALSE.'),
-    '//named-E[string(.)="YDLDDH%LFLEXDIA"]'                    => &e ('.FALSE.'),
-    '//named-E[string(.)="YDMODEL%YRML_DIAG%YRLDDH%LFLEXDIA"]'  => &e ('.FALSE.'),
-    '//named-E[string(.)="YDSPP_CONFIG%LSPP"]'                  => &e ('.FALSE.'),
-    '//named-E[string(.)="LMCAPEA"]'                            => &e ('.FALSE.'),
-    '//named-E[string(.)="OCH1CONV"]'                           => &e ('.FALSE.'),
-    '//named-E[string(.)="BUCONF%LBUDGET_U"]'                   => &e ('.FALSE.'),
-    '//named-E[string(.)="BUCONF%LBUDGET_V"]'                   => &e ('.FALSE.'),
-    '//named-E[string(.)="BUCONF%LBUDGET_TH"]'                  => &e ('.FALSE.'),
-    '//named-E[string(.)="BUCONF%LBUDGET_RV"]'                  => &e ('.FALSE.'),
-    '//named-E[string(.)="BUCONF%LBUDGET_SV"]'                  => &e ('.FALSE.'),
+    '//named-E[string(.)="N_VMASS"]'                               => $zero,
+    '//named-E[string(N)="LMUSCLFA"]'                              => &e ('.FALSE.'),
+    '//named-E[string(.)="YDLDDH%LFLEXDIA"]'                       => &e ('.FALSE.'),
+    '//named-E[string(.)="YDMODEL%YRML_DIAG%YRLDDH%LFLEXDIA"]'     => &e ('.FALSE.'),
+    '//named-E[string(.)="YDSPP_CONFIG%LSPP"]'                     => &e ('.FALSE.'),
+    '//named-E[string(.)="LMCAPEA"]'                               => &e ('.FALSE.'),
+    '//named-E[string(.)="OCH1CONV"]'                              => &e ('.FALSE.'),
+    '//named-E[string(.)="BUCONF%LBUDGET_U"]'                      => &e ('.FALSE.'),
+    '//named-E[string(.)="BUCONF%LBUDGET_V"]'                      => &e ('.FALSE.'),
+    '//named-E[string(.)="BUCONF%LBUDGET_TH"]'                     => &e ('.FALSE.'),
+    '//named-E[string(.)="BUCONF%LBUDGET_RV"]'                     => &e ('.FALSE.'),
+    '//named-E[string(.)="BUCONF%LBUDGET_SV"]'                     => &e ('.FALSE.'),
     @arpege,
   );
 
