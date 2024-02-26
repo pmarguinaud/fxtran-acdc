@@ -79,6 +79,7 @@ sub makeCanonic
   &Decl::forceSingleDecl ($d);
   &Construct::changeIfStatementsInIfConstructs ($d);
   &removeIfDef ($d, '__INTEL_COMPILER');
+  &removeIfDef ($d, 'RS6K');
   &removeIfDef ($d, 'NECSX');
 
   return;
