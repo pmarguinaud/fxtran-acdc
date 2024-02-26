@@ -257,7 +257,9 @@ sub processSingleRoutine
   my $t = &Pointer::SymbolTable::getSymbolTable 
     ($d, skip => $opts{skip}, nproma => $opts{nproma}, 
      'types-fieldapi-dir' => $opts{'types-fieldapi-dir'},
-     'types-constant-dir' => $opts{'types-constant-dir'});
+     'types-constant-dir' => $opts{'types-constant-dir'},
+     'types-fieldapi-non-blocked' => [qw (CPG_SL1F_TYPE CPG_SL_MASK_TYPE)]);
+    
   
   for my $v (qw (JLON JLEV))
     {
@@ -359,7 +361,9 @@ sub processSingleRoutine
       my $s = $t->{$n};
       if ($s->{object_based})
         {
-          my $decl = &s ($s->{ts}->textContent . ", POINTER :: " . $n . "(" . join (',', (':') x ($s->{nd} + 1)) . ")");
+          my $nd = $s->{nd};
+          $nd++ if ($s->{blocked});
+          my $decl = &s ($s->{ts}->textContent . ", POINTER :: " . $n . "(" . join (',', (':') x $nd) . ")");
           push @decl, $decl;
         }
       if ($s->{object})
@@ -449,9 +453,10 @@ sub processSingleRoutine
 
 my %opts = ('types-fieldapi-dir' => 'types-fieldapi', skip => 'PGFL,PGFLT1,PGMVT1,PGPSDT2D', 
              nproma => 'YDCPG_OPTS%KLON', 'types-constant-dir' => 'types-constant',
-             'post-parallel' => 'nullify', cycle => '49', 'jlon', 'JLON');
+             'post-parallel' => 'nullify', cycle => '49', 'jlon', 'JLON', 
+             'types-fieldapi-non-blocked' => 'CPG_SL1F_TYPE,CPG_SL_MASK_TYPE');
 my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments stack84 use-acpy arpege inline-contains);
-my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel dir cycle jlon);
+my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel dir cycle jlon types-fieldapi-non-blocked);
 
 &GetOptions
 (
@@ -459,8 +464,10 @@ my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
 
-$opts{nproma} = [split (m/,/o, $opts{nproma})];
-$opts{jlon} = [split (m/,/o, $opts{jlon})];
+for my $opt (qw (nproma jlon types-fieldapi-non-blocked))
+  {
+    $opts{$opt} = [split (m/,/o, $opts{$opt})];
+  }
 
 if ($opts{help})
   {

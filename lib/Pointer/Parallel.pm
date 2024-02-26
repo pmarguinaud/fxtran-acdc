@@ -67,8 +67,8 @@ sub fieldifyDecl
       my $s = $t->{$N};
       next if ($s->{skip});
   
-      next unless ($s->{nproma});
-  
+      next unless ($s->{isFieldAPI});
+
       my $en_decl = delete $s->{en_decl};
   
       my $stmt = &Fxtran::stmt ($en_decl);
@@ -80,10 +80,15 @@ sub fieldifyDecl
         {
           $_->unbindNode ();
         }
-      for my $i (0 .. $s->{nd})
+
+      my $nd = $s->{nd};
+
+      $nd++ if ($s->{blocked});
+
+      for my $i (1 .. $nd)
         {
           $sslt->appendChild (&n ('<shape-spec>:</shape-spec>'));
-          $sslt->appendChild (&t (',')) if ($i < $s->{nd});
+          $sslt->appendChild (&t (',')) if ($i < $nd);
         }
   
       &Decl::addAttributes ($stmt, qw (POINTER));
@@ -91,7 +96,7 @@ sub fieldifyDecl
 
       my $optional = &Decl::removeAttributes ($stmt, 'OPTIONAL') ? ", OPTIONAL " : "";
   
-      my $type_fld = &Pointer::SymbolTable::getFieldType ($s->{nd}, $s->{ts});
+      my $type_fld = &Pointer::SymbolTable::getFieldType ($nd, $s->{ts});
       $type_fld or die "Unknown type : " . $s->{ts}->textContent;
   
       my $decl_fld;
@@ -120,7 +125,7 @@ sub fieldifyDecl
   for my $N (keys (%$t))
     {
       my $s = $t->{$N};
-      next unless ($s->{nproma});
+      next unless ($s->{isFieldAPI});
       if ($s->{arg})
         {
           my @present = &F ('.//named-E[string(.)="?"]', "PRESENT ($N)", $doc);
@@ -265,16 +270,19 @@ EOF
                   my ($ts) = &F ('./_T-spec_/*', $decl);
                   my @ss = &F ('./shape-spec-LT/shape-spec', $as);
                   my $nd = scalar (@ss);
+
+
                   $t->{$ptr} = {
                                  object => 0,
                                  skip => 0,
-                                 nproma => 1,
+                                 isFieldAPI => 1,
                                  arg => 0,
                                  ts => $ts,
                                  as => $as,
                                  nd => $nd,
                                  field => &Pointer::Object::getFieldFromExpr ($expr),
                                  object_based => 1, # postpone pointer declaration
+                                 blocked => $s->{blocked},
                                };
                 }
               else
@@ -310,7 +318,7 @@ EOF
             }
         }
       # Local NPROMA array
-      elsif ($s->{nproma})
+      elsif ($s->{isFieldAPI})
         {
         }
       # Other: skip
@@ -321,7 +329,7 @@ EOF
 
       if ($s)
         {
-          &addExtraIndex ($expr, &n ("<named-E><N><n>JBLK</n></N></named-E>"), $s);
+          &addExtraIndex ($expr, &n ("<named-E><N><n>JBLK</n></N></named-E>"), $s) if ($s->{blocked});
           &Call::grokIntent ($expr, \$intent{$N}, $find);
         }
     }
@@ -530,7 +538,7 @@ sub callParallelRoutine
       # Is the actual argument a dummy argument of the current routine ?
       my $isArg = $s->{arg};
 
-      if ($s->{nproma})
+      if ($s->{isFieldAPI})
         {
           my ($expr) = &Fxtran::expr ($arg);
           die ("No array reference allowed in CALL statement:\n$text\n") if (&F ('./R-LT', $expr));
@@ -593,7 +601,7 @@ sub setupLocalFields
     {
       my $s = $t->{$n};
 
-      next unless ($s->{nproma});
+      next unless ($s->{isFieldAPI});
       next if ($s->{pointer});
 
       next if ($s->{object_based} || $s->{arg});
@@ -650,7 +658,7 @@ sub getPrivateVariables
     {
       my $n = $N->textContent;
       my $s = $t->{$n};
-      next if ($s->{nproma});
+      next if ($s->{isFieldAPI});
       my $expr = $N->parentNode;
       my $p = $expr->parentNode;
       

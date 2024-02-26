@@ -149,7 +149,7 @@ EOF
 
   for my $N (&F ('.//named-E[R-LT/array-R/section-subscript-LT[string(section-subscript[1])=":"]]/N', $do))
     {
-      next unless ($t->{$N->textContent}{nproma});    # Skip non-NPROMA stuff
+      next unless ($t->{$N->textContent}{isFieldAPI});    # Skip non-NPROMA stuff
       my $expr = $N->parentNode;
       next if ($expr->parentNode->nodeName eq 'arg'); # Skip routine arguments
       my ($ss) = &F ('./R-LT/array-R/section-subscript-LT/section-subscript[1]', $expr);
@@ -169,7 +169,7 @@ EOF
 
   &ACPY::useAcpy ($do_jlon) if ($opts{'use-acpy'});
 
-  my @NPROMA = sort grep { $t->{$_}{nproma} } &F ('.//named-E/N', $do_jlon, 1);
+  my @NPROMA = sort grep { $t->{$_}{isFieldAPI} } &F ('.//named-E/N', $do_jlon, 1);
 
   my ($do_jblk) = &F ('./do-construct/do-stmt[string(do-V)="JBLK"]', $par1);
 

@@ -84,21 +84,37 @@ sub getSymbolTable
     {
       my ($N) = &F ('.//EN-N', $en_decl, 1);
       my ($stmt) = &Fxtran::stmt ($en_decl);
+
       my ($ts) = &F ('./_T-spec_/*', $stmt);
+
+      my $blocked = 1;
+
+      if ($ts->nodeName eq 'derived-T-spec')
+        {
+          my ($tn) = &F ('./T-N', $ts, 1);
+          if (grep { $tn eq $_ } @{ $opts{'types-fieldapi-non-blocked'} || [] })
+            {
+              $blocked = 0;
+            }
+        }
+
       my ($as) = &F ('./array-spec', $en_decl);
       my @ss = $as ? &F ('./shape-spec-LT/shape-spec', $as) : ();
       my $nd = scalar (@ss);
+
       $t{$N} = {
                  object => $fieldapi{$N},
                  constant => $constant{$N},
                  skip => $skip{$N},
-                 nproma => $as && $nproma{$ss[0]->textContent},
+                 isFieldAPI => $as && $nproma{$ss[0]->textContent},
                  arg => $args{$N} || 0, 
                  ts => $ts->cloneNode (1), 
                  as => $as ? $as->cloneNode (1) : undef, 
                  nd => $nd,
                  en_decl => $en_decl,
+                 blocked => $blocked,
                };
+
       my ($pointer) = &F ('.//attribute-N[string(.)="POINTER"]', $stmt);
       if ($pointer)
         {
@@ -115,9 +131,9 @@ sub getSymbolTable
       my @ta = &F ('.//pointer-a-stmt[./E-1/named-E[string(.)="?"]]/E-2/named-E/N', $N, $doc, 1);
       for my $ta (@ta)
         {
-          $t{$N}{nproma} = $t{$ta}{nproma};
-          $t{$N}{nd}     = $t{$ta}{nd};
-          $t{$N}{as}     = $t{$ta}{as}->cloneNode (1);
+          $t{$N}{isFieldAPI} = $t{$ta}{isFieldAPI};
+          $t{$N}{nd}         = $t{$ta}{nd};
+          $t{$N}{as}         = $t{$ta}{as}->cloneNode (1);
           last;
         }
     }
@@ -129,8 +145,6 @@ sub getSymbolTable
 sub getFieldType
 {
   my ($nd, $ts) = @_;
-
-  $nd++;
 
   ($ts = $ts->textContent) =~ s/\s+//go;
 
