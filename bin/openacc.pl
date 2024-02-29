@@ -307,7 +307,7 @@ sub processSingleRoutine
   
   my @pointer;
   
-  @pointer = &Pointer::setPointersDimensions ($d)
+  @pointer = &Pointer::setPointersDimensions ($d, 'no-check-pointers-dims' => $opts{'no-check-pointers-dims'})
     if ($opts{pointers});
   
   &Loop::removeJlonLoops ($d, KLON => \@KLON, KIDIA => $KIDIA, KFDIA => $KFDIA, pointer => \@pointer, mesonh => $opts{mesonh});
@@ -355,7 +355,7 @@ my %opts = (cycle => 48, 'include-ext' => '.intfb.h');
 my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh 
                  remove-unused-includes modi value-attribute redim-arguments stack84 arpege
                  cpg_dyn pointers inline-contained debug interfaces);
-my @opts_s = qw (dir nocompute cycle include-ext inlined);
+my @opts_s = qw (dir nocompute cycle include-ext inlined no-check-pointers-dims);
 
 &GetOptions
 (
@@ -380,16 +380,11 @@ if ($opts{mesonh})
     $opts{'remove-unused-includes'} = 1;
   }
 
-if ($opts{inlined})
-  {
-    $opts{inlined} = [split (m/,/o, $opts{inlined})];
-  }
-else
-  {
-    $opts{inlined} = [];
-  }
 
-$opts{nocompute} = [$opts{nocompute} ? split (m/,/o, $opts{nocompute}) : ()];
+for my $opt (qw (no-check-pointers-dims inlined nocompute))
+  {
+    $opts{$opt} = [$opts{$opt} ? split (m/,/o, $opts{$opt}) : ()];
+  }
 
 my $F90 = shift;
 

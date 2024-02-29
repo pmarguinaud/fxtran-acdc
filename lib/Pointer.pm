@@ -7,6 +7,9 @@ use Fxtran;
 sub setPointersDimensions
 {
   my $d = shift;
+  my %args = @_;
+
+  my %nocheck = map { ($_, 1) } @{ $args{'no-check-pointers-dims'} };
 
   my @pointer;
 
@@ -15,6 +18,7 @@ sub setPointersDimensions
   for my $en_decl (@en_decl)
     {
       my ($pointer) = &F ('./EN-N', $en_decl, 1);
+
       my ($as_pointer) = &F ('./array-spec', $en_decl);
       my @assoc = &F ('.//pointer-a-stmt[./E-1[string(.)="?"]][./E-2/named-E[not(R-LT)]', $pointer, $d);
 
@@ -23,12 +27,16 @@ sub setPointersDimensions
       for my $assoc (@assoc)
         {
           my ($pointee) = &F ('./E-2/named-E/N', $assoc, 1);
+
           my ($as_pointee) = &F ('.//EN-decl[string(EN-N)="?"]/array-spec', $pointee, $d);
 
           if ($as_pointee0)
             {
               # Check we have the same array spec
-              die if ($as_pointee0 ne $as_pointee->textContent);
+              unless ($nocheck{$pointer})
+                {
+                  die if ($as_pointee0 ne $as_pointee->textContent);
+                }
             }
           else
             {
