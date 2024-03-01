@@ -75,9 +75,9 @@ my $suffix = '_parallel';
 
 sub processSingleParallel
 {
-  my ($par, $ipar, $NAME, $t, $find, $types, $puseUtilMod, %opts) = @_;
+  my ($parallel, $ipar, $NAME, $t, $find, $types, $puseUtilMod, %opts) = @_;
 
-  my $target = $par->getAttribute ('target');
+  my $target = $parallel->getAttribute ('target');
 
   my @target = split (m/\//o, $target || 'OpenMP');
 
@@ -94,24 +94,24 @@ EOF
   my ($if_block, $elseif_block) = &F ('./if-block', $if_construct);
   $elseif_block->unbindNode ();
 
-  $par->replaceNode ($if_construct);
+  $parallel->replaceNode ($if_construct);
 
   my @block;
   
-  my $name = $par->getAttribute ('name') || $ipar;
+  my $name = $parallel->getAttribute ('name') || $ipar;
   
   # Do it once for all sections
 
-  my %par;
+  my %parallel;
   for my $itarget (0 .. $#target)
     {
       'Pointer::Parallel'->getWhereTargetFromTarget (my $target = $target[$itarget], my $where);
       my $class = 'Pointer::Parallel'->class ($target);
       my $onlySimpleFields = $class->onlySimpleFields ();
 
-      my $par1 = $par->cloneNode (1);
-      $par{$onlySimpleFields} ||= 
-        &Pointer::Parallel::makeParallel ($par1, $t, $find, $types, "$NAME:$name", $opts{'post-parallel'}, $onlySimpleFields);
+      my $parallel1 = $parallel->cloneNode (1);
+      $parallel{$onlySimpleFields} ||= 
+        &Pointer::Parallel::makeParallel ($parallel1, $t, $find, $types, "$NAME:$name", $opts{'post-parallel'}, $onlySimpleFields);
 
       $$puseUtilMod ||= $class->requireUtilMod ();
     }
@@ -125,17 +125,17 @@ EOF
 
       my $onlySimpleFields = $class->onlySimpleFields ();
 
-      my $par1 = $par{$onlySimpleFields};
+      my $parallel1 = $parallel{$onlySimpleFields};
 
-      unless ($par1)
+      unless ($parallel1)
         {
           $if_construct->unbindNode ();
           next;
         }
 
-      $par1 = $par1->cloneNode (1);
+      $parallel1 = $parallel1->cloneNode (1);
 
-      $par1 = $class->makeParallel ($par1, $t, %opts);
+      $parallel1 = $class->makeParallel ($parallel1, $t, %opts);
       
       my $block;
       if ($itarget == 0)
@@ -153,7 +153,7 @@ EOF
 
       my ($C) = &F ('./C', $block);
 
-      $C->replaceNode ($par1);
+      $C->replaceNode ($parallel1);
 
       if ($where ne 'HOST')
         {
@@ -161,7 +161,7 @@ EOF
                               .     ' or string(N)="GET_HOST_DATA_RDWR" '
                               .     ' or string(N)="GATHER_HOST_DATA_RDONLY" '
                               .     ' or string(N)="GATHER_HOST_DATA_RDWR" '
-                              .     ' ]/N/n/text()', $par1);
+                              .     ' ]/N/n/text()', $parallel1);
           for my $get (@get)
             {
               (my $t = $get->data) =~ s/_HOST_/_${where}_/go;
@@ -258,7 +258,7 @@ sub processSingleRoutine
     ($d, skip => $opts{skip}, nproma => $opts{nproma}, 
      'types-fieldapi-dir' => $opts{'types-fieldapi-dir'},
      'types-constant-dir' => $opts{'types-constant-dir'},
-     'types-fieldapi-non-blocked' => [qw (CPG_SL1F_TYPE CPG_SL_MASK_TYPE)]);
+     'types-fieldapi-non-blocked' => $opts{'types-fieldapi-non-blocked'});
     
   
   for my $v (qw (JLON JLEV))
@@ -276,20 +276,32 @@ sub processSingleRoutine
   # Transform NPROMA fields into a pair of (FIELD API object, Fortran pointer)
   
   &Pointer::Parallel::fieldifyDecl ($d, $t);
+
+  # Process ABORT sections
+
+  my @abort = &F ('.//abort-section', $d);
+
+  for my $abort (@abort)
+    {
+      $_->unbindNode ()
+        for (&F ('./*', $abort));
+      $abort->appendChild ($_)
+        for (&s ('CALL ABOR1 ("ERROR: WRONG SETTINGS")'), &t ("\n"));
+    }
   
-  # Process parallel sections
+  # Process PARALLEL sections
   
-  my @par = &F ('.//parallel-section', $d);
+  my @parallel = &F ('.//parallel-section', $d);
   
   my ($MESONH, $FILTER);
   
-  for my $par (@par)
+  for my $parallel (@parallel)
     {
-      if (my $style = $par->getAttribute ('style'))
+      if (my $style = $parallel->getAttribute ('style'))
         {
           $MESONH ||= $style eq 'MESONH';
         }
-      if (my $filter = $par->getAttribute ('filter'))
+      if (my $filter = $parallel->getAttribute ('filter'))
         {
           $FILTER ||= 1;
         }
@@ -307,7 +319,6 @@ sub processSingleRoutine
       &Decl::use ($d, "USE FIELD_GATHSCAT_MODULE");
       &Decl::declare ($d, 'TYPE(FIELD_GATHSCAT) :: YL_FGS');
     }
-  
   
   # Process call to parallel routines
   
@@ -346,9 +357,9 @@ sub processSingleRoutine
   
   my $useUtilMod = 0;
   
-  for my $ipar (0 .. $#par)
+  for my $ipar (0 .. $#parallel)
     {
-      &processSingleParallel ($par[$ipar], $ipar, $NAME, $t, $find, 
+      &processSingleParallel ($parallel[$ipar], $ipar, $NAME, $t, $find, 
                               $types, \$useUtilMod, %opts);
     }
   
@@ -431,7 +442,7 @@ sub processSingleRoutine
   
   
   
-  if (@par)
+  if (@parallel)
     {
       # Add abor1.intfb.h
   
