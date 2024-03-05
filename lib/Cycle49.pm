@@ -17,6 +17,7 @@ sub simplify
   my $d = shift;
   my %opts = @_;
 
+
   &Construct::changeIfStatementsInIfConstructs ($d);
  
 
@@ -105,6 +106,8 @@ sub simplify
         '//named-E[string(.)="YDMODEL%YRML_PHY_MF%YRSIMPHL%LTRAJPS"]'          => &e ('.FALSE.'),
         '//named-E[string(.)="LTRAJSAVE"]'                                     => &e ('.FALSE.'),
         '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYNA%LSLAG"]'                 => &e ('.TRUE.'),
+        '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYNA%LSLTVWENO"]'             => &e ('.FALSE.'),
+        '//named-E[string(.)="YDMODEL%YRML_DYN%YRDYN%LSVTSM"]'                 => &e ('.FALSE.'),
       );
 
       my @tmp = @arpege;
@@ -138,6 +141,21 @@ sub simplify
     @arpege,
   );
 
+  if (my $set = $opts{set})
+    {
+      my %set;
+
+      for my $kv (@$set)
+        {
+          my ($k, $v) = split (m/=/o, $kv);
+          $k = '//named-E[string(.)="' . $k . '"]';
+          $v = $v eq '0' ? $zero : &e ($v);
+          $set{$k} = $v;
+        }
+      
+      &Construct::apply ($d, %set);
+
+    }
 
 }
 

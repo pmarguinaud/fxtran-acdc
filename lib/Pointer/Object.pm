@@ -90,17 +90,19 @@ sub getFieldFromExpr
 
   my ($obj) = &F ('.//N', $expr, 1);
 
-  if (($obj eq 'YDVARS') && $ctl && ($ctl eq 'RCP'))
+  my %ydvars = map { ($_, 1) } qw (YDVARS YDGEOMVARS);
+
+  if (($ydvars{$obj}) && $ctl && ($ctl eq 'RCP'))
      {
      }
-  elsif (($obj eq 'YDVARS') && $ctl && ($ctl eq 'LT1'))
+  elsif (($ydvars{$obj}) && $ctl && ($ctl eq 'LT1'))
      {
      }
-  elsif (($obj eq 'YDVARS') && $ctl && ($ctl eq 'P'))
+  elsif (($ydvars{$obj}) && $ctl && ($ctl eq 'P'))
      {
        $ctl = 'FT0';
      }
-  elsif ($ctl =~ m/^(?:T[019]|(?:DM|DL)[019]?)$/o)
+  elsif ($ctl =~ m/^(?:T[019]|(?:DM|DL)[019]?|PC_PH)$/o)
     {
       $ctl = 'F' . $ctl; 
     }
@@ -149,13 +151,15 @@ sub getFieldFromObjectComponents
 {
   my ($obj, @ctl) = @_;
 
-  if (($obj eq 'YDVARS') && @ctl && ($ctl[-1] eq 'RCP'))
+  my %ydvars = map { ($_, 1) } qw (YDVARS YDGEOMVARS);
+
+  if (($ydvars{$obj}) && @ctl && ($ctl[-1] eq 'RCP'))
      {
      }
-  elsif (($obj eq 'YDVARS') && @ctl && ($ctl[-1] eq 'LT1'))
+  elsif (($ydvars{$obj}) && @ctl && ($ctl[-1] eq 'LT1'))
      {
      }
-  elsif ($ctl[-1] =~ m/^(?:T[019]|(?:DM|DL)[019]?)$/o)
+  elsif ($ctl[-1] =~ m/^(?:T[019]|(?:DM|DL)[019]?|PC_PH)$/o)
     {
       $ctl[-1] = 'F' . $ctl[-1]; 
     }

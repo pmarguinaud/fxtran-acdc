@@ -65,13 +65,13 @@ sub parseDirectives
           my @node;
           for (my $node = $C->nextSibling; ; $node = $node->nextSibling)
             {
-              $node or die $C->textContent;
+              $node or die &Dumper ([$C->textContent, map { $_->textContent } @node]);
               if ($node->nodeName eq "$name-directive")
                 {
                   my $C = shift (@C);
                   die unless ($C->unique_key eq $node->unique_key);
                   my $edir = $C->textContent;
-                  die unless ($edir =~ m/\s*}\s*/o);
+                  die &Dumper ([map { $_->textContent } @node]) unless ($edir =~ m/\s*}\s*/o);
 
                   $C->unbindNode ();
                   

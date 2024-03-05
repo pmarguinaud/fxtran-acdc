@@ -15,6 +15,7 @@ use Loop;
 use Data::Dumper;
 use ReDim;
 use Stack;
+use Print;
 
 sub getDefaultWhere
 {
@@ -169,17 +170,20 @@ EOF
       $ss->replaceNode (&n ('<section-subscript><lower-bound><named-E><N><n>JLON</n></N></named-E></lower-bound></section-subscript>'));
     }
 
+
   my @call = &F ('.//call-stmt', $do_jlon);
 
   for my $call (@call)
     {
       my ($proc) = &F ('./procedure-designator/named-E/N/n/text()', $call);
+      next if ($proc eq 'ABOR1');
       $proc->setData ($proc->textContent . '_OPENACC');
       my ($argspec) = &F ('./arg-spec', $call);
       $argspec->appendChild (&t (','));
       $argspec->appendChild (&n ('<arg><arg-N><k>YDSTACK</k></arg-N>=<named-E><N><n>YLSTACK</n></N></named-E></arg>'));
     }
 
+  &Print::useABOR1_ACC ($do_jlon);
 
   &setOpenMPDirective ($par1, $t);
 

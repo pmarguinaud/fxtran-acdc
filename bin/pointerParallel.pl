@@ -463,7 +463,7 @@ sub processSingleRoutine
 
 
 my %opts = ('types-fieldapi-dir' => 'types-fieldapi', skip => 'PGFL,PGFLT1,PGMVT1,PGPSDT2D', 
-             nproma => 'YDCPG_OPTS%KLON', 'types-constant-dir' => 'types-constant',
+             nproma => 'YDCPG_OPTS%KLON,YDGEOMETRY%YRDIM%NPROMA', 'types-constant-dir' => 'types-constant',
              'post-parallel' => 'nullify', cycle => '49', 'jlon', 'JLON', 
              'types-fieldapi-non-blocked' => 'CPG_SL1F_TYPE,CPG_SL_MASK_TYPE');
 my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments stack84 use-acpy arpege inline-contains);

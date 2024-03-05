@@ -43,6 +43,7 @@ use Include;
 use Inline;
 use Finder::Pack;
 use Pointer;
+use Print;
 
 my $SUFFIX = '_OPENACC';
 
@@ -81,76 +82,6 @@ sub updateFile
         $fh->print ($code); 
         $fh->close ();
       }
-}
-
-sub removeTRIM
-{
-  my $expr = shift;
-
-  my @TRIM = &F ('.//named-E[string(N)="TRIM"]', $expr);
-
-  for my $TRIM (@TRIM)
-    {
-      my ($str) = &F ('./R-LT/array-R/section-subscript-LT/section-subscript/lower-bound/ANY-E', $TRIM);
-      $TRIM->replaceNode ($str);
-    }
-
-}
-
-sub useABOR1_ACC
-{
-  my $d = shift;
-
-  my @abor1 = &F ('.//call-stmt/procedure-designator/named-E/N/n/text()[string(.)="ABOR1"]', $d);
-
-  for my $abor1 (@abor1)
-    {
-      $abor1->setData ('ABOR1_ACC');
-    }
-  my @include = &F ('.//include[string(filename)="abor1.intfb.h"]', $d);
-  for (@include)
-    {
-      $_->unbindNode ();
-    }
-}
-
-sub changeWRITEintoPRINT
-{
-  my $d = shift;
-
-  my @write = &F ('.//write-stmt[string(./io-control-spec/io-control)="NULERR" or string(./io-control-spec/io-control)="NULOUT"]', $d);
-  
-  for my $write (@write)
-    {
-      my ($output) = &F ('./output-item-LT', $write, 1);
-      $write->replaceNode (&s ("PRINT *, $output"));
-    }
-
-}
-
-sub changePRINT_MSGintoPRINT
-{
-  my $d = shift;
-
-  my @print_msg = &F ('.//call-stmt[string(procedure-designator)="PRINT_MSG"]', $d);
-  
-  for my $print_msg (@print_msg)
-    {
-      my @arg = &F ('./arg-spec/arg/ANY-E', $print_msg);
-
-      my $mess = $arg[-1];
-      &removeTRIM ($mess);
-
-      if ($arg[0]->textContent eq 'NVERB_FATAL')
-        {
-          $print_msg->replaceNode (&s ("CALL ABOR1_ACC (" . $mess->textContent . ")"));
-        }
-      else
-        {
-          $print_msg->replaceNode (&s ("PRINT *, " . $mess->textContent . ")"));
-        }
-    }
-
 }
 
 sub processSingleModule
@@ -284,7 +215,7 @@ sub processSingleRoutine
     }
   elsif ($opts{cycle} eq '49')
     {
-      &Cycle49::simplify ($d, arpege => $opts{arpege});
+      &Cycle49::simplify ($d, arpege => $opts{arpege}, set => $opts{'set-variables'});
     }
   
   &DIR::removeDIR ($d);
@@ -342,9 +273,9 @@ sub processSingleRoutine
   
   &Include::removeUnusedIncludes ($d) if ($opts{'remove-unused-includes'});
   
-  &useABOR1_ACC ($d);
-  &changeWRITEintoPRINT ($d);
-  &changePRINT_MSGintoPRINT ($d);
+  &Print::useABOR1_ACC ($d);
+  &Print::changeWRITEintoPRINT ($d);
+  &Print::changePRINT_MSGintoPRINT ($d);
 
 }
 
@@ -355,7 +286,7 @@ my %opts = (cycle => 48, 'include-ext' => '.intfb.h');
 my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh 
                  remove-unused-includes modi value-attribute redim-arguments stack84 arpege
                  cpg_dyn pointers inline-contained debug interfaces);
-my @opts_s = qw (dir nocompute cycle include-ext inlined no-check-pointers-dims);
+my @opts_s = qw (dir nocompute cycle include-ext inlined no-check-pointers-dims set-variables);
 
 &GetOptions
 (
@@ -381,7 +312,7 @@ if ($opts{mesonh})
   }
 
 
-for my $opt (qw (no-check-pointers-dims inlined nocompute))
+for my $opt (qw (no-check-pointers-dims inlined nocompute set-variables))
   {
     $opts{$opt} = [$opts{$opt} ? split (m/,/o, $opts{$opt}) : ()];
   }

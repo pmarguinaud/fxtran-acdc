@@ -73,6 +73,21 @@ generateStructureMethods.pl \
 generateStructureMethods.pl \
   --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
+  $(resolve arpifs/module/cpg_sl_mask_type_mod.F90)
+
+generateStructureMethods.pl \
+  --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
+  --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
+  $(resolve .fypp/arpifs/module/cpg_gmv_type_mod.F90)
+
+generateStructureMethods.pl \
+  --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
+  --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
+  $(resolve .fypp/arpifs/module/cpg_gfl_type_mod.F90)
+
+generateStructureMethods.pl \
+  --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
+  --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
   hub/main/build/field_api/field_array_module.F90
 
 generateStructureMethods.pl \
