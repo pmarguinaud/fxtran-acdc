@@ -174,86 +174,95 @@ sub saveDebug
 sub processSingleRoutine
 {
   my ($d, $find, %opts) = @_;
-  
-  for my $in (@{ $opts{inlined} })
-    {
-      my $f90in = $find->resolve (file => $in);
-      my $di = &Fxtran::parse (location => $f90in, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]);
-      &Canonic::makeCanonic ($di);
-      &Inline::inlineExternalSubroutine ($d, $di);
-    }
-  
-  if ($opts{'inline-contained'})
-    {
-      &Inline::inlineContainedSubroutines ($d, find => $find, inlineDeclarations => 1);
-    }
 
-  if ($opts{jljk2jlonjlev})
-    {
-      &Identifier::rename ($d, JL => 'JLON', JK => 'JLEV');
-    }
-  
-  if ($opts{jijk2jlonjlev})
-    {
-      &Identifier::rename ($d, JI => 'JLON', JK => 'JLEV', 'JIJ' => 'JLON');
-    }
-  
-  if ($opts{cpg_dyn})
-    {
-      &Identifier::rename ($d, JROF => 'JLON');
-    }
-  
-  
-  &Associate::resolveAssociates ($d);
-  
-  &Dimension::attachArraySpecToEntity ($d);
-  &Decl::forceSingleDecl ($d);
-  
-  if ($opts{cycle} eq '48')
-    {
-      &Cycle48::simplify ($d);
-    }
-  elsif ($opts{cycle} eq '49')
-    {
-      &Cycle49::simplify ($d, arpege => $opts{arpege}, set => $opts{'set-variables'});
-    }
-  
-  &DIR::removeDIR ($d);
-  
-  my @KLON = ('KLON', 'YDGEOMETRY%YRDIM%NPROMA', 'YDCPG_OPTS%KLON');
-  push @KLON, 'D%NIT', 'D%NIJT' if ($opts{mesonh});
-  push @KLON, ('YDGEOMETRY%YRDIM%NPROMA', 'KPROMA') if ($opts{cpg_dyn});
-  
-  my ($KIDIA, $KFDIA) = qw (KIDIA KFDIA);
-  
-  if ($opts{mesonh})
-    {
-      ($KIDIA, $KFDIA) = ('D%NIB', 'D%NIE');
-    }
-  
-  if ($opts{cpg_dyn})
-    {
-      ($KIDIA, $KFDIA) = ('KST', 'KEND')
-    }
-  
+  my (@KLON, $KIDIA, $KFDIA);
+
   my @pointer;
-  
-  @pointer = &Pointer::setPointersDimensions ($d, 'no-check-pointers-dims' => $opts{'no-check-pointers-dims'})
-    if ($opts{pointers});
-  
-  &Loop::removeJlonLoops ($d, KLON => \@KLON, KIDIA => $KIDIA, KFDIA => $KFDIA, pointer => \@pointer, mesonh => $opts{mesonh});
-  
-  &ReDim::reDim ($d, KLON => \@KLON, 'redim-arguments' => $opts{'redim-arguments'});
-  
-  
-  if ($opts{'value-attribute'})
+
+  unless ($opts{dummy})
     {
-      &addValueAttribute ($d);
+
+      for my $in (@{ $opts{inlined} })
+        {
+          my $f90in = $find->resolve (file => $in);
+          my $di = &Fxtran::parse (location => $f90in, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]);
+          &Canonic::makeCanonic ($di);
+          &Inline::inlineExternalSubroutine ($d, $di);
+        }
+      
+      if ($opts{'inline-contained'})
+        {
+          &Inline::inlineContainedSubroutines ($d, find => $find, inlineDeclarations => 1);
+        }
+     
+      if ($opts{jljk2jlonjlev})
+        {
+          &Identifier::rename ($d, JL => 'JLON', JK => 'JLEV');
+        }
+      
+      if ($opts{jijk2jlonjlev})
+        {
+          &Identifier::rename ($d, JI => 'JLON', JK => 'JLEV', 'JIJ' => 'JLON');
+        }
+      
+      if ($opts{cpg_dyn})
+        {
+          &Identifier::rename ($d, JROF => 'JLON');
+        }
+      
+      &Associate::resolveAssociates ($d);
+      
+      &Dimension::attachArraySpecToEntity ($d);
+      &Decl::forceSingleDecl ($d);
+      
+      if ($opts{cycle} eq '48')
+        {
+          &Cycle48::simplify ($d);
+        }
+      elsif ($opts{cycle} eq '49')
+        {
+          &Cycle49::simplify ($d, arpege => $opts{arpege}, set => $opts{'set-variables'});
+        }
+      
+      &DIR::removeDIR ($d);
+      
+      @KLON = ('KLON', 'YDGEOMETRY%YRDIM%NPROMA', 'YDCPG_OPTS%KLON');
+      push @KLON, 'D%NIT', 'D%NIJT' if ($opts{mesonh});
+      push @KLON, ('YDGEOMETRY%YRDIM%NPROMA', 'KPROMA') if ($opts{cpg_dyn});
+      
+      ($KIDIA, $KFDIA) = qw (KIDIA KFDIA);
+      
+      if ($opts{mesonh})
+        {
+          ($KIDIA, $KFDIA) = ('D%NIB', 'D%NIE');
+        }
+      
+      if ($opts{cpg_dyn})
+        {
+          ($KIDIA, $KFDIA) = ('KST', 'KEND')
+        }
+      
+      @pointer = &Pointer::setPointersDimensions ($d, 'no-check-pointers-dims' => $opts{'no-check-pointers-dims'})
+        if ($opts{pointers});
+      
+      &Loop::removeJlonLoops ($d, KLON => \@KLON, KIDIA => $KIDIA, KFDIA => $KFDIA, pointer => \@pointer, mesonh => $opts{mesonh});
+      
+      &ReDim::reDim ($d, KLON => \@KLON, 'redim-arguments' => $opts{'redim-arguments'});
+      
+      
+      if ($opts{'value-attribute'})
+        {
+          &addValueAttribute ($d);
+        }
+
     }
   
   &Subroutine::addSuffix ($d, $SUFFIX);
   
-  &Call::addSuffix ($d, suffix => $SUFFIX, match => sub { my $proc = shift; ! grep ({ $_ eq $proc } @{ $opts{nocompute} })});
+  unless ($opts{dummy})
+    {
+      &Call::addSuffix ($d, suffix => $SUFFIX, match => sub { my $proc = shift; ! grep ({ $_ eq $proc } @{ $opts{nocompute} })});
+    }
   
   &OpenACC::routineSeq ($d);
   
@@ -265,18 +274,29 @@ sub processSingleRoutine
     KLON => \@KLON,
     pointer => \@pointer,
   );
-  
-  &Pointer::handleAssociations ($d, pointers => \@pointer)
-    if ($opts{pointers});
-  
-  &DrHook::remove ($d) unless ($opts{drhook});
-  
-  &Include::removeUnusedIncludes ($d) if ($opts{'remove-unused-includes'});
-  
-  &Print::useABOR1_ACC ($d);
-  &Print::changeWRITEintoPRINT ($d);
-  &Print::changePRINT_MSGintoPRINT ($d);
 
+  unless ($opts{dummy})
+    {
+      &Pointer::handleAssociations ($d, pointers => \@pointer)
+        if ($opts{pointers});
+      
+      &DrHook::remove ($d) unless ($opts{drhook});
+      
+      &Include::removeUnusedIncludes ($d) if ($opts{'remove-unused-includes'});
+      
+      &Print::useABOR1_ACC ($d);
+      &Print::changeWRITEintoPRINT ($d);
+      &Print::changePRINT_MSGintoPRINT ($d);
+    }
+
+
+  if ($opts{dummy})
+    {
+      &Fxtran::intfb_body ($d->ownerDocument ());
+      my ($end) = &F ('./end-subroutine-stmt', $d);  
+      my $abort = &s ('CALL ABOR1_ACC ("ERROR : WRONG SETTINGS")');
+      $end->parentNode->insertBefore ($_, $end) for ($abort, &t ("\n"));
+    }
 }
 
 
@@ -285,7 +305,7 @@ sub processSingleRoutine
 my %opts = (cycle => 48, 'include-ext' => '.intfb.h');
 my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh 
                  remove-unused-includes modi value-attribute redim-arguments stack84 arpege
-                 cpg_dyn pointers inline-contained debug interfaces);
+                 cpg_dyn pointers inline-contained debug interfaces dummy);
 my @opts_s = qw (dir nocompute cycle include-ext inlined no-check-pointers-dims set-variables);
 
 &GetOptions
