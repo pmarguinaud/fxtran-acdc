@@ -90,7 +90,8 @@ sub addStack
   $use->parentNode->insertAfter (&t ("\n"), $use);
   $use->parentNode->insertAfter (&s ("USE STACK_MOD"), $use);
   $use->parentNode->insertAfter (&t ("\n"), $use);
-
+  $use->parentNode->insertAfter (&s ("USE ABOR1_ACC_MOD"), $use);
+  $use->parentNode->insertAfter (&t ("\n"), $use);
 
   my ($decl) = &F ('.//T-decl-stmt[.//EN-N[string(.)="?"]]', $last, $d);
 

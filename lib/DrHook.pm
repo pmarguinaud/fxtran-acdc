@@ -24,7 +24,7 @@ sub remove
       $call->unbindNode ();
     }
 
-  for my $decl (&F ('.//T-decl-stmt[.//EN-decl[string(EN-N)="ZHOOK_HANDLE"]]', $d))
+  for my $decl (&F ('.//T-decl-stmt[.//EN-decl[starts-with(string(EN-N),"ZHOOK_HANDLE")]]', $d))
     {
       $decl->unbindNode ();
     }

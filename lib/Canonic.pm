@@ -124,6 +124,10 @@ sub indentCr
   my @cr = &F ('.//text()[contains(.,"?")]', "\n", $e); pop (@cr);
   for my $cr (@cr)
     {
+      if (my $next = $cr->nextSibling)
+        {
+          next if ($next->nodeName eq 'cpp');
+        }
       (my $tt = $cr->data) =~ s/\n/\n  /goms;
       $cr->setData ($tt);
     }
@@ -209,6 +213,15 @@ sub indent
           (my $tt = $prev->data) =~ s/\n/\n\n/goms;
           $prev->setData ($tt);
         }
+    }
+
+  my @do = &F ('.//do-stmt[starts-with(string(.),"DOWHILE")]/text()', $d);
+
+  for my $do (@do)
+    {
+      my $tt = $do->textContent;
+      $tt =~ s/DOWHILE/DO WHILE/o;
+      $do->setData ($tt);
     }
 
   return $d->textContent;
