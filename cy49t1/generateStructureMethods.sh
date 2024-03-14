@@ -84,6 +84,7 @@ arpifs/module/yomdphy.F90 \
 arpifs/module/yomdprecips.F90 \
 arpifs/module/yomdvisi.F90 \
 arpifs/module/yomdyn.F90 \
+arpifs/module/yomswe.F90 \
 arpifs/module/yoeaeratm.F90 \
 arpifs/module/yoeaerd.F90 \
 arpifs/module/yoeaerlid.F90 \
