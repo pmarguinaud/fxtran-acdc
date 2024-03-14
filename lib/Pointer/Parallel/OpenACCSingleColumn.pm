@@ -17,6 +17,7 @@ use Data::Dumper;
 use ReDim;
 use Stack;
 use ACPY;
+use Print;
 
 
 sub getDefaultWhere
@@ -161,6 +162,7 @@ EOF
   for my $call (@call)
     {
       my ($proc) = &F ('./procedure-designator/named-E/N/n/text()', $call);
+      next if ($proc eq 'ABOR1');
       $proc->setData ($proc->textContent . '_OPENACC');
       my ($argspec) = &F ('./arg-spec', $call);
       $argspec->appendChild (&t (','));
@@ -196,6 +198,8 @@ EOF
                               COPYIN => \@copyin,
                               PRESENT => [@NPROMA, @const, 'YSTACK'], 
                               VECTOR_LENGTH => ['YDCPG_OPTS%KLON']);
+
+  &Print::useABOR1_ACC ($do_jlon);
 
   &OpenACC::loopVector ($do_jlon, PRIVATE => \@priv);
 
