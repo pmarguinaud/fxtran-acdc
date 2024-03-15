@@ -329,7 +329,22 @@ EOF
 
       if ($s)
         {
-          &addExtraIndex ($expr, &n ("<named-E><N><n>JBLK</n></N></named-E>"), $s) if ($s->{blocked});
+          if ($s->{blocked})
+            {
+              &addExtraIndex ($expr, &n ("<named-E><N><n>JBLK</n></N></named-E>"), $s) 
+            }
+          else # Workaround for PGI bug : add (:,:,:) to avoid PGI error (non contiguous array)
+            {
+              my ($rlt) = &F ('./R-LT', $expr);
+              unless ($rlt)
+                {
+                  $rlt = &n ('<R-LT/>');
+                  $expr->appendChild ($rlt);
+                }
+              my $e = &e ('X(' . join (',', (':') x $s->{nd}) . ')');
+              my ($r) = &F ('./R-LT/ANY-R', $e);
+              $rlt->appendChild ($r);
+            }
           &Call::grokIntent ($expr, \$intent{$N}, $find);
         }
     }
