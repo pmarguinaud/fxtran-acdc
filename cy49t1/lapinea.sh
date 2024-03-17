@@ -42,6 +42,7 @@ for f in \
   arpifs/adiab/larcina.F90                       \
   arpifs/adiab/latrajout.F90                     \
   arpifs/adiab/local2cart.F90                    \
+  arpifs/adiab/local2cartgeov.F90                \
   arpifs/adiab/mcoords.F90                       \
   arpifs/adiab/rotuv.F90                         \
   arpifs/adiab/rotuvgeo.F90                      \

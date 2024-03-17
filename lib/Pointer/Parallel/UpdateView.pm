@@ -30,7 +30,7 @@ sub requireUtilMod
 sub makeParallel
 {
   shift;
-  my ($par1, $t) = @_;
+  my ($par1, $t, %opts) = @_;
 
   my $style = $par1->getAttribute ('style') || 'ARPIFS';
   my $FILTER = $par1->getAttribute ('filter');
@@ -47,15 +47,20 @@ sub makeParallel
 
   my %update;
 
+  my %nonblocked = map { ($_, 1) } @{ $opts{'types-fieldapi-non-blocked'} };
+
   for my $expr (&F ('.//named-E', $par1))
     {
       my ($N) = &F ('./N', $expr, 1);
       my $s = $t->{$N};
       next if ($s->{skip});
 
+
       if ($s->{object})
         {
-          $update{$N}++;
+          my $ts = $s->{ts};
+          my ($tn) = &F ('./T-N', $ts, 1);
+          $update{$N}++ unless ($nonblocked{$tn});
         }
     }
 
