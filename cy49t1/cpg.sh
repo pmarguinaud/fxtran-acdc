@@ -20,7 +20,7 @@ print &dirname ($f)
 ' $f)
 
 pointerParallel.pl --stack84 \
-  --nproma YDCPG_OPTS%KLON --cycle 49 --arpege --use-acpy \
+  --nproma YDCPG_OPTS%KLON --cycle 49 --use-acpy \
   --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify --version --dir \
   src/local/$dir $(resolve $f)
 

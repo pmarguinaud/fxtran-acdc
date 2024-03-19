@@ -17,7 +17,7 @@ do
   dir=$(dirname $f)
   pointerParallel.pl \
     --stack84 --jlon JROF --nproma YDCPG_OPTS%KLON,YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIM%NPROMNH \
-    --cycle 49 --arpege --use-acpy --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify \
+    --cycle 49 --use-acpy --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify \
     --version --dir src/local/$dir $(resolve $f)
 done
 
@@ -64,6 +64,7 @@ for f in \
   arpifs/interpol/lascaw_cloturb.F90             \
   arpifs/interpol/lascaw.F90                     \
   arpifs/interpol/lascaw_vintw.F90               \
+  arpifs/interpol/laismoa.F90                    \
   arpifs/utility/verdisint.F90         
 do
   dir=$(dirname $f)

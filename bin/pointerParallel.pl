@@ -218,7 +218,7 @@ sub processSingleRoutine
     }
   elsif ($opts{cycle} == 49)
     {
-      &Cycle49::simplify ($d, arpege => $opts{arpege});
+      &Cycle49::simplify ($d);
     }
   
   
@@ -466,7 +466,7 @@ my %opts = ('types-fieldapi-dir' => 'types-fieldapi', skip => 'PGFL,PGFLT1,PGMVT
              nproma => 'YDCPG_OPTS%KLON,YDGEOMETRY%YRDIM%NPROMA', 'types-constant-dir' => 'types-constant',
              'post-parallel' => 'nullify', cycle => '49', 'jlon', 'JLON', 
              'types-fieldapi-non-blocked' => 'CPG_SL1F_TYPE,CPG_SL_MASK_TYPE');
-my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments stack84 use-acpy arpege inline-contains);
+my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments stack84 use-acpy inline-contains);
 my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel dir cycle jlon types-fieldapi-non-blocked);
 
 &GetOptions
