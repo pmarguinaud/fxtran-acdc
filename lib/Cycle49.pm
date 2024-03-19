@@ -27,6 +27,8 @@ sub simplify
     '//named-E[string(N)="LMUSCLFA"]'                              => &e ('.FALSE.'),
     '//named-E[string(.)="YDSPP_CONFIG%LSPP"]'                     => &e ('.FALSE.'),
     '//named-E[string(.)="OCH1CONV"]'                              => &e ('.FALSE.'),
+    '//named-E[string(.)="YDLDDH%LFLEXDIA"]',                      => &e ('.FALSE.'),
+    '//named-E[string(.)="YDMODEL%YRML_DIAG%YRLDDH%LFLEXDIA"]'     => &e ('.FALSE.'),
     '//named-E[string(.)="BUCONF%LBUDGET_U"]'                      => &e ('.FALSE.'),
     '//named-E[string(.)="BUCONF%LBUDGET_V"]'                      => &e ('.FALSE.'),
     '//named-E[string(.)="BUCONF%LBUDGET_TH"]'                     => &e ('.FALSE.'),

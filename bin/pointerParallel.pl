@@ -36,7 +36,6 @@ use Canonic;
 use Directive;
 use Inline;
 
-use Cycle48;
 use Cycle49;
 
 sub updateFile
@@ -212,11 +211,7 @@ sub processSingleRoutine
       &Inline::inlineContainedSubroutines ($d, skipDimensionCheck => 1);
     }
   
-  if ($opts{cycle} == 48)
-    {
-      &Cycle48::simplify ($d);
-    }
-  elsif ($opts{cycle} == 49)
+  if ($opts{cycle} == 49)
     {
       &Cycle49::simplify ($d);
     }

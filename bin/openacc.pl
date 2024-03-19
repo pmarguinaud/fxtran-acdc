@@ -35,7 +35,6 @@ use Call;
 use Canonic;
 use DrHook;
 use Identifier;
-use Cycle48;
 use Cycle49;
 use Decl;
 use Dimension;
@@ -215,11 +214,7 @@ sub processSingleRoutine
       &Dimension::attachArraySpecToEntity ($d);
       &Decl::forceSingleDecl ($d);
       
-      if ($opts{cycle} eq '48')
-        {
-          &Cycle48::simplify ($d);
-        }
-      elsif ($opts{cycle} eq '49')
+      if ($opts{cycle} eq '49')
         {
           &Cycle49::simplify ($d, set => $opts{'set-variables'});
         }
@@ -302,7 +297,7 @@ sub processSingleRoutine
 
 
 
-my %opts = (cycle => 48, 'include-ext' => '.intfb.h');
+my %opts = (cycle => 49, 'include-ext' => '.intfb.h');
 my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh 
                  remove-unused-includes modi value-attribute redim-arguments stack84 
                  cpg_dyn pointers inline-contained debug interfaces dummy);
