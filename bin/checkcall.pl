@@ -101,6 +101,15 @@ sub getDimensions
   return $as || '';
 }
 
+sub getIntent
+{
+  my ($d, $n) = @_;
+
+  my ($intent) = &F ('.//T-decl-stmt[.//EN-decl[string(EN-N)="?"]]//intent-spec', $n, $d, 1);
+
+  return $intent;
+}
+
 sub getActuals
 {
   my ($call, @dummies) = @_;
@@ -240,11 +249,12 @@ sub checkcall
 
           my $valueDims = &getDimensions ($caller_d, $value);
           my $dummyDims = &getDimensions ($callee_d, $dummy);
+          my $dummyItnt = &getIntent     ($callee_d, $dummy);
 
-          printf(" %s %s | %-20s %-60s | %-20s %-60s \n", 
+          printf(" %s %s | %-20s %-60s | %-20s %-60s | %5s\n", 
                  ((($valueDims eq $dummyDims) or ((! $valueDims) or (! $dummyDims))) ? '=' : 'X'),
                  (&eqArg ($dummy, $value) ? '=' : ' '), 
-                 $dummy, $dummyDims, $value, $valueDims);
+                 $dummy, $dummyDims, $value, $valueDims, $dummyItnt);
         }
     
       for my $dummy (@dummies)
