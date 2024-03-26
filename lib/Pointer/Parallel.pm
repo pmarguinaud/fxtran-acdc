@@ -53,9 +53,160 @@ sub class
   return $class;
 }
 
+sub fieldifySync
+{
+  my %args = @_;
+
+  my $doc        = $args{'program-unit'};
+  my $t          = $args{'symbol-table'};
+  my $find       = $args{'find'};
+  my $types      = $args{'types'};
+
+  my ($dal) = &F ('./dummy-arg-LT', $doc->firstChild);
+
+  for my $N (sort keys (%$t))
+    {
+      my $s = $t->{$N};
+
+      next unless ($s->{isFieldAPI});
+
+      my $en_decl = delete $s->{en_decl};
+      my $stmt = &Fxtran::stmt ($en_decl);
+      $stmt->unbindNode ();
+
+      if ($s->{arg})
+        {
+          my ($arg) = &F ('./arg-N[string(.)="?"]', $N, $dal);
+          &Fxtran::removeListElement ($arg); 
+        }
+    }
+
+  my $removeLastArrayRef = sub
+  {
+    my $expr = shift;
+    $expr = $expr->cloneNode (1);
+    if (my @r = &F ('./R-LT/ANY-R', $expr))
+      {
+        if (($r[-1]->nodeName eq 'array-R') or ($r[-1]->nodeName eq 'parens-R'))
+          {
+            my $prev = $r[-1]->previousSibling;
+            $prev->unbindNode () if ($prev && $prev->nodeName eq '#text');
+            $r[-1]->unbindNode ();
+          }
+      }
+    $expr = $expr->textContent;
+    $expr =~ s/\s+//o;
+    return $expr;
+  };
+
+  my $comment = sub
+  {
+    my $string = shift;
+    my $n = &t (' ');
+    $n->setData ("! $string");
+    my $C = &n ('<C/>');
+    $C->appendChild ($n);
+  };
+
+  for my $stmt (&F ('.//ANY-stmt', $doc))
+    {
+      print $stmt->textContent, "\n\n";
+      my $stms = $stmt->textContent;
+
+      my %intent;
+      my %sync;
+
+      for my $expr (reverse (&F ('.//named-E', $stmt))) # Reverse because we remove arguments in call statements
+        {
+          my ($N) = &F ('./N', $expr, 1);
+          my $s = $t->{$N};
+ 
+          if ($s->{isFieldAPI})
+            {
+              my $exps = $removeLastArrayRef->($expr);
+              &Call::grokIntent ($expr, \$intent{$exps}, $find);
+              if ($expr->parentNode->nodeName eq 'arg')
+                {
+                  &Fxtran::removeListElement ($expr->parentNode);
+                }
+              $sync{$exps} = 0;
+            }
+          elsif ($s->{object})
+            {
+              my @r = &F ('./R-LT/component-R', $expr);
+              my @ctl = &F ('./R-LT/component-R/ct', $expr, 1);
+              my $ptr = join ('_', 'Z', $N, @ctl);
+
+              my $key = join ('%', &Pointer::Object::getObjectType ($s, $N), @ctl);
+              my $decl;
+              eval
+                {
+                  $decl = &Pointer::Object::getObjectDecl ($key, $types, allowConstant => 1);
+                };
+              if (my $c = $@)
+                {
+                  my $stmt = &Fxtran::stmt ($expr); 
+                  die $c . $stmt->textContent;
+                }
+
+              if ($decl)
+                {
+                  my $exps = $removeLastArrayRef->($expr);
+                  &Call::grokIntent ($expr, \$intent{$exps}, $find);
+                  if ($expr->parentNode->nodeName eq 'arg')
+                    {
+                      &Fxtran::removeListElement ($expr->parentNode);
+                    }
+                  $sync{$exps} = 1;
+                }
+
+            }
+        }
+
+     if (%intent)
+       {
+         for my $exps (sort keys (%intent))
+           {
+             next unless ($sync{$exps});
+             $stmt->parentNode->insertBefore ($_, $stmt)
+                for (&s ("CALL $intent{$exps} ($exps)"), &t ("\n"));
+           }
+         if ($stmt->nodeName eq 'a-stmt')
+           {
+#            $stmt->unbindNode ();
+             $stmt->replaceNode ($comment->($stms));
+           } 
+         elsif ($stmt->nodeName eq 'call-stmt')
+           {
+             my @arg = &F ('./arg-spec/arg/named-E', $stmt);
+             for my $arg (@arg)
+               {
+                 my ($N) = &F ('./N', $arg, 1);
+                 my $s = $t->{$N};
+                 goto KEEP if ($s->{object});
+               }
+#            $stmt->unbindNode ();
+             $stmt->replaceNode ($comment->($stms));
+KEEP:
+           }
+         else
+           {
+             die $stmt;
+           }
+       }
+
+     print '-' x 80, "\n";
+     print "\n" x 2;
+    }
+
+}
+
 sub fieldifyDecl
 {
-  my ($doc, $t) = @_;
+  my %args = @_;
+
+  my $doc        = $args{'program-unit'};
+  my $t          = $args{'symbol-table'};
 
 # First step : process all NPROMA arrays declarations
 # - local arrays are added an extra dimension for blocks
@@ -116,8 +267,6 @@ sub fieldifyDecl
   
       $stmt->parentNode->insertBefore ($decl_fld, $stmt);
       $stmt->parentNode->insertBefore (&t ("\n"), $stmt);
-  
-  
     }
 
   # Look for pointer assignments and optional arguments

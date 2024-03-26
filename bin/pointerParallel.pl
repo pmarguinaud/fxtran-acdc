@@ -270,7 +270,11 @@ sub processSingleRoutine
   
   # Transform NPROMA fields into a pair of (FIELD API object, Fortran pointer)
   
-  &Pointer::Parallel::fieldifyDecl ($d, $t);
+  &Pointer::Parallel::fieldifyDecl 
+     (
+       'program-unit' => $d, 
+       'symbol-table' => $t,
+     );
 
   # Process ABORT sections
 
