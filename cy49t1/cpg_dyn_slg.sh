@@ -24,7 +24,7 @@ for f in \
   arpifs/adiab/lavabo.F90                                                \
   arpifs/adiab/lavabo_expl_laitvspcqm_part1.F90                          \
   arpifs/adiab/lavabo_expl_laitvspcqm_part2.F90                          \
-  .fypp/arpifs/adiab/gprcp_expl.F90 
+  .fypp/arpifs/adiab/gprcp_expl.F90                                      
 do
 
 dir=$(perl -e ' 
@@ -42,34 +42,50 @@ pointerParallel.pl \
 done
 
 for f in \
-  arpifs/adiab/lasure.F90   \
-  arpifs/adiab/lattex_dnt.F90 \
-  arpifs/adiab/lattex_tnt.F90 \
-  arpifs/adiab/gptf2_expl_2tl.F90 \
-  arpifs/utility/verdisint.F90 \
-  arpifs/adiab/gp_spv.F90 \
-  arpifs/adiab/gpinislb_part1_expl.F90 \
-  arpifs/adiab/gpinislb_part3_expl.F90 \
-  arpifs/adiab/gprt.F90 \
-  arpifs/adiab/gpcty_expl.F90 \
-  arpifs/adiab/gpgeo_expl.F90 \
-  arpifs/adiab/gpgrgeo_expl.F90 \
-  arpifs/adiab/gphlwi.F90 \
-  arpifs/adiab/gphluv_expl.F90 \
-  arpifs/adiab/gpuvs.F90 \
-  arpifs/adiab/gpgrp_expl.F90 \
-  arpifs/adiab/gpxx.F90 \
-  arpifs/adiab/gp_tndlagadiab_uv.F90 \
-  arpifs/adiab/gphpre_expl_vertfe0.F90 \
-  arpifs/adiab/gphpre_expl_vertfe1.F90 \
-  arpifs/adiab/gphpre_expl.F90 \
-  arpifs/adiab/gpgrxyb_expl.F90 \
-  arpifs/adiab/gpgw.F90 \
-  arpifs/adiab/gpmpfc_expl_part1.F90 
+  arpifs/adiab/lasure.F90                         \
+  arpifs/adiab/lattex_dnt.F90                     \
+  arpifs/adiab/lattex_tnt.F90                     \
+  arpifs/adiab/gptf2_expl_2tl.F90                 \
+  arpifs/utility/verdisint.F90                    \
+  arpifs/adiab/gp_spv.F90                         \
+  arpifs/adiab/gpinislb_part1_expl.F90            \
+  arpifs/adiab/gpinislb_part3_expl.F90            \
+  arpifs/adiab/gprt.F90                           \
+  arpifs/adiab/gpcty_expl.F90                     \
+  arpifs/adiab/gpgeo_expl.F90                     \
+  arpifs/adiab/gpgrgeo_expl.F90                   \
+  arpifs/adiab/gphlwi.F90                         \
+  arpifs/adiab/gphluv_expl.F90                    \
+  arpifs/adiab/gpuvs.F90                          \
+  arpifs/adiab/gpgrp_expl.F90                     \
+  arpifs/adiab/gpxx.F90                           \
+  arpifs/adiab/gp_tndlagadiab_uv.F90              \
+  arpifs/adiab/gphpre_expl_vertfe0.F90            \
+  arpifs/adiab/gphpre_expl_vertfe1.F90            \
+  arpifs/adiab/gphpre_expl.F90                    \
+  arpifs/adiab/gpgrxyb_expl.F90                   \
+  arpifs/adiab/gpgw.F90                           \
+  arpifs/adiab/gpmpfc_expl_part1.F90            
 do
 
 dir=$(dirname $f)
 openacc.pl --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --cpg_dyn --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
+
+done
+
+for f in \
+  .fypp/arpifs/adiab/sitnu_gp.F90                 \
+  .fypp/arpifs/adiab/sigam_gp.F90
+do
+
+dir=$(perl -e ' 
+use File::Basename; 
+my $f = shift; 
+$f =~ s,^\.fypp/,,o; 
+print &dirname ($f) 
+' $f)
+
+openacc.pl --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
 
 done
 
