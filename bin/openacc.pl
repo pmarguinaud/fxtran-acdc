@@ -46,6 +46,47 @@ use Print;
 
 my $SUFFIX = '_OPENACC';
 
+sub acraneb2
+{
+  my $d = shift;
+
+  my ($file) = &F ('./object/file/@name', $d, 2);
+
+  $file = &basename ($file);
+
+  'FileHandle'->new (">$file")->print (&Canonic::indent ($d));
+
+  my @do = &F ('.//do-construct[./do-stmt[string(do-V)="JN"]]', $d);
+
+  for my $do (@do)
+    {
+      my @c = $do->childNodes ();
+      my @d = (splice (@c, 0, 2), splice (@c, -2, 2));
+
+      for (@d)
+        {
+          $_->unbindNode ();
+        }
+
+     my $p = $do->parentNode ();
+
+      for (@c)
+        {
+          $p->insertBefore ($_, $do);
+        }
+      
+      $do->unbindNode ();
+    }
+
+  my @assign = &F ('.//a-stmt[./E-1/named-E[string(N)="?" or string(N)="?"]]', 'IIDIA', 'IFDIA', $d);
+
+  for (@assign)
+    {
+      $_->unbindNode ();
+    }
+
+}
+
 sub addValueAttribute
 {
   my $d = shift;
@@ -191,7 +232,7 @@ sub processSingleRoutine
       
       if ($opts{'inline-contained'})
         {
-          &Inline::inlineContainedSubroutines ($d, find => $find, inlineDeclarations => 1);
+          &Inline::inlineContainedSubroutines ($d, find => $find, inlineDeclarations => 1, comment => $opts{'inline-comment'});
         }
      
       if ($opts{jljk2jlonjlev})
@@ -300,7 +341,7 @@ sub processSingleRoutine
 my %opts = (cycle => 49, 'include-ext' => '.intfb.h');
 my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh 
                  remove-unused-includes modi value-attribute redim-arguments stack84 
-                 cpg_dyn pointers inline-contained debug interfaces dummy);
+                 cpg_dyn pointers inline-contained debug interfaces dummy acraneb2 inline-comment);
 my @opts_s = qw (dir nocompute cycle include-ext inlined no-check-pointers-dims set-variables);
 
 &GetOptions
@@ -358,6 +399,10 @@ my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag 
 
 my $find = 'Finder::Pack'->new ();
 
+if ($opts{acraneb2})
+  {
+    &acraneb2 ($d);
+  }
 
 my @pu = &F ('./object/file/program-unit', $d);
 
