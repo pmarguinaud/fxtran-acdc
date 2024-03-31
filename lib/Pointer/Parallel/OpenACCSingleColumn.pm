@@ -68,19 +68,21 @@ sub makeParallel
       $x->unbindNode ();
     }
 
-  my ($KLON, $KGPTOT, $KGPBLKS);
+  my ($KLON, $KGPTOT, $KGPBLKS, $JBLKMIN);
 
   if ($FILTER)
     {
-      $KLON = 'YL_FGS%KLON';
-      $KGPTOT = 'YL_FGS%KGPTOT';
+      $KLON    = 'YL_FGS%KLON';
+      $KGPTOT  = 'YL_FGS%KGPTOT';
       $KGPBLKS = 'YL_FGS%KGPBLKS';
+      $JBLKMIN = '1';
     }
   else
     {
-      $KLON = 'YDCPG_OPTS%KLON';
-      $KGPTOT = 'YDCPG_OPTS%KGPCOMP';
+      $KLON    = 'YDCPG_OPTS%KLON';
+      $KGPTOT  = 'YDCPG_OPTS%KGPCOMP';
       $KGPBLKS = 'YDCPG_OPTS%KGPBLKS';
+      $JBLKMIN = 'YDCPG_OPTS%JBLKMIN';
     }
 
   my ($do_jlon) = &Fxtran::parse (fragment => << "EOF");
@@ -103,7 +105,7 @@ EOF
           $do->insertBefore (&t ("\n" . (' ' x $indent)), $do_jlon);
           $do->insertBefore (&t ("\n" . (' ' x $indent)), $do_jlon);
 
-          &Stack::iniStack ($do_jlon, $indent, $opts{stack84}, $KGPBLKS);
+          &Stack::iniStack ($do_jlon, $indent, $opts{stack84}, $JBLKMIN, $KGPBLKS);
 
           if ($style eq 'MESONH')
             {

@@ -343,19 +343,19 @@ sub makeParallel
 
   my $str = ' ' x $indent;
 
-  my $KGPBLKS;
+  my ($JBLKMIN, $JBLKMAX);
 
   if ($FILTER)
     {
-      $KGPBLKS = 'YL_FGS%KGPBLKS';
+      ($JBLKMIN, $JBLKMAX) = ('1', 'YL_FGS%KGPBLKS');
     }
   else
     {
-      $KGPBLKS = 'YDCPG_OPTS%KGPBLKS';
+      ($JBLKMIN, $JBLKMAX) = ('YDCPG_OPTS%JBLKMIN', 'YDCPG_OPTS%JBLKMAX');
     }
 
   my ($loop) = &Fxtran::parse (fragment => << "EOF");
-DO JBLK = 1, $KGPBLKS
+DO JBLK = $JBLKMIN, $JBLKMAX
 ${str}  CALL YLCPG_BNDS%UPDATE (JBLK)
 ${str}ENDDO
 EOF
@@ -527,7 +527,7 @@ EOF
     {
       $par->insertAfter (&s ("CALL YL_FGS%SCATTER ()"), $loop);
       $par->insertAfter (&t ("\n" . (' ' x $indent)), $loop);
-      $prep->appendChild (&s ("CALL YL_FGS%INIT (YL_$FILTER, YDCPG_OPTS%KGPTOT)"));
+      $prep->appendChild (&s ("CALL YL_FGS%INIT (YL_$FILTER, YDCPG_OPTS%KGPTOTB)"));
       $prep->appendChild (&t ("\n" . (' ' x $indent)));
     }
 
@@ -782,8 +782,8 @@ sub setupLocalFields
           push @ub, $b[1];
         }
 
-      push @lb, '1';
-      push @ub, 'YDCPG_OPTS%KGPBLKS';
+      push @lb, 'YDCPG_OPTS%JBLKMIN';
+      push @ub, 'YDCPG_OPTS%JBLKMAX';
       
       my $f = $s->{field}->textContent;
 
