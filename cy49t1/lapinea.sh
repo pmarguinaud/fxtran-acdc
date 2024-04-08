@@ -16,7 +16,7 @@ for f in \
 do
   dir=$(dirname $f)
   pointerParallel.pl \
-    --stack84 --jlon JROF --nproma YDCPG_OPTS%KLON,YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIM%NPROMNH \
+    --gpumemstat --stack84 --jlon JROF --nproma YDCPG_OPTS%KLON,YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIM%NPROMNH \
     --cycle 49 --use-acpy --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify \
     --version --dir src/local/$dir $(resolve $f)
 done
