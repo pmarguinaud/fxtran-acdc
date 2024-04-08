@@ -94,7 +94,7 @@ sub process_decl
       push @BODY_SAVE, "L$name = $func ($prefix$name)\n";
       push @BODY_COPY, "L$name = $func ($prefix$name)\n";
       push @BODY_WIPE, "L$name = $func ($prefix$name)\n";
-      push @BODY_SIZE, "L$name = $func ($prefix$name)\n";
+      push @BODY_SIZE, "L$name = $func ($prefix$name)\n" if (! $isFieldAPI);
       push @BODY_HOST, "L$name = $func ($prefix$name)\n" unless ($intrinsic);
       push @BODY_SAVE, "WRITE (KLUN) L$name\n";
       push @BODY_LOAD, "READ (KLUN) L$name\n";
@@ -103,7 +103,7 @@ sub process_decl
       push @BODY_LOAD, "IF (L$name) THEN\n";
       push @BODY_COPY, $isFieldAPI ? "IF (L$name .AND. LLFIELDAPI) THEN\n" : "IF (L$name) THEN\n";
       push @BODY_WIPE, $isFieldAPI ? "IF (L$name .AND. LLFIELDAPI) THEN\n" : "IF (L$name) THEN\n";
-      push @BODY_SIZE, "IF (L$name) THEN\n";
+      push @BODY_SIZE, "IF (L$name) THEN\n" if (! $isFieldAPI);
       push @BODY_HOST, "IF (L$name) THEN\n" unless ($intrinsic);
       if (@ss)
         {
@@ -156,16 +156,17 @@ sub process_decl
       my $size = "ISIZE = KIND ($prefix$name)"; 
       $size .= " * SIZE ($prefix$name)" if (@ss);
       $size .= " * LEN ($prefix$name)" if ($tn eq 'CHARACTER');
+
       push @BODY_SIZE, $size . "\n", 
-                       "IF (LDPRINT) THEN\n", 
+                       "IF (LLPRINT) THEN\n", 
                        "WRITE (*, '(I10,\" \")', ADVANCE='NO') ISIZE\n", 
-                       "WRITE (*, *) TRIM (CDPATH)//'%$name'\n", 
+                       "WRITE (*, *) TRIM (CLPATH)//'%$name'\n", 
                        "ENDIF\n", 
                        "KSIZE = KSIZE + ISIZE\n";
     }
   else 
     {
-      push @BODY_SIZE, "JSIZE = 0\n";
+      push @BODY_SIZE, "JSIZE = 0\n" if (! $isFieldAPI);
       for (my $i = $#ss+1; $i >= 1; $i--)
         {
           $J{"J$i"} = 1;
@@ -174,13 +175,12 @@ sub process_decl
           push @BODY_LOAD, $do;
           push @BODY_COPY, $do;
           push @BODY_WIPE, $do;
-          push @BODY_SIZE, $do;
+          push @BODY_SIZE, $do if (! $isFieldAPI);
           push @BODY_HOST, $do;
         }
       my @J = map { "J$_"  } (1 .. $#ss+1);
       my $J = @ss ? " (" . join (', ', @J) . ")" : '';
-#     my $LDPRINT = @J ? ".FALSE." : "LDPRINT";
-      my $LDPRINT = '.FALSE.';
+      my $LLPRINT = '.FALSE.';
       push @BODY_SAVE, ('  ' x scalar (@ss)) 
                    . "CALL SAVE_$tname (KLUN, $prefix$name" . $J . ")\n";
       push @BODY_LOAD, ('  ' x scalar (@ss)) 
@@ -203,10 +203,13 @@ sub process_decl
                        . "CALL WIPE_$tname ($prefix$name" . $J . ", LDDELETED=.TRUE., LDFIELDAPI=LDFIELDAPI)\n";
         }
 
-      push @BODY_SIZE, ('  ' x scalar (@ss))
-                   . "ISIZE = SIZE_$tname ($prefix$name" . $J . ", CDPATH//'%$name', $LDPRINT)\n", 
-                     "JSIZE = JSIZE + ISIZE\n",
-                     "KSIZE = KSIZE + ISIZE\n";
+      if (! $isFieldAPI)
+        {
+          push @BODY_SIZE, ('  ' x scalar (@ss))
+                       . "ISIZE = SIZE_$tname ($prefix$name" . $J . ", CLPATH//'%$name', $LLPRINT)\n", 
+                         "JSIZE = JSIZE + ISIZE\n",
+                         "KSIZE = KSIZE + ISIZE\n";
+        }
       for (my $i = $#ss; $i >= 0; $i--)
         {
           push @BODY_SAVE, "ENDDO\n";
@@ -214,13 +217,17 @@ sub process_decl
           push @BODY_COPY, "ENDDO\n";
           push @BODY_HOST, "ENDDO\n";
           push @BODY_WIPE, "ENDDO\n";
-          push @BODY_SIZE, "ENDDO\n";
+          push @BODY_SIZE, "ENDDO\n" if (! $isFieldAPI);
         }
-      push @BODY_SIZE, 
-                     "IF (LDPRINT) THEN\n", 
-                     "WRITE (*, '(I10,\" \")', ADVANCE='NO') JSIZE\n",
-                     "WRITE (*, *) TRIM (CDPATH)//'%$name'\n",
-                     "ENDIF\n", 
+
+      if (! $isFieldAPI)
+        {
+          push @BODY_SIZE, 
+                         "IF (LLPRINT) THEN\n", 
+                         "WRITE (*, '(I10,\" \")', ADVANCE='NO') JSIZE\n",
+                         "WRITE (*, *) TRIM (CLPATH)//'%$name'\n",
+                         "ENDIF\n", 
+        }
     }
   
   if ($attr{POINTER} || $attr{ALLOCATABLE})
@@ -239,7 +246,7 @@ sub process_decl
         }
       push @BODY_HOST, "ENDIF\n" unless ($intrinsic);
       push @BODY_WIPE, "ENDIF\n";
-      push @BODY_SIZE, "ENDIF\n";
+      push @BODY_SIZE, "ENDIF\n" if (! $isFieldAPI);
     }
   push @BODY_COPY, "\n";
   push @BODY_HOST, "\n";
@@ -345,7 +352,15 @@ sub processTypes1
                        "!\$acc enter data create (YD)\n",
                        "!\$acc update device (YD)\n",
                        "ENDIF\n";
-      push @BODY_SIZE, 'KSIZE = 0';
+      push @BODY_SIZE, "LLPRINT = .FALSE.\n",
+                       "IF (PRESENT (LDPRINT)) THEN\n",
+                       "LLPRINT = LDPRINT\n",
+                       "ENDIF\n",
+                       "CLPATH=''\n",
+                       "IF (PRESENT (CDPATH)) THEN\n",
+                       "CLPATH = CDPATH\n",
+                       "ENDIF\n",
+                       "KSIZE = 0\n";
 
       if ($extends)
         {
@@ -358,7 +373,7 @@ sub processTypes1
           push @BODY_COPY, "CALL COPY_$extends (YLSUPER, LDCREATED=.TRUE., LDFIELDAPI=LDFIELDAPI)\n";
           push @BODY_HOST, "CALL HOST_$extends (YLSUPER)\n";
           push @BODY_WIPE, "CALL WIPE_$extends (YLSUPER, LDDELETED=.TRUE., LDFIELDAPI=LDFIELDAPI)\n";
-          push @BODY_SIZE, "KSIZE = KSIZE + SIZE_$extends (YLSUPER, CDPATH, LDPRINT)\n";
+          push @BODY_SIZE, "KSIZE = KSIZE + SIZE_$extends (YLSUPER, CLPATH, LLPRINT)\n";
         }
     
       my (%U, %J, %L, %B, %T);
@@ -388,10 +403,10 @@ sub processTypes1
   
       my $DECL_SAVE = '';
       my $DECL_LOAD = '';
-      my $DECL_COPY = "LOGICAL :: LLCREATED\n"; $DECL_COPY .= "LOGICAL :: LLFIELDAPI\n";
+      my $DECL_COPY = "LOGICAL :: LLCREATED\n";      $DECL_COPY .= "LOGICAL :: LLFIELDAPI\n";
       my $DECL_HOST = '';
-      my $DECL_WIPE = "LOGICAL :: LLDELETED\n"; $DECL_WIPE .= "LOGICAL :: LLFIELDAPI\n";
-      my $DECL_SIZE = "INTEGER*8 :: ISIZE, JSIZE\n";
+      my $DECL_WIPE = "LOGICAL :: LLDELETED\n";      $DECL_WIPE .= "LOGICAL :: LLFIELDAPI\n";
+      my $DECL_SIZE = "INTEGER*8 :: ISIZE, JSIZE\n"; $DECL_SIZE .= "LOGICAL :: LLPRINT\nCHARACTER(LEN=128) :: CLPATH\n";
 
       if ($extends)
         {
@@ -518,8 +533,8 @@ INTEGER*8 FUNCTION SIZE_$name (YD, CDPATH, LDPRINT) RESULT (KSIZE)
 $USE_SIZE
 IMPLICIT NONE
 $type ($name),     INTENT (IN), TARGET :: YD
-CHARACTER(LEN=*), INTENT (IN) :: CDPATH
-LOGICAL,          INTENT (IN) :: LDPRINT
+CHARACTER(LEN=*), INTENT (IN), OPTIONAL :: CDPATH
+LOGICAL,          INTENT (IN), OPTIONAL :: LDPRINT
 EOF
 
       &indent (@BODY_SAVE);

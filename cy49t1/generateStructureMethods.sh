@@ -33,7 +33,7 @@ do
   generateStructureMethods.pl \
      --skip-components MISC_T%TBUCONF \
      --dir src/local/phyex/util --tmp /tmp/$USER \
-     --host --copy --wipe --save --load $(resolve $f)
+     --size --host --copy --wipe --save --load $(resolve $f)
   set +x
 done
 
@@ -200,7 +200,7 @@ do
   generateStructureMethods.pl \
      --skip-components TYPE_GFL_COMP%PREVIOUS,MODEL_PHYSICS_STOCHAST_TYPE%YR_RANDOM_STREAMS,TEPHY%YSURF,TRADIATION%RAD_CONFIG,TECUCONVCA%YD_RANDOM_STREAM_CA,GEOMETRY%YRCSGEOMAD_NB,GEOMETRY%YRGSGEOMAD_NB,MODEL%YRML_SPP,MODEL%YRML_SPPT,GEOMETRY%YRCSGEOM_NB,GEOMETRY%YRCSGEOM,GEOMETRY%YRCSGEOM_B,GEOMETRY%YRGSGEOM_NB,GEOMETRY%YRGSGEOM,GEOMETRY%YRGSGEOM_B,GEOMETRY%YRVETA,GEOMETRY%LNONHYD_GEOM,GEOMETRY%YRVAB,GEOMETRY%YRVFE,GEOMETRY%YRCVER,SL_STRUCT%MASK_SL1,SL_STRUCT%MASK_SL2,SL_STRUCT%MASK_SL2T,SL_STRUCT%MASK_SLD,SL_STRUCT%MASK_SLTOT  \
      --dir src/local/ifsaux/util --tmp /tmp/$USER \
-     --host --copy --wipe --save --load $(resolve $f)
+     --size --host --copy --wipe --save --load $(resolve $f)
   set +x
 done
 
@@ -213,17 +213,17 @@ set -x
 
 
 generateStructureMethods.pl \
-  --host --wipe --copy --load --save --dir src/local/ifsaux/util --tmp /tmp/$USER \
+  --size --host --wipe --copy --load --save --dir src/local/ifsaux/util --tmp /tmp/$USER \
   --only-types TSPP_CONFIG \
   $(resolve arpifs/module/spp_mod.F90)
 
 generateStructureMethods.pl \
-  --host --wipe --copy --load --save --dir src/local/ifsaux/util --tmp /tmp/$USER \
+  --size --host --wipe --copy --load --save --dir src/local/ifsaux/util --tmp /tmp/$USER \
   --only-types TSPPT_CONFIG \
   $(resolve arpifs/module/yomspsdt.F90)
 
 generateStructureMethods.pl \
-  --host --wipe --copy --load --save --dir src/local/ifsaux/util --tmp /tmp/$USER \
+  --size --host --wipe --copy --load --save --dir src/local/ifsaux/util --tmp /tmp/$USER \
   --only-types TGFLT,TGMVT,TTND,THWIND,TCTY,TRCP,TXYBDER,TXYB \
   $(resolve arpifs/module/intdyn_mod.F90)
 

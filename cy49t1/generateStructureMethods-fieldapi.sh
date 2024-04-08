@@ -5,7 +5,7 @@ set -x
 
 . $(dirname $0)/prolog.sh
 
-no_alloc=iFIELD_1RB,FIELD_1IM,FIELD_2IM,FIELD_2LM,FIELD_2RB,FIELD_2RD,FIELD_2RM,FIELD_3IM,FIELD_3LM,FIELD_3RB,FIELD_3RD,FIELD_3RM,FIELD_4IM,FIELD_4LM,FIELD_4RB,FIELD_4RD,FIELD_4RM,FIELD_5IM,FIELD_5LM,FIELD_5RB,FIELD_5RD,FIELD_5RM
+no_alloc=FIELD_1RB,FIELD_1IM,FIELD_2IM,FIELD_2LM,FIELD_2RB,FIELD_2RD,FIELD_2RM,FIELD_3IM,FIELD_3LM,FIELD_3RB,FIELD_3RD,FIELD_3RM,FIELD_4IM,FIELD_4LM,FIELD_4RB,FIELD_4RD,FIELD_4RM,FIELD_5IM,FIELD_5LM,FIELD_5RB,FIELD_5RD,FIELD_5RM
 
 module_map=""
 
@@ -28,40 +28,40 @@ done
 
 dir=src/local/ifsaux/util
 
-# -wipe --copy --load --save
+# --wipe --copy --load --save
 
 generateStructureMethods.pl \
-  --wipe --copy --host --dir $dir --skip-components info_var --no-allocate $no_alloc \
+  --size --wipe --copy --host --dir $dir --skip-components info_var --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_var --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/variable_module.F90)
 
 
 generateStructureMethods.pl \
-  --wipe --copy --host --dir $dir \
+  --size --wipe --copy --host --dir $dir \
   --field-api --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/field_variables_mod.F90)
 
 generateStructureMethods.pl \
-  --wipe --copy --host --dir $dir --tmp /tmp/$USER \
+  --size --wipe --copy --host --dir $dir --tmp /tmp/$USER \
   $(resolve arpifs/module/type_fluxes.F90)
 
 generateStructureMethods.pl \
-  --wipe --copy --host --dir $dir --skip-components info_flu --no-allocate $no_alloc \
+  --size --wipe --copy --host --dir $dir --skip-components info_flu --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_flu --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/ptrxfu_type.F90)
 
 generateStructureMethods.pl \
-  --wipe --copy --host --dir $dir --skip-components info_flu --no-allocate $no_alloc \
+  --size --wipe --copy --host --dir $dir --skip-components info_flu --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_flu --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/ptrgfu_type.F90)
 
 generateStructureMethods.pl \
-  --wipe --copy --host --dir $dir --skip-components info_flu --no-allocate $no_alloc \
+  --size --wipe --copy --host --dir $dir --skip-components TXFU%XFUBUF_B,TXFU%RMWINDCALC_B,TXFU%RMNWINDCALC_B --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_flu --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/yomxfu_type.F90)
 
 generateStructureMethods.pl \
-  --wipe --copy --host --dir $dir --skip-components info_flu --no-allocate $no_alloc \
+  --size --wipe --copy --host --dir $dir --skip-components TCFU%CFUBUF_B --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_flu --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/yomcfu_type.F90)
 
