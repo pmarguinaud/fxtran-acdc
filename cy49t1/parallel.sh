@@ -6,6 +6,7 @@ set -e
 . $(dirname $0)/prolog.sh
 
 for f in \
+  arpifs/phys_radi/recmwf.F90                                            \
   arpifs/phys_dmn/apl_arpege_init.F90                                    \
   arpifs/phys_dmn/apl_arpege_init_surfex.F90                             \
   arpifs/phys_dmn/apl_arpege_oceanic_fluxes.F90                          \

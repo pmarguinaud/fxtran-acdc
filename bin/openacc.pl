@@ -54,7 +54,19 @@ sub acraneb2
 
   $file = &basename ($file);
 
-  'FileHandle'->new (">$file")->print (&Canonic::indent ($d));
+  'FileHandle'->new (">1.$file")->print (&Canonic::indent ($d));
+
+  # Change KJN -> KLON
+
+  my @kjn = &F ('.//named-E[string(N)="KJN"]', $d);
+
+  for my $kjn (@kjn)
+    {
+      $kjn->replaceNode (&e ('KLON'));
+    }
+
+
+  # Remove loops on JN
 
   my @do = &F ('.//do-construct[./do-stmt[string(do-V)="JN"]]', $d);
 
@@ -78,12 +90,69 @@ sub acraneb2
       $do->unbindNode ();
     }
 
+  # Remove IIDIA/IFDIA initialization
+
   my @assign = &F ('.//a-stmt[./E-1/named-E[string(N)="?" or string(N)="?"]]', 'IIDIA', 'IFDIA', $d);
 
   for (@assign)
     {
       $_->unbindNode ();
     }
+
+
+  # Use KIDIA/KFDIA instead of IIDIA/IFDIA (expressions)
+
+  for my $T (qw (I F))
+    {
+      for my $e (&F ('.//named-E[string(N)="?"]', "I${T}DIA", $d))
+        {
+          $e->replaceNode (&e ("K${T}DIA"));
+        }
+    }
+
+  # Use KIDIA/KFDIA instead of KIIDIA/KIFDIA (expressions)
+
+  for my $T (qw (I F))
+    {
+      for my $e (&F ('.//named-E[string(N)="?"]', "KI${T}DIA", $d))
+        {
+          $e->replaceNode (&e ("K${T}DIA"));
+        }
+    }
+
+  # Make KIIDIA/KIFDIA arguments scalars
+
+  for my $N (qw (KIIDIA KIFDIA))
+    {
+      if (my ($as) = &F ('.//T-decl-stmt//EN-decl[string(EN-N)="?"]/array-spec', $N, $d))
+        {
+          $as->unbindNode ();
+        }
+    }
+
+  # Change KIIDIA/KIFDIA into KIDIA/KFDIA (arguments), unless KIDIA/KFDIA are already arguments of the routine
+  
+  my @arg = &F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N/N/n/text()', $d);
+
+  unless (grep { $_->textContent eq 'KIDIA' } @arg)
+    {
+      for my $arg (@arg)
+        {
+          if ($arg->textContent =~ m/^KI([IF])DIA$/o)
+            {
+              my $T = $1;
+              $arg->setData ("K${T}DIA");
+            }
+        }
+      my @en_decl = &F ('.//T-decl-stmt//EN-decl[string(EN-N)="KIIDIA" or string(EN-N)="KIFDIA"]/EN-N/N/n/text()', $d);
+      for my $en_decl (@en_decl)
+        {
+          (my $n = $en_decl->textContent) =~ s/^KI/K/o;
+          $en_decl->setData ($n);
+        }
+    }
+
+  'FileHandle'->new (">2.$file")->print (&Canonic::indent ($d));
 
 }
 

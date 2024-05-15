@@ -6,6 +6,7 @@ set -x
 . $(dirname $0)/prolog.sh
 
 for f in \
+   arpifs/phys_radi/acralu.F90                     \
    arpifs/phys_dmn/actke1.F90                      \
    arpifs/phys_dmn/apl_arpege_turbulence_part2.F90 \
    arpifs/phys_dmn/acprod.F90                      \
