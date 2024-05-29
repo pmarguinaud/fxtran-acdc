@@ -19,10 +19,10 @@ use Fxtran;
 sub process_decl
 {
   my ($opts, $en_decl, $sname, $prefix, 
-      $BODY_SAVE, $BODY_LOAD, $BODY_COPY, $BODY_WIPE, $BODY_SIZE, $BODY_HOST,
+      $BODY_SAVE, $BODY_LOAD, $BODY_COPY, $BODY_WIPE, $BODY_SIZE, $BODY_HOST, $BODY_HOST_LEGACY,
       $U, $J, $L, $B, $T, $en_decl_hash) = @_;
 
-  my (@BODY_SAVE, @BODY_LOAD, @BODY_COPY, @BODY_WIPE, @BODY_SIZE, @BODY_HOST);
+  my (@BODY_SAVE, @BODY_LOAD, @BODY_COPY, @BODY_WIPE, @BODY_SIZE, @BODY_HOST, @BODY_HOST_LEGACY);
   my (%U, %J, %L, %B, %T);
 
   my $stmt = &Fxtran::stmt ($en_decl);
@@ -91,20 +91,22 @@ sub process_decl
   if ($attr{POINTER} || $attr{ALLOCATABLE})
     {
       my $func = $attr{POINTER} ? 'ASSOCIATED' : 'ALLOCATED';
-      push @BODY_SAVE, "L$name = $func ($prefix$name)\n";
-      push @BODY_COPY, "L$name = $func ($prefix$name)\n";
-      push @BODY_WIPE, "L$name = $func ($prefix$name)\n";
-      push @BODY_SIZE, "L$name = $func ($prefix$name)\n" if (! $isFieldAPI);
-      push @BODY_HOST, "L$name = $func ($prefix$name)\n" unless ($intrinsic);
-      push @BODY_SAVE, "WRITE (KLUN) L$name\n";
-      push @BODY_LOAD, "READ (KLUN) L$name\n";
+      push @BODY_SAVE       , "L$name = $func ($prefix$name)\n";
+      push @BODY_COPY       , "L$name = $func ($prefix$name)\n";
+      push @BODY_WIPE       , "L$name = $func ($prefix$name)\n";
+      push @BODY_SIZE       , "L$name = $func ($prefix$name)\n" if (! $isFieldAPI);
+      push @BODY_HOST       , "L$name = $func ($prefix$name)\n" unless ($intrinsic);
+      push @BODY_HOST_LEGACY, "L$name = $func ($prefix$name)\n" unless ($intrinsic);
+      push @BODY_SAVE       , "WRITE (KLUN) L$name\n";
+      push @BODY_LOAD       , "READ (KLUN) L$name\n";
       $L{$name} = 1;
-      push @BODY_SAVE, "IF (L$name) THEN\n";
-      push @BODY_LOAD, "IF (L$name) THEN\n";
-      push @BODY_COPY, $isFieldAPI ? "IF (L$name .AND. LLFIELDAPI) THEN\n" : "IF (L$name) THEN\n";
-      push @BODY_WIPE, $isFieldAPI ? "IF (L$name .AND. LLFIELDAPI) THEN\n" : "IF (L$name) THEN\n";
-      push @BODY_SIZE, "IF (L$name) THEN\n" if (! $isFieldAPI);
-      push @BODY_HOST, "IF (L$name) THEN\n" unless ($intrinsic);
+      push @BODY_SAVE       , "IF (L$name) THEN\n";
+      push @BODY_LOAD       , "IF (L$name) THEN\n";
+      push @BODY_COPY       , $isFieldAPI ? "IF (L$name .AND. LLFIELDAPI) THEN\n" : "IF (L$name) THEN\n";
+      push @BODY_WIPE       , $isFieldAPI ? "IF (L$name .AND. LLFIELDAPI) THEN\n" : "IF (L$name) THEN\n";
+      push @BODY_SIZE       , "IF (L$name) THEN\n" if (! $isFieldAPI);
+      push @BODY_HOST       , "IF (L$name) THEN\n" unless ($intrinsic);
+      push @BODY_HOST_LEGACY, "IF (L$name) THEN\n" unless ($intrinsic);
       if (@ss)
         {
           push @BODY_SAVE, "WRITE (KLUN) LBOUND ($prefix$name)\n";
@@ -171,22 +173,25 @@ sub process_decl
         {
           $J{"J$i"} = 1;
           my $do = "DO J$i = LBOUND ($prefix$name, $i), UBOUND ($prefix$name, $i)\n";
-          push @BODY_SAVE, $do;
-          push @BODY_LOAD, $do;
-          push @BODY_COPY, $do;
-          push @BODY_WIPE, $do;
-          push @BODY_SIZE, $do if (! $isFieldAPI);
-          push @BODY_HOST, $do;
+          push @BODY_SAVE       , $do;
+          push @BODY_LOAD       , $do;
+          push @BODY_COPY       , $do;
+          push @BODY_WIPE       , $do;
+          push @BODY_SIZE       , $do if (! $isFieldAPI);
+          push @BODY_HOST       , $do;
+          push @BODY_HOST_LEGACY, $do;
         }
       my @J = map { "J$_"  } (1 .. $#ss+1);
       my $J = @ss ? " (" . join (', ', @J) . ")" : '';
       my $LLPRINT = '.FALSE.';
-      push @BODY_SAVE, ('  ' x scalar (@ss)) 
+      push @BODY_SAVE       , ('  ' x scalar (@ss)) 
                    . "CALL SAVE_$tname (KLUN, $prefix$name" . $J . ")\n";
-      push @BODY_LOAD, ('  ' x scalar (@ss)) 
+      push @BODY_LOAD       , ('  ' x scalar (@ss)) 
                    . "CALL LOAD_$tname (KLUN, $prefix$name" . $J . ")\n";
-      push @BODY_HOST, ('  ' x scalar (@ss)) 
+      push @BODY_HOST       , ('  ' x scalar (@ss)) 
                    . "CALL HOST_$tname ($prefix$name" . $J . ")\n";
+      push @BODY_HOST_LEGACY, ('  ' x scalar (@ss)) 
+                   . "CALL HOST_LEGACY_$tname ($prefix$name" . $J . ")\n";
 
       if ($isFieldAPI)
         {
@@ -212,12 +217,13 @@ sub process_decl
         }
       for (my $i = $#ss; $i >= 0; $i--)
         {
-          push @BODY_SAVE, "ENDDO\n";
-          push @BODY_LOAD, "ENDDO\n";
-          push @BODY_COPY, "ENDDO\n";
-          push @BODY_HOST, "ENDDO\n";
-          push @BODY_WIPE, "ENDDO\n";
-          push @BODY_SIZE, "ENDDO\n" if (! $isFieldAPI);
+          push @BODY_SAVE       , "ENDDO\n";
+          push @BODY_LOAD       , "ENDDO\n";
+          push @BODY_COPY       , "ENDDO\n";
+          push @BODY_HOST       , "ENDDO\n";
+          push @BODY_HOST_LEGACY, "ENDDO\n";
+          push @BODY_WIPE       , "ENDDO\n";
+          push @BODY_SIZE       , "ENDDO\n" if (! $isFieldAPI);
         }
 
       if (! $isFieldAPI)
@@ -244,22 +250,25 @@ sub process_decl
         {
           push @BODY_WIPE, "!\$acc exit data delete ($prefix$name)\n";
         }
-      push @BODY_HOST, "ENDIF\n" unless ($intrinsic);
-      push @BODY_WIPE, "ENDIF\n";
-      push @BODY_SIZE, "ENDIF\n" if (! $isFieldAPI);
+      push @BODY_HOST       , "ENDIF\n" unless ($intrinsic);
+      push @BODY_HOST_LEGACY, "ENDIF\n" unless ($intrinsic);
+      push @BODY_WIPE       , "ENDIF\n";
+      push @BODY_SIZE       , "ENDIF\n" if (! $isFieldAPI);
     }
-  push @BODY_COPY, "\n";
-  push @BODY_HOST, "\n";
-  push @BODY_WIPE, "\n";
+  push @BODY_COPY       , "\n";
+  push @BODY_HOST       , "\n";
+  push @BODY_HOST_LEGACY, "\n";
+  push @BODY_WIPE       , "\n";
 
 RETURN:
   
-  push @$BODY_SAVE, @BODY_SAVE;
-  push @$BODY_LOAD, @BODY_LOAD;
-  push @$BODY_COPY, @BODY_COPY;
-  push @$BODY_HOST, @BODY_HOST;
-  push @$BODY_WIPE, @BODY_WIPE;
-  push @$BODY_SIZE, @BODY_SIZE;
+  push @$BODY_SAVE       , @BODY_SAVE;
+  push @$BODY_LOAD       , @BODY_LOAD;
+  push @$BODY_COPY       , @BODY_COPY;
+  push @$BODY_HOST       , @BODY_HOST;
+  push @$BODY_HOST_LEGACY, @BODY_HOST_LEGACY;
+  push @$BODY_WIPE       , @BODY_WIPE;
+  push @$BODY_SIZE       , @BODY_SIZE;
 
   %$U = (%$U, %U); %$J = (%$J, %J); 
   %$L = (%$L, %L); %$B = (%$B, %B); 
@@ -316,22 +325,24 @@ sub processTypes1
       my ($abstract) = &F ('./T-stmt/attribute[string(attribute-N)="ABSTRACT"]', $tconst);
       my ($extends) = &F ('./T-stmt/attribute[string(attribute-N)="EXTENDS"]/N/n/text()', $tconst);
 
-      my ($INTERFACE_SAVE, $CONTAINS_SAVE) = ('', '');
-      my ($INTERFACE_LOAD, $CONTAINS_LOAD) = ('', '');
-      my ($INTERFACE_COPY, $CONTAINS_COPY) = ('', '');
-      my ($INTERFACE_HOST, $CONTAINS_HOST) = ('', '');
-      my ($INTERFACE_WIPE, $CONTAINS_WIPE) = ('', '');
-      my ($INTERFACE_SIZE, $CONTAINS_SIZE) = ('', '');
+      my ($INTERFACE_SAVE       , $CONTAINS_SAVE) = ('', '');
+      my ($INTERFACE_LOAD       , $CONTAINS_LOAD) = ('', '');
+      my ($INTERFACE_COPY       , $CONTAINS_COPY) = ('', '');
+      my ($INTERFACE_HOST       , $CONTAINS_HOST) = ('', '');
+      my ($INTERFACE_HOST_LEGACY, $CONTAINS_HOST_LEGACY) = ('', '');
+      my ($INTERFACE_WIPE       , $CONTAINS_WIPE) = ('', '');
+      my ($INTERFACE_SIZE       , $CONTAINS_SIZE) = ('', '');
   
   
-      $INTERFACE_SAVE .= "MODULE PROCEDURE SAVE_$name\n";
-      $INTERFACE_LOAD .= "MODULE PROCEDURE LOAD_$name\n";
-      $INTERFACE_COPY .= "MODULE PROCEDURE COPY_$name\n";
-      $INTERFACE_HOST .= "MODULE PROCEDURE HOST_$name\n";
-      $INTERFACE_WIPE .= "MODULE PROCEDURE WIPE_$name\n";
-      $INTERFACE_SIZE .= "MODULE PROCEDURE SIZE_$name\n";
+      $INTERFACE_SAVE        .= "MODULE PROCEDURE SAVE_$name\n";
+      $INTERFACE_LOAD        .= "MODULE PROCEDURE LOAD_$name\n";
+      $INTERFACE_COPY        .= "MODULE PROCEDURE COPY_$name\n";
+      $INTERFACE_HOST        .= "MODULE PROCEDURE HOST_$name\n";
+      $INTERFACE_HOST_LEGACY .= "MODULE PROCEDURE HOST_LEGACY_$name\n";
+      $INTERFACE_WIPE        .= "MODULE PROCEDURE WIPE_$name\n";
+      $INTERFACE_SIZE        .= "MODULE PROCEDURE SIZE_$name\n";
   
-      my (@BODY_SAVE, @BODY_LOAD, @BODY_COPY, @BODY_WIPE, @BODY_SIZE, @BODY_HOST);
+      my (@BODY_SAVE, @BODY_LOAD, @BODY_COPY, @BODY_WIPE, @BODY_SIZE, @BODY_HOST, @BODY_HOST_LEGACY);
 
       push @BODY_WIPE,  
                        "LLFIELDAPI = .FALSE.\n",
@@ -364,16 +375,17 @@ sub processTypes1
 
       if ($extends)
         {
-          for (\@BODY_SAVE, \@BODY_LOAD, \@BODY_COPY, \@BODY_WIPE, \@BODY_SIZE, \@BODY_HOST)
+          for (\@BODY_SAVE, \@BODY_LOAD, \@BODY_COPY, \@BODY_WIPE, \@BODY_SIZE, \@BODY_HOST, \@BODY_HOST_LEGACY)
             {
               push @$_, "YLSUPER => YD\n";
             }
-          push @BODY_SAVE, "CALL SAVE_$extends (KLUN, YLSUPER)\n";
-          push @BODY_LOAD, "CALL LOAD_$extends (KLUN, YLSUPER)\n";
-          push @BODY_COPY, "CALL COPY_$extends (YLSUPER, LDCREATED=.TRUE., LDFIELDAPI=LDFIELDAPI)\n";
-          push @BODY_HOST, "CALL HOST_$extends (YLSUPER)\n";
-          push @BODY_WIPE, "CALL WIPE_$extends (YLSUPER, LDDELETED=.TRUE., LDFIELDAPI=LDFIELDAPI)\n";
-          push @BODY_SIZE, "KSIZE = KSIZE + SIZE_$extends (YLSUPER, CLPATH, LLPRINT)\n";
+          push @BODY_SAVE       , "CALL SAVE_$extends (KLUN, YLSUPER)\n";
+          push @BODY_LOAD       , "CALL LOAD_$extends (KLUN, YLSUPER)\n";
+          push @BODY_COPY       , "CALL COPY_$extends (YLSUPER, LDCREATED=.TRUE., LDFIELDAPI=LDFIELDAPI)\n";
+          push @BODY_HOST       , "CALL HOST_$extends (YLSUPER)\n";
+          push @BODY_HOST_LEGACY, "CALL HOST_LEGACY_$extends (YLSUPER)\n";
+          push @BODY_WIPE       , "CALL WIPE_$extends (YLSUPER, LDDELETED=.TRUE., LDFIELDAPI=LDFIELDAPI)\n";
+          push @BODY_SIZE       , "KSIZE = KSIZE + SIZE_$extends (YLSUPER, CLPATH, LLPRINT)\n";
         }
     
       my (%U, %J, %L, %B, %T);
@@ -388,7 +400,7 @@ sub processTypes1
       for my $en_decl (@en_decl)
         {
           &process_decl ($opts, $en_decl, "$tname%", 'YD%', 
-                         \@BODY_SAVE, \@BODY_LOAD, \@BODY_COPY, \@BODY_WIPE, \@BODY_SIZE, \@BODY_HOST,
+                         \@BODY_SAVE, \@BODY_LOAD, \@BODY_COPY, \@BODY_WIPE, \@BODY_SIZE, \@BODY_HOST, \@BODY_HOST_LEGACY,
                          \%U, \%J, \%L, \%B, \%T, \%en_decl);
         }
 
@@ -401,16 +413,17 @@ sub processTypes1
                        "ENDIF\n";
                        
   
-      my $DECL_SAVE = '';
-      my $DECL_LOAD = '';
-      my $DECL_COPY = "LOGICAL :: LLCREATED\n";      $DECL_COPY .= "LOGICAL :: LLFIELDAPI\n";
-      my $DECL_HOST = '';
-      my $DECL_WIPE = "LOGICAL :: LLDELETED\n";      $DECL_WIPE .= "LOGICAL :: LLFIELDAPI\n";
-      my $DECL_SIZE = "INTEGER*8 :: ISIZE, JSIZE\n"; $DECL_SIZE .= "LOGICAL :: LLPRINT\nCHARACTER(LEN=128) :: CLPATH\n";
+      my $DECL_SAVE        = '';
+      my $DECL_LOAD        = '';
+      my $DECL_COPY        = "LOGICAL :: LLCREATED\n";      $DECL_COPY .= "LOGICAL :: LLFIELDAPI\n";
+      my $DECL_HOST        = '';
+      my $DECL_HOST_LEGACY = '';
+      my $DECL_WIPE        = "LOGICAL :: LLDELETED\n";      $DECL_WIPE .= "LOGICAL :: LLFIELDAPI\n";
+      my $DECL_SIZE        = "INTEGER*8 :: ISIZE, JSIZE\n"; $DECL_SIZE .= "LOGICAL :: LLPRINT\nCHARACTER(LEN=128) :: CLPATH\n";
 
       if ($extends)
         {
-          for ($DECL_SAVE, $DECL_LOAD, $DECL_COPY, $DECL_WIPE, $DECL_SIZE, $DECL_HOST)
+          for ($DECL_SAVE, $DECL_LOAD, $DECL_COPY, $DECL_WIPE, $DECL_SIZE, $DECL_HOST, $DECL_HOST_LEGACY)
             {
               $_ .= "CLASS ($extends), POINTER :: YLSUPER\n";
             }
@@ -418,28 +431,30 @@ sub processTypes1
   
       if (%J)
         {
-          $DECL_SAVE .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
-          $DECL_LOAD .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
-          $DECL_COPY .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
-          $DECL_HOST .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
-          $DECL_WIPE .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
-          $DECL_SIZE .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
+          $DECL_SAVE        .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
+          $DECL_LOAD        .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
+          $DECL_COPY        .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
+          $DECL_HOST        .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
+          $DECL_HOST_LEGACY .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
+          $DECL_WIPE        .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
+          $DECL_SIZE        .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
         }
       if (%B)
         {
-          $DECL_LOAD .= "INTEGER :: " . join (', ', map  { ("IL$_($_)", "IU$_($_)") } sort keys (%B)) . "\n";
+          $DECL_LOAD        .= "INTEGER :: " . join (', ', map  { ("IL$_($_)", "IU$_($_)") } sort keys (%B)) . "\n";
         }
       if (%L)
         {
           my @L = sort keys (%L);
           while (my @l = splice (@L, 0, 10))
             {
-              $DECL_SAVE .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
-              $DECL_LOAD .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
-              $DECL_HOST .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
-              $DECL_COPY .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
-              $DECL_WIPE .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
-              $DECL_SIZE .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
+              $DECL_SAVE        .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
+              $DECL_LOAD        .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
+              $DECL_HOST        .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
+              $DECL_HOST_LEGACY .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
+              $DECL_COPY        .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
+              $DECL_WIPE        .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
+              $DECL_SIZE        .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
             }
         }
       if (%T)
@@ -460,12 +475,13 @@ sub processTypes1
       %U = map { ($_, 1) } @U;
       @U = sort keys (%U);
 
-      my $USE_SAVE = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
-      my $USE_LOAD = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
-      my $USE_HOST = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
-      my $USE_COPY = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
-      my $USE_WIPE = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
-      my $USE_SIZE = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
+      my $USE_SAVE        = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
+      my $USE_LOAD        = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
+      my $USE_HOST        = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
+      my $USE_HOST_LEGACY = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
+      my $USE_COPY        = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
+      my $USE_WIPE        = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
+      my $USE_SIZE        = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
   
       if (%T)
         {
@@ -474,15 +490,16 @@ sub processTypes1
 
       if ($extends)
         {
-          $USE_SAVE .= "USE UTIL_${extends}_MOD, ONLY : $extends, SAVE_$extends\n";
-          $USE_LOAD .= "USE UTIL_${extends}_MOD, ONLY : $extends, LOAD_$extends\n";
-          $USE_HOST .= "USE UTIL_${extends}_MOD, ONLY : $extends, HOST_$extends\n";
-          $USE_COPY .= "USE UTIL_${extends}_MOD, ONLY : $extends, COPY_$extends\n";
-          $USE_WIPE .= "USE UTIL_${extends}_MOD, ONLY : $extends, WIPE_$extends\n";
-          $USE_SIZE .= "USE UTIL_${extends}_MOD, ONLY : $extends, SIZE_$extends\n";
+          $USE_SAVE        .= "USE UTIL_${extends}_MOD, ONLY : $extends, SAVE_$extends\n";
+          $USE_LOAD        .= "USE UTIL_${extends}_MOD, ONLY : $extends, LOAD_$extends\n";
+          $USE_HOST        .= "USE UTIL_${extends}_MOD, ONLY : $extends, HOST_$extends\n";
+          $USE_HOST_LEGACY .= "USE UTIL_${extends}_MOD, ONLY : $extends, HOST_LEGACY_$extends\n";
+          $USE_COPY        .= "USE UTIL_${extends}_MOD, ONLY : $extends, COPY_$extends\n";
+          $USE_WIPE        .= "USE UTIL_${extends}_MOD, ONLY : $extends, WIPE_$extends\n";
+          $USE_SIZE        .= "USE UTIL_${extends}_MOD, ONLY : $extends, SIZE_$extends\n";
         }
 
-      for ($USE_SAVE, $USE_SAVE, $USE_COPY, $USE_WIPE, $USE_SIZE, $DECL_SAVE, $DECL_LOAD, $DECL_HOST)
+      for ($USE_SAVE, $USE_SAVE, $USE_COPY, $USE_WIPE, $USE_SIZE, $DECL_SAVE, $DECL_LOAD, $DECL_HOST, $DECL_HOST_LEGACY)
         {
           chomp ($_);
         }
@@ -508,6 +525,13 @@ EOF
       $CONTAINS_HOST .= << "EOF";
 SUBROUTINE HOST_$name (YD)
 $USE_HOST
+IMPLICIT NONE
+$type ($name), TARGET :: YD
+EOF
+
+      $CONTAINS_HOST_LEGACY .= << "EOF";
+SUBROUTINE HOST_LEGACY_$name (YD)
+$USE_HOST_LEGACY
 IMPLICIT NONE
 $type ($name), TARGET :: YD
 EOF
@@ -540,56 +564,62 @@ EOF
       &indent (@BODY_SAVE);
       &indent (@BODY_LOAD);
       &indent (@BODY_HOST);
+      &indent (@BODY_HOST_LEGACY);
       &indent (@BODY_COPY);
       &indent (@BODY_WIPE);
       &indent (@BODY_SIZE);
 
 
-      $CONTAINS_SAVE .= $DECL_SAVE . "\n" . join ("\n", @BODY_SAVE, '') . "END SUBROUTINE\n";
-      $CONTAINS_LOAD .= $DECL_LOAD . "\n" . join ("\n", @BODY_LOAD, '') . "END SUBROUTINE\n";
-      $CONTAINS_HOST .= $DECL_HOST . "\n" . join ("\n", @BODY_HOST, '') . "END SUBROUTINE\n";
-      $CONTAINS_COPY .= $DECL_COPY . "\n" . join ("\n", @BODY_COPY, '') . "END SUBROUTINE\n";
-      $CONTAINS_WIPE .= $DECL_WIPE . "\n" . join ("\n", @BODY_WIPE, '') . "END SUBROUTINE\n";
-      $CONTAINS_SIZE .= $DECL_SIZE . "\n" . join ("\n", @BODY_SIZE, '') . "END FUNCTION\n";
+      $CONTAINS_SAVE        .= $DECL_SAVE . "\n" . join ("\n", @BODY_SAVE, '') . "END SUBROUTINE\n";
+      $CONTAINS_LOAD        .= $DECL_LOAD . "\n" . join ("\n", @BODY_LOAD, '') . "END SUBROUTINE\n";
+      $CONTAINS_HOST        .= $DECL_HOST . "\n" . join ("\n", @BODY_HOST, '') . "END SUBROUTINE\n";
+      $CONTAINS_HOST_LEGACY .= $DECL_HOST_LEGACY . "\n" . join ("\n", @BODY_HOST_LEGACY, '') . "END SUBROUTINE\n";
+      $CONTAINS_COPY        .= $DECL_COPY . "\n" . join ("\n", @BODY_COPY, '') . "END SUBROUTINE\n";
+      $CONTAINS_WIPE        .= $DECL_WIPE . "\n" . join ("\n", @BODY_WIPE, '') . "END SUBROUTINE\n";
+      $CONTAINS_SIZE        .= $DECL_SIZE . "\n" . join ("\n", @BODY_SIZE, '') . "END FUNCTION\n";
 
-      for ($CONTAINS_SAVE, $CONTAINS_SAVE, $CONTAINS_COPY, $CONTAINS_WIPE, $CONTAINS_SIZE, $CONTAINS_HOST, 
-           $INTERFACE_SAVE, $INTERFACE_LOAD, $INTERFACE_COPY, $INTERFACE_WIPE, $INTERFACE_SIZE, $INTERFACE_HOST)
+      for ($CONTAINS_SAVE, $CONTAINS_SAVE, $CONTAINS_COPY, $CONTAINS_WIPE, $CONTAINS_SIZE, $CONTAINS_HOST, $CONTAINS_HOST_LEGACY,
+           $INTERFACE_SAVE, $INTERFACE_LOAD, $INTERFACE_COPY, $INTERFACE_WIPE, $INTERFACE_SIZE, $INTERFACE_HOST, $INTERFACE_HOST_LEGACY)
         {
           chomp ($_);
         }
   
       my $n = lc ($name);
 
-      $CONTAINS_SAVE = '' unless ($opts->{save});
-      $CONTAINS_LOAD = '' unless ($opts->{load});
-      $CONTAINS_COPY = '' unless ($opts->{copy});
-      $CONTAINS_HOST = '' unless ($opts->{host});
-      $CONTAINS_WIPE = '' unless ($opts->{wipe});
-      $CONTAINS_SIZE = '' unless ($opts->{size});
+      $CONTAINS_SAVE        = '' unless ($opts->{save});
+      $CONTAINS_LOAD        = '' unless ($opts->{load});
+      $CONTAINS_COPY        = '' unless ($opts->{copy});
+      $CONTAINS_HOST        = '' unless ($opts->{host});
+      $CONTAINS_HOST_LEGACY = '' unless ($opts->{'host-legacy'});
+      $CONTAINS_WIPE        = '' unless ($opts->{wipe});
+      $CONTAINS_SIZE        = '' unless ($opts->{size});
 
-      $INTERFACE_SAVE = "INTERFACE SAVE\n$INTERFACE_SAVE\nEND INTERFACE\n";
-      $INTERFACE_LOAD = "INTERFACE LOAD\n$INTERFACE_LOAD\nEND INTERFACE\n";
-      $INTERFACE_COPY = "INTERFACE COPY\n$INTERFACE_COPY\nEND INTERFACE\n";
-      $INTERFACE_HOST = "INTERFACE HOST\n$INTERFACE_HOST\nEND INTERFACE\n";
-      $INTERFACE_WIPE = "INTERFACE WIPE\n$INTERFACE_WIPE\nEND INTERFACE\n";
-      $INTERFACE_SIZE = "INTERFACE SIZE\n$INTERFACE_SIZE\nEND INTERFACE\n";
+      $INTERFACE_SAVE        = "INTERFACE SAVE\n$INTERFACE_SAVE\nEND INTERFACE\n";
+      $INTERFACE_LOAD        = "INTERFACE LOAD\n$INTERFACE_LOAD\nEND INTERFACE\n";
+      $INTERFACE_COPY        = "INTERFACE COPY\n$INTERFACE_COPY\nEND INTERFACE\n";
+      $INTERFACE_HOST        = "INTERFACE HOST\n$INTERFACE_HOST\nEND INTERFACE\n";
+      $INTERFACE_HOST_LEGACY = "INTERFACE HOST_LEGACY\n$INTERFACE_HOST_LEGACY\nEND INTERFACE\n";
+      $INTERFACE_WIPE        = "INTERFACE WIPE\n$INTERFACE_WIPE\nEND INTERFACE\n";
+      $INTERFACE_SIZE        = "INTERFACE SIZE\n$INTERFACE_SIZE\nEND INTERFACE\n";
 
       if ($abstract)
         {
-          $INTERFACE_SAVE = "";
-          $INTERFACE_LOAD = "";
-          $INTERFACE_COPY = "";
-          $INTERFACE_HOST = "";
-          $INTERFACE_WIPE = "";
-          $INTERFACE_SIZE = "";
+          $INTERFACE_SAVE        = "";
+          $INTERFACE_LOAD        = "";
+          $INTERFACE_COPY        = "";
+          $INTERFACE_HOST        = "";
+          $INTERFACE_HOST_LEGACY = "";
+          $INTERFACE_WIPE        = "";
+          $INTERFACE_SIZE        = "";
         }
   
-      $INTERFACE_SAVE = '' unless ($opts->{save});
-      $INTERFACE_LOAD = '' unless ($opts->{load});
-      $INTERFACE_COPY = '' unless ($opts->{copy});
-      $INTERFACE_HOST = '' unless ($opts->{host});
-      $INTERFACE_WIPE = '' unless ($opts->{wipe});
-      $INTERFACE_SIZE = '' unless ($opts->{size});
+      $INTERFACE_SAVE        = '' unless ($opts->{save});
+      $INTERFACE_LOAD        = '' unless ($opts->{load});
+      $INTERFACE_COPY        = '' unless ($opts->{copy});
+      $INTERFACE_HOST        = '' unless ($opts->{host});
+      $INTERFACE_HOST_LEGACY = '' unless ($opts->{'host-legacy'});
+      $INTERFACE_WIPE        = '' unless ($opts->{wipe});
+      $INTERFACE_SIZE        = '' unless ($opts->{size});
 
       push @file, "util_${n}_mod.F90";
 
@@ -602,6 +632,7 @@ $INTERFACE_SAVE
 $INTERFACE_LOAD
 $INTERFACE_COPY
 $INTERFACE_HOST
+$INTERFACE_HOST_LEGACY
 $INTERFACE_WIPE
 $INTERFACE_SIZE
 
@@ -614,6 +645,8 @@ $CONTAINS_LOAD
 $CONTAINS_COPY
 
 $CONTAINS_HOST
+
+$CONTAINS_HOST_LEGACY
 
 $CONTAINS_WIPE
 
