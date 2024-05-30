@@ -517,6 +517,8 @@ my $find = 'Finder::Pack'->new ();
 
 my $types = &Storable::retrieve ("$opts{'types-fieldapi-dir'}/decls.dat");
 
+&fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
+
 my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 800 -no-include -no-cpp -construct-tag -directive ACDC -canonic)]);
 
 for my $pu (&F ('./object/file/program-unit', $d))
