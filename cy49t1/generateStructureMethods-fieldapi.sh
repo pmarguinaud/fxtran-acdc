@@ -31,13 +31,13 @@ dir=src/local/ifsaux/util
 # --wipe --copy --load --save
 
 generateStructureMethods.pl \
-  --size --wipe --copy --host --dir $dir --skip-components info_var --no-allocate $no_alloc \
+  --crc64 --legacy --size --wipe --copy --host --dir $dir --skip-components info_var --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_var --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/variable_module.F90)
 
 
 generateStructureMethods.pl \
-  --size --wipe --copy --host --dir $dir \
+  --crc64 --legacy --size --wipe --copy --host --dir $dir \
   --field-api --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/field_variables_mod.F90)
 

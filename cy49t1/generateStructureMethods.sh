@@ -183,7 +183,6 @@ arpifs/module/reglatlon_field_mix.F90 \
 arpifs/module/yomvsleta.F90 \
 arpifs/module/yomvsplip.F90 \
 arpifs/module/yoeaeratm.F90 \
-arpifs/module/yoe_aerodiag.F90 \
 arpifs/module/yomdyna.F90 \
 arpifs/module/yoeaerc.F90 \
 arpifs/module/yoecmip.F90 \
@@ -193,12 +192,24 @@ arpifs/module/yoesw.F90 \
 arpifs/module/type_ecv.F90 \
 arpifs/module/yommoderrmod.F90 \
 arpifs/module/spp_gen_mod.F90 \
-arpifs/module/spp_def_mod.F90 \
-arpifs/module/yom_ygfl.F90 
+arpifs/module/spp_def_mod.F90 
 do
   set -x
   generateStructureMethods.pl \
      --skip-components TYPE_GFL_COMP%PREVIOUS,MODEL_PHYSICS_STOCHAST_TYPE%YR_RANDOM_STREAMS,TEPHY%YSURF,TRADIATION%RAD_CONFIG,TECUCONVCA%YD_RANDOM_STREAM_CA,GEOMETRY%YRCSGEOMAD,GEOMETRY%YRGSGEOMAD,GEOMETRY%YROROG,GEOMETRY%YRCSGEOMAD_NB,GEOMETRY%YRGSGEOMAD_NB,MODEL%YRML_SPP,MODEL%YRML_SPPT,GEOMETRY%YRCSGEOM_NB,GEOMETRY%YRCSGEOM,GEOMETRY%YRCSGEOM_B,GEOMETRY%YRGSGEOM_NB,GEOMETRY%YRGSGEOM,GEOMETRY%YRGSGEOM_B,GEOMETRY%YRVETA,GEOMETRY%LNONHYD_GEOM,GEOMETRY%YRVAB,GEOMETRY%YRVFE,GEOMETRY%YRCVER,SL_STRUCT%MASK_SL1,SL_STRUCT%MASK_SL2,SL_STRUCT%MASK_SL2T,SL_STRUCT%MASK_SLD,SL_STRUCT%MASK_SLTOT  \
+     --dir src/local/ifsaux/util --tmp /tmp/$USER \
+     --size --host --copy --wipe --save --load $(resolve $f)
+  set +x
+done
+
+
+for f in \
+arpifs/module/yoe_aerodiag.F90 \
+arpifs/module/yom_ygfl.F90 
+do
+  set -x
+  generateStructureMethods.pl \
+     --crc64 --legacy --skip-components TYPE_GFL_COMP%PREVIOUS,MODEL_PHYSICS_STOCHAST_TYPE%YR_RANDOM_STREAMS,TEPHY%YSURF,TRADIATION%RAD_CONFIG,TECUCONVCA%YD_RANDOM_STREAM_CA,GEOMETRY%YRCSGEOMAD,GEOMETRY%YRGSGEOMAD,GEOMETRY%YROROG,GEOMETRY%YRCSGEOMAD_NB,GEOMETRY%YRGSGEOMAD_NB,MODEL%YRML_SPP,MODEL%YRML_SPPT,GEOMETRY%YRCSGEOM_NB,GEOMETRY%YRCSGEOM,GEOMETRY%YRCSGEOM_B,GEOMETRY%YRGSGEOM_NB,GEOMETRY%YRGSGEOM,GEOMETRY%YRGSGEOM_B,GEOMETRY%YRVETA,GEOMETRY%LNONHYD_GEOM,GEOMETRY%YRVAB,GEOMETRY%YRVFE,GEOMETRY%YRCVER,SL_STRUCT%MASK_SL1,SL_STRUCT%MASK_SL2,SL_STRUCT%MASK_SL2T,SL_STRUCT%MASK_SLD,SL_STRUCT%MASK_SLTOT  \
      --dir src/local/ifsaux/util --tmp /tmp/$USER \
      --size --host --copy --wipe --save --load $(resolve $f)
   set +x

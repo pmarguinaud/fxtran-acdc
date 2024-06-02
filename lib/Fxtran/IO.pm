@@ -19,10 +19,10 @@ use Fxtran;
 sub process_decl
 {
   my ($opts, $en_decl, $sname, $prefix, 
-      $BODY_SAVE, $BODY_LOAD, $BODY_COPY, $BODY_WIPE, $BODY_SIZE, $BODY_HOST, $BODY_HOST_LEGACY,
+      $BODY_SAVE, $BODY_LOAD, $BODY_COPY, $BODY_WIPE, $BODY_SIZE, $BODY_HOST, $BODY_LEGACY, $BODY_CRC64,
       $U, $J, $L, $B, $T, $en_decl_hash) = @_;
 
-  my (@BODY_SAVE, @BODY_LOAD, @BODY_COPY, @BODY_WIPE, @BODY_SIZE, @BODY_HOST, @BODY_HOST_LEGACY);
+  my (@BODY_SAVE, @BODY_LOAD, @BODY_COPY, @BODY_WIPE, @BODY_SIZE, @BODY_HOST, @BODY_LEGACY, @BODY_CRC64);
   my (%U, %J, %L, %B, %T);
 
   my $stmt = &Fxtran::stmt ($en_decl);
@@ -96,7 +96,8 @@ sub process_decl
       push @BODY_WIPE       , "L$name = $func ($prefix$name)\n";
       push @BODY_SIZE       , "L$name = $func ($prefix$name)\n" if (! $isFieldAPI);
       push @BODY_HOST       , "L$name = $func ($prefix$name)\n" unless ($intrinsic);
-      push @BODY_HOST_LEGACY, "L$name = $func ($prefix$name)\n" unless ($intrinsic);
+      push @BODY_LEGACY     , "L$name = $func ($prefix$name)\n" unless ($intrinsic);
+      push @BODY_CRC64      , "L$name = $func ($prefix$name)\n" unless ($intrinsic);
       push @BODY_SAVE       , "WRITE (KLUN) L$name\n";
       push @BODY_LOAD       , "READ (KLUN) L$name\n";
       $L{$name} = 1;
@@ -106,7 +107,8 @@ sub process_decl
       push @BODY_WIPE       , $isFieldAPI ? "IF (L$name .AND. LLFIELDAPI) THEN\n" : "IF (L$name) THEN\n";
       push @BODY_SIZE       , "IF (L$name) THEN\n" if (! $isFieldAPI);
       push @BODY_HOST       , "IF (L$name) THEN\n" unless ($intrinsic);
-      push @BODY_HOST_LEGACY, "IF (L$name) THEN\n" unless ($intrinsic);
+      push @BODY_LEGACY     , "IF (L$name) THEN\n" unless ($intrinsic);
+      push @BODY_CRC64      , "IF (L$name) THEN\n" unless ($intrinsic);
       if (@ss)
         {
           push @BODY_SAVE, "WRITE (KLUN) LBOUND ($prefix$name)\n";
@@ -179,10 +181,21 @@ sub process_decl
           push @BODY_WIPE       , $do;
           push @BODY_SIZE       , $do if (! $isFieldAPI);
           push @BODY_HOST       , $do;
-          push @BODY_HOST_LEGACY, $do;
+          push @BODY_LEGACY     , $do;
+          push @BODY_CRC64      , $do;
         }
       my @J = map { "J$_"  } (1 .. $#ss+1);
       my $J = @ss ? " (" . join (', ', @J) . ")" : '';
+
+      if (@J)
+        {
+          push @BODY_CRC64, "WRITE (CLIND, '(\"(\"," . join (',",",', map { 'I0' } @J) . ",\")\")')" .  " " . join (', ', @J) . "\n";
+        }
+      else
+        {
+          push @BODY_CRC64, "CLIND = ''\n";
+        }
+
       my $LLPRINT = '.FALSE.';
       push @BODY_SAVE       , ('  ' x scalar (@ss)) 
                    . "CALL SAVE_$tname (KLUN, $prefix$name" . $J . ")\n";
@@ -190,8 +203,19 @@ sub process_decl
                    . "CALL LOAD_$tname (KLUN, $prefix$name" . $J . ")\n";
       push @BODY_HOST       , ('  ' x scalar (@ss)) 
                    . "CALL HOST_$tname ($prefix$name" . $J . ")\n";
-      push @BODY_HOST_LEGACY, ('  ' x scalar (@ss)) 
-                   . "CALL HOST_LEGACY_$tname ($prefix$name" . $J . ")\n";
+      push @BODY_LEGACY     , ('  ' x scalar (@ss)) 
+                   . "CALL LEGACY_$tname ($prefix$name" . $J . ", KADDRL, KADDRU, KDIR=KDIR)\n";
+
+      if ($isFieldAPI)
+        {
+          push @BODY_CRC64      , ('  ' x scalar (@ss)) 
+                       . "WRITE (KLUN, '(Z16.16,\" \",A)') $prefix$name$J%CRC64 (), CDPATH//'%$name'//TRIM(CLIND)\n";
+        }
+      else
+        {
+          push @BODY_CRC64      , ('  ' x scalar (@ss)) 
+                       . "CALL CRC64_$tname ($prefix$name" . $J . ", KLUN, CDPATH//'%$name'//TRIM(CLIND))\n";
+        }
 
       if ($isFieldAPI)
         {
@@ -221,7 +245,8 @@ sub process_decl
           push @BODY_LOAD       , "ENDDO\n";
           push @BODY_COPY       , "ENDDO\n";
           push @BODY_HOST       , "ENDDO\n";
-          push @BODY_HOST_LEGACY, "ENDDO\n";
+          push @BODY_LEGACY     , "ENDDO\n";
+          push @BODY_CRC64      , "ENDDO\n";
           push @BODY_WIPE       , "ENDDO\n";
           push @BODY_SIZE       , "ENDDO\n" if (! $isFieldAPI);
         }
@@ -251,13 +276,15 @@ sub process_decl
           push @BODY_WIPE, "!\$acc exit data delete ($prefix$name)\n";
         }
       push @BODY_HOST       , "ENDIF\n" unless ($intrinsic);
-      push @BODY_HOST_LEGACY, "ENDIF\n" unless ($intrinsic);
+      push @BODY_LEGACY     , "ENDIF\n" unless ($intrinsic);
+      push @BODY_CRC64      , "ENDIF\n" unless ($intrinsic);
       push @BODY_WIPE       , "ENDIF\n";
       push @BODY_SIZE       , "ENDIF\n" if (! $isFieldAPI);
     }
   push @BODY_COPY       , "\n";
   push @BODY_HOST       , "\n";
-  push @BODY_HOST_LEGACY, "\n";
+  push @BODY_LEGACY     , "\n";
+  push @BODY_CRC64      , "\n";
   push @BODY_WIPE       , "\n";
 
 RETURN:
@@ -266,7 +293,8 @@ RETURN:
   push @$BODY_LOAD       , @BODY_LOAD;
   push @$BODY_COPY       , @BODY_COPY;
   push @$BODY_HOST       , @BODY_HOST;
-  push @$BODY_HOST_LEGACY, @BODY_HOST_LEGACY;
+  push @$BODY_LEGACY     , @BODY_LEGACY;
+  push @$BODY_CRC64      , @BODY_CRC64;
   push @$BODY_WIPE       , @BODY_WIPE;
   push @$BODY_SIZE       , @BODY_SIZE;
 
@@ -325,24 +353,26 @@ sub processTypes1
       my ($abstract) = &F ('./T-stmt/attribute[string(attribute-N)="ABSTRACT"]', $tconst);
       my ($extends) = &F ('./T-stmt/attribute[string(attribute-N)="EXTENDS"]/N/n/text()', $tconst);
 
-      my ($INTERFACE_SAVE       , $CONTAINS_SAVE) = ('', '');
-      my ($INTERFACE_LOAD       , $CONTAINS_LOAD) = ('', '');
-      my ($INTERFACE_COPY       , $CONTAINS_COPY) = ('', '');
-      my ($INTERFACE_HOST       , $CONTAINS_HOST) = ('', '');
-      my ($INTERFACE_HOST_LEGACY, $CONTAINS_HOST_LEGACY) = ('', '');
-      my ($INTERFACE_WIPE       , $CONTAINS_WIPE) = ('', '');
-      my ($INTERFACE_SIZE       , $CONTAINS_SIZE) = ('', '');
+      my ($INTERFACE_SAVE       , $CONTAINS_SAVE       ) = ('', '');
+      my ($INTERFACE_LOAD       , $CONTAINS_LOAD       ) = ('', '');
+      my ($INTERFACE_COPY       , $CONTAINS_COPY       ) = ('', '');
+      my ($INTERFACE_HOST       , $CONTAINS_HOST       ) = ('', '');
+      my ($INTERFACE_LEGACY     , $CONTAINS_LEGACY     ) = ('', '');
+      my ($INTERFACE_CRC64      , $CONTAINS_CRC64      ) = ('', '');
+      my ($INTERFACE_WIPE       , $CONTAINS_WIPE       ) = ('', '');
+      my ($INTERFACE_SIZE       , $CONTAINS_SIZE       ) = ('', '');
   
   
       $INTERFACE_SAVE        .= "MODULE PROCEDURE SAVE_$name\n";
       $INTERFACE_LOAD        .= "MODULE PROCEDURE LOAD_$name\n";
       $INTERFACE_COPY        .= "MODULE PROCEDURE COPY_$name\n";
       $INTERFACE_HOST        .= "MODULE PROCEDURE HOST_$name\n";
-      $INTERFACE_HOST_LEGACY .= "MODULE PROCEDURE HOST_LEGACY_$name\n";
+      $INTERFACE_LEGACY      .= "MODULE PROCEDURE LEGACY_$name\n";
+      $INTERFACE_CRC64       .= "MODULE PROCEDURE CRC64_$name\n";
       $INTERFACE_WIPE        .= "MODULE PROCEDURE WIPE_$name\n";
       $INTERFACE_SIZE        .= "MODULE PROCEDURE SIZE_$name\n";
   
-      my (@BODY_SAVE, @BODY_LOAD, @BODY_COPY, @BODY_WIPE, @BODY_SIZE, @BODY_HOST, @BODY_HOST_LEGACY);
+      my (@BODY_SAVE, @BODY_LOAD, @BODY_COPY, @BODY_WIPE, @BODY_SIZE, @BODY_HOST, @BODY_LEGACY, @BODY_CRC64);
 
       push @BODY_WIPE,  
                        "LLFIELDAPI = .FALSE.\n",
@@ -375,7 +405,7 @@ sub processTypes1
 
       if ($extends)
         {
-          for (\@BODY_SAVE, \@BODY_LOAD, \@BODY_COPY, \@BODY_WIPE, \@BODY_SIZE, \@BODY_HOST, \@BODY_HOST_LEGACY)
+          for (\@BODY_SAVE, \@BODY_LOAD, \@BODY_COPY, \@BODY_WIPE, \@BODY_SIZE, \@BODY_HOST, \@BODY_LEGACY, \@BODY_CRC64)
             {
               push @$_, "YLSUPER => YD\n";
             }
@@ -383,7 +413,8 @@ sub processTypes1
           push @BODY_LOAD       , "CALL LOAD_$extends (KLUN, YLSUPER)\n";
           push @BODY_COPY       , "CALL COPY_$extends (YLSUPER, LDCREATED=.TRUE., LDFIELDAPI=LDFIELDAPI)\n";
           push @BODY_HOST       , "CALL HOST_$extends (YLSUPER)\n";
-          push @BODY_HOST_LEGACY, "CALL HOST_LEGACY_$extends (YLSUPER)\n";
+          push @BODY_LEGACY     , "CALL LEGACY_$extends (YLSUPER, KADDRL, KADDRU, KDIR=KDIR)\n";
+          push @BODY_CRC64      , "CALL CRC64_$extends (YLSUPER, KLUN, CDPATH)\n";
           push @BODY_WIPE       , "CALL WIPE_$extends (YLSUPER, LDDELETED=.TRUE., LDFIELDAPI=LDFIELDAPI)\n";
           push @BODY_SIZE       , "KSIZE = KSIZE + SIZE_$extends (YLSUPER, CLPATH, LLPRINT)\n";
         }
@@ -400,7 +431,7 @@ sub processTypes1
       for my $en_decl (@en_decl)
         {
           &process_decl ($opts, $en_decl, "$tname%", 'YD%', 
-                         \@BODY_SAVE, \@BODY_LOAD, \@BODY_COPY, \@BODY_WIPE, \@BODY_SIZE, \@BODY_HOST, \@BODY_HOST_LEGACY,
+                         \@BODY_SAVE, \@BODY_LOAD, \@BODY_COPY, \@BODY_WIPE, \@BODY_SIZE, \@BODY_HOST, \@BODY_LEGACY, \@BODY_CRC64,
                          \%U, \%J, \%L, \%B, \%T, \%en_decl);
         }
 
@@ -417,13 +448,14 @@ sub processTypes1
       my $DECL_LOAD        = '';
       my $DECL_COPY        = "LOGICAL :: LLCREATED\n";      $DECL_COPY .= "LOGICAL :: LLFIELDAPI\n";
       my $DECL_HOST        = '';
-      my $DECL_HOST_LEGACY = '';
+      my $DECL_LEGACY      = '';
+      my $DECL_CRC64       = '';
       my $DECL_WIPE        = "LOGICAL :: LLDELETED\n";      $DECL_WIPE .= "LOGICAL :: LLFIELDAPI\n";
       my $DECL_SIZE        = "INTEGER*8 :: ISIZE, JSIZE\n"; $DECL_SIZE .= "LOGICAL :: LLPRINT\nCHARACTER(LEN=128) :: CLPATH\n";
 
       if ($extends)
         {
-          for ($DECL_SAVE, $DECL_LOAD, $DECL_COPY, $DECL_WIPE, $DECL_SIZE, $DECL_HOST, $DECL_HOST_LEGACY)
+          for ($DECL_SAVE, $DECL_LOAD, $DECL_COPY, $DECL_WIPE, $DECL_SIZE, $DECL_HOST, $DECL_LEGACY, $DECL_CRC64)
             {
               $_ .= "CLASS ($extends), POINTER :: YLSUPER\n";
             }
@@ -435,7 +467,8 @@ sub processTypes1
           $DECL_LOAD        .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
           $DECL_COPY        .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
           $DECL_HOST        .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
-          $DECL_HOST_LEGACY .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
+          $DECL_LEGACY      .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
+          $DECL_CRC64       .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
           $DECL_WIPE        .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
           $DECL_SIZE        .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
         }
@@ -451,7 +484,8 @@ sub processTypes1
               $DECL_SAVE        .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
               $DECL_LOAD        .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
               $DECL_HOST        .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
-              $DECL_HOST_LEGACY .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
+              $DECL_LEGACY      .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
+              $DECL_CRC64       .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
               $DECL_COPY        .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
               $DECL_WIPE        .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
               $DECL_SIZE        .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
@@ -478,7 +512,8 @@ sub processTypes1
       my $USE_SAVE        = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
       my $USE_LOAD        = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
       my $USE_HOST        = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
-      my $USE_HOST_LEGACY = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
+      my $USE_LEGACY      = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
+      my $USE_CRC64       = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
       my $USE_COPY        = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
       my $USE_WIPE        = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
       my $USE_SIZE        = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
@@ -493,13 +528,14 @@ sub processTypes1
           $USE_SAVE        .= "USE UTIL_${extends}_MOD, ONLY : $extends, SAVE_$extends\n";
           $USE_LOAD        .= "USE UTIL_${extends}_MOD, ONLY : $extends, LOAD_$extends\n";
           $USE_HOST        .= "USE UTIL_${extends}_MOD, ONLY : $extends, HOST_$extends\n";
-          $USE_HOST_LEGACY .= "USE UTIL_${extends}_MOD, ONLY : $extends, HOST_LEGACY_$extends\n";
+          $USE_LEGACY      .= "USE UTIL_${extends}_MOD, ONLY : $extends, LEGACY_$extends\n";
+          $USE_CRC64       .= "USE UTIL_${extends}_MOD, ONLY : $extends, CRC64_$extends\n";
           $USE_COPY        .= "USE UTIL_${extends}_MOD, ONLY : $extends, COPY_$extends\n";
           $USE_WIPE        .= "USE UTIL_${extends}_MOD, ONLY : $extends, WIPE_$extends\n";
           $USE_SIZE        .= "USE UTIL_${extends}_MOD, ONLY : $extends, SIZE_$extends\n";
         }
 
-      for ($USE_SAVE, $USE_SAVE, $USE_COPY, $USE_WIPE, $USE_SIZE, $DECL_SAVE, $DECL_LOAD, $DECL_HOST, $DECL_HOST_LEGACY)
+      for ($USE_SAVE, $USE_SAVE, $USE_COPY, $USE_WIPE, $USE_SIZE, $DECL_SAVE, $DECL_LOAD, $DECL_HOST, $DECL_LEGACY, $DECL_CRC64)
         {
           chomp ($_);
         }
@@ -529,11 +565,24 @@ IMPLICIT NONE
 $type ($name), TARGET :: YD
 EOF
 
-      $CONTAINS_HOST_LEGACY .= << "EOF";
-SUBROUTINE HOST_LEGACY_$name (YD)
-$USE_HOST_LEGACY
+      $CONTAINS_LEGACY .= << "EOF";
+SUBROUTINE LEGACY_$name (YD, KADDRL, KADDRU, KDIR)
+$USE_LEGACY
 IMPLICIT NONE
 $type ($name), TARGET :: YD
+INTEGER*8, INTENT (IN) :: KADDRL
+INTEGER*8, INTENT (IN) :: KADDRU
+INTEGER, INTENT (IN) :: KDIR
+EOF
+
+      $CONTAINS_CRC64 .= << "EOF";
+SUBROUTINE CRC64_$name (YD, KLUN, CDPATH)
+$USE_CRC64
+IMPLICIT NONE
+$type ($name), TARGET :: YD
+INTEGER, INTENT (IN) :: KLUN
+CHARACTER(LEN=*), INTENT (IN) :: CDPATH
+CHARACTER(LEN=128) :: CLIND
 EOF
 
       $CONTAINS_COPY .= << "EOF";
@@ -564,22 +613,24 @@ EOF
       &indent (@BODY_SAVE);
       &indent (@BODY_LOAD);
       &indent (@BODY_HOST);
-      &indent (@BODY_HOST_LEGACY);
+      &indent (@BODY_LEGACY);
+      &indent (@BODY_CRC64);
       &indent (@BODY_COPY);
       &indent (@BODY_WIPE);
       &indent (@BODY_SIZE);
 
 
-      $CONTAINS_SAVE        .= $DECL_SAVE . "\n" . join ("\n", @BODY_SAVE, '') . "END SUBROUTINE\n";
-      $CONTAINS_LOAD        .= $DECL_LOAD . "\n" . join ("\n", @BODY_LOAD, '') . "END SUBROUTINE\n";
-      $CONTAINS_HOST        .= $DECL_HOST . "\n" . join ("\n", @BODY_HOST, '') . "END SUBROUTINE\n";
-      $CONTAINS_HOST_LEGACY .= $DECL_HOST_LEGACY . "\n" . join ("\n", @BODY_HOST_LEGACY, '') . "END SUBROUTINE\n";
-      $CONTAINS_COPY        .= $DECL_COPY . "\n" . join ("\n", @BODY_COPY, '') . "END SUBROUTINE\n";
-      $CONTAINS_WIPE        .= $DECL_WIPE . "\n" . join ("\n", @BODY_WIPE, '') . "END SUBROUTINE\n";
-      $CONTAINS_SIZE        .= $DECL_SIZE . "\n" . join ("\n", @BODY_SIZE, '') . "END FUNCTION\n";
+      $CONTAINS_SAVE        .= $DECL_SAVE   . "\n" . join ("\n", @BODY_SAVE  , '') . "END SUBROUTINE\n";
+      $CONTAINS_LOAD        .= $DECL_LOAD   . "\n" . join ("\n", @BODY_LOAD  , '') . "END SUBROUTINE\n";
+      $CONTAINS_HOST        .= $DECL_HOST   . "\n" . join ("\n", @BODY_HOST  , '') . "END SUBROUTINE\n";
+      $CONTAINS_LEGACY      .= $DECL_LEGACY . "\n" . join ("\n", @BODY_LEGACY, '') . "END SUBROUTINE\n";
+      $CONTAINS_CRC64       .= $DECL_CRC64  . "\n" . join ("\n", @BODY_CRC64 , '') . "END SUBROUTINE\n";
+      $CONTAINS_COPY        .= $DECL_COPY   . "\n" . join ("\n", @BODY_COPY  , '') . "END SUBROUTINE\n";
+      $CONTAINS_WIPE        .= $DECL_WIPE   . "\n" . join ("\n", @BODY_WIPE  , '') . "END SUBROUTINE\n";
+      $CONTAINS_SIZE        .= $DECL_SIZE   . "\n" . join ("\n", @BODY_SIZE  , '') . "END FUNCTION\n";
 
-      for ($CONTAINS_SAVE, $CONTAINS_SAVE, $CONTAINS_COPY, $CONTAINS_WIPE, $CONTAINS_SIZE, $CONTAINS_HOST, $CONTAINS_HOST_LEGACY,
-           $INTERFACE_SAVE, $INTERFACE_LOAD, $INTERFACE_COPY, $INTERFACE_WIPE, $INTERFACE_SIZE, $INTERFACE_HOST, $INTERFACE_HOST_LEGACY)
+      for ($CONTAINS_SAVE, $CONTAINS_SAVE, $CONTAINS_COPY, $CONTAINS_WIPE, $CONTAINS_SIZE, $CONTAINS_HOST, $CONTAINS_LEGACY, $CONTAINS_CRC64,
+           $INTERFACE_SAVE, $INTERFACE_LOAD, $INTERFACE_COPY, $INTERFACE_WIPE, $INTERFACE_SIZE, $INTERFACE_HOST, $INTERFACE_LEGACY, $INTERFACE_CRC64)
         {
           chomp ($_);
         }
@@ -590,7 +641,8 @@ EOF
       $CONTAINS_LOAD        = '' unless ($opts->{load});
       $CONTAINS_COPY        = '' unless ($opts->{copy});
       $CONTAINS_HOST        = '' unless ($opts->{host});
-      $CONTAINS_HOST_LEGACY = '' unless ($opts->{'host-legacy'});
+      $CONTAINS_LEGACY      = '' unless ($opts->{legacy});
+      $CONTAINS_CRC64       = '' unless ($opts->{crc64});
       $CONTAINS_WIPE        = '' unless ($opts->{wipe});
       $CONTAINS_SIZE        = '' unless ($opts->{size});
 
@@ -598,7 +650,8 @@ EOF
       $INTERFACE_LOAD        = "INTERFACE LOAD\n$INTERFACE_LOAD\nEND INTERFACE\n";
       $INTERFACE_COPY        = "INTERFACE COPY\n$INTERFACE_COPY\nEND INTERFACE\n";
       $INTERFACE_HOST        = "INTERFACE HOST\n$INTERFACE_HOST\nEND INTERFACE\n";
-      $INTERFACE_HOST_LEGACY = "INTERFACE HOST_LEGACY\n$INTERFACE_HOST_LEGACY\nEND INTERFACE\n";
+      $INTERFACE_LEGACY      = "INTERFACE LEGACY\n$INTERFACE_LEGACY\nEND INTERFACE\n";
+      $INTERFACE_CRC64       = "INTERFACE CRC64\n$INTERFACE_CRC64\nEND INTERFACE\n";
       $INTERFACE_WIPE        = "INTERFACE WIPE\n$INTERFACE_WIPE\nEND INTERFACE\n";
       $INTERFACE_SIZE        = "INTERFACE SIZE\n$INTERFACE_SIZE\nEND INTERFACE\n";
 
@@ -608,7 +661,8 @@ EOF
           $INTERFACE_LOAD        = "";
           $INTERFACE_COPY        = "";
           $INTERFACE_HOST        = "";
-          $INTERFACE_HOST_LEGACY = "";
+          $INTERFACE_LEGACY      = "";
+          $INTERFACE_CRC64       = "";
           $INTERFACE_WIPE        = "";
           $INTERFACE_SIZE        = "";
         }
@@ -617,7 +671,8 @@ EOF
       $INTERFACE_LOAD        = '' unless ($opts->{load});
       $INTERFACE_COPY        = '' unless ($opts->{copy});
       $INTERFACE_HOST        = '' unless ($opts->{host});
-      $INTERFACE_HOST_LEGACY = '' unless ($opts->{'host-legacy'});
+      $INTERFACE_LEGACY      = '' unless ($opts->{legacy});
+      $INTERFACE_CRC64       = '' unless ($opts->{crc64});
       $INTERFACE_WIPE        = '' unless ($opts->{wipe});
       $INTERFACE_SIZE        = '' unless ($opts->{size});
 
@@ -632,7 +687,8 @@ $INTERFACE_SAVE
 $INTERFACE_LOAD
 $INTERFACE_COPY
 $INTERFACE_HOST
-$INTERFACE_HOST_LEGACY
+$INTERFACE_LEGACY     
+$INTERFACE_CRC64
 $INTERFACE_WIPE
 $INTERFACE_SIZE
 
@@ -646,7 +702,9 @@ $CONTAINS_COPY
 
 $CONTAINS_HOST
 
-$CONTAINS_HOST_LEGACY
+$CONTAINS_LEGACY     
+
+$CONTAINS_CRC64
 
 $CONTAINS_WIPE
 
