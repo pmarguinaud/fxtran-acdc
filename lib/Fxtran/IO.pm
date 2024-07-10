@@ -167,6 +167,8 @@ sub process_decl
                        "WRITE (*, *) TRIM (CLPATH)//'%$name'\n", 
                        "ENDIF\n", 
                        "KSIZE = KSIZE + ISIZE\n";
+
+      push @BODY_CRC64, "WRITE (KLUN, '(Z16.16,\" \",A)') CRC64 ($prefix$name), CDPATH//'%$name'\n";
     }
   else 
     {
@@ -534,6 +536,8 @@ sub processTypes1
           $USE_WIPE        .= "USE UTIL_${extends}_MOD, ONLY : $extends, WIPE_$extends\n";
           $USE_SIZE        .= "USE UTIL_${extends}_MOD, ONLY : $extends, SIZE_$extends\n";
         }
+
+      $USE_CRC64 .= "USE CRC64_INTRINSIC\n";
 
       for ($USE_SAVE, $USE_SAVE, $USE_COPY, $USE_WIPE, $USE_SIZE, $DECL_SAVE, $DECL_LOAD, $DECL_HOST, $DECL_LEGACY, $DECL_CRC64)
         {

@@ -15,3 +15,4 @@ shallow_mf.sh $*
 openacc.sh $*
 parallel.sh $*
 lapinea.sh $*
+acraneb2.sh $*

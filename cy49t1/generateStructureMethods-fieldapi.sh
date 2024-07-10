@@ -28,7 +28,34 @@ done
 
 dir=src/local/ifsaux/util
 
-# --wipe --copy --load --save
+for f in hub/main/build/field_api/field_???_array_module.F90
+do
+generateStructureMethods.pl \
+  --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
+  --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
+  $f
+done
+
+
+perl -e '
+
+use strict;
+use FileHandle;
+use Data::Dumper;
+  
+for my $f (<types-fieldapi/FIELD_*RD_ARRAY.pl>)
+  {
+    (my $g = $f) =~ s/RD_/RB_/go;
+    my $text = do { my $fh = "FileHandle"->new ("<$f"); local $/ = undef; <$fh> };
+    for ($text)
+      {
+        s/JPRD/JPRB/go;
+        s/RD_/RB_/go;
+      }
+    "FileHandle"->new (">$g")->print ($text);
+  }
+
+'
 
 generateStructureMethods.pl \
   --crc64 --legacy --size --wipe --copy --host --dir $dir --skip-components info_var --no-allocate $no_alloc \
@@ -85,10 +112,6 @@ generateStructureMethods.pl \
   --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/cpg_gfl_type_mod.F90)
 
-generateStructureMethods.pl \
-  --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
-  --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
-  hub/main/build/field_api/field_array_module.F90
 
 generateStructureMethods.pl \
   --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
@@ -121,11 +144,11 @@ generateStructureMethods.pl \
   $(resolve .fypp/arpifs/module/mf_phys_type_mod.F90)
 
 generateStructureMethods.pl \
-  --host --wipe --copy --load --save --dir $dir --tmp /tmp/$USER \
+  --crc64 --host --wipe --copy --load --save --dir $dir --tmp /tmp/$USER \
   $(resolve arpifs/module/yomcli.F90)
 
 generateStructureMethods.pl \
-  --host --wipe --copy --load --save --dir $dir --tmp /tmp/$USER --dir $dir \
+  --crc64 --host --wipe --copy --load --save --dir $dir --tmp /tmp/$USER --dir $dir \
   $(resolve arpifs/module/surface_fields_mix.F90)
 
 generateStructureMethods.pl \
