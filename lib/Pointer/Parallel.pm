@@ -242,8 +242,12 @@ sub fieldifyDecl
           $sslt->appendChild (&t (',')) if ($i < $nd);
         }
   
-      &Decl::addAttributes ($stmt, qw (POINTER));
       &Decl::removeAttributes ($stmt, qw (TARGET CONTIGUOUS));
+
+      my @attr = qw (POINTER);
+      push @attr, 'CONTIGUOUS' if ($args{contiguous});
+
+      &Decl::addAttributes ($stmt, @attr);
 
       my $optional = &Decl::removeAttributes ($stmt, 'OPTIONAL') ? ", OPTIONAL " : "";
   
