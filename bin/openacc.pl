@@ -40,7 +40,7 @@ use Decl;
 use Dimension;
 use Include;
 use Inline;
-use Finder::Pack;
+use Finder;
 use Pointer;
 use Print;
 
@@ -413,6 +413,9 @@ my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlo
                  cpg_dyn pointers inline-contained debug interfaces dummy acraneb2 inline-comment);
 my @opts_s = qw (dir nocompute cycle include-ext inlined no-check-pointers-dims set-variables);
 
+my @I = grep { m/^-I/o } @ARGV;
+@ARGV = grep { !/^-I/o } @ARGV;
+
 &GetOptions
 (
   (map { ($_, \$opts{$_}) } @opts_f),
@@ -466,7 +469,7 @@ my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag 
 
 &Canonic::makeCanonic ($d);
 
-my $find = 'Finder::Pack'->new ();
+my $find = 'Finder'->new (I => \@I);
 
 if ($opts{acraneb2})
   {
