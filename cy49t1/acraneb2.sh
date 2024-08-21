@@ -21,7 +21,9 @@ do
   dir=$(dirname $f)
   mkdir -p src/local/ifsaux/openacc/$dir
 #  --only-if-newer 
-  openacc.pl --stack84 --inline-contained --acraneb2 \
+  openacc.pl \
+   --interface \
+   --stack84 --inline-contained --acraneb2 \
    --dir src/local/ifsaux/openacc/$dir \
    --nocompute ABOR1 --version \
    $(resolve --user $f)

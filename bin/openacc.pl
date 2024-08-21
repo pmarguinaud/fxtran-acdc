@@ -410,11 +410,8 @@ sub processSingleRoutine
 my %opts = (cycle => 49, 'include-ext' => '.intfb.h');
 my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh 
                  remove-unused-includes modi value-attribute redim-arguments stack84 
-                 cpg_dyn pointers inline-contained debug interfaces dummy acraneb2 inline-comment);
+                 cpg_dyn pointers inline-contained debug interfaces dummy acraneb2 inline-comment interface);
 my @opts_s = qw (dir nocompute cycle include-ext inlined no-check-pointers-dims set-variables files base);
-
-my @I = grep { m/^-I/o } @ARGV;
-@ARGV = grep { !/^-I/o } @ARGV;
 
 &GetOptions
 (
@@ -469,7 +466,7 @@ my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag 
 
 &Canonic::makeCanonic ($d);
 
-my $find = 'Finder'->new (I => \@I, files => $opts{files}, base => $opts{base});
+my $find = 'Finder'->new (files => $opts{files}, base => $opts{base});
 
 if ($opts{acraneb2})
   {
@@ -516,15 +513,19 @@ else
   {
     &updateFile ($F90out, &Canonic::indent ($d));
 
-    if ($singleRoutine)
+
+    if ($opts{interface})
       {
-        if ($opts{modi})
+        if ($singleRoutine)
           {
-            &Fxtran::modi ($F90out, $opts{dir});
-          }
-        else
-          {
-            &Fxtran::intfb ($F90out, $opts{dir}, $opts{'include-ext'});
+            if ($opts{modi})
+              {
+                &Fxtran::modi ($F90out, $opts{dir});
+              }
+            else
+              {
+                &Fxtran::intfb ($F90out, $opts{dir}, $opts{'include-ext'});
+              }
           }
       }
   }

@@ -68,7 +68,7 @@ for f in \
   arpifs/utility/verdisint.F90         
 do
   dir=$(dirname $f)
-  openacc.pl --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --cpg_dyn --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
+  openacc.pl --interface --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --cpg_dyn --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
 done
 
 fi
@@ -83,7 +83,7 @@ for f in \
 do
   dir=$(dirname $f)
   openacc.pl \
-    --set-variables 'LLVERINT_ON_CPU=.FALSE.,LLSIMPLE_DGEMM=.TRUE.' \
+    --interface --set-variables 'LLVERINT_ON_CPU=.FALSE.,LLSIMPLE_DGEMM=.TRUE.' \
     --no-check-pointers-dims ZIN,ZOUT \
     --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --cpg_dyn --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
 done
@@ -99,7 +99,7 @@ for f in \
   aladin/interpol/elascaw.F90
 do
   dir=$(dirname $f)
-  openacc.pl --dummy --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --cpg_dyn --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
+  openacc.pl --interface --dummy --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --cpg_dyn --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
 done
 
 fi

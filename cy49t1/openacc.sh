@@ -74,7 +74,7 @@ do
   dir=$(dirname $f)
   mkdir -p src/local/ifsaux/openacc/$dir
 #  --only-if-newer 
-  openacc.pl --stack84 \
+  openacc.pl --interface --stack84 \
    --dir src/local/ifsaux/openacc/$dir \
    --nocompute ABOR1 --version \
    $(resolve --user $f)
@@ -115,7 +115,7 @@ do
   dir=$(dirname $f)
   mkdir -p src/local/ifsaux/openacc/$dir
 #  --only-if-newer \
-  openacc.pl --stack84 \
+  openacc.pl --interface --stack84 \
    --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90 \
    --dir src/local/ifsaux/openacc/$dir \
    --nocompute ABOR1 --version \
@@ -126,4 +126,4 @@ done
 f=arpifs/adiab/smpos_parall.F90
 dir=$(dirname $f)
 mkdir -p src/local/ifsaux/openacc/$dir
-openacc.pl --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --cpg_dyn --dir src/local/ifsaux/openacc/$dir $(resolve $f)
+openacc.pl --interface --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --cpg_dyn --dir src/local/ifsaux/openacc/$dir $(resolve $f)

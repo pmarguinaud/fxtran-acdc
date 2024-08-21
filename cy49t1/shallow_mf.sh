@@ -23,7 +23,7 @@ for f in \
    phyex/turb/mode_mf_turb_expl.F90
 do
   echo "==> $f <=="
-  openacc.pl --stack84  --nocompute PRINT_MSG  --interfaces --version --inline-contained \
+  openacc.pl --interface --stack84  --nocompute PRINT_MSG  --interfaces --version --inline-contained \
      --cycle 49 --mesonh --dir src/local/mpa/openacc $(resolve --user $f)
 done
 
@@ -31,6 +31,6 @@ for f in \
    phyex/turb/shallow_mf.F90                             
 do
   echo "==> $f <=="
-  openacc.pl --stack84  --nocompute PRINT_MSG  --interfaces --version --inline-contained \
+  openacc.pl --interface --stack84  --nocompute PRINT_MSG  --interfaces --version --inline-contained \
      --cycle 49 --mesonh --dir src/local/mpa/openacc --modi $(resolve --user $f)
 done

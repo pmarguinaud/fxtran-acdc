@@ -69,7 +69,7 @@ for f in \
 do
 
 dir=$(dirname $f)
-openacc.pl --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --cpg_dyn --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
+openacc.pl --interface --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --cpg_dyn --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
 
 done
 
@@ -85,7 +85,7 @@ $f =~ s,^\.fypp/,,o;
 print &dirname ($f) 
 ' $f)
 
-openacc.pl --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
+openacc.pl --interface --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
 
 done
 
@@ -95,7 +95,7 @@ for f in \
 do
 
 dir=$(dirname $f)
-openacc.pl --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
+openacc.pl --interface --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
 
 done
 
