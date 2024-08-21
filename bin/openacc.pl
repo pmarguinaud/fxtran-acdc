@@ -411,7 +411,7 @@ my %opts = (cycle => 49, 'include-ext' => '.intfb.h');
 my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh 
                  remove-unused-includes modi value-attribute redim-arguments stack84 
                  cpg_dyn pointers inline-contained debug interfaces dummy acraneb2 inline-comment);
-my @opts_s = qw (dir nocompute cycle include-ext inlined no-check-pointers-dims set-variables);
+my @opts_s = qw (dir nocompute cycle include-ext inlined no-check-pointers-dims set-variables files base);
 
 my @I = grep { m/^-I/o } @ARGV;
 @ARGV = grep { !/^-I/o } @ARGV;
@@ -469,7 +469,7 @@ my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag 
 
 &Canonic::makeCanonic ($d);
 
-my $find = 'Finder'->new (I => \@I);
+my $find = 'Finder'->new (I => \@I, files => $opts{files}, base => $opts{base});
 
 if ($opts{acraneb2})
   {
