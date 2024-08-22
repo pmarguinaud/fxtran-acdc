@@ -70,7 +70,7 @@ sub parseListOrCodeRef
 {
   my ($opts, $kw) = @_;
 
-  if (-f "$Bin/$opts->{$kw}.pm")
+  if (-f "$Bin/../lib/$opts->{$kw}.pm")
     {
       my $class = $opts->{$kw};
       eval "use $class;";

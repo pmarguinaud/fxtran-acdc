@@ -86,7 +86,15 @@ sub process_decl
       @ss = &F ('.//attribute/array-spec/shape-spec-LT/shape-spec', $stmt, 1);
     }
   
-  my $isFieldAPI = $ttspec =~ m/^CLASS\(FIELD_\w+\)$/o;
+  my $isFieldAPI      = $ttspec =~ m/^CLASS\(FIELD_\w+\)$/o;
+  my $isFieldAPI_VIEW = $ttspec =~ m/^TYPE\(FIELD_\w+_VIEW\)$/o;
+  my $isFieldAPI_PTR  = $ttspec =~ m/^TYPE\(FIELD_\w+_PTR\)$/o;
+
+  my $hasCRC64  = (! $isFieldAPI_VIEW) && (! $isFieldAPI_PTR);
+  my $hasLEGACY = (! $isFieldAPI_VIEW) && (! $isFieldAPI_PTR);
+  my $hasWIPE   = (! $isFieldAPI_VIEW) && (! $isFieldAPI_PTR) && (! $isFieldAPI);
+  my $hasCOPY   = (! $isFieldAPI_VIEW) && (! $isFieldAPI_PTR) && (! $isFieldAPI);
+  my $hasSIZE   = (! $isFieldAPI_VIEW) && (! $isFieldAPI_PTR) && (! $isFieldAPI);
 
   if ($attr{POINTER} || $attr{ALLOCATABLE})
     {
@@ -219,7 +227,7 @@ sub process_decl
                        . "CALL CRC64_$tname ($prefix$name" . $J . ", KLUN, CDPATH//'%$name'//TRIM(CLIND))\n";
         }
 
-      if ($isFieldAPI)
+      if ($isFieldAPI || $isFieldAPI_VIEW)
         {
           push @BODY_COPY, ('  ' x scalar (@ss)) 
                        . "CALL COPY_$tname ($prefix$name" . $J . ", LDCREATED=.TRUE.)\n";
@@ -293,12 +301,12 @@ RETURN:
   
   push @$BODY_SAVE       , @BODY_SAVE;
   push @$BODY_LOAD       , @BODY_LOAD;
-  push @$BODY_COPY       , @BODY_COPY;
+  push @$BODY_COPY       , @BODY_COPY   if ($hasCOPY);
   push @$BODY_HOST       , @BODY_HOST;
-  push @$BODY_LEGACY     , @BODY_LEGACY;
-  push @$BODY_CRC64      , @BODY_CRC64;
-  push @$BODY_WIPE       , @BODY_WIPE;
-  push @$BODY_SIZE       , @BODY_SIZE;
+  push @$BODY_LEGACY     , @BODY_LEGACY if ($hasLEGACY);
+  push @$BODY_CRC64      , @BODY_CRC64  if ($hasCRC64);
+  push @$BODY_WIPE       , @BODY_WIPE   if ($hasWIPE);
+  push @$BODY_SIZE       , @BODY_SIZE   if ($hasSIZE);
 
   %$U = (%$U, %U); %$J = (%$J, %J); 
   %$L = (%$L, %L); %$B = (%$B, %B); 

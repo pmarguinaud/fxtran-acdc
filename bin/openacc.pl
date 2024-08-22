@@ -54,7 +54,7 @@ sub acraneb2
 
   $file = &basename ($file);
 
-  'FileHandle'->new (">1.$file")->print (&Canonic::indent ($d));
+# 'FileHandle'->new (">1.$file")->print (&Canonic::indent ($d));
 
   # Change KJN -> KLON
 
@@ -152,7 +152,7 @@ sub acraneb2
         }
     }
 
-  'FileHandle'->new (">2.$file")->print (&Canonic::indent ($d));
+# 'FileHandle'->new (">2.$file")->print (&Canonic::indent ($d));
 
 }
 
@@ -294,7 +294,7 @@ sub processSingleRoutine
       for my $in (@{ $opts{inlined} })
         {
           my $f90in = $find->resolve (file => $in);
-          my $di = &Fxtran::parse (location => $f90in, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]);
+          my $di = &Fxtran::parse (location => $f90in, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)], dir => $opts{tmp});
           &Canonic::makeCanonic ($di);
           &Inline::inlineExternalSubroutine ($d, $di);
         }
@@ -407,11 +407,11 @@ sub processSingleRoutine
 
 
 
-my %opts = (cycle => 49, 'include-ext' => '.intfb.h');
+my %opts = (cycle => 49, 'include-ext' => '.intfb.h', tmp => '.');
 my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh 
                  remove-unused-includes modi value-attribute redim-arguments stack84 
                  cpg_dyn pointers inline-contained debug interfaces dummy acraneb2 inline-comment interface);
-my @opts_s = qw (dir nocompute cycle include-ext inlined no-check-pointers-dims set-variables files base);
+my @opts_s = qw (dir nocompute cycle include-ext inlined no-check-pointers-dims set-variables files base tmp);
 
 &GetOptions
 (
@@ -462,7 +462,7 @@ if ($opts{'only-if-newer'})
   }
 
 
-my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag -no-include -no-cpp -line-length 500)]);
+my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag -no-include -no-cpp -line-length 500)], dir => $opts{tmp});
 
 &Canonic::makeCanonic ($d);
 
