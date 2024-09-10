@@ -40,19 +40,21 @@ sub parseDirectives
 
       my $noend = ! ($bdir =~ s/\s*{\s*$//o);
 
-      my @bdir = split (m/\s*,\s*/o, $bdir);
-
-      $bdir = shift (@bdir);
-
       my %opts;
 
-      for my $s (@bdir)
+      my @bdir = split (m/\s*,\s*/o, $bdir);
+
+      $bdir = lc (shift (@bdir));
+
+      if ($bdir =~ m/^(?:pointerparallel|openacc|methods)$/o)
         {
-          my ($k, $v) = split (m/\s*=\s*/o, $s);
-          $opts{$k} = $v;
+          for my $s (@bdir)
+            {
+              my ($k, $v) = split (m/\s*=\s*/o, $s);
+              $opts{$k} = $v;
+            }
         }
 
-      $bdir = lc ($bdir);
       my ($tag) = ($bdir =~ m/^(\w+)/o);
 
       my $Tag = $tag; 
