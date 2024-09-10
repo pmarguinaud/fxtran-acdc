@@ -28,7 +28,7 @@ use Loop;
 use Call;
 use Associate;
 use Subroutine;
-use Finder::Pack;
+use Finder;
 use Include;
 use DIR;
 use Bt;
@@ -467,7 +467,7 @@ my %opts = ('types-fieldapi-dir' => 'types-fieldapi', skip => 'PGFL,PGFLT1,PGMVT
              'post-parallel' => 'nullify', cycle => '49', 'jlon', 'JLON', 
              'types-fieldapi-non-blocked' => 'CPG_SL1F_TYPE,CPG_SL_MASK_TYPE');
 my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments stack84 use-acpy inline-contains gpumemstat contiguous);
-my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel dir cycle jlon types-fieldapi-non-blocked);
+my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel dir cycle jlon types-fieldapi-non-blocked files base);
 
 &GetOptions
 (
@@ -514,7 +514,7 @@ if ($opts{'only-if-newer'})
 
 my $NAME = uc (&basename ($F90out, qw (.F90)));
 
-my $find = 'Finder::Pack'->new ();
+my $find = 'Finder'->new (files => $opts{files}, base => $opts{base});
 
 my $types = &Storable::retrieve ("$opts{'types-fieldapi-dir'}/decls.dat");
 

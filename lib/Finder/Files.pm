@@ -1,6 +1,8 @@
 package Finder::Files;
 
 use strict;
+use base qw (Finder::Basic);
+
 use File::Basename;
 use Data::Dumper;
 
