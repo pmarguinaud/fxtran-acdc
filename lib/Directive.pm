@@ -37,6 +37,11 @@ sub parseDirectives
   while (my $C  = shift (@C))
     {
       my $bdir = $C->textContent;
+      if ($bdir =~ m/^(?:pointerparallel|openacc|methods)/io)
+        {
+          $C->unbindNode ();
+          next;
+        }
 
       my $noend = ! ($bdir =~ s/\s*{\s*$//o);
 
@@ -46,13 +51,10 @@ sub parseDirectives
 
       $bdir = lc (shift (@bdir));
 
-      if ($bdir =~ m/^(?:pointerparallel|openacc|methods)$/o)
+      for my $s (@bdir)
         {
-          for my $s (@bdir)
-            {
-              my ($k, $v) = split (m/\s*=\s*/o, $s);
-              $opts{$k} = $v;
-            }
+          my ($k, $v) = split (m/\s*=\s*/o, $s);
+          $opts{$k} = $v;
         }
 
       my ($tag) = ($bdir =~ m/^(\w+)/o);
