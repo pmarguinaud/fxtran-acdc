@@ -36,7 +36,7 @@ generateStructureMethods.pl \
   $f
 done
 
-fieldRD.pl
+fieldRB.pl
 
 generateStructureMethods.pl \
   --crc64 --legacy --size --wipe --copy --host --dir $dir --skip-components info_var --no-allocate $no_alloc \
