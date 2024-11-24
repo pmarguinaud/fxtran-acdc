@@ -16,11 +16,23 @@ sub skip
   my $class = shift;
   my ($type, $comp, $attr, $en_decl_hash) = @_;
   
-  return unless ($attr->{POINTER});
+  my $ret;
 
-  return 1 if ($comp =~ m/^(?:ZVIEW|F_DATA|ZDATA)$/o);
+  goto RETURN unless ($attr->{POINTER});
 
-  return $class->getFieldAPIMember (@_);
+  if ($comp =~ m/^(?:ZVIEW|F_DATA|ZDATA)$/o)
+    {
+      $ret = 1;
+      goto RETURN;
+    }
+
+  $ret = $class->getFieldAPIMember (@_);
+
+RETURN:
+
+  $ret ||= 0;
+
+  return $ret;
 }
 
 sub getFieldAPIMember

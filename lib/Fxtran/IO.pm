@@ -92,8 +92,8 @@ sub process_decl
 
   my $hasCRC64  = (! $isFieldAPI_VIEW) && (! $isFieldAPI_PTR);
   my $hasLEGACY = (! $isFieldAPI_VIEW) && (! $isFieldAPI_PTR);
-  my $hasWIPE   = (! $isFieldAPI_VIEW) && (! $isFieldAPI_PTR) && (! $isFieldAPI);
-  my $hasCOPY   = (! $isFieldAPI_VIEW) && (! $isFieldAPI_PTR) && (! $isFieldAPI);
+  my $hasWIPE   = (! $isFieldAPI_VIEW) && (! $isFieldAPI_PTR);
+  my $hasCOPY   = (! $isFieldAPI_VIEW) && (! $isFieldAPI_PTR);
   my $hasSIZE   = (! $isFieldAPI_VIEW) && (! $isFieldAPI_PTR) && (! $isFieldAPI);
 
   if ($attr{POINTER} || $attr{ALLOCATABLE})
@@ -230,9 +230,9 @@ sub process_decl
       if ($isFieldAPI || $isFieldAPI_VIEW)
         {
           push @BODY_COPY, ('  ' x scalar (@ss)) 
-                       . "CALL COPY_$tname ($prefix$name" . $J . ", LDCREATED=.TRUE.)\n";
+                       . "CALL COPY_$tname ($prefix$name" . $J . ")\n";
           push @BODY_WIPE, ('  ' x scalar (@ss)) 
-                       . "CALL WIPE_$tname ($prefix$name" . $J . ", LDDELETED=.TRUE.)\n";
+                       . "CALL WIPE_$tname ($prefix$name" . $J . ")\n";
         }
       else
         {
@@ -298,7 +298,7 @@ sub process_decl
   push @BODY_WIPE       , "\n";
 
 RETURN:
-  
+
   push @$BODY_SAVE       , @BODY_SAVE;
   push @$BODY_LOAD       , @BODY_LOAD;
   push @$BODY_COPY       , @BODY_COPY   if ($hasCOPY);
@@ -443,6 +443,7 @@ sub processTypes1
           &process_decl ($opts, $en_decl, "$tname%", 'YD%', 
                          \@BODY_SAVE, \@BODY_LOAD, \@BODY_COPY, \@BODY_WIPE, \@BODY_SIZE, \@BODY_HOST, \@BODY_LEGACY, \@BODY_CRC64,
                          \%U, \%J, \%L, \%B, \%T, \%en_decl);
+
         }
 
       push @BODY_WIPE, "LLDELETED = .FALSE.\n",
@@ -621,6 +622,7 @@ $type ($name),     INTENT (IN), TARGET :: YD
 CHARACTER(LEN=*), INTENT (IN), OPTIONAL :: CDPATH
 LOGICAL,          INTENT (IN), OPTIONAL :: LDPRINT
 EOF
+
 
       &indent (@BODY_SAVE);
       &indent (@BODY_LOAD);

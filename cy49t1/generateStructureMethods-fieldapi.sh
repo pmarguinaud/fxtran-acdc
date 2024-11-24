@@ -43,7 +43,6 @@ generateStructureMethods.pl \
   --module-map $module_map --field-api --field-api-class info_var --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/variable_module.F90)
 
-
 generateStructureMethods.pl \
   --crc64 --legacy --size --wipe --copy --host --dir $dir \
   --field-api --tmp /tmp/$USER \
@@ -74,17 +73,17 @@ generateStructureMethods.pl \
   $(resolve .fypp/arpifs/module/yomcfu_type.F90)
 
 generateStructureMethods.pl \
-  --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
+  --host --wipe --copy --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/cpg_ddh_tnd_type_mod.F90)
 
 generateStructureMethods.pl \
-  --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
+  --host --wipe --copy --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
   $(resolve arpifs/module/cpg_sl_mask_type_mod.F90)
 
 generateStructureMethods.pl \
-  --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
+  --host --wipe --copy --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/cpg_gmv_type_mod.F90)
 
@@ -95,32 +94,32 @@ generateStructureMethods.pl \
 
 
 generateStructureMethods.pl \
-  --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
+  --host --wipe --copy --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
   $(resolve arpifs/module/cpg_slmisc_type_mod.F90)
 
 generateStructureMethods.pl \
-  --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
+  --host --wipe --copy --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/cpg_type_mod.F90)
 
 generateStructureMethods.pl \
-  --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
+  --host --wipe --copy --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/cpg_sl1_type_mod.F90)
 
 generateStructureMethods.pl \
-  --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
+  --host --wipe --copy --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/cpg_sl2_type_mod.F90)
 
 generateStructureMethods.pl \
-  --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
+  --host --wipe --copy --dir $dir --skip-components info_cpg --no-allocate $no_alloc \
   --module-map $module_map --field-api --field-api-class info_cpg --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/yomdgradient_type_mod.F90)
 
 generateStructureMethods.pl \
-  --host --dir $dir --skip-components info_cpg --no-allocate $no_alloc --tmp /tmp/$USER \
+  --host --wipe --copy --dir $dir --skip-components info_cpg --no-allocate $no_alloc --tmp /tmp/$USER \
   --module-map $module_map --field-api --field-api-class info_cpg \
   $(resolve .fypp/arpifs/module/mf_phys_type_mod.F90)
 
@@ -133,32 +132,32 @@ generateStructureMethods.pl \
   $(resolve arpifs/module/surface_fields_mix.F90)
 
 generateStructureMethods.pl \
-  --host --dir $dir --field-api --field-api-class info_sfc --tmp /tmp/$USER \
+  --host --wipe --copy --dir $dir --field-api --field-api-class info_sfc --tmp /tmp/$USER \
   --module-map $module_map $(resolve .fypp/arpifs/module/surface_variables_mod.F90)
 
 generateStructureMethods.pl \
-  --host \
+  --host --wipe --copy \
   --dir $dir \
   --module-map $module_map --no-allocate $no_alloc \
   --skip-components info_sfv --field-api --field-api-class info_sfv --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/surface_views_prognostic_module.F90)
 
 generateStructureMethods.pl \
-  --host --dir $dir \
+  --host --wipe --copy --dir $dir \
   --module-map $module_map --no-allocate $no_alloc --tmp /tmp/$USER \
   --skip-components info_sfv --field-api --field-api-class info_sfv \
   $(resolve .fypp/arpifs/module/surface_views_diagnostic_module.F90)
 
 generateStructureMethods.pl \
-  --host --dir $dir \
+  --host --wipe --copy --dir $dir \
   --module-map $module_map --no-allocate $no_alloc --field-api --field-api-class info_sfc --tmp /tmp/$USER \
   $(resolve .fypp/arpifs/module/mf_phys_surface_type_mod.F90)
   
 generateStructureMethods.pl \
-  --tmp /tmp/$USER  --field-api --field-api-class info_cpg $(resolve .fypp/arpifs/module/mf_phys_base_state_type_mod.F90)
+  --wipe --copy --tmp /tmp/$USER  --field-api --field-api-class info_cpg $(resolve .fypp/arpifs/module/mf_phys_base_state_type_mod.F90)
 
 generateStructureMethods.pl \
-  --tmp /tmp/$USER  --field-api --field-api-class info_cpg $(resolve .fypp/arpifs/module/mf_phys_next_state_type_mod.F90)
+  --wipe --copy --tmp /tmp/$USER  --field-api --field-api-class info_cpg $(resolve .fypp/arpifs/module/mf_phys_next_state_type_mod.F90)
 
 
 linkTypes.pl
