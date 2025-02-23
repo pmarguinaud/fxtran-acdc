@@ -36,6 +36,7 @@ use Canonic;
 use DrHook;
 use Identifier;
 use Cycle49;
+use Cycle50;
 use Decl;
 use Dimension;
 use Include;
@@ -327,6 +328,10 @@ sub processSingleRoutine
       if ($opts{cycle} eq '49')
         {
           &Cycle49::simplify ($d, set => $opts{'set-variables'});
+        }
+      elsif ($opts{cycle} eq '50')
+        {
+          &Cycle50::simplify ($d, set => $opts{'set-variables'});
         }
       
       &DIR::removeDIR ($d);

@@ -37,6 +37,7 @@ use Directive;
 use Inline;
 
 use Cycle49;
+use Cycle50;
 
 sub updateFile
 {
@@ -214,6 +215,10 @@ sub processSingleRoutine
   if ($opts{cycle} == 49)
     {
       &Cycle49::simplify ($d);
+    }
+  elsif ($opts{cycle} == 50)
+    {
+      &Cycle50::simplify ($d);
     }
   
   
@@ -426,7 +431,9 @@ sub processSingleRoutine
   # Include MODI_* interfaces
   
   my @modi = &F ('.//use-stmt[starts-with(string(module-N),"MODI_")]', $d);
-  
+
+  my @called_openacc = &uniq (grep { m/_OPENACC$/o  } &F ('.//call-stmt/procedure-designator', $d, 1));
+
   for my $modi (@modi)
   {
     my ($proc) = &F ('./module-N', $modi, 1);
@@ -434,6 +441,7 @@ sub processSingleRoutine
     if (grep { $proc eq $_ } @called)
       {
         $proc .= '_OPENACC';
+        next unless (grep { $_ eq $proc } @called_openacc);
         my ($use) = &s ("USE MODI_$proc");
         $modi->parentNode->insertAfter ($use, $modi);
         $modi->parentNode->insertAfter (&t ("\n"), $modi);
