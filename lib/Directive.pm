@@ -73,7 +73,7 @@ sub parseDirectives
               if ($node->nodeName eq "$name-directive")
                 {
                   my $C = shift (@C);
-                  die unless ($C->unique_key eq $node->unique_key);
+                  die &Dumper ([$C->toString, $node->toString]) unless ($C->unique_key eq $node->unique_key);
                   my $edir = $C->textContent;
                   die &Dumper ([map { $_->textContent } @node]) unless ($edir =~ m/\s*}\s*/o);
 
