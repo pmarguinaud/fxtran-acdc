@@ -32,7 +32,7 @@ my @opts_s = qw (out include);
 
 $opts{include} = [split (m/,/o, $opts{include})];
 
-my @sys = qw (OMP_LIB CUDAFOR IEEE_ARITHMETIC ISO_C_BINDING OPENACC ECCODES CUBLAS ISO_FORTRAN_ENV);
+my @sys = qw (OMP_LIB CUDAFOR IEEE_ARITHMETIC ISO_C_BINDING OPENACC ECCODES CUBLAS ISO_FORTRAN_ENV NVTX);
 my @extern_mod = qw (YOMHOOK MPL_MODULE PARKIND1 OML_MOD EC_LUN MPL_MPIF MPL_MODULE MPL_BARRIER_MOD);
 my @extern_inc = qw (setup_trans.h setup_trans0.h inv_trans.h gath_grid.h gath_spec.h dist_spec.h);
 
@@ -73,6 +73,7 @@ sub deps
 
       my @use = map { uc ($_) } ($code =~ m/\n\s*use\s+(\w+)/gomis);
       @use = grep { ! $sys{uc ($_)} } @use;
+
       my @mod = map { lc ($_) . '.mod' } @use;
       $deps{$f} = [@mod, @inc];
 
