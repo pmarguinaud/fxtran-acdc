@@ -7,13 +7,18 @@ sub useABOR1_ACC
 {
   my $d = shift;
 
-  my @abor1 = &F ('.//call-stmt/procedure-designator/named-E/N/n/text()[string(.)="ABOR1"]', $d);
+  my ($ep) = &F ('./execution-part', $d);
+  my ($dp) = &F ('./specification-part/declaration-part', $d);
+
+  my @abor1 = &F ('.//call-stmt/procedure-designator/named-E/N/n/text()[string(.)="ABOR1"]', $ep);
 
   for my $abor1 (@abor1)
     {
       $abor1->setData ('ABOR1_ACC');
     }
-  my @include = &F ('.//include[string(filename)="abor1.intfb.h"]', $d);
+
+  my @include = &F ('./include[string(filename)="abor1.intfb.h"]', $dp);
+
   for (@include)
     {
       $_->unbindNode ();
@@ -38,7 +43,9 @@ sub changeWRITEintoPRINT
 {
   my $d = shift;
 
-  my @write = &F ('.//write-stmt[string(./io-control-spec/io-control)="NULERR" or string(./io-control-spec/io-control)="NULOUT"]', $d);
+  my ($ep) = &F ('./execution-part', $d);
+
+  my @write = &F ('.//write-stmt[string(./io-control-spec/io-control)="NULERR" or string(./io-control-spec/io-control)="NULOUT"]', $ep);
   
   for my $write (@write)
     {
@@ -52,7 +59,9 @@ sub changePRINT_MSGintoPRINT
 {
   my $d = shift;
 
-  my @print_msg = &F ('.//call-stmt[string(procedure-designator)="PRINT_MSG"]', $d);
+  my ($ep) = &F ('./execution-part', $d);
+
+  my @print_msg = &F ('.//call-stmt[string(procedure-designator)="PRINT_MSG"]', $ep);
   
   for my $print_msg (@print_msg)
     {

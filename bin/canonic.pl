@@ -22,10 +22,11 @@ use Fxtran;
 
 for my $f (@ARGV)
   {
-    my $d = &Fxtran::parse (location => $f, fopts => [qw (-line-length 500)]);
+    my $d = &Fxtran::parse (location => $f, fopts => [qw (-canonic -construct-tag -line-length 500 -no-include -no-cpp)]);
     'FileHandle'->new ('>' . &basename ($f) . '.xml')->print ($d->toString);
     &Canonic::makeCanonic ($d);
     'FileHandle'->new ('>canonic.' . &basename ($f) . '.xml')->print ($d->toString);
+    'FileHandle'->new ('>canonic.' . &basename ($f))->print (&Canonic::indent ($d));
   }
 
 

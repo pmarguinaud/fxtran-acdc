@@ -19,11 +19,14 @@ use Ref;
 use Scope;
 
 
-sub removeJlonConstructs
+sub removeNpromaConstructs
 {
   my $d = shift;
+  my %opts = @_;
 
-  my @do = &F ('.//do-construct[./do-stmt[string(do-V)="JLON"]]', $d);
+  my $jlon = $opts{style}->jlon ();
+
+  my @do = &F ('.//do-construct[./do-stmt[string(do-V)="?"]]', $jlon, $d);
   
   for my $do (@do)
     {
@@ -37,32 +40,17 @@ sub removeJlonConstructs
       $do->unbindNode ();
     }
 
-
-
-
 }
-
-sub removeJlonArraySyntax
-{
-  my $d = shift;
-
-  my @ss = &F ('.//section-subscript[string(.)="1:YDCPG_OPTS%KLON" or string(.)="YLCPG_BNDS%KIDIA:YLCPG_BNDS%KFDIA"]', $d);
-
-  for my $ss (@ss)
-    {
-      $ss->replaceNode (&n ('<section-subscript><lower-bound><named-E><N><n>JLON</n></N></named-E></lower-bound></section-subscript>'));
-    }
-
-}
-
 
 sub fixCOUNTIdiom
 {
   my $d = shift;
 
+  my ($ep) = &F ('./execution-part', $d);
+
   # MesoNH only (hopefully)
  
-  my @E2 = &F ('.//a-stmt/E-2/named-E[string(N)="COUNT"]', $d);
+  my @E2 = &F ('.//a-stmt/E-2/named-E[string(N)="COUNT"]', $ep);
 
   for my $E2 (@E2)
     {
@@ -78,8 +66,12 @@ sub fixSUMIdiom
 {
   my ($d, %opts) = @_;
 
-  my $KIDIA = $opts{KIDIA} || 'KIDIA';
-  my $KFDIA = $opts{KFDIA} || 'KFDIA';
+  my ($ep) = &F ('./execution-part', $d);
+
+
+  my $kidia = $opts{style}->kidia ();
+  my $kfdia = $opts{style}->kfdia ();
+  my $jlon  = $opts{style}->jlon ();
 
 # The following is used sometimes (eg acbl89.F90)
 #
@@ -99,76 +91,64 @@ sub fixSUMIdiom
 
 # my @sum = &F ('//E-2/named-E[string(N)="SUM"]', $d);
 
-  for my $R ('parens', 'function')
+  for my $R ('function')
     {
 
       my $xpath =
          '//E-2/named-E[string(N)="SUM"]'
        . "[./R-LT/$R-R/element-LT/element/named-E/R-LT/array-R/section-subscript-LT"
-       . "/section-subscript[string(.)=\"$KIDIA:$KFDIA\"]]";
+       . "/section-subscript[string(.)=\"$kidia:$kfdia\"]]";
 
-      my @sum = &F ($xpath, $d);
+      my @sum = &F ($xpath, $ep);
 
 # So we need to replace the SUM by a scalar expression
 
       for my $sum (@sum)
         {
           my ($N) = &F ("./R-LT/$R-R/element-LT/element/named-E/N", $sum, 1);
-          my $N_JLON = &e ("$N(JLON)");
-          $sum->replaceNode ($N_JLON->cloneNode (1));
+          my $N_jlon = &e ("$N($jlon)");
+          $sum->replaceNode ($N_jlon->cloneNode (1));
         }
     }
 }
 
 
-sub removeJlonLoops
+sub removeNpromaLoops
 {
   my $d = shift;
   my %opts = @_;
+  
+  my @klon  = $opts{style}->nproma ();
+  my $kidia = $opts{style}->kidia ();
+  my $kfdia = $opts{style}->kfdia ();
+  my $jlon  = $opts{style}->jlon ();
 
-  my @KLON = qw (YDCPG_OPTS%KLON KLON);
-  my ($KIDIA, $KFDIA) = qw (KIDIA KFDIA);
   my @pointer = @{ $opts{pointer} || [] };
 
-  @KLON = @{ $opts{KLON} } if ($opts{KLON} );
+  my ($dp) = &F ('./specification-part/declaration-part', $d);
+  my ($ep) = &F ('./execution-part', $d);
 
-  if ($opts{KIDIA})
-    {
-      ($KIDIA, $KFDIA) = @opts{qw (KIDIA KFDIA)};
-    }
-
-  my $noexec = &Scope::getNoExec ($d);
-
-  &fixSUMIdiom ($d, KIDIA => $KIDIA, KFDIA => $KFDIA);
-  &fixCOUNTIdiom ($d);
+  &fixSUMIdiom ($d, %opts);
+  &fixCOUNTIdiom ($d, %opts);
  
-  unless (&F ('.//T-decl-stmt[.//EN-decl[string(EN-N)="JLON"]]', $d))
+  unless (&F ('.//T-decl-stmt[.//EN-decl[string(EN-N)="?"]]', $jlon, $d))
     {
-      my $indent = "\n" . (' ' x &Fxtran::getIndent ($noexec));
-
-      my $decl = $opts{mesonh} ? &s ("INTEGER :: JLON") : &s ("INTEGER (KIND=JPIM) :: JLON");
-
-      $noexec->parentNode->insertAfter ($decl, $noexec);
-      $noexec->parentNode->insertAfter (&t ($indent), $noexec);
-      $noexec = $decl;
+      my $decl = $opts{style}->declareJlon ();
+      $ep->appendChild ($_) for (&t ("\n", $decl));
     }
 
 
-  my ($YDCPG_BNDS) = &F ('./subroutine-stmt/dummy-arg-LT/arg-N[string(.)="YDCPG_BNDS"]', $d);
-
-  $noexec->parentNode->insertAfter ($YDCPG_BNDS ? &s ("JLON = YDCPG_BNDS%KIDIA") : &s ("JLON = $KIDIA"), $noexec);
-  $noexec->parentNode->insertAfter (&t ("\n"), $noexec);
-  $noexec->parentNode->insertAfter (&t ("\n"), $noexec);
+  $ep->insertBefore ($_, $ep->firstChild) for (&t ("\n"), &t ("\n"), &s ("$jlon = $kidia"), &t ("\n"));
   
-  &removeJlonConstructs ($d);
+  &removeNpromaConstructs ($d, %opts);
   
   # NPROMA variables
 
   my @en_decl;
 
-  for my $KLON (@KLON)
+  for my $klon (@klon)
     {
-      push @en_decl, &F ('.//EN-decl[./array-spec/shape-spec-LT/shape-spec[string(upper-bound)="?"]]', $KLON, $d);
+      push @en_decl, &F ('.//EN-decl[./array-spec/shape-spec-LT/shape-spec[string(upper-bound)="?"]]', $klon, $dp);
     }
 
   my %NPROMA;
@@ -182,25 +162,25 @@ sub removeJlonLoops
 
   if ($opts{fieldAPI})
     {
-      &removeJlonLoopsFieldAPI ($d, $d);
+      &removeNpromaLoopsFieldAPI ($d, $d, %opts);
     }
 
   for my $NPROMA (sort keys (%NPROMA))
     {
       my $nd = $NPROMA{$NPROMA};
-      my @expr = &F ('.//named-E[string(N)="?"][not(ancestor::call-stmt)]', $NPROMA, $d);
+      my @expr = &F ('.//named-E[string(N)="?"][not(ancestor::call-stmt)]', $NPROMA, $ep);
       for my $expr (@expr)
         {
-          &setJLON ($expr, $nd);
+          &setJlon ($expr, $nd, %opts);
         }
     }
 
 }
 
-sub removeJlonLoopsFieldAPI
+sub removeNpromaLoopsFieldAPI
 {
   my ($d, $s) = @_;
-  my %args = @_;
+  my %opts = @_;
 
   my $TI = &FieldAPI::getTypeInfo ();
   my @T = sort keys (%$TI);
@@ -228,14 +208,17 @@ sub removeJlonLoopsFieldAPI
       my $fd = &FieldAPI::isFieldAPIMember ($T{$N}, @ct);
       my $nd = $fd->[1] + 1;
 
-      &setJLON ($ptr, $nd);
+      &setJlon ($ptr, $nd, %opts);
     }
 
 }
 
-sub setJLON
+sub setJlon
 {
   my ($expr, $nd) = @_;
+  my %opts = @_;
+
+  my $jlon = $opts{style}->jlon ();
 
   if (my $p = &Fxtran::expr ($expr))
     {
@@ -290,7 +273,7 @@ sub setJLON
 
   my @ss = &F ('./section-subscript-LT/section-subscript', $ar);
 
-  $ss[0]->replaceNode (&n ('<section-subscript><lower-bound><named-E><N><n>JLON</n></N></named-E></lower-bound></section-subscript>'));
+  $ss[0]->replaceNode (&n ("<section-subscript><lower-bound><named-E><N><n>$jlon</n></N></named-E></lower-bound></section-subscript>"));
 
 }
 

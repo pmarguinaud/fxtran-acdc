@@ -21,10 +21,11 @@ sub reDim
   my $d = shift;
   my %args = @_;
 
-  my @KLON = &uniq (@{ $args{KLON} || ['KLON'] });
-  
+  my $jlon = $args{style}->jlon ();
+  my @klon = $args{style}->nproma ();
+
   my @en_decl = 
-    (map { my $n = $_; &F ('.//EN-decl[./array-spec/shape-spec-LT[string(shape-spec)="?"]]', $n, $d) } @KLON);
+    (map { my $n = $_; &F ('.//EN-decl[./array-spec/shape-spec-LT[string(shape-spec)="?"]]', $n, $d) } @klon);
 
   EN_DECL : for my $en_decl (@en_decl)
     {
@@ -47,7 +48,7 @@ sub reDim
 
           for my $ss (@ss)
             {
-              $ss->replaceNode (&n ('<lower-bound><named-E><N><n>JLON</n></N></named-E></lower-bound>'));
+              $ss->replaceNode (&n ("<lower-bound><named-E><N><n>$jlon</n></N></named-E></lower-bound>"));
             }
 
         }
@@ -122,6 +123,9 @@ sub reDim
 sub redimArguments
 {
   my $d = shift;
+  my %args = @_;
+
+  my $jlon = $args{style}->jlon ();
 
   my @ss = &F ('.//arg/named-E/R-LT/array-R/section-subscript-LT'     # Subroutine argument
              . '[count(./section-subscript/text()[string(.)=":"])=1]' # Single ':'
@@ -132,7 +136,7 @@ sub redimArguments
 
   for my $ss (@ss)
     {
-      $ss->replaceNode (&n ('<lower-bound><named-E><N><n>JLON</n></N></named-E></lower-bound>'));
+      $ss->replaceNode (&n ("<lower-bound><named-E><N><n>$jlon</n></N></named-E></lower-bound>"));
     }
 }
 

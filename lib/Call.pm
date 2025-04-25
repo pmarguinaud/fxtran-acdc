@@ -18,6 +18,10 @@ sub addSuffix
 
   my ($suffix, $match, $section) = @opts{qw (suffix match section)};
 
+  my ($ep) = &F ('./execution-part', $d);
+  my ($dp) = &F ('./specification-part/declaration-part', $d);
+  my ($up) = &F ('./specification-part/use-part', $d);
+
   $section ||= $d;
 
   my %contained = map { ($_, 1) } &F ('//subroutine-stmt[count(ancestor::program-unit)>1]/subroutine-N/N/n/text()', $d, 1);
@@ -36,17 +40,15 @@ sub addSuffix
       $proc{$proc->textContent} = 1;
       $proc->setData ($proc->textContent . $suffix);
     }
-
-
            
 
   PROC: for my $proc (keys (%proc))
     {   
       for my $ext (qw (.intfb.h .h))
         {
-          next unless (my ($include) = &F ('.//include[string(filename)="?"]', lc ($proc) . $ext, $d));
+          next unless (my ($include) = &F ('./include[string(filename)="?"]', lc ($proc) . $ext, $dp));
   
-          if (&F ('.//call-stmt[string(procedure-designator)="?"]', $proc, $d))
+          if (&F ('./call-stmt[string(procedure-designator)="?"]', $proc, $ep))
             {
               my $include1 = $include->cloneNode (1);
               my ($t) = &F ('./filename/text()', $include1); 
@@ -63,7 +65,7 @@ sub addSuffix
         }
 
       # MesoNH style
-      if (my ($mode) = &F ('.//use-stmt/module-N/N/n/text()[string(.)="?"]', "MODE_$proc", $d))
+      if (my ($mode) = &F ('./use-stmt/module-N/N/n/text()[string(.)="?"]', "MODE_$proc", $up))
         {
           $mode->setData ("MODE_${proc}${suffix}");
           my $use = &Fxtran::stmt ($mode);
@@ -72,7 +74,7 @@ sub addSuffix
           next PROC;
         }
 
-      if (my ($mode) = &F ('.//use-stmt[./rename-LT/rename/use-N/N/n/text()[string(.)="?"]]/module-N/N/n/text()', $proc, $d))
+      if (my ($mode) = &F ('./use-stmt[./rename-LT/rename/use-N/N/n/text()[string(.)="?"]]/module-N/N/n/text()', $proc, $up))
         {
           $mode->setData ($mode->data () . ${suffix}) unless ($mode->data () =~ m,$suffix$,);
           my $use = &Fxtran::stmt ($mode);

@@ -14,17 +14,21 @@ sub remove
 {
   my $d = shift;
 
-  for my $use (&F ('.//use-stmt[string(module-N)="YOMHOOK"]', $d)) 
+  my ($ep) = &F ('./execution-part', $d);
+  my ($dp) = &F ('./specification-part/declaration-part', $d);
+  my ($up) = &F ('./specification-part/use-part', $d);
+
+  for my $use (&F ('./use-stmt[string(module-N)="YOMHOOK"]', $up)) 
     {
       $use->unbindNode ();
     }
 
-  for my $call (&F ('.//if-stmt[.//call-stmt[string(procedure-designator)="DR_HOOK"]]', $d)) 
+  for my $call (&F ('.//if-stmt[.//call-stmt[string(procedure-designator)="DR_HOOK"]]', $ep)) 
     {
       $call->unbindNode ();
     }
 
-  for my $decl (&F ('.//T-decl-stmt[.//EN-decl[starts-with(string(EN-N),"ZHOOK_HANDLE")]]', $d))
+  for my $decl (&F ('./T-decl-stmt[.//EN-decl[starts-with(string(EN-N),"ZHOOK_HANDLE")]]', $dp))
     {
       $decl->unbindNode ();
     }

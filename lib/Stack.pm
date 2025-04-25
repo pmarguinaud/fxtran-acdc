@@ -48,22 +48,20 @@ sub addStack
   my $skip = $opts{skip};
   my $local = exists $opts{local} ? $opts{local} : 1;
 
-  my @call = &F ('.//call-stmt[string(procedure-designator)!="ABOR1" and string(procedure-designator)!="REDUCE"]', $d);
+  my ($up) = &F ('./specification-part/use-part', $d);
+  my ($dp) = &F ('./specification-part/declaration-part', $d);
+  my ($ep) = &F ('./execution-part', $d);
 
-  my %contained = map { ($_, 1) } &F ('.//subroutine-N[count(ancestor::program-unit)>1]', $d, 1);
-
-  my $YLSTACK = $local ? 'YLSTACK' : 'YDSTACK';
+  my @call = &F ('.//call-stmt', $ep);
 
   for my $call (@call)
     {
       my ($proc) = &F ('./procedure-designator', $call, 1);
       next if ($proc eq 'DR_HOOK');
-      next if ($contained{$proc});
+      next if ($proc eq 'ABOR1');
       next if ($proc =~ m/%/o);
-      if ($skip)
-        {
-          next if ($skip->($proc, $call));
-        }
+      next if ($skip && $skip->($proc, $call));
+
       my ($argspec) = &F ('./arg-spec', $call);
       $argspec->appendChild (&t (', '));
 
@@ -71,12 +69,12 @@ sub addStack
 
       $arg->appendChild (&n ('<arg-N n="YDSTACK"><k>YDSTACK</k></arg-N>'));
       $arg->appendChild (&t ('='));
-      $arg->appendChild (&e ($YLSTACK));
+      $arg->appendChild (&e ('YLSTACK'));
 
       $argspec->appendChild ($arg);
     }
 
-  my ($dummy_arg_lt) = &F ('.//subroutine-stmt/dummy-arg-LT', $d);
+  my ($dummy_arg_lt) = &F ('./subroutine-stmt/dummy-arg-LT', $d);
 
   my @args = &F ('./arg-N', $dummy_arg_lt, 1);
 
@@ -85,53 +83,42 @@ sub addStack
   $dummy_arg_lt->appendChild (&t (', '));
   $dummy_arg_lt->appendChild (&n ("<arg-N><N><n>YDSTACK</n></N></arg-N>"));
 
-  my ($use) = &F ('.//use-stmt[last()]', $d);
-  $use->parentNode->insertAfter (&n ("<include>#include &quot;<filename>stack.h</filename>&quot;</include>"), $use);
-  $use->parentNode->insertAfter (&t ("\n"), $use);
-  $use->parentNode->insertAfter (&s ("USE STACK_MOD"), $use);
-  $use->parentNode->insertAfter (&t ("\n"), $use);
-  $use->parentNode->insertAfter (&s ("USE ABOR1_ACC_MOD"), $use);
-  $use->parentNode->insertAfter (&t ("\n"), $use);
+  for my $n (&n ("<include>#include &quot;<filename>stack.h</filename>&quot;</include>"), &s ("USE STACK_MOD"), &s ("USE ABOR1_ACC_MOD"))
+    {
+      $up->appendChild (&t ("\n"));
+      $up->appendChild ($n);
+    }
 
-  my ($decl) = &F ('.//T-decl-stmt[.//EN-N[string(.)="?"]]', $last, $d);
+  my ($decl) = &F ('./T-decl-stmt[.//EN-N[string(.)="?"]]', $last, $dp);
 
   if ($local)
     {
-      $decl->parentNode->insertAfter (&s ("TYPE(STACK) :: YLSTACK"), $decl);
-      $decl->parentNode->insertAfter (&t ("\n"), $decl);
+      $dp->insertAfter (&s ("TYPE(STACK) :: YLSTACK"), $decl);
+      $dp->insertAfter (&t ("\n"), $decl);
     }
 
-  $decl->parentNode->insertAfter (&s ("TYPE(STACK) :: YDSTACK"), $decl);
-  $decl->parentNode->insertAfter (&t ("\n"), $decl);
+  $dp->insertAfter (&s ("TYPE(STACK) :: YDSTACK"), $decl);
+  $dp->insertAfter (&t ("\n"), $decl);
 
+  return unless ($local);
   
-  my $noexec = &Scope::getNoExec ($d);
+  my $assignstack = &s ("YLSTACK = YDSTACK");
 
-  my $C = &n ("<C/>");
-
-  $noexec->parentNode->insertAfter (&t ("\n"), $noexec);
-  $noexec->parentNode->insertAfter ($C, $noexec);
-
-  if ($local)
-    {
-      $C->parentNode->insertBefore (&t ("\n"), $C);
-      $C->parentNode->insertBefore (&t ("\n"), $C);
-      $C->parentNode->insertBefore (&s ("YLSTACK = YDSTACK"), $C);
-      $C->parentNode->insertBefore (&t ("\n"), $C);
-      $C->parentNode->insertBefore (&t ("\n"), $C);
-    }
-
+  for (&t ("\n"), &t ("\n"), $assignstack, &t ("\n"))
+     {
+       $ep->insertBefore ($_, $ep->firstChild);
+     }
 
   my %args = map { ($_, 1) } @args;
 
   for my $KLON (@KLON)
     {
-      my @en_decl = &F ('.//T-decl-stmt'
+      my @en_decl = &F ('./T-decl-stmt'
                       . '//EN-decl[./array-spec/shape-spec-LT/shape-spec[string(./upper-bound)="?"]]', 
-                      $KLON, $d);
+                      $KLON, $dp);
       
 
-      for my $en_decl (@en_decl)
+      for my $en_decl (reverse (@en_decl))
         {
           my ($n) = &F ('./EN-N', $en_decl, 1);
 
@@ -142,24 +129,14 @@ sub addStack
           my ($t) = &F ('./_T-spec_',   $stmt);     &Fxtran::expand ($t); $t = $t->textContent;
           my ($s) = &F ('./array-spec', $en_decl);  &Fxtran::expand ($s); $s = $s->textContent;
       
-          if ($local)
+          
+          $stmt->replaceNode (&s ("temp ($t, $n, $s)"));
+      
+          if (! grep { $n eq $_ } @pointer)
             {
-              $stmt->parentNode->insertBefore (my $temp = &t ("temp ($t, $n, $s)"), $stmt);
-      
-              if (&Fxtran::removeListElement ($en_decl))
+              if ($opts{stack84})
                 {
-                  $stmt->unbindNode ();
-                }
-              else
-                {
-                  $temp->parentNode->insertAfter (&t ("\n"), $temp);
-                }
-      
-              if (! grep { $n eq $_ } @pointer)
-                {
-                  if ($opts{stack84})
-                    {
-                      my ($if) = &fxtran::parse (fragment => << "EOF");
+                  my ($if) = &fxtran::parse (fragment => << "EOF");
 IF (KIND ($n) == 8) THEN
   alloc8 ($n)
 ELSEIF (KIND ($n) == 4) THEN
@@ -168,27 +145,21 @@ ELSE
   STOP 1
 ENDIF
 EOF
-                      $C->parentNode->insertBefore ($if, $C);
-                      $C->parentNode->insertBefore (&t ("\n"), $C);
-                    }
-                  else
-                    {
-                      $C->parentNode->insertBefore (&t ("alloc ($n)\n"), $C);
-                    }
+                 $ep->insertAfter (&t ("\n"), $assignstack);
+                 $ep->insertAfter ($if, $assignstack);
+               }
+             else
+               {
+                 $ep->insertAfter (&t ("\nalloc ($n)"), $assignstack);
+               }
 
-                }
-            }
-          else
-            {
-              die "No local stack, but KLON arrays were found";
-            }
+           }
 
         }
 
     }
 
-  $C->unbindNode ();
-
+  $ep->insertAfter (&t ("\n"), $assignstack);
 }
 
 1;

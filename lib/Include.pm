@@ -14,8 +14,12 @@ use Scope;
 
 sub removeUnusedIncludes
 {
-  my $doc = shift;
-  for my $include (&F ('.//include', $doc))
+  my $d = shift;
+
+  my ($dp) = &F ('./specification-part/declaration-part', $d);
+  my ($ep) = &F ('./execution-part', $d);
+
+  for my $include (&F ('./include', $dp))
     {   
       my ($filename) = &F ('./filename', $include, 2); 
       my $name = $filename;
@@ -27,7 +31,7 @@ sub removeUnusedIncludes
            s/\.h$//o;
         }
       $name = uc ($name);
-      next if (&F ('.//call-stmt[string(procedure-designator)="?"]', $name, $doc));
+      next if (&F ('.//call-stmt[string(procedure-designator)="?"]', $name, $ep));
       my $next = $include->nextSibling;
       $next->unbindNode () if ($next->textContent eq "\n");
       $include->unbindNode (); 
@@ -36,21 +40,29 @@ sub removeUnusedIncludes
 
 sub addInclude
 {
-  my $doc = shift;
+  my $d = shift;
 
-  my ($x) = &F ('.//include', $doc);
-  unless ($x)
+  my ($dp) = &F ('./specification-part/declaration-part', $d);
+
+  my $X = &n ('<C/>');
+
+  if (my ($inc) = &F ('./include', $dp))
     {
-      $x = &Scope::getNoExec ($doc);
+      $dp->insertAfter ($X, $inc);
+    }
+  else
+    {
+      $dp->appendChild ($X);
     }
 
   for my $file (@_)
     {
       my $include = &n ('<include>#include "<filename>' . lc ($file) . '</filename>"</include>');
-      $x->parentNode->insertAfter ($include, $x);
-      $x->parentNode->insertAfter (&t ("\n"), $x);
+      $dp->insertAfter ($include, $X);
+      $dp->insertAfter (&t ("\n"), $X);
     }
-  
+
+  $X->unbindNode ();
 }
 
 

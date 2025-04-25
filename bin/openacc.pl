@@ -44,12 +44,14 @@ use Inline;
 use Finder;
 use Pointer;
 use Print;
+use Style;
 
 my $SUFFIX = '_OPENACC';
 
 sub acraneb2
 {
   my $d = shift;
+  my %args = @_;
 
   my ($file) = &F ('./object/file/@name', $d, 2);
 
@@ -125,7 +127,7 @@ sub acraneb2
 
   for my $N (qw (KIIDIA KIFDIA))
     {
-      if (my ($as) = &F ('.//T-decl-stmt//EN-decl[string(EN-N)="?"]/array-spec', $N, $d))
+      if (my ($as) = &F ('./T-decl-stmt//EN-decl[string(EN-N)="?"]/array-spec', $N, $d))
         {
           $as->unbindNode ();
         }
@@ -145,7 +147,7 @@ sub acraneb2
               $arg->setData ("K${T}DIA");
             }
         }
-      my @en_decl = &F ('.//T-decl-stmt//EN-decl[string(EN-N)="KIIDIA" or string(EN-N)="KIFDIA"]/EN-N/N/n/text()', $d);
+      my @en_decl = &F ('./T-decl-stmt//EN-decl[string(EN-N)="KIIDIA" or string(EN-N)="KIFDIA"]/EN-N/N/n/text()', $d);
       for my $en_decl (@en_decl)
         {
           (my $n = $en_decl->textContent) =~ s/^KI/K/o;
@@ -161,11 +163,13 @@ sub addValueAttribute
 {
   my $d = shift;
 
-  my @intent = &F ('.//T-decl-stmt'    
+  my ($dp) = &F ('./specification-part/declaration-part', $d);
+
+  my @intent = &F ('./T-decl-stmt'    
                  . '[_T-spec_/intrinsic-T-spec[string(T-N)="REAL" or string(T-N)="INTEGER" or string(T-N)="LOGICAL"]]' # Only REAL/INTEGER/LOGICAL
                  . '[not(.//array-spec)]'                                                                              # Without dimensions
                  . '//attribute[string(intent-spec)="IN"]'                                                             # Only arguments
-                 , $d); 
+                 , $dp); 
 
   for my $intent (@intent)
     {
@@ -189,9 +193,9 @@ sub updateFile
       &mkpath (&dirname ($F90));
       my $fh = 'FileHandle'->new (">$F90"); 
       $fh or die ("Cannot write to $F90");
-        $fh->print ($code); 
-        $fh->close ();
-      }
+      $fh->print ($code); 
+      $fh->close ();
+    }
 }
 
 sub processSingleModule
@@ -205,9 +209,11 @@ sub processSingleModule
       &processSingleRoutine ($pu, $find, %opts);
     }
 
+  my ($dp) = &F ('./specification-part/declaration-part', $d);
+
   if ($opts{interfaces})
     {
-      my @pu = &F ('./interface-construct/program-unit', $d);
+      my @pu = &F ('./interface-construct/program-unit', $dp);
      
       for my $pu (@pu)
         {
@@ -224,14 +230,7 @@ sub processSingleInterface
 
   my $end = $d->lastChild;
 
-  &Dimension::attachArraySpecToEntity ($d);
-  &Decl::forceSingleDecl ($d);
-  
-  my @KLON = ('KLON', 'YDGEOMETRY%YRDIM%NPROMA', 'YDCPG_OPTS%KLON');
-  push @KLON, 'D%NIT', 'D%NIJT' if ($opts{mesonh});
-  push @KLON, ('YDGEOMETRY%YRDIM%NPROMA', 'KPROMA') if ($opts{cpg_dyn});
-  
-  &ReDim::reDim ($d, KLON => \@KLON, 'redim-arguments' => $opts{'redim-arguments'});
+  &ReDim::reDim ($d, style => $opts{style}, 'redim-arguments' => $opts{'redim-arguments'});
   
   if ($opts{'value-attribute'})
     {
@@ -242,20 +241,15 @@ sub processSingleInterface
   
   &OpenACC::routineSeq ($d);
   
-  my $exec = &s ("STOP");
-  $d->insertBefore ($exec, $end);
-  $d->insertBefore (&t ("\n"), $end);
-  
   &Stack::addStack 
   (
     $d, 
-    skip => sub { my $proc = shift; grep ({ $_ eq $proc } @{ $opts{nocompute} }) },
+    skip => sub { $opts{style}->noComputeRoutine (@_) },
     stack84 => $opts{stack84},
-    KLON => \@KLON,
+    style => $opts{style},
     local => 0,
   );
 
-  $exec->unbindNode ();
 }
 
 sub saveDebug
@@ -285,8 +279,6 @@ sub processSingleRoutine
 {
   my ($d, $find, %opts) = @_;
 
-  my (@KLON, $KIDIA, $KFDIA);
-
   my @pointer;
 
   unless ($opts{dummy})
@@ -305,25 +297,10 @@ sub processSingleRoutine
           &Inline::inlineContainedSubroutines ($d, find => $find, inlineDeclarations => 1, comment => $opts{'inline-comment'});
         }
      
-      if ($opts{jljk2jlonjlev})
-        {
-          &Identifier::rename ($d, JL => 'JLON', JK => 'JLEV');
-        }
-      
-      if ($opts{jijk2jlonjlev})
-        {
-          &Identifier::rename ($d, JI => 'JLON', JK => 'JLEV', 'JIJ' => 'JLON');
-        }
-      
       if ($opts{cpg_dyn})
         {
           &Identifier::rename ($d, JROF => 'JLON');
         }
-      
-      &Associate::resolveAssociates ($d);
-      
-      &Dimension::attachArraySpecToEntity ($d);
-      &Decl::forceSingleDecl ($d);
       
       if ($opts{cycle} eq '49')
         {
@@ -334,30 +311,12 @@ sub processSingleRoutine
           &Cycle50::simplify ($d, set => $opts{'set-variables'});
         }
       
-      &DIR::removeDIR ($d);
-      
-      @KLON = ('KLON', 'YDGEOMETRY%YRDIM%NPROMA', 'YDCPG_OPTS%KLON');
-      push @KLON, 'D%NIT', 'D%NIJT' if ($opts{mesonh});
-      push @KLON, ('YDGEOMETRY%YRDIM%NPROMA', 'KPROMA') if ($opts{cpg_dyn});
-      
-      ($KIDIA, $KFDIA) = qw (KIDIA KFDIA);
-      
-      if ($opts{mesonh})
-        {
-          ($KIDIA, $KFDIA) = ('D%NIB', 'D%NIE');
-        }
-      
-      if ($opts{cpg_dyn})
-        {
-          ($KIDIA, $KFDIA) = ('KST', 'KEND')
-        }
-      
       @pointer = &Pointer::setPointersDimensions ($d, 'no-check-pointers-dims' => $opts{'no-check-pointers-dims'})
         if ($opts{pointers});
       
-      &Loop::removeJlonLoops ($d, KLON => \@KLON, KIDIA => $KIDIA, KFDIA => $KFDIA, pointer => \@pointer, mesonh => $opts{mesonh});
+      &Loop::removeNpromaLoops ($d, style => $opts{style}, pointer => \@pointer);
       
-      &ReDim::reDim ($d, KLON => \@KLON, 'redim-arguments' => $opts{'redim-arguments'});
+      &ReDim::reDim ($d, style => $opts{style}, 'redim-arguments' => $opts{'redim-arguments'});
       
       
       if ($opts{'value-attribute'})
@@ -366,39 +325,24 @@ sub processSingleRoutine
         }
 
     }
-  
+
   &Subroutine::addSuffix ($d, $SUFFIX);
   
   unless ($opts{dummy})
     {
-      &Call::addSuffix ($d, suffix => $SUFFIX, match => sub { my $proc = shift; ! grep ({ $_ eq $proc } @{ $opts{nocompute} })});
+      &Call::addSuffix ($d, suffix => $SUFFIX, match => sub { ! $opts{style}->noComputeRoutine (@_) });
     }
   
   &OpenACC::routineSeq ($d);
-  
+
   &Stack::addStack 
   (
     $d, 
-    skip => sub { my $proc = shift; grep ({ $_ eq $proc } @{ $opts{nocompute} }) },
+    skip => sub { $opts{style}->noComputeRoutine (@_) },
     stack84 => $opts{stack84},
-    KLON => \@KLON,
+    style => $opts{style},
     pointer => \@pointer,
   );
-
-  unless ($opts{dummy})
-    {
-      &Pointer::handleAssociations ($d, pointers => \@pointer)
-        if ($opts{pointers});
-      
-      &DrHook::remove ($d) unless ($opts{drhook});
-      
-      &Include::removeUnusedIncludes ($d) if ($opts{'remove-unused-includes'});
-      
-      &Print::useABOR1_ACC ($d);
-      &Print::changeWRITEintoPRINT ($d);
-      &Print::changePRINT_MSGintoPRINT ($d);
-    }
-
 
   if ($opts{dummy})
     {
@@ -407,16 +351,30 @@ sub processSingleRoutine
       my $abort = &s ('CALL ABOR1_ACC ("ERROR : WRONG SETTINGS")');
       $end->parentNode->insertBefore ($_, $end) for ($abort, &t ("\n"));
     }
+  else
+    {
+      &Pointer::handleAssociations ($d, pointers => \@pointer)
+        if ($opts{pointers});
+      
+      &DrHook::remove ($d) unless ($opts{drhook});
+      
+      &Include::removeUnusedIncludes ($d) 
+        if ($opts{style}->removeUnusedIncludes ());
+      
+      &Print::useABOR1_ACC ($d);
+      &Print::changeWRITEintoPRINT ($d);
+      &Print::changePRINT_MSGintoPRINT ($d);
+    }
+
+
 }
 
 
-
-
-my %opts = (cycle => 49, 'include-ext' => '.intfb.h', tmp => '.');
-my @opts_f = qw (help drhook only-if-newer jljk2jlonjlev version stdout jijk2jlonjlev mesonh 
-                 remove-unused-includes modi value-attribute redim-arguments stack84 
-                 cpg_dyn pointers inline-contained debug interfaces dummy acraneb2 inline-comment interface);
-my @opts_s = qw (dir nocompute cycle include-ext inlined no-check-pointers-dims set-variables files base tmp);
+my %opts = (cycle => 49, tmp => '.', style => 'MFPHYS');
+my @opts_f = qw (help drhook only-if-newer version stdout 
+                 modi value-attribute redim-arguments stack84 
+                 pointers inline-contained debug interfaces dummy acraneb2 inline-comment interface);
+my @opts_s = qw (dir cycle inlined no-check-pointers-dims set-variables files base tmp style);
 
 &GetOptions
 (
@@ -434,15 +392,10 @@ if ($opts{help})
     exit (0);
   }
 
-if ($opts{mesonh})
-  {
-    $opts{jijk2jlonjlev} = 1;
-    $opts{'include-ext'} = '.h';
-    $opts{'remove-unused-includes'} = 1;
-  }
 
+$opts{style} = 'Style'->new (%opts);
 
-for my $opt (qw (no-check-pointers-dims inlined nocompute set-variables))
+for my $opt (qw (no-check-pointers-dims inlined set-variables))
   {
     $opts{$opt} = [$opts{$opt} ? split (m/,/o, $opts{$opt}) : ()];
   }
@@ -475,7 +428,7 @@ my $find = 'Finder'->new (files => $opts{files}, base => $opts{base});
 
 if ($opts{acraneb2})
   {
-    &acraneb2 ($d);
+    &acraneb2 ($d, %opts);
   }
 
 my @pu = &F ('./object/file/program-unit', $d);
@@ -516,6 +469,8 @@ if ($opts{stdout})
   }
 else
   {
+
+    'FileHandle'->new (">$F90out.xml")->print ($d->toString);
     &updateFile ($F90out, &Canonic::indent ($d));
 
 
@@ -529,7 +484,7 @@ else
               }
             else
               {
-                &Fxtran::intfb ($F90out, $opts{dir}, $opts{'include-ext'});
+                &Fxtran::intfb ($F90out, $opts{dir}, $opts{style}->includeExtension ());
               }
           }
       }

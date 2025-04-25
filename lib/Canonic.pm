@@ -15,6 +15,8 @@ use Ref;
 use Decl;
 use Associate;
 use Construct;
+use Dimension;
+use DIR;
 
 sub removeIfDef
 {
@@ -75,6 +77,7 @@ sub makeCanonic
   my $d = shift;
 
   &Associate::resolveAssociates ($d);
+  &Dimension::attachArraySpecToEntity ($d);
   &makeCanonicReferences ($d);
   &Decl::forceSingleDecl ($d);
   &Construct::changeIfStatementsInIfConstructs ($d);
@@ -82,7 +85,7 @@ sub makeCanonic
   &removeIfDef ($d, 'RS6K');
   &removeIfDef ($d, 'NECSX');
 
-  return;
+  &DIR::removeDIR ($d);
 
   my ($pu) = &F ('./object/file/program-unit', $d);
 
@@ -103,18 +106,63 @@ sub makeCanonic
         }
     }
 
+  $d->normalize ();
 
-  my $body = &n ('<body/>');
-  $ex1->parentNode->insertBefore ($body, $ex1);
+  my $exec = &n ('<execution-part/>');
+  $ex1->parentNode->insertBefore ($exec, $ex1);
 
   for my $node ($ex1, &F ('following-sibling::node()', $ex1))
     {
-      $body->appendChild ($node);
+      $exec->appendChild ($node);
       last if ($ex2->unique_key eq $node->unique_key);
     }
 
-  
+  my $first = $pu->firstChild;
+  my $space = $first->nextSibling;
 
+  my $spec = &n ("<specification-part><use-part/>\n<implicit-part/>\n<declaration-part/></specification-part>");
+
+  my ($usePart, $implicitPart, $declarationPart) = grep { $_->nodeName ne '#text' } $spec->childNodes ();
+
+  $space->parentNode->insertAfter ($spec, $space);
+
+  for my $node (&F ('preceding-sibling::node()', $exec))
+    {
+      next if ($space->unique_key eq $node->unique_key);
+
+      if ($node->nodeName eq '#text')
+        {
+          $node->unbindNode ();
+          next;
+        }
+
+      next if ($first->unique_key eq $node->unique_key);
+      next if ($spec->unique_key eq $node->unique_key);
+      
+      my $part;
+
+      if ($node->nodeName =~ m/^(?:use-stmt|import-stmt)$/o)
+        {
+          $part = $usePart;
+        }
+      elsif ($node->nodeName =~ m/^(?:implicit-none-stmt)$/o)
+        {
+          $part = $implicitPart;
+        }
+      else
+        {
+          $part = $declarationPart;
+        }
+
+      if ($part->childNodes)
+        {
+          $part->appendChild (&t ("\n"));
+        }
+      $part->appendChild ($node);
+    
+    }
+  
+  $space->parentNode->insertAfter (&t ("\n"), $spec);
 }
 
 

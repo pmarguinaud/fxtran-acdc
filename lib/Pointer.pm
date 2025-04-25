@@ -11,16 +11,19 @@ sub setPointersDimensions
 
   my %nocheck = map { ($_, 1) } @{ $args{'no-check-pointers-dims'} };
 
+  my ($dp) = &F ('./specification-part/declaration-part', $d);
+  my ($ep) = &F ('./execution-part', $d);
+
   my @pointer;
 
-  my @en_decl = &F ('.//T-decl-stmt[.//attribute[string(attribute-N)="POINTER"]]//EN-decl', $d);
+  my @en_decl = &F ('./T-decl-stmt[.//attribute[string(attribute-N)="POINTER"]]//EN-decl', $dp);
 
   for my $en_decl (@en_decl)
     {
       my ($pointer) = &F ('./EN-N', $en_decl, 1);
 
       my ($as_pointer) = &F ('./array-spec', $en_decl);
-      my @assoc = &F ('.//pointer-a-stmt[./E-1[string(.)="?"]][./E-2/named-E[not(R-LT)]', $pointer, $d);
+      my @assoc = &F ('.//pointer-a-stmt[./E-1[string(.)="?"]][./E-2/named-E[not(R-LT)]', $pointer, $ep);
 
       my $as_pointee0;
 
@@ -54,15 +57,17 @@ sub handleAssociations
 {
   my ($d, %opts) = @_;
 
+  my ($ep) = &F ('./execution-part', $d);
+
   for my $pointer (@{ $opts{pointers} || [] })
     {
-      my @assoc = &F ('.//pointer-a-stmt[./E-1[string(.)="?"]][./E-2/named-E[not(R-LT)]', $pointer, $d);
+      my @assoc = &F ('.//pointer-a-stmt[./E-1[string(.)="?"]][./E-2/named-E[not(R-LT)]', $pointer, $ep);
       for my $assoc (@assoc)
         {
           my ($pointee) = &F ('./E-2/named-E/N', $assoc, 1);
           $assoc->replaceNode (&s ("assoc ($pointer, $pointee)"));
         }
-      my @nullify = &F ('.//nullify-stmt[./arg-spec/arg/named-E[string(N)="?"]]', $pointer, $d);
+      my @nullify = &F ('.//nullify-stmt[./arg-spec/arg/named-E[string(N)="?"]]', $pointer, $ep);
       for my $nullify (@nullify)
         {
           $nullify->replaceNode (&s ("nullptr ($pointer)"));
