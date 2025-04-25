@@ -756,6 +756,9 @@ sub setupLocalFields
   @drhook = @drhook[0,-1];
 
   my ($drhook1, $drhook2) = @drhook;
+
+  return unless ($drhook1 && $drhook2);
+
   my ($ind1, $ind2) = map { &Fxtran::getIndent ($_) } ($drhook1, $drhook2);
   my ($p1  , $p2  ) = map { $_->parentNode          } ($drhook1, $drhook2);
 
