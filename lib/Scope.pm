@@ -33,7 +33,15 @@ sub getNoExec
 {
   my $d = shift;
  
-  my ($exec) = grep { &Fxtran::stmt_is_executable ($_) } &F ('.//ANY-stmt', $d);
+  my @stmt = &F ('.//ANY-stmt', $d); 
+
+  my ($exec) = grep { &Fxtran::stmt_is_executable ($_) } @stmt;
+
+  if (! $exec)
+    {
+      return $stmt[-2];
+    }
+
   my @prev = &F ('preceding::*', $exec);
 
   my $prev;
