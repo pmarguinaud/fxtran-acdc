@@ -73,6 +73,7 @@ sub deps
 
       my @use = map { uc ($_) } ($code =~ m/\n\s*use\s+(\w+)/gomis);
       @use = grep { ! $sys{uc ($_)} } @use;
+
       my @mod = map { lc ($_) . '.mod' } @use;
       $deps{$f} = [@mod, @inc];
 
