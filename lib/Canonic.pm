@@ -17,6 +17,7 @@ use Associate;
 use Construct;
 use Dimension;
 use DIR;
+use Scope;
 
 sub removeIfDef
 {
@@ -87,46 +88,119 @@ sub makeCanonic
 
   &DIR::removeDIR ($d);
 
-  my ($pu) = &F ('./object/file/program-unit', $d);
-
-  my ($ex1, $ex2);
-  if (my @drhook = &F ('./if-stmt[./action-stmt/call-stmt[string(procedure-designator)="DR_HOOK"]]', $pu))
+  for my $pu (&F ('./object/file/program-unit', $d))
     {
-      ($ex1, $ex2) = ($drhook[0], $drhook[-1]);
+      &makeCanonicUnit ($pu);
+    }
+
+}
+
+sub makeCanonicUnit
+{
+  my $pu = shift;
+  my $first = $pu->firstChild;
+
+  if ($first->nodeName eq 'subroutine-stmt')
+    {
+      &makeCanonicSubroutine ($pu);
+    }
+  elsif ($first->nodeName eq 'function-stmt')
+    {
+      &makeCanonicFunction ($pu);
+    }
+  elsif ($first->nodeName eq 'module-stmt')
+    {
+      &makeCanonicModule ($pu);
     }
   else
     {
       die;
-      my @node = &F ('./node()', $pu);
-      for my $node (@node)
-        {
-          my $name = $node->nodeName;
-          next unless ($name =~ m/-stmt$/o);
-          print "$name\n";
-        }
     }
+}
 
-  $d->normalize ();
+sub makeCanonicModule
+{
+  my $pu = shift;
 
-  my $exec = &n ('<execution-part/>');
-  $ex1->parentNode->insertBefore ($exec, $ex1);
-
-  for my $node ($ex1, &F ('following-sibling::node()', $ex1))
+  for (&F ('./program-unit', $pu), &F ('./interface-construct/program-unit', $pu))
     {
-      $exec->appendChild ($node);
-      last if ($ex2->unique_key eq $node->unique_key);
+      &makeCanonicUnit ($_);
     }
 
-  my $first = $pu->firstChild;
-  my $space = $first->nextSibling;
+  my @node;
+
+  for my $node (&F ('./node()', $pu))
+    {
+      last if ($node->nodeName =~ m/^(?:contains-stmt|end-module-stmt)$/o);
+      push @node, $node;
+    }
 
   my $spec = &n ("<specification-part><use-part/>\n<implicit-part/>\n<declaration-part/></specification-part>");
+
+  &fillSpecificationPart ($pu, $spec, @node);
+
+}
+
+sub makeCanonicFunction
+{
+  my $pu = shift;
+  &makeCanonicSubroutine ($pu);
+}
+
+sub makeCanonicSubroutine
+{
+  my $pu = shift;
+
+  my $first = $pu->firstChild;
+
+  my $exec = &n ('<execution-part/>');
+
+  if (my @drhook = &F ('./if-stmt[./action-stmt/call-stmt[string(procedure-designator)="DR_HOOK"]]', $pu))
+    {
+      my ($ex1, $ex2) = ($drhook[0], $drhook[-1]);
+
+      $ex1->parentNode->insertBefore ($exec, $ex1);
+
+      for my $node ($ex1, &F ('following-sibling::node()', $ex1))
+        {
+          $exec->appendChild ($node);
+          last if ($ex2->unique_key eq $node->unique_key);
+        }
+    }
+  else
+    {
+      my $noexec = &Scope::getNoExec ($pu);
+
+      for my $node (&F ('following-sibling::node()', $noexec))
+        {
+          last unless ($node->nextSibling);
+          $exec->appendChild ($node);
+        }
+
+      $pu->insertAfter ($_, $noexec) for ($exec, &t ("\n"));
+    }
+
+  $pu->normalize ();
+
+  my $spec = &n ("<specification-part><use-part/>\n<implicit-part/>\n<declaration-part/></specification-part>");
+
+  &fillSpecificationPart ($pu, $spec, &F ('preceding-sibling::node()', $exec));
+
+}
+
+sub fillSpecificationPart
+{
+  my ($pu, $spec, @node) = @_;
+
+  my $first = $pu->firstChild;
+
+  my $space = $first->nextSibling;
 
   my ($usePart, $implicitPart, $declarationPart) = grep { $_->nodeName ne '#text' } $spec->childNodes ();
 
   $space->parentNode->insertAfter ($spec, $space);
 
-  for my $node (&F ('preceding-sibling::node()', $exec))
+  for my $node (@node)
     {
       next if ($space->unique_key eq $node->unique_key);
 
@@ -164,7 +238,6 @@ sub makeCanonic
   
   $space->parentNode->insertAfter (&t ("\n"), $spec);
 }
-
 
 sub indentCr
 {
@@ -256,7 +329,7 @@ sub indent
       $construct->normalize ();
       $construct->parentNode->insertAfter (&t ("\n"), $construct);
       my $prev = $construct->previousSibling;
-      if ($prev->nodeName eq '#text')
+      if ($prev && $prev->nodeName eq '#text')
         {
           (my $tt = $prev->data) =~ s/\n/\n\n/goms;
           $prev->setData ($tt);

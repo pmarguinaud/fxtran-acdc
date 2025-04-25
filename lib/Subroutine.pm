@@ -23,7 +23,7 @@ sub addSuffix
       $sn->setData ($sn->data . $suffix);
     }
 
-  my ($ep) = &F ('./execution-part', $d);
+  return unless (my ($ep) = &F ('./execution-part', $d));
 
   my @drhook_name = &F ('.//call-stmt[string(procedure-designator)="DR_HOOK"]/arg-spec/arg/string-E/S/text()', $ep);
 

@@ -52,7 +52,7 @@ sub addStack
   my ($dp) = &F ('./specification-part/declaration-part', $d);
   my ($ep) = &F ('./execution-part', $d);
 
-  my @call = &F ('.//call-stmt', $ep);
+  my @call = $ep ? &F ('.//call-stmt', $ep) : ();
 
   for my $call (@call)
     {
@@ -100,7 +100,7 @@ sub addStack
   $dp->insertAfter (&s ("TYPE(STACK) :: YDSTACK"), $decl);
   $dp->insertAfter (&t ("\n"), $decl);
 
-  return unless ($local);
+  return unless ($local && $ep);
   
   my $assignstack = &s ("YLSTACK = YDSTACK");
 

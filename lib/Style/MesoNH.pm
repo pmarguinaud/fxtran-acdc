@@ -41,4 +41,9 @@ sub removeUnusedIncludes
   return 1;
 }
 
+sub noComputeRoutine
+{
+  return 1 if ($_[0] eq 'PRINT_MSG');
+}
+
 1;

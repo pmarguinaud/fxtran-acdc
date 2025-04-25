@@ -424,6 +424,8 @@ my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag 
 
 &Canonic::makeCanonic ($d);
 
+'FileHandle'->new (">toto.F90.xml")->print ($d->toString);
+
 my $find = 'Finder'->new (files => $opts{files}, base => $opts{base});
 
 if ($opts{acraneb2})
