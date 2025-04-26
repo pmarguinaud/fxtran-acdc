@@ -10,6 +10,7 @@ package Include;
 use strict;
 use Fxtran;
 use Scope;
+use Canonic;
 
 
 sub removeUnusedIncludes
@@ -63,6 +64,40 @@ sub addInclude
     }
 
   $X->unbindNode ();
+}
+
+sub loadContainedIncludes
+{
+  my $d = shift;
+  my %opts = @_;
+
+  my $find = $opts{find};
+
+  my @include = &F ('.//include-stmt[preceding-sibling::contains-stmt', $d);
+  for my $include (@include)
+    {   
+      my ($filename) = &F ('./filename', $include, 2); 
+      for ($filename)
+        {
+          s/^"//o;
+          s/"$//o;
+        }
+
+      $filename = $find->resolve (file => $filename);
+
+      my $text = do { local $/ = undef; my $fh = 'FileHandle'->new ("<$filename"); <$fh> };
+      my $di = &Fxtran::parse (string => $text, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]);
+
+      &Canonic::makeCanonic ($di);
+
+      my @pu = &F ('./object/file/program-unit', $di);
+      for my $pu (@pu)
+        {
+          $include->parentNode->insertBefore ($pu, $include);
+          $include->parentNode->insertBefore (&t ("\n"), $include);
+        }
+      $include->unbindNode (); 
+    }   
 }
 
 

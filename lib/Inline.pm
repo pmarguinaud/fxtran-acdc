@@ -195,8 +195,14 @@ sub inlineSingleCall
 {
   my ($d1, $d2, $s2, $n2, $call, %opts) = @_;
 
-  &Decl::forceSingleDecl ($d2);
+  my ($dp1) = &F ('./specification-part/declaration-part', $d1);
+  my ($up1) = &F ('./specification-part/use-part', $d1);
+  my ($ep1) = &F ('./execution-part', $d1);
 
+  my ($dp2) = &F ('./specification-part/declaration-part', $d2);
+  my ($up2) = &F ('./specification-part/use-part', $d2);
+  my ($ep2) = &F ('./execution-part', $d2);
+  
   my @da = &F ('./dummy-arg-LT/arg-N/N/n/text()', $s2, 1);
 
   # Dummy arguments to actual arguments
@@ -222,11 +228,15 @@ sub inlineSingleCall
       }
   }
 
+=pod
 
-  # Replace simple IFs by IF constructs
-   
-  use Construct;
-  &Construct::changeIfStatementsInIfConstructs ($d2);
+for my $k (sort keys %da2aa)
+  {
+    print " $k => ", $da2aa{$k}->textContent, "\n";
+  }
+print "\n";
+
+=cut
 
   # Replace dummy arguments by actual arguments
   for my $da (@da)
@@ -234,7 +244,7 @@ sub inlineSingleCall
       my $aa = $da2aa{$da};
 
       # Handle PRESENT attribute & intrinsic
-      my @present = &F ('.//named-E[translate(string(.)," ","")="PRESENT(?)"]', $da, $d2);
+      my @present = &F ('.//named-E[translate(string(.)," ","")="PRESENT(?)"]', $da, $ep2);
 
       for my $present (@present)
         {
@@ -252,11 +262,11 @@ sub inlineSingleCall
         }
     }
 
-  # Remove dummy arguments declaration & check dimension consistency
+  # Remove dummy arguments declaration
   
   for my $da (@da)
     {
-      my ($en_decl_da) = &F ('./T-decl-stmt/EN-decl-LT/EN-decl[string(EN-N)="?"]', $da, $d2);
+      my ($en_decl_da) = &F ('./T-decl-stmt/EN-decl-LT/EN-decl[string(EN-N)="?"]', $da, $dp2);
 
       if (my $aa = $da2aa{$da})
         {
@@ -266,27 +276,22 @@ sub inlineSingleCall
           goto SKIP if (scalar (@r) > 1); # Cannot check dimensions of structure members
 
           my ($n) = &F ('./N', $aa, 1);
-          my ($en_decl_aa) = &F ('./T-decl-stmt/EN-decl-LT/EN-decl[string(EN-N)="?"]', $n, $d1);
+          my ($en_decl_aa) = &F ('./T-decl-stmt/EN-decl-LT/EN-decl[string(EN-N)="?"]', $n, $dp1);
 
           die "Declaration of $n was not found" unless ($en_decl_aa);
 
           my ($as_aa) = &F ('./array-spec', $en_decl_aa);
-          my ($as_da) = &F ('./array-spec', $en_decl_da);
 
           goto SKIP unless ($as_aa);
 
-          die $da unless ($as_da);
-
           my @ss_aa = &F ('./shape-spec-LT/shape-spec', $as_aa, 1);
-          my @ss_da = &F ('./shape-spec-LT/shape-spec', $as_da, 1);
 
           die if (&F ('./R-LT/parens-R', $aa));
 
-          for (@ss_aa, @ss_da)
+          for (@ss_aa)
             {
               s/\s+//go;
             }
-
     
           if (my @ss = &F ('./R-LT/array-R/section-subscript-LT/section-subscript', $aa))
             {
@@ -301,7 +306,6 @@ sub inlineSingleCall
                   elsif (scalar (@b) == 1)
                     {
                       splice (@ss_aa, $i, 1); # Do not check
-                      splice (@ss_da, $i, 1); # Do not check
                     }
                   else
                     {
@@ -309,21 +313,6 @@ sub inlineSingleCall
                     }
                 }
             }
- 
-          unless ($opts{skipDimensionCheck})
-            {
-               my $mess = "Dimensions mismatch while inlining $n2: " . $en_decl_da->textContent . " vs " . $en_decl_aa->textContent;
-
-               die $mess unless (scalar (@ss_aa) == scalar (@ss_da));
- 
-               for my $i (0 .. $#ss_da)
-                 {
-                   $ss_aa[$i] =~ s/^1://o;
-                   $ss_da[$i] =~ s/^1://o;
-                   die $mess if ($ss_aa[$i] ne $ss_da[$i]);
-                 }
-            }
-
 SKIP:
         }
 
@@ -338,7 +327,7 @@ SKIP:
   for my $da (@da)
     {
       next if (my $aa = $da2aa{$da});
-      my @stmt = &F ('.//ANY-stmt[.//named-E[./N/n/text()="?"]]', $da, $d2);
+      my @stmt = &F ('.//ANY-stmt[.//named-E[./N/n/text()="?"]]', $da, $ep2);
       for my $stmt (@stmt)
         {
           if ($stmt->nodeName eq 'if-then-stmt')
@@ -357,10 +346,10 @@ SKIP:
         }
     }
 
-  my @use = &F ('.//use-stmt', $d2);
-  my @decl = &F ('.//T-decl-stmt', $d2);
-  my @include = &F ('.//include', $d2);
-  
+  my @use = &F ('./use-stmt', $up2);
+  my @decl = &F ('./T-decl-stmt', $dp2);
+  my @include = &F ('./include', $dp2);
+
   if (@use || @decl || @include)
     {
       if ($opts{inlineDeclarations})
@@ -389,19 +378,14 @@ SKIP:
 
   # Remove possible IMPLICIT NONE statement
   
-  for (&F ('.//implicit-none-stmt', $d2))
+  for (&F ('./specifications-part/implicit-part/implicit-none-stmt', $d2))
     {
       $_->unbindNode (); 
     }
   
-  my @node = &F ('descendant-or-self::program-unit/node()', $d2);
-  
-  # Drop subroutine && end subroutine statements
+  my @node = &F ('./node()', $ep2);
 
-  shift (@node);
-  pop (@node);
-  
-  # Insert statements from inlined routine + a few comments
+  # Insert executable statements from inlined routine + a few comments
   
   $call->parentNode->insertAfter (&t ("\n"), $call);
   if ($opts{comment})
@@ -414,7 +398,7 @@ SKIP:
     {
       $call->parentNode->insertAfter ($node, $call);
     }
-  
+
   if ($opts{comment})
     {
       # Comment old code (CALL)
@@ -440,27 +424,13 @@ SKIP:
   # Remove CALL statement 
 
   $call->unbindNode ();
-  
 }
 
 sub loopElementalSingleCall
 {
-  my ($d1, $call) = @_;
+  my ($d1, $call, %opts) = @_;
 
-  my %dim2ind = 
-  (
-    'D%NIT'  => 'JI',
-    'D%NIJT' => 'JIJ',
-    'D%NKT'  => 'JK',
-    'KLON'   => 'JLON',
-    'KLEV'   => 'JLEV',
-  );
-  my %dim2bnd =
-  (
-    'D%NIT'  => [qw (D%NIB D%NIE)],
-    'D%NIJT' => [qw (D%NIJB D%NIJE)],
-    'KLON'   => [qw (KIDIA KFDIA)],
-  );
+  my $style = $opts{style};
 
   my @expr = &F ('./arg-spec/arg/named-E[not(R-LT/component-R)]', $call);
 
@@ -509,15 +479,16 @@ sub loopElementalSingleCall
 
           $dim = $dim->textContent;
 
-          (my $ind = $dim2ind{$dim}) or die;
+          (my $ind = $style->dim2ind ($dim)) or die;
+
           $ssu->replaceNode (&n ("<section-subscript><lower-bound><named-E><N><n>$ind</n></N></named-E></lower-bound></section-subscript>"));
 
           push @ind, $ind;
           push @dim, $dim;
 
-          if (exists $dim2bnd{$dim})
+          if (my @bnd = $style->dim2bnd ($dim))
             {
-              my ($lbnd, $ubnd) = @{ $dim2bnd{$dim} };
+              my ($lbnd, $ubnd) = @bnd;
               if ($ssu->textContent eq ':')
                 {
                   push @lbnd, $lbnd;
@@ -568,7 +539,7 @@ sub loopElementalSingleCall
     }
 
   my $do_construct;
-  
+
   $do_construct = join ("\n", 
                         map ({ "DO $IND[$_] = $LBND[$_], $UBND[$_]" } reverse (0 .. $#DIM)),
                         "!",
@@ -586,11 +557,11 @@ sub loopElementalSingleCall
 
 sub loopElemental
 {
-  my ($d1, $n2) = @_;
+  my ($d1, $n2, %opts) = @_;
   my @call = &F ('.//call-stmt[string(procedure-designator)="?"]', $n2, $d1);
   for my $call (@call)
     {
-      &loopElementalSingleCall ($d1, $call);
+      &loopElementalSingleCall ($d1, $call, %opts);
     }
 }
 
@@ -604,7 +575,7 @@ sub inlineContainedSubroutine
 
   if (&F ('./prefix[string(.)="ELEMENTAL"]', $S2))
     {
-      &loopElemental ($d1, $n2);
+      &loopElemental ($d1, $n2, %opts);
     }
 
   # Subroutine calls to be replaced by subroutine contents
@@ -614,37 +585,6 @@ sub inlineContainedSubroutine
     {
       &inlineSingleCall ($d1, $D2->cloneNode (1), $S2->cloneNode (1), $n2, $call, %opts);
     }
-}
-
-sub loadContainedIncludes
-{
-  my $d = shift;
-  my %opts = @_;
-
-  my $find = $opts{find};
-
-  my @include = &F ('.//include-stmt[preceding-sibling::contains-stmt', $d);
-  for my $include (@include)
-    {   
-      my ($filename) = &F ('./filename', $include, 2); 
-      for ($filename)
-        {
-          s/^"//o;
-          s/"$//o;
-        }
-
-      $filename = $find->resolve (file => $filename);
-
-      my $text = do { local $/ = undef; my $fh = 'FileHandle'->new ("<$filename"); <$fh> };
-      my $di = &Fxtran::parse (string => $text, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]);
-      my @pu = &F ('./object/file/program-unit', $di);
-      for my $pu (@pu)
-        {
-          $include->parentNode->insertBefore ($pu, $include);
-          $include->parentNode->insertBefore (&t ("\n"), $include);
-        }
-      $include->unbindNode (); 
-    }   
 }
 
 sub sortContainedSubroutines
@@ -704,8 +644,6 @@ sub inlineContainedSubroutines
 {
   my ($d1, %opts) = @_;
 
-  &loadContainedIncludes ($d1, %opts);
-
   my @n2 = &F ('./program-unit/subroutine-stmt/subroutine-N/N/n/text()', $d1);
 
   @n2 = &sortContainedSubroutines (@n2);
@@ -741,16 +679,19 @@ sub inlineContainedSubroutines
 sub suffixVariables
 {
   my ($pu, %opts) = @_;
+
+  my ($dp) = &F ('./specification-part/declaration-part', $pu);
+
   my $suffix = $opts{suffix};
 
   # Do not suffix arguments, as they will be replaced anyway
 
   my @args = &F ('./subroutine-stmt/dummy-arg-LT/arg-N', $pu, 1);
-  my @en_decl = &F ('.//T-decl-stmt/EN-decl-LT/EN-decl/EN-N/N/n/text()', $pu);
+  my @en_decl = &F ('./T-decl-stmt/EN-decl-LT/EN-decl/EN-N/N/n/text()', $dp);
 
-  my @skip = qw (JL JLON JLEV JI);
+  my @skip = ($opts{style}->jlon (), $opts{style}->jlev ());
   my %skip = map { ($_, 1) } (@skip, @args);
-  
+
   my %N;
   for my $en_decl (@en_decl)
     {
@@ -776,13 +717,18 @@ sub inlineExternalSubroutine
 {
   my ($d1, $d2, %opts) = @_;
 
+  my ($dp1) = &F ('./specification-part/declaration-part', $d1);
+  my ($ep1) = &F ('./execution-part', $d1);
+
   my ($D2) = &F ('./object/file/program-unit', $d2);
   my ($S2) = &F ('./subroutine-stmt', $D2);
   my ($n2) = &F ('./subroutine-N/N/n/text()', $S2);
   
+  my ($dp2) = &F ('./specification-part/declaration-part', $D2);
+  my ($ep2) = &F ('./execution-part', $D2);
 
   # Subroutine calls to be replaced by subroutine contents
-  my @call = &F ('.//call-stmt[./procedure-designator/named-E/N/n/text()="?"]', $n2, $d1);
+  my @call = &F ('.//call-stmt[./procedure-designator/named-E/N/n/text()="?"]', $n2, $ep1);
 
   # Record renamed local variables from inlined subroutine
   my @rename;
@@ -796,7 +742,7 @@ sub inlineExternalSubroutine
       &DrHook::remove ($DD2);
       my ($SS2) = &F ('./subroutine-stmt', $DD2);
   
-      my $rename = &suffixVariables ($DD2, suffix => $suffix);
+      my $rename = &suffixVariables ($DD2, %opts, suffix => $suffix);
       push @rename, $rename;
 
       for my $N (sort keys (%$rename))
@@ -823,7 +769,7 @@ sub inlineExternalSubroutine
 
   # Merge consistent declarations (and remove variable suffix)
 
-  my @ENN = &F ('./T-decl-stmt//EN-N', $d1, 1);
+  my @ENN = &F ('./T-decl-stmt//EN-N', $dp1, 1);
 
   my %ENN = map { ($_, 1) } @ENN;
 
@@ -833,7 +779,7 @@ sub inlineExternalSubroutine
 
       my @N = @{ $N{$N} };
 
-      my @en_decl = map { &F ('./T-decl-stmt//EN-decl[string(EN-N)="?"]', $_, $d1) } @N;
+      my @en_decl = map { &F ('./T-decl-stmt//EN-decl[string(EN-N)="?"]', $_, $dp1) } @N;
 
       next unless (@en_decl); # May be an argument
 
@@ -863,7 +809,7 @@ sub inlineExternalSubroutine
 
   # Remove include of inlined subroutine
 
-  my ($include) = &F ('./include[string(filename)="?"]', lc ($n2) . '.intfb.h', $d1);
+  my ($include) = &F ('./include[string(filename)="?"]', lc ($n2) . '.intfb.h', $dp1);
 
   $include && &removeStmt ($include);
 

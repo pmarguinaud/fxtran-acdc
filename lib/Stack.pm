@@ -41,18 +41,19 @@ sub addStack
 {
   my ($d, %opts) = @_;
 
-  my @KLON = @{ $opts{KLON} || [qw (KLON YDCPG_OPTS%KLON)] };
+  my @klon = $opts{style}->nproma ();
 
   my @pointer = @{ $opts{pointer} || [] };
 
   my $skip = $opts{skip};
-  my $local = exists $opts{local} ? $opts{local} : 1;
 
   my ($up) = &F ('./specification-part/use-part', $d);
   my ($dp) = &F ('./specification-part/declaration-part', $d);
   my ($ep) = &F ('./execution-part', $d);
 
   my @call = $ep ? &F ('.//call-stmt', $ep) : ();
+
+  my $needYLSTACK = 0;
 
   for my $call (@call)
     {
@@ -72,6 +73,8 @@ sub addStack
       $arg->appendChild (&e ('YLSTACK'));
 
       $argspec->appendChild ($arg);
+
+      $needYLSTACK++;
     }
 
   my ($dummy_arg_lt) = &F ('./subroutine-stmt/dummy-arg-LT', $d);
@@ -83,40 +86,27 @@ sub addStack
   $dummy_arg_lt->appendChild (&t (', '));
   $dummy_arg_lt->appendChild (&n ("<arg-N><N><n>YDSTACK</n></N></arg-N>"));
 
+  my ($declOfLastArg) = &F ('./T-decl-stmt[.//EN-N[string(.)="?"]]', $last, $dp);
+  my $declOfYDSTACK = &s ("TYPE(STACK), INTENT (IN) :: YDSTACK");
+  
+  $dp->insertAfter ($declOfYDSTACK, $declOfLastArg);
+  $dp->insertAfter (&t ("\n"), $declOfLastArg);
+
+  $declOfLastArg = $declOfYDSTACK;
+
   for my $n (&n ("<include>#include &quot;<filename>stack.h</filename>&quot;</include>"), &s ("USE STACK_MOD"), &s ("USE ABOR1_ACC_MOD"))
     {
       $up->appendChild (&t ("\n"));
       $up->appendChild ($n);
     }
 
-  my ($decl) = &F ('./T-decl-stmt[.//EN-N[string(.)="?"]]', $last, $dp);
-
-  if ($local)
-    {
-      $dp->insertAfter (&s ("TYPE(STACK) :: YLSTACK"), $decl);
-      $dp->insertAfter (&t ("\n"), $decl);
-    }
-
-  $dp->insertAfter (&s ("TYPE(STACK) :: YDSTACK"), $decl);
-  $dp->insertAfter (&t ("\n"), $decl);
-
-  return unless ($local && $ep);
-  
-  my $assignstack = &s ("YLSTACK = YDSTACK");
-
-  for (&t ("\n"), &t ("\n"), $assignstack, &t ("\n"))
-     {
-       $ep->insertBefore ($_, $ep->firstChild);
-     }
+  return unless ($ep);
 
   my %args = map { ($_, 1) } @args;
 
-  for my $KLON (@KLON)
+  for my $klon (@klon)
     {
-      my @en_decl = &F ('./T-decl-stmt'
-                      . '//EN-decl[./array-spec/shape-spec-LT/shape-spec[string(./upper-bound)="?"]]', 
-                      $KLON, $dp);
-      
+      my @en_decl = &F ('./T-decl-stmt/EN-decl-LT/EN-decl[./array-spec/shape-spec-LT/shape-spec[string(./upper-bound)="?"]]', $klon, $dp);
 
       for my $en_decl (reverse (@en_decl))
         {
@@ -145,21 +135,37 @@ ELSE
   STOP 1
 ENDIF
 EOF
-                 $ep->insertAfter (&t ("\n"), $assignstack);
-                 $ep->insertAfter ($if, $assignstack);
+                 $ep->insertBefore (&t ("\n"), $ep->firstChild);
+                 $ep->insertBefore ($if, $ep->firstChild);
                }
              else
                {
-                 $ep->insertAfter (&t ("\nalloc ($n)"), $assignstack);
+                 $ep->insertBefore (&t ("\nalloc ($n)\n"), $ep->firstChild);
                }
 
+              $needYLSTACK++;
            }
 
         }
 
     }
 
-  $ep->insertAfter (&t ("\n"), $assignstack);
+
+  if ($needYLSTACK)
+    {
+      my $assignstack = &s ("YLSTACK = YDSTACK");
+                 
+      for (&t ("\n"), &t ("\n"), $assignstack, &t ("\n"))
+         {
+           $ep->insertBefore ($_, $ep->firstChild);
+         }
+
+      $ep->insertAfter (&t ("\n"), $assignstack);
+      $dp->insertAfter (&s ("TYPE(STACK) :: YLSTACK"), $declOfLastArg);
+      $dp->insertAfter (&t ("\n"), $declOfLastArg);
+    }
+
+
 }
 
 1;

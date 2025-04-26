@@ -23,10 +23,9 @@ do
 #  --only-if-newer 
   openacc.pl \
    --interface \
-   --stack84 --inline-contained --acraneb2 \
+   --stack84 --inline-contained \
    --dir src/local/ifsaux/openacc/$dir \
-   --nocompute ABOR1 --version \
-   $(resolve --user $f)
+   --style ACRANEB2 --version $(resolve --user $f)
 done
 
 

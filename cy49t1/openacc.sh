@@ -39,8 +39,6 @@ for f in \
    arpifs/phys_dmn/acevadcape.F90                  \
    arpifs/phys_dmn/accldia.F90                     \
    arpifs/phys_dmn/acvisih.F90                     \
-   arpifs/phys_dmn/mf_phys_precips.F90             \
-   arpifs/phys_dmn/mf_phys_bayrad.F90              \
    arpifs/phys_dmn/acfluso.F90                     \
    arpifs/phys_radi/radaer.F90                     \
    arpifs/phys_dmn/acnebcond.F90                   \
@@ -51,7 +49,6 @@ for f in \
    arpifs/phys_dmn/acnpart_cloud_cover_wmo.F90     \
    arpifs/phys_dmn/acnpart_cloud_cover.F90         \
    arpifs/phys_dmn/acnpart_conv_base_top.F90       \
-   arpifs/phys_radi/radheat.F90                    \
    arpifs/phys_dmn/acdayd.F90                      \
    arpifs/phys_radi/acrso.F90                      \
    arpifs/phys_dmn/acveg.F90                       \
@@ -65,9 +62,9 @@ for f in \
    arpifs/phys_dmn/advprcs.F90                     \
    arpifs/phys_dmn/acdrov.F90                      \
    arpifs/phys_dmn/acdrov.F90                      \
-   arpifs/adiab/cpwts.F90                          \
    arpifs/adiab/cptends.F90                        \
    arpifs/adiab/cptend_new.F90                     \
+   arpifs/adiab/cpwts.F90                          \
    arpifs/adiab/cpmvvps.F90                        
 do 
   echo "==> $f <=="
@@ -76,8 +73,7 @@ do
 #  --only-if-newer 
   openacc.pl --interface --stack84 \
    --dir src/local/ifsaux/openacc/$dir \
-   --nocompute ABOR1 --version \
-   $(resolve --user $f)
+   --version $(resolve --user $f)
 done
 
 
@@ -118,12 +114,43 @@ do
   openacc.pl --interface --stack84 \
    --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90 \
    --dir src/local/ifsaux/openacc/$dir \
-   --nocompute ABOR1 --version \
-   --jljk2jlonjlev --cycle 49 \
+   --version --style ECPHYS --cycle 49 \
    $(resolve --user $f)
 done
 
-f=arpifs/adiab/smpos_parall.F90
-dir=$(dirname $f)
-mkdir -p src/local/ifsaux/openacc/$dir
-openacc.pl --interface --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --cpg_dyn --dir src/local/ifsaux/openacc/$dir $(resolve $f)
+for f in \
+  arpifs/adiab/smpos_parall.F90
+do
+  dir=$(dirname $f)
+  mkdir -p src/local/ifsaux/openacc/$dir
+  openacc.pl \
+     --interface --stack84 --cycle 49 \
+     --version --style Dynamics --dir src/local/ifsaux/openacc/$dir $(resolve $f)
+done
+
+for f in \
+   arpifs/phys_radi/radheat.F90                    
+do 
+  echo "==> $f <=="
+  dir=$(dirname $f)
+  mkdir -p src/local/ifsaux/openacc/$dir
+#  --only-if-newer 
+  openacc.pl --interface --stack84 \
+   --style ECPHYS --dir src/local/ifsaux/openacc/$dir \
+   --version $(resolve --user $f)
+done
+
+
+for f in \
+   arpifs/phys_dmn/mf_phys_precips.F90             \
+   arpifs/phys_dmn/mf_phys_bayrad.F90             
+do 
+  echo "==> $f <=="
+  dir=$(dirname $f)
+  mkdir -p src/local/ifsaux/openacc/$dir
+#  --only-if-newer 
+  openacc.pl --interface --stack84 \
+   --style MFPHYSTOP -dir src/local/ifsaux/openacc/$dir \
+   --version $(resolve --user $f)
+done
+

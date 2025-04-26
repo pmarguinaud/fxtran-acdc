@@ -4,7 +4,10 @@ use strict;
 
 use base qw (Style);
 
+use Include;
 use Fxtran;
+use Print;
+use Identifier;
 
 sub nproma
 {
@@ -23,7 +26,12 @@ sub kfdia
 
 sub jlon
 {
-  return 'JIJ';
+  return 'JI';
+}
+
+sub jlev
+{
+  return 'JK';
 }
 
 sub declareJlon
@@ -43,7 +51,61 @@ sub removeUnusedIncludes
 
 sub noComputeRoutine
 {
-  return 1 if ($_[0] eq 'PRINT_MSG');
+  shift;
+  return 1 if ($_[0] =~ m/^(?:PRINT_MSG|DR_HOOK)$/o);
+}
+
+sub preProcessForOpenACC
+{
+  shift;
+  my $d = shift;
+  my %opts = @_;
+
+  &Include::loadContainedIncludes ($d, %opts);
+
+  # JIJ -> JI
+
+  &Identifier::rename ($d, 'JIJ' => 'JI');
+}
+
+sub handleMessages
+{
+  shift;
+  my $d = shift;
+  my %opts = @_;
+
+  &Print::useABOR1_ACC ($d);
+  &Print::changeWRITEintoPRINT ($d);
+  &Print::changePRINT_MSGintoPRINT ($d);
+}
+
+sub dim2ind
+{
+  shift;
+  my $dim = shift;
+
+  my %dim2ind = 
+  (
+    'D%NIT'  => 'JI',
+    'D%NIJT' => 'JI',
+    'D%NKT'  => 'JK',
+  );
+
+  return $dim2ind{$dim};
+}
+
+sub dim2bnd
+{
+  shift;
+  my $dim = shift;
+
+  my %dim2bnd =
+  (
+    'D%NIT'  => [qw (D%NIB D%NIE)],
+    'D%NIJT' => [qw (D%NIJB D%NIJE)],
+  );
+
+  return @{ $dim2bnd{$dim} || [] };
 }
 
 1;

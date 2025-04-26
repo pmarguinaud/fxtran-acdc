@@ -118,10 +118,12 @@ sub removeNpromaLoops
   my $d = shift;
   my %opts = @_;
   
-  my @klon  = $opts{style}->nproma ();
-  my $kidia = $opts{style}->kidia ();
-  my $kfdia = $opts{style}->kfdia ();
-  my $jlon  = $opts{style}->jlon ();
+  my $style = $opts{style};
+
+  my @klon  = $style->nproma ();
+  my $kidia = $style->kidia ();
+  my $kfdia = $style->kfdia ();
+  my $jlon  = $style->jlon ();
 
   my @pointer = @{ $opts{pointer} || [] };
 
@@ -137,6 +139,8 @@ sub removeNpromaLoops
       $ep->appendChild ($_) for (&t ("\n", $decl));
     }
 
+
+  &Decl::declare ($d, $style->declareJlon ());
 
   $ep->insertBefore ($_, $ep->firstChild) for (&t ("\n"), &t ("\n"), &s ("$jlon = $kidia"), &t ("\n"));
   

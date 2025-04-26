@@ -151,6 +151,11 @@ sub makeCanonicSubroutine
 {
   my $pu = shift;
 
+  for (&F ('./program-unit', $pu), &F ('./interface-construct/program-unit', $pu))
+    {
+      &makeCanonicUnit ($_);
+    }
+
   my $first = $pu->firstChild;
 
   my $exec = &n ('<execution-part/>');
@@ -186,6 +191,8 @@ sub makeCanonicSubroutine
 
   &fillSpecificationPart ($pu, $spec, &F ('preceding-sibling::node()', $exec));
 
+
+  
 }
 
 sub fillSpecificationPart
@@ -345,7 +352,15 @@ sub indent
       $do->setData ($tt);
     }
 
-  return $d->textContent;
+  my @line = split (m/\n/o, $d->textContent);
+
+  for (@line)
+    {
+      s/^\s*#/#/o;
+      $_ .= "\n";
+    }
+
+  return join ('', @line);
 }
 
 

@@ -48,117 +48,6 @@ use Style;
 
 my $SUFFIX = '_OPENACC';
 
-sub acraneb2
-{
-  my $d = shift;
-  my %args = @_;
-
-  my ($file) = &F ('./object/file/@name', $d, 2);
-
-  $file = &basename ($file);
-
-# 'FileHandle'->new (">1.$file")->print (&Canonic::indent ($d));
-
-  # Change KJN -> KLON
-
-  my @kjn = &F ('.//named-E[string(N)="KJN"]', $d);
-
-  for my $kjn (@kjn)
-    {
-      $kjn->replaceNode (&e ('KLON'));
-    }
-
-
-  # Remove loops on JN
-
-  my @do = &F ('.//do-construct[./do-stmt[string(do-V)="JN"]]', $d);
-
-  for my $do (@do)
-    {
-      my @c = $do->childNodes ();
-      my @d = (splice (@c, 0, 2), splice (@c, -2, 2));
-
-      for (@d)
-        {
-          $_->unbindNode ();
-        }
-
-     my $p = $do->parentNode ();
-
-      for (@c)
-        {
-          $p->insertBefore ($_, $do);
-        }
-      
-      $do->unbindNode ();
-    }
-
-  # Remove IIDIA/IFDIA initialization
-
-  my @assign = &F ('.//a-stmt[./E-1/named-E[string(N)="?" or string(N)="?"]]', 'IIDIA', 'IFDIA', $d);
-
-  for (@assign)
-    {
-      $_->unbindNode ();
-    }
-
-
-  # Use KIDIA/KFDIA instead of IIDIA/IFDIA (expressions)
-
-  for my $T (qw (I F))
-    {
-      for my $e (&F ('.//named-E[string(N)="?"]', "I${T}DIA", $d))
-        {
-          $e->replaceNode (&e ("K${T}DIA"));
-        }
-    }
-
-  # Use KIDIA/KFDIA instead of KIIDIA/KIFDIA (expressions)
-
-  for my $T (qw (I F))
-    {
-      for my $e (&F ('.//named-E[string(N)="?"]', "KI${T}DIA", $d))
-        {
-          $e->replaceNode (&e ("K${T}DIA"));
-        }
-    }
-
-  # Make KIIDIA/KIFDIA arguments scalars
-
-  for my $N (qw (KIIDIA KIFDIA))
-    {
-      if (my ($as) = &F ('./T-decl-stmt//EN-decl[string(EN-N)="?"]/array-spec', $N, $d))
-        {
-          $as->unbindNode ();
-        }
-    }
-
-  # Change KIIDIA/KIFDIA into KIDIA/KFDIA (arguments), unless KIDIA/KFDIA are already arguments of the routine
-  
-  my @arg = &F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N/N/n/text()', $d);
-
-  unless (grep { $_->textContent eq 'KIDIA' } @arg)
-    {
-      for my $arg (@arg)
-        {
-          if ($arg->textContent =~ m/^KI([IF])DIA$/o)
-            {
-              my $T = $1;
-              $arg->setData ("K${T}DIA");
-            }
-        }
-      my @en_decl = &F ('./T-decl-stmt//EN-decl[string(EN-N)="KIIDIA" or string(EN-N)="KIFDIA"]/EN-N/N/n/text()', $d);
-      for my $en_decl (@en_decl)
-        {
-          (my $n = $en_decl->textContent) =~ s/^KI/K/o;
-          $en_decl->setData ($n);
-        }
-    }
-
-# 'FileHandle'->new (">2.$file")->print (&Canonic::indent ($d));
-
-}
-
 sub addValueAttribute
 {
   my $d = shift;
@@ -247,7 +136,6 @@ sub processSingleInterface
     skip => sub { $opts{style}->noComputeRoutine (@_) },
     stack84 => $opts{stack84},
     style => $opts{style},
-    local => 0,
   );
 
 }
@@ -289,12 +177,12 @@ sub processSingleRoutine
           my $f90in = $find->resolve (file => $in);
           my $di = &Fxtran::parse (location => $f90in, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)], dir => $opts{tmp});
           &Canonic::makeCanonic ($di);
-          &Inline::inlineExternalSubroutine ($d, $di);
+          &Inline::inlineExternalSubroutine ($d, $di, %opts);
         }
       
       if ($opts{'inline-contained'})
         {
-          &Inline::inlineContainedSubroutines ($d, find => $find, inlineDeclarations => 1, comment => $opts{'inline-comment'});
+          &Inline::inlineContainedSubroutines ($d, find => $find, inlineDeclarations => 1, comment => $opts{'inline-comment'}, style => $opts{style});
         }
      
       if ($opts{cpg_dyn})
@@ -361,6 +249,9 @@ sub processSingleRoutine
       &Include::removeUnusedIncludes ($d) 
         if ($opts{style}->removeUnusedIncludes ());
       
+
+      $opts{style}->handleMessages ($d, %opts);
+
       &Print::useABOR1_ACC ($d);
       &Print::changeWRITEintoPRINT ($d);
       &Print::changePRINT_MSGintoPRINT ($d);
@@ -373,7 +264,7 @@ sub processSingleRoutine
 my %opts = (cycle => 49, tmp => '.', style => 'MFPHYS');
 my @opts_f = qw (help drhook only-if-newer version stdout 
                  modi value-attribute redim-arguments stack84 
-                 pointers inline-contained debug interfaces dummy acraneb2 inline-comment interface);
+                 pointers inline-contained debug interfaces dummy inline-comment interface);
 my @opts_s = qw (dir cycle inlined no-check-pointers-dims set-variables files base tmp style);
 
 &GetOptions
@@ -424,14 +315,9 @@ my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag 
 
 &Canonic::makeCanonic ($d);
 
-'FileHandle'->new (">toto.F90.xml")->print ($d->toString);
-
 my $find = 'Finder'->new (files => $opts{files}, base => $opts{base});
 
-if ($opts{acraneb2})
-  {
-    &acraneb2 ($d, %opts);
-  }
+$opts{style}->preProcessForOpenACC ($d, %opts, find => $find);
 
 my @pu = &F ('./object/file/program-unit', $d);
 

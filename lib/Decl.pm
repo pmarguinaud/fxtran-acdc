@@ -48,19 +48,19 @@ sub forceSingleDecl
 sub declare
 {
   my $d = shift;
+
+  my ($dp) = &F ('./specification-part/declaration-part', $d);
+
   my @stmt = map { ref ($_) ? $_ : &s ($_) } @_;
 
-  my %N_d = map { ($_, 1) } &F ('./T-decl-stmt//EN-N', $d, 1);
-
-  my $noexec = &Scope::getNoExec ($d);
+  my %N_d = map { ($_, 1) } &F ('./T-decl-stmt//EN-N', $dp, 1);
 
   for my $stmt (@stmt)
     {
       my @N = &F ('.//EN-N', $stmt, 1);
       die if (scalar (@N) > 1);
       next if ($N_d{$N[0]});
-      $noexec->parentNode->insertBefore ($stmt, $noexec);
-      $noexec->parentNode->insertBefore (&t ("\n"), $noexec);
+      $dp->appendChild ($_) for (&t ("\n"), $stmt);
     }
 
 }
@@ -68,23 +68,18 @@ sub declare
 sub use
 {
   my $d = shift;
+
+  my ($up) = &F ('./specification-part/use-part', $d);
+
   my @stmt = map { ref ($_) ? $_ : &s ($_) } @_;
 
-  my %U_d = map { ($_, 1) } &F ('.//module-N', $d, 1);
-
-  my ($use) = &F ('.//use-stmt', $d);
-  
-  unless ($use)
-    {
-      ($use) = &F ('.//subroutine-stmt', $d);
-    }
+  my %U_d = map { ($_, 1) } &F ('.//module-N', $up, 1);
 
   for my $stmt (@stmt)
     {
       my ($U) = &F ('.//module-N', $stmt, 1);
       next if ($U_d{$U});
-      $use->parentNode->insertAfter ($stmt, $use);
-      $use->parentNode->insertAfter (&t ("\n"), $use);
+      $up->appendChild ($_) for (&t ("\n"), $stmt);
     }
 
 
@@ -94,9 +89,11 @@ sub include
 {
   my ($d, $include) = @_;
 
+  my ($dp) = &F ('./specification-part/declaration-part', $d);
+
   my ($filename) = &F ('filename', $include, 2);
 
-  return if (&F ('./include[string(filename)="?"]', $filename, $d));
+  return if (&F ('./include[string(filename)="?"]', $filename, $dp));
 
   my $base;
 
@@ -104,24 +101,21 @@ sub include
 
   if (@include)
     {
-      $base = $include[0];
+      $dp->insertAfter ($_, $include[0]) for (&t ("\n"), $include);
     }
   else
     {
-      $base = &Scope::getNoExec ($d);
+      $dp->appendChild ($_) for (&t ("\n"), $include);
     }
-
-  $base->parentNode->insertBefore ($include, $base);
-  $base->parentNode->insertBefore (&t ("\n"), $base);
-  
-
 }
 
 sub changeIntent
 {
   my ($d, %intent) = @_;
 
-  my @en_decl = &F ('.//EN-decl[' . join (' or ', map { "string(EN-N)='$_'" } sort keys (%intent)) . ']', $d);
+  my ($dp) = &F ('./specification-part/declaration-part', $d);
+
+  my @en_decl = &F ('.//EN-decl[' . join (' or ', map { "string(EN-N)='$_'" } sort keys (%intent)) . ']', $dp);
 
   for my $en_decl (@en_decl)
     {

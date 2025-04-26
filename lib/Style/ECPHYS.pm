@@ -1,6 +1,6 @@
 package Style::ECPHYS;
 
-use base qw (Style);
+use base qw (Style::IAL);
 use Fxtran;
 
 use strict;
@@ -25,20 +25,14 @@ sub jlon
   return 'JL';
 }
 
+sub jlev
+{
+  return 'JK';
+}
+
 sub declareJlon
 {
   return &s ("INTEGER (KIND=JPIM) :: JL");
-}
-
-sub includeExtension
-{
-  return '.intfb.h';
-}
-
-sub noComputeRoutine
-{
-  shift;
-  return 1 if ($_[0] eq 'ABOR1');
 }
 
 1;
