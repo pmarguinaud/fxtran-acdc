@@ -287,13 +287,23 @@ sub processSingleRoutine
   
   my @parallel = &F ('.//parallel-section', $d);
   
-  my ($MESONH, $FILTER);
+  my ($FILTER);
+
+  my %customIterator;
   
   for my $parallel (@parallel)
     {
       if (my $style = $parallel->getAttribute ('style'))
         {
-          $MESONH ||= $style eq 'MESONH';
+          $style = 'Style'->new (style => $style);
+          if (my $it = $style->customIterator ())
+            {
+              $customIterator{$it} = $style->customIteratorDecl ();
+            }
+          if (my $it = $style->customIteratorCopy ())
+            {
+              $customIterator{$it} = $style->customIteratorCopyDecl ();
+            }
         }
       if (my $filter = $parallel->getAttribute ('filter'))
         {
@@ -301,11 +311,9 @@ sub processSingleRoutine
         }
     }
   
-  if ($MESONH && (my ($D) = &F ('.//EN-decl[string(.)="D"]', $d)))
+  for (values (%customIterator))
     {
-      my $lst = $D->parentNode;
-      $lst->appendChild (&t (', '));
-      $lst->appendChild (&n ("<EN-decl><EN-N><N><n>DD</n></N></EN-N></EN-decl>"));
+      &Decl::declare ($d, $_);
     }
   
   if ($FILTER)

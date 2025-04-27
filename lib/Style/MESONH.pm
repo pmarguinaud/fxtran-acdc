@@ -113,6 +113,11 @@ sub customIterator
   return 'D';
 }
 
+sub customIteratorCopy
+{
+  return 'DD';
+}
+
 sub updateCustomIterator
 {
   shift;
@@ -130,6 +135,37 @@ sub updateCustomIterator
   $p->insertAfter (&s ("D%NIJB = YLCPG_BNDS%KIDIA"), $stmt);
   $p->insertAfter (&t ("\n"), $stmt);
 
+}
+
+sub updateCustomIteratorCopy
+{
+  shift;
+  my $stmt = shift;
+
+  my $p = $stmt->parentNode;
+
+  $p->insertAfter (&s ("DD%NIE = YLCPG_BNDS%KFDIA"), $stmt);
+  $p->insertAfter (&t ("\n"), $stmt);
+  $p->insertAfter (&s ("DD%NIB = YLCPG_BNDS%KIDIA"), $stmt);
+  $p->insertAfter (&t ("\n"), $stmt);
+
+  $p->insertAfter (&s ("DD%NIJE = YLCPG_BNDS%KFDIA"), $stmt);
+  $p->insertAfter (&t ("\n"), $stmt);
+  $p->insertAfter (&s ("DD%NIJB = YLCPG_BNDS%KIDIA"), $stmt);
+  $p->insertAfter (&t ("\n"), $stmt);
+
+  $p->insertAfter (&s ("DD = D"), $stmt);
+  $p->insertAfter (&t ("\n"), $stmt);
+}
+
+sub customIteratorDecl
+{
+  &s ('TYPE (DIMPHYEX_T) :: D');
+}
+
+sub customIteratorCopyDecl
+{
+  &s ('TYPE (DIMPHYEX_T) :: DD');
 }
 
 1;

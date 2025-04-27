@@ -41,6 +41,7 @@ sub makeParallel
   my ($par1, $t, %opts) = @_;
 
   my $style = $par1->getAttribute ('style') || 'IAL';
+  $style = 'Style'->new (style => $style);
   
   my $FILTER = $par1->getAttribute ('filter');
 
@@ -52,12 +53,13 @@ sub makeParallel
 
   &Loop::removeNpromaConstructs ($par1, %opts);
 
-  if ($style eq 'MESONH')
+  if (my $it = $style->customIterator ())
     {
-      my @D = &F ('.//named-E[string(N)="D"]/N/n/text()', $par1);
+      my $it1 = $style->customIteratorCopy ();
+      my @D = &F ('.//named-E[string(N)="?"]/N/n/text()', $it, $par1);
       for my $D (@D)
         {
-          $D->setData ('DD');
+          $D->setData ($it1);
         }
     }
 
@@ -94,41 +96,27 @@ EOF
 
   my $in_do_jlon = 0;
 
-  my $indent = 0;
-
   while (my $x = shift (@x))
     {
 
       if (($x->nodeName eq 'call-stmt') && ($x->textContent =~ m/^CALL YLCPG_BNDS%UPDATE/o))
         {
           $do->appendChild ($do_jlon);
-          $indent = &Fxtran::getIndent ($do_jlon);
 
-          $do->insertBefore (&t ("\n" . (' ' x $indent)), $do_jlon);
-          $do->insertBefore (&t ("\n" . (' ' x $indent)), $do_jlon);
+          $do->insertBefore (&t ("\n"), $do_jlon);
+          $do->insertBefore (&t ("\n"), $do_jlon);
 
-          &Stack::iniStack ($do_jlon, $indent, $opts{stack84}, $JBLKMIN, $KGPBLKS);
+          &Stack::iniStack ($do_jlon, 0, $opts{stack84}, $JBLKMIN, $KGPBLKS);
 
-          if ($style eq 'MESONH')
+          if ($style->customIterator ())
             {
-              $do_jlon->insertAfter (&s ("DD%NIE = $jlon"), $do_jlon->firstChild);
-              $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
-              $do_jlon->insertAfter (&s ("DD%NIB = $jlon"), $do_jlon->firstChild);
-              $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
-
-              $do_jlon->insertAfter (&s ("DD%NIJE = $jlon"), $do_jlon->firstChild);
-              $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
-              $do_jlon->insertAfter (&s ("DD%NIJB = $jlon"), $do_jlon->firstChild);
-              $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
-
-              $do_jlon->insertAfter (&s ("DD = D"), $do_jlon->firstChild);
-              $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+              $style->updateCustomIteratorCopy ($do_jlon->firstChild);
             }
 
           $do_jlon->insertAfter (&s ("YLCPG_BNDS%KFDIA = $jlon"), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&s ("YLCPG_BNDS%KIDIA = $jlon"), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
 
 
           $in_do_jlon = 1;
@@ -137,7 +125,6 @@ EOF
         }
       elsif ($x->nodeName eq 'end-do-stmt')
         {
-          $do_jlon->insertBefore (&t (' ' x $indent), $do_jlon->lastChild);
           $do->appendChild ($x);
         }
       elsif ($in_do_jlon)
