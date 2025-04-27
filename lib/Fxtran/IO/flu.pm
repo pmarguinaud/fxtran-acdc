@@ -1,4 +1,4 @@
-package info_cpg;
+package Fxtran::IO::flu;
 
 #
 # Copyright 2022 Meteo-France
@@ -9,30 +9,18 @@ package info_cpg;
 
 use strict;
 use Fxtran;
-use Data::Dumper;
 
 sub skip
 {
   my $class = shift;
   my ($type, $comp, $attr, $en_decl_hash) = @_;
   
-  my $ret;
-
-  goto RETURN unless ($attr->{POINTER});
-
-  if ($comp =~ m/^(?:ZVIEW|F_DATA|ZDATA)$/o)
+  if ($comp =~ m/^(?:\w+_B|TYPE_XFU|YXFUPT|TYPE_CFU|YCFUPT)$/o)
     {
-      $ret = 1;
-      goto RETURN;
+      return 1;
     }
 
-  $ret = $class->getFieldAPIMember (@_);
-
-RETURN:
-
-  $ret ||= 0;
-
-  return $ret;
+  return $class->getFieldAPIMember (@_);
 }
 
 sub getFieldAPIMember

@@ -1,4 +1,4 @@
-package info_sfv;
+package Fxtran::IO::cpg;
 
 #
 # Copyright 2022 Meteo-France
@@ -12,24 +12,35 @@ use Fxtran;
 use Data::Dumper;
 
 sub skip
-{ 
+{
   my $class = shift;
-  my ($type, $comp, $attr, $en_decl_hash) = @_; 
-
-  return 1 if ($comp =~ m/^P.*_T[019]$/o);
-  return 1 if ($comp =~ m/^(?:F_GROUP|VARIABLE_GROUP|PGROUP)$/o);
+  my ($type, $comp, $attr, $en_decl_hash) = @_;
   
-  return $class->getFieldAPIMember (@_);
+  my $ret;
+
+  goto RETURN unless ($attr->{POINTER});
+
+  if ($comp =~ m/^(?:ZVIEW|F_DATA|ZDATA)$/o)
+    {
+      $ret = 1;
+      goto RETURN;
+    }
+
+  $ret = $class->getFieldAPIMember (@_);
+
+RETURN:
+
+  $ret ||= 0;
+
+  return $ret;
 }
 
 sub getFieldAPIMember
 {
   my $class = shift;
-  my ($type, $comp, $attr, $en_decl_hash) = @_; 
+  my ($type, $comp, $attr, $en_decl_hash) = @_;
 
   return unless ($attr->{POINTER});
- 
-  substr ($comp, 0, 1, ''); 
 
   if (my $en_decl = $en_decl_hash->{"F_$comp"})
     {

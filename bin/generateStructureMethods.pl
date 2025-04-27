@@ -72,7 +72,7 @@ sub parseListOrCodeRef
 
   if (-f "$Bin/../lib/$opts->{$kw}.pm")
     {
-      my $class = $opts->{$kw};
+      my $class = 'Fxtran::IO::' . $opts->{$kw};
       eval "use $class;";
       my $c = $@;
       $c && die ($c);

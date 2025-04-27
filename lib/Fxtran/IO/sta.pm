@@ -1,4 +1,4 @@
-package info_flu;
+package Fxtran::IO::sta;
 
 #
 # Copyright 2022 Meteo-France
@@ -9,16 +9,16 @@ package info_flu;
 
 use strict;
 use Fxtran;
+use Data::Dumper;
 
 sub skip
 {
   my $class = shift;
   my ($type, $comp, $attr, $en_decl_hash) = @_;
   
-  if ($comp =~ m/^(?:\w+_B|TYPE_XFU|YXFUPT|TYPE_CFU|YCFUPT)$/o)
-    {
-      return 1;
-    }
+  return unless ($attr->{POINTER});
+
+  return 1 if ($comp eq 'P');
 
   return $class->getFieldAPIMember (@_);
 }
@@ -27,7 +27,7 @@ sub getFieldAPIMember
 {
   my $class = shift;
   my ($type, $comp, $attr, $en_decl_hash) = @_;
-
+  
   return unless ($attr->{POINTER});
 
   if (my $en_decl = $en_decl_hash->{"F_$comp"})

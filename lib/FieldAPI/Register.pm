@@ -69,6 +69,7 @@ sub registerFieldAPI
 
   if ($class = $opts->{'field-api-class'})
     {
+      $class = 'Fxtran::IO::' . $class;
       eval "use $class";
       my $c = $@;
       $c && die ($c);

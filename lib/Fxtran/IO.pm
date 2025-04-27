@@ -39,6 +39,7 @@ sub process_decl
 
   if (my $fac = $opts->{'field-api-class'})
     {
+      $fac = 'Fxtran::IO::' . $fac;
       eval "use $fac";
       if (my $c = $@)
         {

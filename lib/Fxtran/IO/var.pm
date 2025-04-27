@@ -1,4 +1,4 @@
-package info_sta;
+package Fxtran::IO::var;
 
 #
 # Copyright 2022 Meteo-France
@@ -18,8 +18,6 @@ sub skip
   
   return unless ($attr->{POINTER});
 
-  return 1 if ($comp eq 'P');
-
   return $class->getFieldAPIMember (@_);
 }
 
@@ -30,12 +28,17 @@ sub getFieldAPIMember
   
   return unless ($attr->{POINTER});
 
-  if (my $en_decl = $en_decl_hash->{"F_$comp"})
+  if ($comp eq 'P')
+    {
+      $comp = 'T0';
+    }
+
+  if (my $en_decl = $en_decl_hash->{"F$comp"})
     {
       my $stmt = &Fxtran::stmt ($en_decl);
       my ($tspec) = &Fxtran::F ('./_T-spec_', $stmt);  
       my ($tname) = &F ('./derived-T-spec/T-N/N/n/text()', $tspec);
-      return "F_$comp" if ($tname =~ m/^FIELD_/o);
+      return "F$comp" if ($tname =~ m/^FIELD_/o);
     }
 }
 
