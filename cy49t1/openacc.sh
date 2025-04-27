@@ -125,7 +125,7 @@ do
   mkdir -p src/local/ifsaux/openacc/$dir
   openacc.pl \
      --interface --stack84 --cycle 49 \
-     --version --style Dynamics --dir src/local/ifsaux/openacc/$dir $(resolve $f)
+     --version --style DYNAMICS --dir src/local/ifsaux/openacc/$dir $(resolve $f)
 done
 
 for f in \

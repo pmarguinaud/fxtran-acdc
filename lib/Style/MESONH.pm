@@ -168,4 +168,37 @@ sub customIteratorCopyDecl
   &s ('TYPE (DIMPHYEX_T) :: DD');
 }
 
+sub matchDocument
+{
+  shift;
+  my $d = shift;
+
+  my @pu;
+
+  for my $pu (&F ('./object/file/program-unit', $d))
+    {
+      if ($pu->firstChild->nodeName eq 'module-stmt')
+        {
+          push @pu, &F ('./program-unit', $pu);
+        }
+      else
+        {
+          push @pu, $pu;
+        }
+    }
+
+  for my $pu (@pu)
+    {
+      next unless (&F ('./subroutine-stmt/dummy-arg-LT/arg-N[string(.)="D"]', $pu));
+
+      return 1 unless (&F ('./execution-part//do-construct', $pu));
+
+      next unless (&F ('./specification-part/declaration-part/T-decl-stmt//EN-N[string(.)="JI" or string(.)="JIJ"]', $pu));
+
+      return 1;
+    }
+
+  return;
+}
+
 1;

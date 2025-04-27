@@ -126,4 +126,18 @@ sub preProcessForOpenACC
 # 'FileHandle'->new (">2.$file")->print (&Canonic::indent ($d));
 }
 
+sub matchDocument
+{
+  shift;
+  my $d = shift;
+
+  return unless (&F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="KLON"]', $d));
+  return unless (&F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="KJN"]', $d));
+
+  return 1 if (&F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="KIIDIA"]', $d));
+  return 1 if (&F ('./object/file/program-unit/specification-part/declaration-part/T-decl-stmt/EN-decl-LT/EN-decl[string(EN-N)="IIDIA"]', $d));
+  
+  return;
+}
+
 1;

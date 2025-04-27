@@ -38,7 +38,7 @@ print &dirname ($f)
 ' $f)
 
 pointerParallel.pl \
-  --gpumemstat --stack84 --cycle 49 --use-acpy --style Dynamics \
+  --gpumemstat --stack84 --cycle 49 --use-acpy --style DYNAMICS \
   --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify --version --dir \
   src/local/$dir $(resolve $f)
 
@@ -77,7 +77,7 @@ for f in \
 do
 
 dir=$(dirname $f)
-openacc.pl --interface --stack84 --cycle 49 --pointers --version --style Dynamics --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
+openacc.pl --interface --stack84 --cycle 49 --pointers --version --style DYNAMICS --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
 
 done
 

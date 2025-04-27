@@ -35,4 +35,18 @@ sub declareJlon
   return &s ("INTEGER (KIND=JPIM) :: JL");
 }
 
+sub matchDocument
+{
+  shift;
+  my $d = shift;
+
+  return unless (&F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="KLON"]', $d));
+
+  return 1 unless (&F ('./object/file/program-unit/execution-part//do-construct', $d));
+
+  return unless (&F ('./object/file/program-unit/specification-part/declaration-part/T-decl-stmt//EN-N[string(.)="JL"]', $d));
+
+  return 1;
+}
+
 1;

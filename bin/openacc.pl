@@ -279,8 +279,6 @@ if ($opts{help})
   }
 
 
-$opts{style} = 'Style'->new (%opts);
-
 for my $opt (qw (no-check-pointers-dims inlined set-variables))
   {
     $opts{$opt} = [$opts{$opt} ? split (m/,/o, $opts{$opt}) : ()];
@@ -309,6 +307,8 @@ if ($opts{'only-if-newer'})
 my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag -no-include -no-cpp -line-length 500)], dir => $opts{tmp});
 
 &Canonic::makeCanonic ($d);
+
+$opts{style} = 'Style'->new (%opts, document => $d);
 
 my $find = 'Finder'->new (files => $opts{files}, base => $opts{base});
 
