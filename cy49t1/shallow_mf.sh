@@ -24,7 +24,7 @@ for f in \
 do
   echo "==> $f <=="
   openacc.pl --interface --stack84  --interfaces --version --inline-contained \
-     --cycle 49 --style MesoNH --dir src/local/mpa/openacc $(resolve --user $f)
+     --cycle 49 --style MESONH --dir src/local/mpa/openacc $(resolve --user $f)
 done
 
 for f in \
@@ -32,5 +32,5 @@ for f in \
 do
   echo "==> $f <=="
   openacc.pl --interface --stack84  --interfaces --version --inline-contained \
-     --cycle 49 --style MesoNH --dir src/local/mpa/openacc --modi $(resolve --user $f)
+     --cycle 49 --style MESONH --dir src/local/mpa/openacc --modi $(resolve --user $f)
 done

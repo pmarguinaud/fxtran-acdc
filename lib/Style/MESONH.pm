@@ -1,4 +1,4 @@
-package Style::MesoNH;
+package Style::MESONH;
 
 use strict;
 
@@ -106,6 +106,30 @@ sub dim2bnd
   );
 
   return @{ $dim2bnd{$dim} || [] };
+}
+
+sub customIterator
+{
+  return 'D';
+}
+
+sub updateCustomIterator
+{
+  shift;
+  my $stmt = shift;
+
+  my $p = $stmt->parentNode;
+
+  $p->insertAfter (&s ("D%NIE = YLCPG_BNDS%KFDIA"), $stmt);
+  $p->insertAfter (&t ("\n"), $stmt);
+  $p->insertAfter (&s ("D%NIB = YLCPG_BNDS%KIDIA"), $stmt);
+  $p->insertAfter (&t ("\n"), $stmt);
+
+  $p->insertAfter (&s ("D%NIJE = YLCPG_BNDS%KFDIA"), $stmt);
+  $p->insertAfter (&t ("\n"), $stmt);
+  $p->insertAfter (&s ("D%NIJB = YLCPG_BNDS%KIDIA"), $stmt);
+  $p->insertAfter (&t ("\n"), $stmt);
+
 }
 
 1;

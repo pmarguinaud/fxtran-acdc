@@ -31,4 +31,12 @@ sub preProcessForOpenACC
 
 }
 
+sub customIterator
+{
+}
+
+sub updateCustomIterator
+{
+}
+
 1;

@@ -32,7 +32,7 @@ sub makeParallel
   shift;
   my ($par1, $t) = @_;
 
-  my $style = $par1->getAttribute ('style') || 'ARPIFS';
+  my $style = $par1->getAttribute ('style') || 'IAL';
   my $FILTER = $par1->getAttribute ('filter');
 
   if ($FILTER)

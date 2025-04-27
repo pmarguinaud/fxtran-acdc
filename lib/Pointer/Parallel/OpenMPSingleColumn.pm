@@ -36,26 +36,27 @@ sub setOpenMPDirective
 {
   my ($par, $t) = @_;
 
-  my $style = $par->getAttribute ('style') || 'ARPIFS';
+  my $style = $par->getAttribute ('style') || 'IAL';
+  $style = 'Style'->new (style => $style);
 
   my @priv = &Pointer::Parallel::getPrivateVariables ($par, $t);
 
   my ($do) = &F ('.//do-construct[./do-stmt[string(do-V)="JBLK"]]', $par);
 
-  my $indent = &Fxtran::getIndent ($do);
+  my @firstprivate;
 
-  my $firstprivate = '';
-
-  if ($style eq 'MESONH')
+  if (my $it = $style->customIterator ())
     {
-      $firstprivate = " FIRSTPRIVATE (D)";
-      @priv = grep { $_ ne 'D' } @priv;
+      push @firstprivate, $it;
+      @priv = grep { $_ ne $it } @priv;
     }
 
-  my $C = &n ('<C>!$OMP PARALLEL DO PRIVATE (' . join (', ', @priv)  . ')' . $firstprivate . '</C>');
+  my $C = &n ('<C>!$OMP PARALLEL DO PRIVATE (' .  join (', ', @priv)  . ')' . 
+              (@firstprivate ? 'firstprivate (' . join (', ', @firstprivate) . ')' : '') . 
+              '</C>');
   
   $do->parentNode->insertBefore ($C, $do);
-  $do->parentNode->insertBefore (&t ("\n" . (' ' x $indent)), $do);
+  $do->parentNode->insertBefore (&t ("\n"), $do);
 
 }
 
@@ -64,7 +65,9 @@ sub makeParallel
   shift;
   my ($par1, $t, %opts) = @_;
 
-  my $style = $par1->getAttribute ('style') || 'ARPIFS';
+  my $style = $par1->getAttribute ('style') || 'IAL';
+  $style = 'Style'->new (style => $style);
+
   my $FILTER = $par1->getAttribute ('filter');
 
   &DIR::removeDIR ($par1);
@@ -108,39 +111,27 @@ EOF
 
   my $in_do_jlon = 0;
 
-  my $indent = 0;
-
   while (my $x = shift (@x))
     {
 
       if (($x->nodeName eq 'call-stmt') && ($x->textContent =~ m/^CALL YLCPG_BNDS%UPDATE/o))
         {
           $do->appendChild ($do_jlon);
-          $indent = &Fxtran::getIndent ($do_jlon);
 
-          $do->insertBefore (&t ("\n" . (' ' x $indent)), $do_jlon);
-          $do->insertBefore (&t ("\n" . (' ' x $indent)), $do_jlon);
+          $do->insertBefore (&t ("\n"), $do_jlon);
+          $do->insertBefore (&t ("\n"), $do_jlon);
 
-          &Stack::iniStack ($do_jlon, $indent, $opts{stack84}, $JBLKMIN, $KGPBLKS);
+          &Stack::iniStack ($do_jlon, 0, $opts{stack84}, $JBLKMIN, $KGPBLKS);
           
-          if ($style eq 'MESONH')
+          if ($style->customIterator ())
             {
-              $do_jlon->insertAfter (&s ("D%NIE = $jlon"), $do_jlon->firstChild);
-              $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
-              $do_jlon->insertAfter (&s ("D%NIB = $jlon"), $do_jlon->firstChild);
-              $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
-
-              $do_jlon->insertAfter (&s ("D%NIJE = $jlon"), $do_jlon->firstChild);
-              $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
-              $do_jlon->insertAfter (&s ("D%NIJB = $jlon"), $do_jlon->firstChild);
-              $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
-
+              $style->updateCustomIterator ($do_jlon->firstChild);
             }
 
           $do_jlon->insertAfter (&s ("YLCPG_BNDS%KFDIA = $jlon"), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&s ("YLCPG_BNDS%KIDIA = $jlon"), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
 
           $in_do_jlon = 1;
           $do->appendChild (shift (@x));
@@ -148,7 +139,6 @@ EOF
         }
       elsif ($x->nodeName eq 'end-do-stmt')
         {
-          $do_jlon->insertBefore (&t (' ' x $indent), $do_jlon->lastChild);
           $do->appendChild ($x);
         }
       elsif ($in_do_jlon)

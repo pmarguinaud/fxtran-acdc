@@ -30,14 +30,12 @@ sub setOpenMPDirective
 {
   my ($par, $t) = @_;
 
-  my $style = $par->getAttribute ('style') || 'ARPIFS';
+  my $style = $par->getAttribute ('style') || 'IAL';
+  $style = 'Style'->new (style => $style);
 
   my @firstprivate = ('YLCPG_BNDS');
 
-  if ($style eq 'MESONH')
-    {
-      push @firstprivate, 'D';
-    }
+  push @firstprivate, $style->customIterator ();
 
   my %firstprivate = map { ($_, 1) } @firstprivate;
 
@@ -60,7 +58,9 @@ sub makeParallel
   shift;
   my ($par1, $t) = @_;
 
-  my $style = $par1->getAttribute ('style') || 'ARPIFS';
+  my $style = $par1->getAttribute ('style') || 'IAL';
+  $style = 'Style'->new (style => $style);
+
   my $FILTER = $par1->getAttribute ('filter');
 
   my $init;
@@ -75,23 +75,12 @@ sub makeParallel
     }
 
   my ($do) = &F ('./do-construct', $par1);
-  my $indent = &Fxtran::getIndent ($do);
 
-  if ($style eq 'MESONH')
+
+  if ($style->customIterator ())
     {
       my ($update) = &F ('.//call-stmt[string(procedure-designator)="YLCPG_BNDS%UPDATE"]', $do);
-      my $p = $update->parentNode;
-
-      $p->insertAfter (&s ("D%NIE = YLCPG_BNDS%KFDIA"), $update);
-      $p->insertAfter (&t ("\n" . (' ' x $indent)), $update);
-      $p->insertAfter (&s ("D%NIB = YLCPG_BNDS%KIDIA"), $update);
-      $p->insertAfter (&t ("\n" . (' ' x $indent)), $update);
-
-      $p->insertAfter (&s ("D%NIJE = YLCPG_BNDS%KFDIA"), $update);
-      $p->insertAfter (&t ("\n" . (' ' x $indent)), $update);
-      $p->insertAfter (&s ("D%NIJB = YLCPG_BNDS%KIDIA"), $update);
-      $p->insertAfter (&t ("\n" . (' ' x $indent)), $update);
-
+      $style->updateCustomIterator ($update);
     }
 
   $par1->insertBefore ($init, $do);

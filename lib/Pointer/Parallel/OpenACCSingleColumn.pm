@@ -40,7 +40,8 @@ sub makeParallel
   shift;
   my ($par1, $t, %opts) = @_;
 
-  my $style = $par1->getAttribute ('style') || 'ARPIFS';
+  my $style = $par1->getAttribute ('style') || 'IAL';
+  
   my $FILTER = $par1->getAttribute ('filter');
 
   &DIR::removeDIR ($par1);
