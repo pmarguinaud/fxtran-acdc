@@ -43,12 +43,13 @@ sub matchDocument
 
   if (&F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="KST"]', $d))
     {
-       return 1 unless (&F ('.//do-construct', $d));
-       return unless (&F ('./object/file/program-unit/specification-part/declaration-part/T-decl-stmt//EN-N[string(.)="JROF"]', $d));
+      return 1 unless (&F ('.//do-construct/do-stmt[string(do-V)!="JLEV" and string(do-V)!="JGFL"]', $d));
+      return unless (&F ('./object/file/program-unit/specification-part/declaration-part/T-decl-stmt//EN-N[string(.)="JROF"]', $d));
     }
   else
     {
-       return unless (&F ('./object/file/program-unit/specification-part/declaration-part/T-decl-stmt//EN-N[string(.)="JROF"]', $d));
+      return 1 if (&F ('./object/file/program-unit/specification-part/declaration-part/T-decl-stmt//EN-N[string(.)="JROF"]', $d));
+      return 1 if (&F ('./object/file/program-unit/specification-part/declaration-part/T-decl-stmt//EN-N[string(.)="YDCPG_SL1"]', $d));
     }
 }
 

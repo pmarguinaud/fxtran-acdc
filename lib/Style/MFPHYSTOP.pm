@@ -25,6 +25,10 @@ sub matchDocument
   shift;
   my $d = shift;
 
+  return 1 if (&F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="YDMF_PHYS"]', $d));
+
+  return 1 if (&F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="YDMF_PHYS_OUT"]', $d));
+
   return unless (&F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="YDCPG_OPTS"]', $d));
 
   return 1 unless (&F ('./object/file/program-unit/execution-part//do-construct', $d));
