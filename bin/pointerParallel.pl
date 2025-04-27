@@ -35,6 +35,7 @@ use Bt;
 use Canonic;
 use Directive;
 use Inline;
+use Style;
 
 use Cycle49;
 use Cycle50;
@@ -186,15 +187,6 @@ sub processSingleRoutine
 {
   my ($d, $NAME, $find, $types, %opts) = @_;
 
-  for my $jlon  (@{ $opts{jlon} })
-    {
-      my @expr = &F ('.//named-E[string(N)="?"]/N/n/text()', $jlon, $d);
-      for (@expr) 
-        {
-          $_->setData ('JLON');
-        }
-    }
-  
   for my $unseen (&F ('.//unseen', $d))
     {
       $d->unbindNode ();
@@ -235,7 +227,7 @@ sub processSingleRoutine
   
   my @use = qw (FIELD_MODULE FIELD_FACTORY_MODULE FIELD_ACCESS_MODULE YOMPARALLELMETHOD STACK_MOD);
   
-  if ($opts{'use-acpy'})
+  if ($opts{'use-acpy'} || $opts{'use-bcpy'})
     {
       push @use, 'ACPY_MOD';
     }
@@ -246,6 +238,7 @@ sub processSingleRoutine
   
   &Decl::declare 
   ($d,  
+    $opts{style}->declareJlon (),
     'INTEGER(KIND=JPIM) :: JBLK',
     'TYPE(CPG_BNDS_TYPE) :: YLCPG_BNDS', 
     'REAL(KIND=JPHOOK) :: ZHOOK_HANDLE_FIELD_API',
@@ -258,13 +251,9 @@ sub processSingleRoutine
     ($d, skip => $opts{skip}, nproma => $opts{nproma}, 
      'types-fieldapi-dir' => $opts{'types-fieldapi-dir'},
      'types-constant-dir' => $opts{'types-constant-dir'},
-     'types-fieldapi-non-blocked' => $opts{'types-fieldapi-non-blocked'});
+     'types-fieldapi-non-blocked' => $opts{'types-fieldapi-non-blocked'},
+     'style' => $opts{style});
     
-  
-  for my $v (qw (JLON JLEV))
-    {
-      &Decl::declare ($d, "INTEGER(KIND=JPIM) :: $v") unless ($t->{$v});
-    }
   
   # Remove SKIP sections
   
@@ -471,11 +460,10 @@ sub processSingleRoutine
 
 
 my %opts = ('types-fieldapi-dir' => 'types-fieldapi', skip => 'PGFL,PGFLT1,PGMVT1,PGPSDT2D', 
-             nproma => 'YDCPG_OPTS%KLON,YDGEOMETRY%YRDIM%NPROMA', 'types-constant-dir' => 'types-constant',
-             'post-parallel' => 'nullify', cycle => '49', 'jlon', 'JLON', 
+             'types-constant-dir' => 'types-constant', 'post-parallel' => 'nullify', cycle => '49', 
              'types-fieldapi-non-blocked' => 'CPG_SL1F_TYPE,CPG_SL_MASK_TYPE');
-my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments stack84 use-acpy inline-contains gpumemstat contiguous);
-my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel dir cycle jlon types-fieldapi-non-blocked files base);
+my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments stack84 use-acpy use-bcpy inline-contains gpumemstat contiguous);
+my @opts_s = qw (skip types-fieldapi-dir types-constant-dir post-parallel dir cycle types-fieldapi-non-blocked files base style);
 
 &GetOptions
 (
@@ -483,7 +471,7 @@ my @opts_s = qw (skip nproma types-fieldapi-dir types-constant-dir post-parallel
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
 
-for my $opt (qw (nproma jlon types-fieldapi-non-blocked))
+for my $opt (qw (types-fieldapi-non-blocked))
   {
     $opts{$opt} = [split (m/,/o, $opts{$opt})];
   }
@@ -499,6 +487,11 @@ if ($opts{help})
   }
 
 $opts{skip} = [split (m/,/o, $opts{skip} || '')];
+
+$opts{style} = 'Style'->new (%opts);
+
+$opts{nproma} = {};
+$opts{jlon} = {};
 
 my $F90 = shift;
 (my $F90out = $F90) =~ s/.F90$/$suffix.F90/o;
@@ -530,7 +523,16 @@ my $types = &Storable::retrieve ("$opts{'types-fieldapi-dir'}/decls.dat");
 
 my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 800 -no-include -no-cpp -construct-tag -directive ACDC -canonic)]);
 
-for my $pu (&F ('./object/file/program-unit', $d))
+&Canonic::makeCanonic ($d);
+
+my @pu = &F ('./object/file/program-unit', $d);
+
+for my $pu (@pu)
+  {
+    $opts{style}->preProcessForOpenACC ($pu, %opts);
+  }
+
+for my $pu (@pu)
   {
     &processSingleRoutine ($pu, $NAME, $find, $types, %opts);
   }

@@ -2,6 +2,7 @@ package Style::IAL;
 
 use base qw (Style);
 use Fxtran;
+use Data::Dumper;
 
 use strict;
 
@@ -51,6 +52,25 @@ sub dim2bnd
   );
 
   return @{ $dim2bnd{$dim} || [] };
+}
+
+sub preProcessForOpenACC
+{
+  my $class = shift;
+  my $d = shift;
+  my %args = @_;
+
+  my @s = qw (1:YDCPG_OPTS%KLON YDCPG_BNDS%KIDIA:YDCPG_BNDS%KFDIA 1:KLON KIDIA:KFIDA YLCPG_BNDS%KIDIA:YLCPG_BNDS%KFDIA);
+
+  my $xpath = './/a-stmt//section-subscript[' . join (' or ', map { "string(.)=\"$_\"" } @s) . ']';
+
+  my @ss = &F ($xpath, $d);
+
+  for my $ss (@ss)
+    {   
+      $ss->replaceNode (&n ("<section-subscript><lower-bound><named-E><N><n>:</n></N></named-E></lower-bound></section-subscript>"));
+    }   
+
 }
 
 1;

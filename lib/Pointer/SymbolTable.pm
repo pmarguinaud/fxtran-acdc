@@ -63,7 +63,8 @@ sub getSymbolTable
 
   my %skip = map { ($_, 1) } @{ $opts{skip} || [] };
 
-  my %nproma = map { ($_, 1)} @{ $opts{nproma} };
+  my @nproma = $opts{style}->nproma ();
+  my %nproma = map { ($_, 1)} @nproma;
 
   my @fieldapi = &getFieldAPIList ($doc, $opts{'types-fieldapi-dir'});
   my %fieldapi = map { ($_, 1) } @fieldapi;

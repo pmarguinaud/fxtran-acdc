@@ -5,6 +5,9 @@ set -e
 
 . $(dirname $0)/prolog.sh
 
+if [ 1 -eq 1 ]
+then
+
 for f in \
   arpifs/adiab/cpglag.F90                                                \
   .fypp/arpifs/adiab/gptf1_ydvars.F90                                    \
@@ -35,11 +38,16 @@ print &dirname ($f)
 ' $f)
 
 pointerParallel.pl \
-  --gpumemstat --stack84 --jlon JROF --nproma YDCPG_OPTS%KLON,YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIM%NPROMNH --cycle 49 --use-acpy \
+  --gpumemstat --stack84 --cycle 49 --use-acpy --style Dynamics \
   --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify --version --dir \
   src/local/$dir $(resolve $f)
 
 done
+
+fi
+
+if [ 0 -eq 1 ]
+then
 
 for f in \
   arpifs/adiab/lasure.F90                         \
@@ -69,7 +77,7 @@ for f in \
 do
 
 dir=$(dirname $f)
-openacc.pl --interface --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --cpg_dyn --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
+openacc.pl --interface --stack84 --cycle 49 --pointers --version --style Dynamics --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
 
 done
 
@@ -85,7 +93,7 @@ $f =~ s,^\.fypp/,,o;
 print &dirname ($f) 
 ' $f)
 
-openacc.pl --interface --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
+openacc.pl --interface --stack84 --cycle 49 --pointers --style MFPHYS --version --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
 
 done
 
@@ -95,7 +103,8 @@ for f in \
 do
 
 dir=$(dirname $f)
-openacc.pl --interface --stack84 --cycle 49 --pointers --nocompute ABOR1 --version --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
+openacc.pl --interface --stack84 --cycle 49 --pointers --style MFPHYS --version --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
 
 done
 
+fi

@@ -7,7 +7,7 @@ use strict;
 
 sub nproma
 {
-  return qw (KPROMA YDGEOMETRY%YRDIM%NPROMA YDCPG_OPTS%KLON);
+  return qw (KPROMA YDGEOMETRY%YRDIM%NPROMA YDGEOMETRY%YRDIM%NPROMNH YDCPG_OPTS%KLON);
 }
 
 sub kidia

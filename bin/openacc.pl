@@ -185,11 +185,6 @@ sub processSingleRoutine
           &Inline::inlineContainedSubroutines ($d, find => $find, inlineDeclarations => 1, comment => $opts{'inline-comment'}, style => $opts{style});
         }
      
-      if ($opts{cpg_dyn})
-        {
-          &Identifier::rename ($d, JROF => 'JLON');
-        }
-      
       if ($opts{cycle} eq '49')
         {
           &Cycle49::simplify ($d, set => $opts{'set-variables'});

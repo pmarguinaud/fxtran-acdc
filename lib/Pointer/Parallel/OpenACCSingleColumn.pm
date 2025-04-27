@@ -49,8 +49,7 @@ sub makeParallel
 
   die unless ($do);
 
-  &Loop::removeJlonConstructs ($par1);
-  &Loop::removeJlonArraySyntax ($par1);
+  &Loop::removeNpromaConstructs ($par1, %opts);
 
   if ($style eq 'MESONH')
     {
@@ -85,8 +84,10 @@ sub makeParallel
       $JBLKMIN = 'YDCPG_OPTS%JBLKMIN';
     }
 
+  my $jlon = $opts{style}->jlon ();
+
   my ($do_jlon) = &Fxtran::parse (fragment => << "EOF");
-DO JLON = 1, MIN ($KLON, $KGPTOT - (JBLK - 1) * $KLON)
+DO $jlon = 1, MIN ($KLON, $KGPTOT - (JBLK - 1) * $KLON)
 ENDDO
 EOF
 
@@ -109,23 +110,23 @@ EOF
 
           if ($style eq 'MESONH')
             {
-              $do_jlon->insertAfter (&s ("DD%NIE = JLON"), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&s ("DD%NIE = $jlon"), $do_jlon->firstChild);
               $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
-              $do_jlon->insertAfter (&s ("DD%NIB = JLON"), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&s ("DD%NIB = $jlon"), $do_jlon->firstChild);
               $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
 
-              $do_jlon->insertAfter (&s ("DD%NIJE = JLON"), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&s ("DD%NIJE = $jlon"), $do_jlon->firstChild);
               $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
-              $do_jlon->insertAfter (&s ("DD%NIJB = JLON"), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&s ("DD%NIJB = $jlon"), $do_jlon->firstChild);
               $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
 
               $do_jlon->insertAfter (&s ("DD = D"), $do_jlon->firstChild);
               $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
             }
 
-          $do_jlon->insertAfter (&s ("YLCPG_BNDS%KFDIA = JLON"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&s ("YLCPG_BNDS%KFDIA = $jlon"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&s ("YLCPG_BNDS%KIDIA = JLON"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&s ("YLCPG_BNDS%KIDIA = $jlon"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
 
 
@@ -156,7 +157,7 @@ EOF
       my $expr = $N->parentNode;
       next if ($expr->parentNode->nodeName eq 'arg'); # Skip routine arguments
       my ($ss) = &F ('./R-LT/array-R/section-subscript-LT/section-subscript[1]', $expr);
-      $ss->replaceNode (&n ('<section-subscript><lower-bound><named-E><N><n>JLON</n></N></named-E></lower-bound></section-subscript>'));
+      $ss->replaceNode (&n ("<section-subscript><lower-bound><named-E><N><n>$jlon</n></N></named-E></lower-bound></section-subscript>"));
     }
 
   my @call = &F ('.//call-stmt', $do_jlon);
@@ -171,7 +172,11 @@ EOF
       $argspec->appendChild (&n ('<arg><arg-N><k>YDSTACK</k></arg-N>=<named-E><N><n>YLSTACK</n></N></named-E></arg>'));
     }
 
-  &ACPY::useAcpy ($do_jlon) if ($opts{'use-acpy'});
+  &ACPY::useAcpy ($do_jlon, %opts) 
+    if ($opts{'use-acpy'});
+
+  &ACPY::useBcpy ($do_jlon, %opts) 
+    if ($opts{'use-bcpy'});
 
   my @NPROMA = sort grep { $t->{$_}{isFieldAPI} } &F ('.//named-E/N', $do_jlon, 1);
 

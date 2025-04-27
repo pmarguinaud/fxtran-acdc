@@ -7,8 +7,17 @@ sub useABOR1_ACC
 {
   my $d = shift;
 
-  my ($ep) = &F ('./execution-part', $d);
-  my ($dp) = &F ('./specification-part/declaration-part', $d);
+  my ($ep, $dp);
+
+  if ($d->nodeName eq 'program-unit')
+    {
+      ($ep) = &F ('./execution-part', $d);
+      ($dp) = &F ('./specification-part/declaration-part', $d);
+    }
+  else
+    {
+      $ep = $d;
+    }
 
   my @abor1 = &F ('.//call-stmt/procedure-designator/named-E/N/n/text()[string(.)="ABOR1"]', $ep);
 
@@ -17,11 +26,14 @@ sub useABOR1_ACC
       $abor1->setData ('ABOR1_ACC');
     }
 
-  my @include = &F ('./include[string(filename)="abor1.intfb.h"]', $dp);
-
-  for (@include)
+  if ($dp)
     {
-      $_->unbindNode ();
+      my @include = &F ('./include[string(filename)="abor1.intfb.h"]', $dp);
+
+      for (@include)
+        {
+          $_->unbindNode ();
+        }
     }
 }
 

@@ -9,10 +9,12 @@ use strict;
 
 sub preProcessForOpenACC
 {
-  shift;
+  my $class = shift;
 
   my $d = shift;
   my %args = @_;
+
+  $class->SUPER::preProcessForOpenACC (%args);
 
   my ($pu) = &F ('object/file/program-unit', $d);
 
