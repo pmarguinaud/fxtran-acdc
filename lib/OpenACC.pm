@@ -15,8 +15,6 @@ sub insertDirective
 {
   my ($p, $d, %c)  = @_;
 
-  my $indent = ' ' x &Fxtran::getIndent ($p);
-
   my $P = $p->parentNode;
 
   my @d = (" $d ");
@@ -75,44 +73,79 @@ sub insertDirective
     }
 
 
-  $P->insertBefore (&t ("\n$indent"), $p);
+  $P->insertBefore (&t ("\n"), $p);
       
 }
 
-sub parallelLoopGang
+sub insertParallelLoopGang
 {
+  shift;
   my ($p, %c) = @_;
   &insertDirective ($p, 'PARALLEL LOOP GANG', %c);
 }
 
-sub loopVector
+sub insertLoopVector
 {
+  shift;
   my ($p, %c) = @_;
   &insertDirective ($p, 'LOOP VECTOR', %c);
 }
 
-sub routineVector
+sub insertRoutineVector
 {
+  shift;
   my $d = shift;
   my ($N) = &F ('./subroutine-stmt/subroutine-N', $d, 1); 
   $d->insertAfter (&n ("<C>!\$acc routine ($N) vector</C>"), $d->firstChild);
   $d->insertAfter (&t ("\n"), $d->firstChild);
 }
 
-sub routineSeq
+sub insertRoutineSeq
 {
+  shift;
   my $d = shift;
   my ($N) = &F ('./subroutine-stmt/subroutine-N', $d, 1); 
   $d->insertAfter (&n ("<C>!\$acc routine ($N) seq</C>"), $d->firstChild);
   $d->insertAfter (&t ("\n"), $d->firstChild);
 }
 
-sub serial
+sub insertSerial
 {
+  shift;
   my ($p, %c) = @_;
   &insertDirective ($p, 'SERIAL', %c);
   $p->parentNode->insertAfter (&n ("<C>!\$ACC END SERIAL</C>"), $p);
   $p->parentNode->insertAfter (&t ("\n"), $p);
+}
+
+sub enterDataCreate
+{
+  shift;
+  return @_ ? '!$acc enter data create (' . join (', ', @_) . ')' : '';
+}
+
+sub exitDataDelete
+{
+  shift;
+  return @_ ? '!$acc exit data delete (' . join (', ', @_) . ')' : '';
+}
+
+sub updateDevice
+{
+  shift;
+  return @_ ? '!$acc update device (' . join (', ', @_) . ')' : '';
+}
+
+sub enterDataAttach
+{
+  shift;
+  return @_ ? '!$acc enter data attach (' .  join (', ', @_) . ')' : '';
+}
+
+sub exitDataDetach
+{
+  shift;
+  return @_ ? '!$acc exit data detach (' .  join (', ', @_) . ')' : '';
 }
 
 1;

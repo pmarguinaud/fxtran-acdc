@@ -1,5 +1,0 @@
-
-REAL(KIND=JPRB) :: FMINJ, FMAXJ, X, Y
-FMINJ(X,Y) = Y - 0.5_JPRB*(ABS(X-Y)-(X-Y))
-FMAXJ(X,Y) = Y + 0.5_JPRB*(ABS(X-Y)+(X-Y))
-

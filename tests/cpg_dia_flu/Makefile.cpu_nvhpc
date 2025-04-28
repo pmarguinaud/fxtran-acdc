@@ -1,2 +1,0 @@
-
-FC=/home/gmap/mrpm/marguina/install/gmkpack_support/wrapper/PGI227/mpif90 -O0 -byteswapio -Mlarge_arrays -mp -DUSE_STACK

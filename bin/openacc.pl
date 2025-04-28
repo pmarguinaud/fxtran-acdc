@@ -128,7 +128,7 @@ sub processSingleInterface
   
   &Subroutine::addSuffix ($d, $SUFFIX);
   
-  &OpenACC::routineSeq ($d);
+  'OpenACC'->insertRoutineSeq ($d);
   
   &Stack::addStack 
   (
@@ -216,7 +216,7 @@ sub processSingleRoutine
       &Call::addSuffix ($d, suffix => $SUFFIX, match => sub { ! $opts{style}->noComputeRoutine (@_) });
     }
   
-  &OpenACC::routineSeq ($d);
+  'OpenACC'->insertRoutineSeq ($d);
 
   &Stack::addStack 
   (

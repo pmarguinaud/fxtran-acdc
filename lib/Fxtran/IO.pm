@@ -15,6 +15,7 @@ use File::Spec;
 use Cwd;
 use Common;
 use Fxtran;
+use OpenACC;
 
 sub process_decl
 {
@@ -135,9 +136,9 @@ sub process_decl
 
       if (! $isFieldAPI)
         {
-          push @BODY_COPY, "!\$acc enter data create ($prefix$name)\n",
-                           "!\$acc update device ($prefix$name)\n";
-          push @BODY_WIPE, "!\$acc exit data detach ($prefix$name)\n";
+          push @BODY_COPY, 'OpenACC'->enterDataCreate ($prefix$name) . "\n", 
+                           'OpenACC'->updateDevice ($prefix$name) . "\n";
+          push @BODY_WIPE, 'OpenACC'->exitDataDetach ($prefix$name) . "\n";
         }
     }
   
@@ -280,11 +281,11 @@ sub process_decl
           push @BODY_LOAD, "ELSE\n", "NULLIFY ($prefix$name)\n";
         }
       push @BODY_LOAD, "ENDIF\n";
-      push @BODY_COPY, "!\$acc enter data attach ($prefix$name)\n",
+      push @BODY_COPY, 'OpenACC'->enterDataAttach ($prefix$name) . "\n",
                        "ENDIF\n";
       if (! $isFieldAPI)
         {
-          push @BODY_WIPE, "!\$acc exit data delete ($prefix$name)\n";
+          push @BODY_WIPE, 'OpenACC'->exitDataDetach ($prefix$name) . "\n";
         }
       push @BODY_HOST       , "ENDIF\n" unless ($intrinsic);
       push @BODY_LEGACY     , "ENDIF\n" unless ($intrinsic);
@@ -401,8 +402,8 @@ sub processTypes1
                        "LLCREATED = LDCREATED\n",
                        "ENDIF\n",
                        "IF (.NOT. LLCREATED) THEN\n",
-                       "!\$acc enter data create (YD)\n",
-                       "!\$acc update device (YD)\n",
+                       'OpenACC'->enterDataCreate ('YD') . "\n",
+                       'OpenACC'->updateDevice ('YD') . "\n",
                        "ENDIF\n";
       push @BODY_SIZE, "LLPRINT = .FALSE.\n",
                        "IF (PRESENT (LDPRINT)) THEN\n",
@@ -452,7 +453,7 @@ sub processTypes1
                        "LLDELETED = LDDELETED\n",
                        "ENDIF",
                        "IF (.NOT. LLDELETED) THEN\n",
-                       "!\$acc exit data delete (YD)\n",
+                       'OpenACC'->exitDataDelete ('YD') . "\n",
                        "ENDIF\n";
                        
   

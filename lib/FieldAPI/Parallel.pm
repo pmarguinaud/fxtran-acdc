@@ -565,7 +565,7 @@ sub makeSingleColumnFieldAPIOutlineSection
     }
   elsif ($directive eq 'openacc')
     {
-      &OpenACC::parallelLoopGang ($loop_ibl, PRIVATE => ['IBL'], FIRSTPRIVATE => ['YDCPG_BNDS']);
+      'OpenACC'->insertParallelLoopGang ($loop_ibl, PRIVATE => ['IBL'], FIRSTPRIVATE => ['YDCPG_BNDS']);
     }
   else
     {
@@ -646,8 +646,8 @@ sub makeSingleColumnFieldAPIOutlineSection
   elsif ($directive eq 'openacc')
     {
       my @priv = &F ('.//a-stmt/E-1/named-E[not(.//component-R[string(ct)="?"])]/N|.//do-V/named-E/N', $PTR, $loop_jlon, 1);
-      &OpenACC::loopVector ($loop_jlon, PRIVATE => \@priv);
-      &OpenACC::routineVector ($outline);
+      'OpenACC'->insertLoopVector ($loop_jlon, PRIVATE => \@priv);
+      'OpenACC'->insertRoutineVector ($outline);
     }
   else
     {
@@ -744,12 +744,12 @@ sub makeSingleColumnFieldAPISection
     }
   elsif ($directive eq 'openacc')
     {
-      &OpenACC::parallelLoopGang ($loop, PRIVATE => ['IBL'], FIRSTPRIVATE => ['YDCPG_BNDS', $args{stack} ? ('YDSTACK') : ()]);
+      'OpenACC'->insertParallelLoopGang ($loop, PRIVATE => ['IBL'], FIRSTPRIVATE => ['YDCPG_BNDS', $args{stack} ? ('YDSTACK') : ()]);
 
       my ($loop_vector) = &F ('./do-construct', $loop);
       my @priv = &F ('.//a-stmt/E-1/named-E[not(.//component-R[string(ct)="?"])]/N|.//do-V/named-E/N', $PTR, $loop_vector, 1);
   
-      &OpenACC::loopVector ($loop_vector, PRIVATE => \@priv, FIRSTPRIVATE => []);
+      'OpenACC'->insertLoopVector ($loop_vector, PRIVATE => \@priv, FIRSTPRIVATE => []);
     }
   else
     {
