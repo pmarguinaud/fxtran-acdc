@@ -1,0 +1,223 @@
+#!/usr/bin/perl -w
+
+use strict;
+use FileHandle;
+use Data::Dumper;
+use File::Temp;
+use File::Basename;
+use File::Spec;
+use File::Copy;
+use FindBin qw ($Bin);
+use Cwd;
+
+my $f90 = shift; 
+
+sub runCommand
+{
+  my @cmd = @_;
+# print "@cmd\n";
+  system (@cmd) 
+    && die ("Command `@cmd' failed");
+}
+
+sub concatenateSource
+{
+  my %args = @_;
+
+  my @opts = @{ $args{opts} };
+  my ($obj, $f90, $F90) = @args{qw (obj f90 F90)};
+
+  my $fho;
+
+  for my $f ($F90, sort <*.F90>)
+    {
+      $fho ||= 'FileHandle'->new ('>' . &basename ($F90));
+      my $code = do { my $fh = 'FileHandle'->new ("<$f"); local $/ = undef; <$fh> };
+      $fho->print ($code);
+      $fho->print ("\n" x 3);
+    }
+
+  $fho->close ();
+
+  &runCommand ($f90, @opts, -o => $obj, &basename ($F90));
+}
+
+sub concatenateObject
+{
+  my %args = @_;
+
+  my @opts = @{ $args{opts} };
+  my ($obj, $f90, $F90) = @args{qw (obj f90 F90)};
+
+  my @obj;
+
+  for my $f ($F90, sort <*.F90>)
+    {
+      &runCommand ($f90, @opts, $f);
+      (my $obj = &basename ($f)) =~ s/\.F90$/.o/o;
+      unshift @obj, $obj;
+    }
+
+  if (scalar (@obj) == 1)
+    {
+      rename ($obj[0], $obj);
+    }
+  else
+    {
+      my @ld = ('ld', '-r', '-o', $obj, @obj);
+      &runCommand (@ld);
+    }
+
+}
+
+sub openacc
+{
+  shift;
+  my %args = @_;
+
+  my @cmd = @{ $args{cmd} };
+  my $F90 = $args{F90};
+
+  push @cmd, '--dir', '.';
+
+  &runCommand (@cmd, $F90);
+
+  &concatenateObject (%args);
+}
+
+sub generateStructureMethods
+{
+  shift;
+  my %args = @_;
+
+  my @cmd = @{ $args{cmd} };
+  my $F90 = $args{F90};
+  my $dir = $args{dir};
+
+  my $pack = $ENV{TARGET_PACK};
+
+  $dir = $pack if ($pack);
+
+  push @cmd, 
+    '--types-fieldapi-dir', "$dir/types-fieldapi",
+    '--types-constant-dir', "$dir/types-constant",
+    '--sorted';
+
+  &runCommand (@cmd, $F90);
+
+  &concatenateObject (%args);
+
+}
+
+sub pointerParallel
+{
+  shift;
+  my %args = @_;
+
+  my @cmd = @{ $args{cmd} };
+  my $F90 = $args{F90};
+  my $dir = $args{dir};
+  my @opts = @{ $args{opts} };
+
+  my $pack = $ENV{TARGET_PACK};
+
+  $dir = $pack if ($pack);
+
+  my @inc = grep { m/^-I/ } @opts;
+
+  for my $dt ('types-fieldapi', 'types-constant')
+    {
+      if (-d "$dir/$dt")
+        {
+          &runCommand ('cp', '-r', "$dir/$dt", "$dt");
+        }
+    }
+
+  &runCommand ("$Bin/fieldRB.pl");
+  &runCommand ("$Bin/linkTypes.pl");
+
+  push @cmd, 
+    '--types-fieldapi-dir', "types-fieldapi",
+    '--types-constant-dir', "types-constant",
+    '--dir', '.', @inc;
+
+  &runCommand (@cmd, $F90);
+
+  &concatenateObject (%args);
+}
+
+my $c = grep { $_ eq '-c' } @ARGV;
+
+unless ($c)
+  {
+    exec ($f90, @ARGV);
+  }
+
+
+# Absolute path for includes
+
+my @argv;
+
+for (my $i = 0; $i < scalar (@ARGV); $i++)
+  {
+    if ($ARGV[$i] eq '-I')
+      {
+        push @argv, '-I' . 'File::Spec'->rel2abs ($ARGV[$i+1]);
+        $i++;
+      }
+    elsif (my ($inc) = ($ARGV[$i] =~ m/^-I(.*)$/o))
+      {
+        push @argv, '-I' . 'File::Spec'->rel2abs ($inc);
+      }
+    else
+      {
+        push @argv, $ARGV[$i];
+      }
+  }
+
+@ARGV = @argv;
+
+my @F90 = grep { m/\.(?:F90|F)$/io } @ARGV;
+my @opts = grep { ! m/\.(?:F90|F)$/io } @ARGV;
+
+my $dir = &cwd ();
+
+FILE: for my $F90 (@F90)
+  {
+    my $tmp = 'File::Temp'->newdir (CLEANUP => 0, DIR => "$ENV{GPUPACK_PREFIX}/tmp");
+    chdir ($tmp);
+
+    $F90 = 'File::Spec'->rel2abs ($F90, $dir);
+
+    (my $obj = $F90) =~ s/\.(?:F90|F)$/.o/io;
+
+    push @opts, "-I$dir";
+
+    my @text = do { my $fh = 'FileHandle'->new ("<$F90"); <$fh> };
+
+    if (my ($ACDC) = map { m/^\!\$ACDC (\S.*)$/o ? ($1) : () } @text)
+      {
+        my ($method) = ($ACDC =~ m/^(\w+)/o);
+        my @cmd = split (m/\s+/o, $ACDC);
+        $cmd[0] = "$Bin/$cmd[0]";
+
+        if ('main'->can ($method))
+          {
+            'main'->$method (obj => $obj, f90 => $f90, F90 => $F90, opts => \@opts, cmd => \@cmd, dir => $dir);
+            next FILE;
+          }
+
+      }
+
+NORMAL:
+
+    &runCommand ($f90, @opts, -o => $obj, $F90);
+  }
+
+for my $mod (<*.mod>)
+  {
+    &move ($mod, "$dir/$mod");
+  }
+
+
+

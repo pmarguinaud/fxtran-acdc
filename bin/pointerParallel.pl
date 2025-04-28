@@ -226,7 +226,7 @@ sub processSingleRoutine
   
   # Add modules
   
-  my @use = qw (FIELD_MODULE FIELD_FACTORY_MODULE FIELD_ACCESS_MODULE YOMPARALLELMETHOD STACK_MOD);
+  my @use = qw (FIELD_MODULE FIELD_FACTORY_MODULE FIELD_ACCESS_MODULE YOMPARALLELMETHOD STACK_MOD YOMHOOK);
   
   if ($opts{'use-acpy'} || $opts{'use-bcpy'})
     {
@@ -345,8 +345,11 @@ sub processSingleRoutine
             {
               my ($include) = &F ('.//include[./filename[string(.)="?" or string(.)="?"]', lc ($name) . '.intfb.h', lc ($name) . '.h', $d);
               $include or die $call->textContent;
-              $include->parentNode->insertAfter (&n ('<include>#include "<filename>' . lc ($name) . '_parallel.intfb.h</filename>"</include>'), $include);
-              $include->parentNode->insertAfter (&t ("\n"), $include);
+              unless ($opts{'merge-interfaces'})
+                {
+                  $include->parentNode->insertAfter (&n ('<include>#include "<filename>' . lc ($name) . '_parallel.intfb.h</filename>"</include>'), $include);
+                  $include->parentNode->insertAfter (&t ("\n"), $include);
+                }
             }
           $name->setData ($name->data . uc ($suffix));
         }
@@ -356,7 +359,10 @@ sub processSingleRoutine
   
   &Pointer::Parallel::setupLocalFields ($d, $t, '', $opts{gpumemstat});
   
-  &Include::removeUnusedIncludes ($d);
+  unless ($opts{'merge-interfaces'})
+    {
+      &Include::removeUnusedIncludes ($d);
+    }
   
   my $useUtilMod = 0;
   
@@ -417,7 +423,7 @@ sub processSingleRoutine
         }
       $proc .= '_OPENACC';
    
-      if (grep { $proc eq $_ } @called)
+      if ((grep { $proc eq $_ } @called) && ! $opts{'merge-interfaces'})
         {
           my $include_openacc = &n ('<include>#include "<filename>' . lc ($proc) . '.intfb.h</filename>"</include>');
           $include->parentNode->insertAfter ($include_openacc, $include);
@@ -471,7 +477,8 @@ sub processSingleRoutine
 my %opts = ('types-fieldapi-dir' => 'types-fieldapi', skip => 'PGFL,PGFLT1,PGMVT1,PGPSDT2D', 
              'types-constant-dir' => 'types-constant', 'post-parallel' => 'nullify', cycle => '49', 
              'types-fieldapi-non-blocked' => 'CPG_SL1F_TYPE,CPG_SL_MASK_TYPE', pragma => 'OpenACC');
-my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments stack84 use-acpy use-bcpy inline-contains gpumemstat contiguous);
+my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments stack84 use-acpy use-bcpy 
+                 inline-contains gpumemstat contiguous merge-interfaces);
 my @opts_s = qw (skip types-fieldapi-dir types-constant-dir post-parallel dir cycle types-fieldapi-non-blocked files base style pragma);
 
 &GetOptions

@@ -1,6 +1,7 @@
 package Finder::Include;
 
 use strict;
+use base qw (Finder::Basic);
 
 sub new
 {

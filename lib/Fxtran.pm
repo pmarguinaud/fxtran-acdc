@@ -1354,18 +1354,35 @@ sub intfb_body
         }
     }
 
+
 }
 
 sub intfb
 {
-  my ($F90, $dir, $ext) = @_;
+  my ($F90, $dir, $ext, %opts) = @_;
   
   $dir ||= '.';
   $ext ||= '.intfb.h';
 
   my $doc = &Fxtran::parse (location => $F90, fopts => ['-construct-tag', '-no-include', '-line-length' => 500]);
   
+  my ($openacc) = &F ('.//C[starts-with(.,"!$ACDC openacc")]', $doc);
+
   &intfb_body ($doc);
+
+  my $text_acc = '';
+
+  if ($openacc && $opts{'merge-interfaces'})
+    {
+      use FindBin qw ($Bin);
+      'FileHandle'->new (">tmp.F90")->print ($doc->textContent);
+      system ("$Bin/openacc.pl", '--stack84', 'tmp.F90');
+      my $doc_acc = &Fxtran::parse (location => 'tmp_openacc.F90', fopts => ['-construct-tag', '-no-include', '-line-length' => 500]);
+      $_->unbindNode () for (&F ('.//a-stmt', $doc_acc));
+      $text_acc = $doc_acc->textContent ();
+      $text_acc =~ s/^\s*\n$//goms;
+      unlink ($_) for (qw (tmp.F90 tmp_openacc.F90 tmp.F90.xml tmp_openacc.F90.xml));
+    }
 
   # Strip empty lines
   
@@ -1375,10 +1392,10 @@ sub intfb
   
   my $sub = &basename ($F90, qw (.F90));
   
-  
   &Fxtran::save_to_file ("$dir/$sub$ext", << "EOF");
 INTERFACE
 $text
+$text_acc
 END INTERFACE
 EOF
 

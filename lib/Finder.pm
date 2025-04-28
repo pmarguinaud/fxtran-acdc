@@ -2,15 +2,26 @@ package Finder;
 
 use strict;
 use Finder::Pack;
+use Finder::Pack::Build;
 use Finder::Include;
 use Finder::Files;
 
 sub new
 {
   my $class = shift;
-  my %args = @_;
 
-  if (-f '.gmkview')
+  my %args;
+
+  if ((scalar (@_) % 2) == 0)
+    {
+      %args = @_;
+    }
+
+  if ($ENV{TARGET_PACK})
+    {
+      return 'Finder::Pack::Build'->new (@_);
+    }
+  elsif (-f '.gmkview')
     { 
       return 'Finder::Pack'->new (@_);
     }

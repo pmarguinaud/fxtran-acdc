@@ -40,6 +40,8 @@ sub addSuffix
       $proc{$proc->textContent} = 1;
       $proc->setData ($proc->textContent . $suffix);
     }
+
+  return if ($opts{'merge-interfaces'});
            
 
   PROC: for my $proc (keys (%proc))
