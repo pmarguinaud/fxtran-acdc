@@ -1,0 +1,285 @@
+!OPTIONS XOPT(NOEVAL)
+SUBROUTINE ACTQSAT ( YDCST, YDPHY,KIDIA,KFDIA,KLON,KTDIA,KLEV,&
+ !-----------------------------------------------------------------------
+ ! - INPUT  2D .
+ & PAPRSF,PCP,PQ,PT,&
+ ! - OUTPUT 2D .
+ & PGEOSLC,PLH,PLSCPE,PQSAT,PQW,PRH,PTW)
+
+!**** *ACTQSAT * - CALCUL DE SATURATION ET DU THERMOMETRE MOUILLE.
+
+!     Sujet.
+!     ------
+!     - ROUTINE DE CALCUL ACTIF .
+!       CALCUL DE SATURATION ET DES CARACTERISTIQUES DU THERMOMETRE
+!       MOUILLE .
+!     - COMPUTATION OF SATURATION POINT AND WET-BULB CHARACTERISTICS .
+
+!**   Interface.
+!     ----------
+!        *CALL* *ACTQSAT*
+
+!-----------------------------------------------------------------------
+! WARNING: THE ENGLISH VERSION OF VARIABLES' NAMES IS TO BE READ IN THE
+!          "APLPAR" CODE.
+!-----------------------------------------------------------------------
+
+! -   ARGUMENTS D'ENTREE.
+!     -------------------
+
+! - NOM DES PARAMETRES DE DIMENSIONNEMENT DE LA PHYSIQUE.
+
+! KIDIA      : INDICE DE DEPART DES BOUCLES VECTORISEES SUR L'HORIZONT..
+! KFDIA      : INDICE DE FIN DES BOUCLES VECTORISEES SUR L'HORIZONTALE.
+! KLON       : DIMENSION HORIZONTALE DES TABLEAUX.
+! KTDIA      : INDICE DE DEPART DES BOUCLES VERTICALES (1 EN GENERAL).
+! KLEV       : DIMENSION VERTICALE DES TABLEAUX "FULL LEVEL".
+
+! - NOM DES VARIABLES DE LA PHYSIQUE (PAR ORDRE ALPHABETIQUE DANS CHAQUE
+!   CATEGORIE).
+
+! - 2D (1:KLEV) .
+
+! PAPRSF     : PRESSION AUX NIVEAUX DES COUCHES.
+! PCP        : CHALEUR MASSIQUE A PRESSION CONSTANTE DE L'AIR.
+! PQ         : HUMIDITE SPECIFIQUE DE LA VAPEUR D'EAU.
+! PT         : TEMPERATURE.
+
+!-----------------------------------------------------------------------
+
+! -   ARGUMENTS DE SORTIE.
+!     --------------------
+
+! - 2D (1:KLEV) .
+
+! PGEOSLC    : EQUIVALENT GEOPOTENTIEL POUR CALCUL DE CONVECTION EN PENTE.
+! PLH        : CHALEUR LATENTE A LA TEMPERATURE DE L'AIR.
+! PLSCPE     : RAPPORT EFECTIF DES L ET CP EN CONDENSATION/EVAPORATION.
+! PQSAT      : HUMIDITE SPECIFIQUE DE SATURATION.
+! PQW        : HUMIDITE SPECIFIQUE DU THERMOMETRE MOUILLE.
+! PRH        : HUMIDITE RELATIVE.
+! PTW        : TEMPERATURE DU THERMOMETRE MOUILLE.
+
+!-----------------------------------------------------------------------
+
+! -   ARGUMENTS IMPLICITES.
+!     ---------------------
+
+!-----------------------------------------------------------------------
+
+!     Externes.
+!     ---------
+
+!     Methode.
+!     --------
+
+!     Auteur.
+!     -------
+!      89-12, J.F. Geleyn.
+
+!     Modifications.
+!     --------------
+!      M.Hamrud      01-Oct-2003 CY28 Cleaning
+!      K. Yessad (Jul 2009): remove CDLOCK + some cleanings
+!      P. Marguinaud (Oct 2016) : Port to single precision
+!     R. El Khatib 22-Jun-2022 A contribution to simplify phasing after the refactoring of YOMCLI/YOMCST/YOETHF.
+!-----------------------------------------------------------------------
+
+USE PARKIND1  ,ONLY : JPIM     ,JPRB
+USE YOMHOOK   ,ONLY : LHOOK,   DR_HOOK, JPHOOK
+
+USE YOMPHY   , ONLY : TPHY
+USE YOMCST   , ONLY : TCST  
+
+!-----------------------------------------------------------------------
+
+IMPLICIT NONE
+
+TYPE (TCST), INTENT (IN) :: YDCST
+TYPE(TPHY)        ,INTENT(IN)    :: YDPHY
+INTEGER(KIND=JPIM),INTENT(IN)    :: KLON 
+INTEGER(KIND=JPIM),INTENT(IN)    :: KLEV 
+INTEGER(KIND=JPIM),INTENT(IN)    :: KIDIA 
+INTEGER(KIND=JPIM),INTENT(IN)    :: KFDIA 
+INTEGER(KIND=JPIM),INTENT(IN)    :: KTDIA 
+REAL(KIND=JPRB)   ,INTENT(IN)    :: PAPRSF(KLON,KLEV) 
+REAL(KIND=JPRB)   ,INTENT(IN)    :: PCP(KLON,KLEV) 
+REAL(KIND=JPRB)   ,INTENT(IN)    :: PQ(KLON,KLEV) 
+REAL(KIND=JPRB)   ,INTENT(IN)    :: PT(KLON,KLEV) 
+REAL(KIND=JPRB)   ,INTENT(OUT)   :: PGEOSLC(KLON,KLEV) 
+REAL(KIND=JPRB)   ,INTENT(OUT)   :: PLH(KLON,KLEV) 
+REAL(KIND=JPRB)   ,INTENT(OUT)   :: PLSCPE(KLON,KLEV) 
+REAL(KIND=JPRB)   ,INTENT(OUT)   :: PQSAT(KLON,KLEV) 
+REAL(KIND=JPRB)   ,INTENT(OUT)   :: PQW(KLON,KLEV) 
+REAL(KIND=JPRB)   ,INTENT(OUT)   :: PRH(KLON,KLEV) 
+REAL(KIND=JPRB)   ,INTENT(OUT)   :: PTW(KLON,KLEV) 
+
+!-----------------------------------------------------------------------
+
+REAL(KIND=JPRB) :: ZCP(KLON),ZLH(KLON),ZQWI(KLON)
+
+INTEGER(KIND=JPIM) :: JIT, JLEV, JLON
+
+REAL(KIND=JPRB) :: ZCPVMS, ZCPVMW, ZDCP, ZDELQ, ZDELT, ZDELTA, ZDQW, ZESP, ZEW, ZQW
+REAL(KIND=JPHOOK) :: ZHOOK_HANDLE
+
+!-----------------------------------------------------------------------
+
+#include "fcttrm.func.h"
+
+!-----------------------------------------------------------------------
+IF (LHOOK) CALL DR_HOOK('ACTQSAT',0,ZHOOK_HANDLE)
+ASSOCIATE(NBITER=>YDPHY%NBITER, LNEIGE=>YDPHY%LNEIGE, &
+ & RCPV=>YDCST%RCPV, RCS=>YDCST%RCS, RCW=>YDCST%RCW, RD=>YDCST%RD, RETV=>YDCST%RETV, &
+ & RTT=>YDCST%RTT)
+!-----------------------------------------------------------------------
+
+!*
+!     ------------------------------------------------------------------
+!     I - CONSTANTES AUXILIAIRES.
+
+!         AUXILIARY CONSTANTS.
+
+ZCPVMW=RCPV-RCW
+ZCPVMS=RCPV-RCS
+
+!*
+!     ------------------------------------------------------------------
+!     II - BOUCLE PASSIVE SUR LES NIVEAUX VERTICAUX.
+
+!          PASSIVE LOOP ON VERTICAL LEVELS.
+
+DO JLEV=KTDIA,KLEV
+
+!*
+!     ------------------------------------------------------------------
+!     III - CALCUL DE LA CHALEUR LATENTE LOCALE DE L'AIR.
+
+!           COMPUTATION OF THE LOCAL ATMOSPHERIC LATENT HEAT.
+
+  DO JLON=KIDIA,KFDIA
+
+!     CALCULS DEPENDANT DE L'OPTION NEIGE.
+!     SNOW OPTION DEPENDENT COMPUTATIONS.
+
+    IF (LNEIGE) THEN
+      ZDELTA=MAX(0.0_JPRB,SIGN(1.0_JPRB,RTT-PT(JLON,JLEV)))
+    ELSE
+      ZDELTA=0.0_JPRB
+    ENDIF
+
+!     APPEL A LA FONCTION DEFINIE POUR CALCULER LH.
+!     CALL TO THE DEFINED FUNCTION TO COMPUTE LH.
+
+    PLH(JLON,JLEV)= FOLH (PT(JLON,JLEV),ZDELTA)
+
+  ENDDO
+
+!*
+!     ------------------------------------------------------------------
+!     IV - INITIALISATION DES VARIABLES DE LA BOUCLE DE NEWTON, LES
+!     TEMPORAIRES CP ET LH DEVANT EVOLUER EN MEME TEMPS QUE LES
+!     ITERATIFS TW ET QW.
+
+!          INITIALIZATION OF THE VARIABLES IN THE NEWTON LOOP, THE
+!     TEMPORARY CP AND LH VALUES HAVING TO EVOLVE AT THE SAME TIME AS
+!     THE ITERATIVE TW AND QW.
+
+! - TEMPORAIRE(S) 1D .
+
+! ZCP       : VALEUR COURANTE DU CP DE L'AIR DURANT LA BOUCLE "NBITER".
+!            : CURRENT VALUE OF ATMOSPHERIC CP DURING THE "NBITER" LOOP.
+! ZLH       : COMME ZCP MAIS POUR LA CHALEUR LATENTE.
+!            : AS ZCP BUT FOR THE LATENT HEAT.
+
+  DO JLON=KIDIA,KFDIA
+    PQW(JLON,JLEV)=PQ(JLON,JLEV)
+    ZCP(JLON)=PCP(JLON,JLEV)
+    PTW(JLON,JLEV)=PT(JLON,JLEV)
+    ZLH(JLON)=PLH(JLON,JLEV)
+  ENDDO
+
+!*
+!     ------------------------------------------------------------------
+!     V - BOUCLE DE NEWTON POUR LE POINT "THERMOMETRE MOUILLE".
+
+!         NEWTON LOOP FOR THE "WET BULB" POINT.
+
+  DO JIT=1,NBITER
+    DO JLON=KIDIA,KFDIA
+
+!     CALCULS DEPENDANT DE L'OPTION NEIGE.
+!     SNOW OPTION DEPENDENT COMPUTATIONS.
+
+      IF (LNEIGE) THEN
+        ZDELTA=MAX(0.0_JPRB,SIGN(1.0_JPRB,RTT-PTW(JLON,JLEV)))
+      ELSE
+        ZDELTA=0.0_JPRB
+      ENDIF
+
+!     CALCULS DE SATURATION UTILISANT LES FONCTIONS DEFINIES ET STOCKAGE
+!     TEMPORAIRE DE QSAT(TW).
+!     SATURATION CALCULATIONS USING THE DEFINED FUNCTIONS AND TEMPORARY
+!     STORAGE OF QSAT(TW).
+
+! - TEMPORAIRE(S) 1D .
+
+! ZQWI      : VALEUR COURANTE DE ZQW REUTILISEE COMME QSAT A JIT=1.
+!            : CURRENT VALUE OF ZQW TO BE REUSED AS QSAT AT JIT=1.
+
+      ZEW= FOEW (PTW(JLON,JLEV),ZDELTA)
+      ZESP=ZEW/PAPRSF(JLON,JLEV)
+      ZQW= FOQS (ZESP)
+
+      ZDQW= FDQW (ZESP, FODLEW (PTW(JLON,JLEV),ZDELTA))
+
+      ZQWI(JLON)=ZQW
+
+!     INCREMENTATIONS.
+!     INCREMENTATIONS.
+
+      ZDCP=ZCPVMW+ZDELTA*(ZCPVMS-ZCPVMW)
+      ZDELQ=(ZQW-PQW(JLON,JLEV))*ZCP(JLON)/(ZCP(JLON)+ZLH(JLON)*ZDQW)
+      ZCP(JLON)=ZCP(JLON)+ZDCP*ZDELQ
+      ZDELT=-ZDELQ*ZLH(JLON)/ZCP(JLON)
+      ZLH(JLON)=ZLH(JLON)+ZDCP*ZDELT
+      PQW(JLON,JLEV)=PQW(JLON,JLEV)+ZDELQ
+      PTW(JLON,JLEV)=PTW(JLON,JLEV)+ZDELT
+      PLSCPE(JLON,JLEV)=PLH(JLON,JLEV)/ZCP(JLON)
+      PGEOSLC(JLON,JLEV)=PTW(JLON,JLEV)*(ZCP(JLON)+ZLH(JLON)*ZDQW)&
+       & /(1.0_JPRB+ZLH(JLON)*PQW(JLON,JLEV)/(PTW(JLON,JLEV)*RD&
+       & *(1.0_JPRB+RETV*PQW(JLON,JLEV))))  
+    ENDDO
+
+!     SAUVEGARDE DE L'HUMIDITE DE SATURATION APRES LA PREMIERE
+!     ITERATION.
+!     SAVING THE SATURATION HUMIDITY AFTER THE FIRST ITERATION.
+
+    IF (JIT == 1) THEN
+      DO JLON=KIDIA,KFDIA
+        PQSAT(JLON,JLEV)=ZQWI(JLON)
+      ENDDO
+    ENDIF
+
+  ENDDO
+
+!     CALCUL DE L'HUMIDITE RELATIVE.
+!     RELATIVE HUMIDITY COMPUTATION.
+
+  DO JLON=KIDIA,KFDIA
+    PRH(JLON,JLEV)=(PQ   (JLON,JLEV)*(1.0_JPRB+RETV*PQSAT(JLON,JLEV)))/&
+     & (PQSAT(JLON,JLEV)*(1.0_JPRB+RETV*PQ   (JLON,JLEV)))  
+  ENDDO
+
+!*
+!     ------------------------------------------------------------------
+!     VI - FIN DE LA BOUCLE VERTICALE.
+
+!          END OF THE VERTICAL LOOP.
+
+ENDDO
+
+!-----------------------------------------------------------------------
+END ASSOCIATE
+IF (LHOOK) CALL DR_HOOK('ACTQSAT',1,ZHOOK_HANDLE)
+END SUBROUTINE ACTQSAT

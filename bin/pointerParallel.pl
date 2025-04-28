@@ -17,6 +17,7 @@ use Data::Dumper;
 use FileHandle;
 use File::Basename;
 use File::stat;
+use File::Path;
 use List::MoreUtils qw (uniq);
 
 use Fxtran;
@@ -50,6 +51,7 @@ sub updateFile
   if ((! defined ($c)) || ($c ne $code))
     {
       unlink ($F90);
+      &mkpath (&dirname ($F90));
       'FileHandle'->new (">$F90")->print ($code);
     }
 }
@@ -504,7 +506,6 @@ if ($opts{help})
 
 $opts{skip} = [split (m/,/o, $opts{skip} || '')];
 
-$opts{style} = 'Style'->new (%opts);
 $opts{pragma} = 'Pragma'->new (%opts);
 
 $opts{nproma} = {};
@@ -541,6 +542,8 @@ my $types = &Storable::retrieve ("$opts{'types-fieldapi-dir'}/decls.dat");
 my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 800 -no-include -no-cpp -construct-tag -directive ACDC -canonic)]);
 
 &Canonic::makeCanonic ($d);
+
+$opts{style} = 'Style'->new (%opts, document => $d);
 
 my @pu = &F ('./object/file/program-unit', $d);
 

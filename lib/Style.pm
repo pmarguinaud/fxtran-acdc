@@ -87,7 +87,10 @@ sub new
     {
       return $class->newFromDocument (%args);
     }
-  return bless \%args, $class;
+  elsif ($class ne __PACKAGE__)
+    {
+      return bless \%args, $class;
+    }
 }
 
 sub removeUnusedIncludes

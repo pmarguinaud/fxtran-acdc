@@ -353,7 +353,7 @@ if ($opts{stdout})
   }
 else
   {
-
+    &mkpath (&dirname ($F90out));
     'FileHandle'->new (">$F90out.xml")->print ($d->toString);
     &updateFile ($F90out, &Canonic::indent ($d));
 

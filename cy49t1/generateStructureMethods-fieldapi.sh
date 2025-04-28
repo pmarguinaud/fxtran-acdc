@@ -130,10 +130,10 @@ generateStructureMethods.pl \
   $(resolve .fypp/arpifs/module/mf_phys_surface_type_mod.F90)
   
 generateStructureMethods.pl \
-  --wipe --copy --tmp /tmp/$USER  --field-api --field-api-class cpg $(resolve .fypp/arpifs/module/mf_phys_base_state_type_mod.F90)
+  --dir $dir --wipe --copy --tmp /tmp/$USER  --field-api --field-api-class cpg $(resolve .fypp/arpifs/module/mf_phys_base_state_type_mod.F90)
 
 generateStructureMethods.pl \
-  --wipe --copy --tmp /tmp/$USER  --field-api --field-api-class cpg $(resolve .fypp/arpifs/module/mf_phys_next_state_type_mod.F90)
+  --dir $dir --wipe --copy --tmp /tmp/$USER  --field-api --field-api-class cpg $(resolve .fypp/arpifs/module/mf_phys_next_state_type_mod.F90)
 
 
 linkTypes.pl

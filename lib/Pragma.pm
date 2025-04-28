@@ -6,18 +6,18 @@ sub new
 {
   my $class = shift;
   my %args = @_;
+
   if ($args{pragma})
     {
-      my $class = "Pragma::$args{class}";
+      my $class = "Pragma::$args{pragma}";
       eval "use $class";
       $@ && die ($@);
       return $class->new ();
     }
-  else
+  elsif ($class ne __PACKAGE__)
     {
-      return;
+      return bless \%args, $class;
     }
-  return $class->new (%args);
 }
 
 1;
