@@ -1,16 +1,8 @@
-package Pragma::OpenACC;
-
-#
-# Copyright 2022 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
-
-use base qw (Pragma);
+package Pragma::OpenMPTarget;
 
 use strict;
-use Fxtran;
-use List::MoreUtils qw (uniq);
+
+use base qw (Pragma);
 
 sub insertDirective
 {
@@ -62,7 +54,7 @@ sub insertDirective
         {
           $d[$i] = '&amp;' . $d[$i];
         }
-      $d[$i] = "!\$ACC$d[$i]";
+      $d[$i] = "!\$OMP$d[$i]";
     }
 
   $P->insertBefore (&t ("\n"), $p);
@@ -82,23 +74,22 @@ sub insertParallelLoopGang
 {
   shift;
   my ($p, %c) = @_;
-  &insertDirective ($p, 'PARALLEL LOOP GANG', %c);
+  delete $c{PRESENT};
+  $c{THREAD_LIMIT} = delete $c{VECTOR_LENGTH};
+  &insertDirective ($p, 'TARGET TEAMS DISTRIBUTE', %c);
 }
 
 sub insertLoopVector
 {
   shift;
   my ($p, %c) = @_;
-  &insertDirective ($p, 'LOOP VECTOR', %c);
+  &insertDirective ($p, 'PARALLEL DO', %c);
 }
 
 sub insertRoutineVector
 {
   shift;
-  my $d = shift;
-  my ($N) = &F ('./subroutine-stmt/subroutine-N', $d, 1); 
-  $d->insertAfter (&n ("<C>!\$ACC ROUTINE ($N) VECTOR</C>"), $d->firstChild);
-  $d->insertAfter (&t ("\n"), $d->firstChild);
+  die;
 }
 
 sub insertRoutineSeq
@@ -106,7 +97,7 @@ sub insertRoutineSeq
   shift;
   my $d = shift;
   my ($N) = &F ('./subroutine-stmt/subroutine-N', $d, 1); 
-  $d->insertAfter (&n ("<C>!\$ACC ROUTINE ($N) SEQ</C>"), $d->firstChild);
+  $d->insertAfter (&n ("<C>!\$OMP DECLARE TARGET</C>"), $d->firstChild);
   $d->insertAfter (&t ("\n"), $d->firstChild);
 }
 
@@ -114,39 +105,42 @@ sub insertSerial
 {
   shift;
   my ($p, %c) = @_;
-  &insertDirective ($p, 'SERIAL', %c);
-  $p->parentNode->insertAfter (&n ("<C>!\$ACC END SERIAL</C>"), $p);
+  &insertDirective ($p, 'TARGET TEAMS PARALLEL NUM_THREADS (1)', %c);
+  $p->parentNode->insertAfter (&n ("<C>!\$OMP END TEAMS</C>"), $p);
+  $p->parentNode->insertAfter (&t ("\n"), $p);
+  $p->parentNode->insertAfter (&n ("<C>!\$OMP END PARALLEL</C>"), $p);
   $p->parentNode->insertAfter (&t ("\n"), $p);
 }
 
 sub enterDataCreate
 {
   shift;
-  return @_ ? '!$ACC ENTER DATA CREATE (' . join (', ', @_) . ')' : '';
+  return @_ ? '!$OMP TARGET ENTER DATA MAP (ALLOC: ' . join (', ', @_) . ')' : '';
 }
 
 sub exitDataDelete
 {
   shift;
-  return @_ ? '!$ACC EXIT DATA DELETE (' . join (', ', @_) . ')' : '';
+  return @_ ? '!$OMP TARGET EXIT DATA MAP (DELETE: ' . join (', ', @_) . ')' : '';
 }
 
 sub updateDevice
 {
   shift;
-  return @_ ? '!$ACC UPDATE DEVICE (' . join (', ', @_) . ')' : '';
+  return @_ ? '!$OMP TARGET UPDATE TO (' . join (', ', @_) . ')' : '';
 }
 
 sub enterDataAttach
 {
   shift;
-  return @_ ? '!$ACC ENTER DATA ATTACH (' .  join (', ', @_) . ')' : '';
+  return @_ ? ' !$OMP TARGET ENTER DATA MAP (TO:' .  join (', ', @_) . ')' : '';
 }
 
 sub exitDataDetach
 {
   shift;
-  return @_ ? '!$ACC EXIT DATA DETACH (' .  join (', ', @_) . ')' : '';
+  return '';
 }
+
 
 1;
