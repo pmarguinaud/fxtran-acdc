@@ -46,7 +46,7 @@ do
   dir=$(dirname $f)
   pointerParallel.pl --gpumemstat --stack84 --use-acpy \
     --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify \
-    --version --style MFPHYSTOP --dir src/local/$dir $(resolve --user $f)
+    --dir src/local/$dir $(resolve --user $f)
 done
 
 grep _parallel src/local/arpifs/phys_dmn/apl_arpege_parallel.F90

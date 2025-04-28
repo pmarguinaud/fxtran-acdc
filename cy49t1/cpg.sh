@@ -20,8 +20,8 @@ print &dirname ($f)
 ' $f)
 
 pointerParallel.pl --stack84 \
-  --gpumemstat --style DYNAMICS --cycle 49 --use-acpy \
-  --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify --version --dir \
+  --gpumemstat --cycle 49 --use-acpy \
+  --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify --dir \
   src/local/$dir $(resolve $f)
 
 done
@@ -29,6 +29,6 @@ done
 for f in arpifs/dia/cpxfu.F90 arpifs/dia/cpcfu.F90
 do
   dir=$(dirname $f)
-  pointerParallel.pl --gpumemstat --stack84 --inline-contains --style MFPHYSTOP --cycle 49 --use-acpy  \
-    --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify --version --dir src/local/$dir $(resolve $f)
+  pointerParallel.pl --gpumemstat --stack84 --inline-contains --cycle 49 --use-acpy  \
+    --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify --dir src/local/$dir $(resolve $f)
 done

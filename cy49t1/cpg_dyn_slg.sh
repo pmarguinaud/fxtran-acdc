@@ -38,15 +38,15 @@ print &dirname ($f)
 ' $f)
 
 pointerParallel.pl \
-  --gpumemstat --stack84 --cycle 49 --use-acpy --style DYNAMICS \
-  --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify --version --dir \
+  --gpumemstat --stack84 --cycle 49 --use-acpy \
+  --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify --dir \
   src/local/$dir $(resolve $f)
 
 done
 
 fi
 
-if [ 0 -eq 1 ]
+if [ 1 -eq 1 ]
 then
 
 for f in \
@@ -73,11 +73,13 @@ for f in \
   arpifs/adiab/gphpre_expl.F90                    \
   arpifs/adiab/gpgrxyb_expl.F90                   \
   arpifs/adiab/gpgw.F90                           \
-  arpifs/adiab/gpmpfc_expl_part1.F90            
+  arpifs/adiab/gpmpfc_expl_part1.F90              \
+  arpifs/phys_dmn/dprecips_xfu.F90                \
+  arpifs/dia/meanwind_xfu.F90
 do
 
 dir=$(dirname $f)
-openacc.pl --interface --stack84 --cycle 49 --pointers --version --style DYNAMICS --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
+openacc.pl --interface --stack84 --cycle 49 --pointers --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
 
 done
 
@@ -93,17 +95,7 @@ $f =~ s,^\.fypp/,,o;
 print &dirname ($f) 
 ' $f)
 
-openacc.pl --interface --stack84 --cycle 49 --pointers --style MFPHYS --version --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
-
-done
-
-for f in \
-  arpifs/phys_dmn/dprecips_xfu.F90 \
-  arpifs/dia/meanwind_xfu.F90
-do
-
-dir=$(dirname $f)
-openacc.pl --interface --stack84 --cycle 49 --pointers --style MFPHYS --version --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
+openacc.pl --interface --stack84 --cycle 49 --pointers --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
 
 done
 

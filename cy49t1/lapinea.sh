@@ -16,9 +16,9 @@ for f in \
 do
   dir=$(dirname $f)
   pointerParallel.pl \
-    --gpumemstat --stack84 --jlon JROF --nproma YDCPG_OPTS%KLON,YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIM%NPROMNH \
+    --gpumemstat --stack84 \
     --cycle 49 --use-acpy --types-fieldapi-dir types-fieldapi --post-parallel synchost,nullify \
-    --version --dir src/local/$dir $(resolve $f)
+    --dir src/local/$dir $(resolve $f)
 done
 
 fi
@@ -68,7 +68,7 @@ for f in \
   arpifs/utility/verdisint.F90         
 do
   dir=$(dirname $f)
-  openacc.pl --interface --stack84 --cycle 49 --pointers --version --style DYNAMICS \
+  openacc.pl --interface --stack84 --cycle 49 --pointers \
     --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
 done
 
@@ -85,7 +85,7 @@ do
   dir=$(dirname $f)
   openacc.pl \
     --interface --set-variables 'LLVERINT_ON_CPU=.FALSE.,LLSIMPLE_DGEMM=.TRUE.' --no-check-pointers-dims ZIN,ZOUT \
-    --stack84 --cycle 49 --pointers --version --style DYNAMICS --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
+    --stack84 --cycle 49 --pointers --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
 done
 
 fi
@@ -99,7 +99,7 @@ for f in \
   aladin/interpol/elascaw.F90
 do
   dir=$(dirname $f)
-  openacc.pl --interface --dummy --stack84 --cycle 49 --pointers --version --style DYNAMICS \
+  openacc.pl --interface --dummy --stack84 --cycle 49 --pointers \
      --dir src/local/ifsaux/openacc/$dir $(resolve --user $f)
 done
 

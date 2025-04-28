@@ -20,12 +20,11 @@ do
   echo "==> $f <=="
   dir=$(dirname $f)
   mkdir -p src/local/ifsaux/openacc/$dir
-#  --only-if-newer 
   openacc.pl \
    --interface \
    --stack84 --inline-contained \
    --dir src/local/ifsaux/openacc/$dir \
-   --style ACRANEB2 --version $(resolve --user $f)
+   $(resolve --user $f)
 done
 
 

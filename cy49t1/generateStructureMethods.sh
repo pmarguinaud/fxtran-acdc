@@ -218,11 +218,6 @@ done
 
 set -x
 
-#generateStructureMethods.pl \
-#  --wipe --copy --load --save --dir src/local/ifsaux/util --out util_cpg_opts_type_mod.F90 \
-#  $(resolve .fypp/arpifs/module/cpg_opts_type_mod.F90)
-
-
 generateStructureMethods.pl \
   --crc64 --size --host --wipe --copy --load --save --dir src/local/ifsaux/util --tmp /tmp/$USER \
   --only-types TSPP_CONFIG \
@@ -237,7 +232,6 @@ generateStructureMethods.pl \
   --crc64 --size --host --wipe --copy --load --save --dir src/local/ifsaux/util --tmp /tmp/$USER \
   --only-types TGFLT,TGMVT,TTND,THWIND,TCTY,TRCP,TXYBDER,TXYB \
   $(resolve arpifs/module/intdyn_mod.F90)
-
 
 generateStructureMethods.pl \
   --crc64 --host --wipe --copy --load --save --dir src/local/ifsaux/util --tmp /tmp/$USER \

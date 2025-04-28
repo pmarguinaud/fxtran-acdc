@@ -73,7 +73,7 @@ do
 #  --only-if-newer 
   openacc.pl --interface --stack84 \
    --dir src/local/ifsaux/openacc/$dir \
-   --version $(resolve --user $f)
+   $(resolve --user $f)
 done
 
 
@@ -114,7 +114,7 @@ do
   openacc.pl --interface --stack84 \
    --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90 \
    --dir src/local/ifsaux/openacc/$dir \
-   --version --style ECPHYS --cycle 49 \
+   --cycle 49 \
    $(resolve --user $f)
 done
 
@@ -125,7 +125,7 @@ do
   mkdir -p src/local/ifsaux/openacc/$dir
   openacc.pl \
      --interface --stack84 --cycle 49 \
-     --version --style DYNAMICS --dir src/local/ifsaux/openacc/$dir $(resolve $f)
+     --dir src/local/ifsaux/openacc/$dir $(resolve $f)
 done
 
 for f in \
@@ -136,8 +136,8 @@ do
   mkdir -p src/local/ifsaux/openacc/$dir
 #  --only-if-newer 
   openacc.pl --interface --stack84 \
-   --style ECPHYS --dir src/local/ifsaux/openacc/$dir \
-   --version $(resolve --user $f)
+   --dir src/local/ifsaux/openacc/$dir \
+   $(resolve --user $f)
 done
 
 
@@ -150,7 +150,7 @@ do
   mkdir -p src/local/ifsaux/openacc/$dir
 #  --only-if-newer 
   openacc.pl --interface --stack84 \
-   --style MFPHYSTOP -dir src/local/ifsaux/openacc/$dir \
-   --version $(resolve --user $f)
+   -dir src/local/ifsaux/openacc/$dir \
+   $(resolve --user $f)
 done
 
