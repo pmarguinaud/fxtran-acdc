@@ -177,7 +177,7 @@ sub process_decl
                        "ENDIF\n", 
                        "KSIZE = KSIZE + ISIZE\n";
 
-      push @BODY_CRC64, "WRITE (KLUN, '(Z16.16,\" \",A)') CRC64 ($prefix$name), CDPATH//'%$name'\n";
+      push @BODY_CRC64, "WRITE (KLUN, '(Z16.16,\" \",A)') FCRC64 ($prefix$name), CDPATH//'%$name'\n";
     }
   else 
     {
@@ -547,7 +547,7 @@ sub processTypes1
           $USE_SIZE        .= "USE UTIL_${extends}_MOD, ONLY : $extends, SIZE_$extends\n";
         }
 
-      $USE_CRC64 .= "USE CRC64_INTRINSIC\n";
+      $USE_CRC64 .= "USE CRC64_INTRINSIC, ONLY : FCRC64 => CRC64\n";
 
       for ($USE_SAVE, $USE_SAVE, $USE_COPY, $USE_WIPE, $USE_SIZE, $DECL_SAVE, $DECL_LOAD, $DECL_HOST, $DECL_LEGACY, $DECL_CRC64)
         {
@@ -748,6 +748,14 @@ sub processTypes
     {
       &w ("$opts->{dir}/$opts->{out}", join ('', map { $code->{$_} } @$file));
     }
+  elsif ($opts->{sorted})
+    {
+      my $i = 0;
+      for my $f (@$file)
+        {
+          &w ("$opts->{dir}/" . sprintf ('%4.4d.', $i++) . $f, $code->{$f});
+        }
+    }
   else
     {
       for my $f (@$file)
@@ -755,7 +763,6 @@ sub processTypes
           &w ("$opts->{dir}/$f", $code->{$f});
         }
     }
-
 }
 
 sub process_module
