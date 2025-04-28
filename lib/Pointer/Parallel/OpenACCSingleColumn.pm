@@ -12,7 +12,6 @@ use Pointer::Parallel;
 use Fxtran;
 use DIR;
 use Loop;
-use OpenACC;
 use Data::Dumper;
 use ReDim;
 use Stack;
@@ -188,15 +187,15 @@ EOF
       push @copyin, 'YL_FGS';
     }
 
-  'OpenACC'->insertParallelLoopGang ($do_jblk, 
-                                     PRIVATE => ['JBLK'], 
-                                     COPYIN => \@copyin,
-                                     PRESENT => [@NPROMA, @const, 'YSTACK'], 
-                                     VECTOR_LENGTH => ['YDCPG_OPTS%KLON']);
+  $opts{pragma}->insertParallelLoopGang ($do_jblk, 
+                                         PRIVATE => ['JBLK'], 
+                                         COPYIN => \@copyin,
+                                         PRESENT => [@NPROMA, @const, 'YSTACK'], 
+                                         VECTOR_LENGTH => ['YDCPG_OPTS%KLON']);
 
   &Print::useABOR1_ACC ($do_jlon);
 
-  'OpenACC'->insertLoopVector ($do_jlon, PRIVATE => \@priv);
+  $opts{pragma}->insertLoopVector ($do_jlon, PRIVATE => \@priv);
 
   &ReDim::redimArguments ($par1) if ($opts{'redim-arguments'});
 

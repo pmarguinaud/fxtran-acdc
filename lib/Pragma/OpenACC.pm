@@ -1,4 +1,4 @@
-package OpenACC;
+package Pragma::OpenACC;
 
 #
 # Copyright 2022 Meteo-France
@@ -6,6 +6,7 @@ package OpenACC;
 # philippe.marguinaud@meteo.fr
 #
 
+use base qw (Pragma);
 
 use strict;
 use Fxtran;

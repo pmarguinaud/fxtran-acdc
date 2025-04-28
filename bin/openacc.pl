@@ -25,7 +25,7 @@ use Fxtran;
 use Stack;
 use Associate;
 use Loop;
-use OpenACC;
+use Pragma;
 use ReDim;
 use Construct;
 use DIR;
@@ -128,7 +128,7 @@ sub processSingleInterface
   
   &Subroutine::addSuffix ($d, $SUFFIX);
   
-  'OpenACC'->insertRoutineSeq ($d);
+  $opts{pragma}->insertRoutineSeq ($d);
   
   &Stack::addStack 
   (
@@ -216,7 +216,7 @@ sub processSingleRoutine
       &Call::addSuffix ($d, suffix => $SUFFIX, match => sub { ! $opts{style}->noComputeRoutine (@_) });
     }
   
-  'OpenACC'->insertRoutineSeq ($d);
+  $opts{pragma}->insertRoutineSeq ($d);
 
   &Stack::addStack 
   (
@@ -256,11 +256,11 @@ sub processSingleRoutine
 }
 
 
-my %opts = (cycle => 49, tmp => '.', style => 'MFPHYS');
+my %opts = (cycle => 49, tmp => '.', style => 'MFPHYS', pragma => 'OpenACC');
 my @opts_f = qw (help drhook only-if-newer version stdout 
                  modi value-attribute redim-arguments stack84 
                  pointers inline-contained debug interfaces dummy inline-comment interface);
-my @opts_s = qw (dir cycle inlined no-check-pointers-dims set-variables files base tmp style);
+my @opts_s = qw (dir cycle inlined no-check-pointers-dims set-variables files base tmp style pragma);
 
 &GetOptions
 (
@@ -309,6 +309,7 @@ my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag 
 &Canonic::makeCanonic ($d);
 
 $opts{style} = 'Style'->new (%opts, document => $d);
+$opts{pragma} = 'Pragma'->new (%opts);
 
 my $find = 'Finder'->new (files => $opts{files}, base => $opts{base});
 

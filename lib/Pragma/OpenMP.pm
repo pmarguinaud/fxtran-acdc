@@ -1,4 +1,4 @@
-package OpenMP;
+package Pragma::OpenMP;
 
 #
 # Copyright 2022 Meteo-France
@@ -6,6 +6,7 @@ package OpenMP;
 # philippe.marguinaud@meteo.fr
 #
 
+use base qw (Pragma);
 
 use strict;
 use Fxtran;

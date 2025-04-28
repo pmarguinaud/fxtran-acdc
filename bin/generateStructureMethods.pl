@@ -21,12 +21,13 @@ use Fxtran::IO;
 use FieldAPI::Register;
 use Common;
 use Fxtran;
+use Pragma;
 
-my %opts = (dir => '.', 'types-fieldapi-dir' => 'types-fieldapi', 'types-constant-dir' => 'types-constant');
+my %opts = (dir => '.', 'types-fieldapi-dir' => 'types-fieldapi', 'types-constant-dir' => 'types-constant', pragma => 'OpenACC');
 my @opts_f = qw (size save load copy host crc64 legacy wipe field-api help);
 my @opts_s = qw (skip-components skip-types only-components only-types 
                  dir out no-allocate module-map field-api-class tmp 
-                 types-fieldapi-dir types-constant-dir);
+                 types-fieldapi-dir types-constant-dir pragma);
 
 &GetOptions
 (
@@ -47,6 +48,8 @@ if ($opts{help})
 ( -d $opts{dir}) or &mkpath ($opts{dir});
 ( -d $opts{'types-fieldapi-dir'}) or &mkpath ($opts{'types-fieldapi-dir'});
 ( -d $opts{'types-constant-dir'}) or &mkpath ($opts{'types-constant-dir'});
+
+$opts{pragma} = 'Pragma'->new (%opts);
 
 if (! $opts{'no-allocate'})
   {

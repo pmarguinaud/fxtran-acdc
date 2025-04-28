@@ -36,6 +36,7 @@ use Canonic;
 use Directive;
 use Inline;
 use Style;
+use Pragma;
 
 use Cycle49;
 use Cycle50;
@@ -469,9 +470,9 @@ sub processSingleRoutine
 
 my %opts = ('types-fieldapi-dir' => 'types-fieldapi', skip => 'PGFL,PGFLT1,PGMVT1,PGPSDT2D', 
              'types-constant-dir' => 'types-constant', 'post-parallel' => 'nullify', cycle => '49', 
-             'types-fieldapi-non-blocked' => 'CPG_SL1F_TYPE,CPG_SL_MASK_TYPE');
+             'types-fieldapi-non-blocked' => 'CPG_SL1F_TYPE,CPG_SL_MASK_TYPE', pragma => 'OpenACC');
 my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments stack84 use-acpy use-bcpy inline-contains gpumemstat contiguous);
-my @opts_s = qw (skip types-fieldapi-dir types-constant-dir post-parallel dir cycle types-fieldapi-non-blocked files base style);
+my @opts_s = qw (skip types-fieldapi-dir types-constant-dir post-parallel dir cycle types-fieldapi-non-blocked files base style pragma);
 
 &GetOptions
 (
@@ -497,6 +498,7 @@ if ($opts{help})
 $opts{skip} = [split (m/,/o, $opts{skip} || '')];
 
 $opts{style} = 'Style'->new (%opts);
+$opts{pragma} = 'Pragma'->new (%opts);
 
 $opts{nproma} = {};
 $opts{jlon} = {};

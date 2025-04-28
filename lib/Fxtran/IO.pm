@@ -15,7 +15,6 @@ use File::Spec;
 use Cwd;
 use Common;
 use Fxtran;
-use OpenACC;
 
 sub process_decl
 {
@@ -136,9 +135,9 @@ sub process_decl
 
       if (! $isFieldAPI)
         {
-          push @BODY_COPY, 'OpenACC'->enterDataCreate ($prefix$name) . "\n", 
-                           'OpenACC'->updateDevice ($prefix$name) . "\n";
-          push @BODY_WIPE, 'OpenACC'->exitDataDetach ($prefix$name) . "\n";
+          push @BODY_COPY, $opts->{pragma}->enterDataCreate ($prefix$name) . "\n", 
+                           $opts->{pragma}->updateDevice ($prefix$name) . "\n";
+          push @BODY_WIPE, $opts->{pragma}->exitDataDetach ($prefix$name) . "\n";
         }
     }
   
@@ -281,11 +280,11 @@ sub process_decl
           push @BODY_LOAD, "ELSE\n", "NULLIFY ($prefix$name)\n";
         }
       push @BODY_LOAD, "ENDIF\n";
-      push @BODY_COPY, 'OpenACC'->enterDataAttach ($prefix$name) . "\n",
+      push @BODY_COPY, $opts->{pragma}->enterDataAttach ($prefix$name) . "\n",
                        "ENDIF\n";
       if (! $isFieldAPI)
         {
-          push @BODY_WIPE, 'OpenACC'->exitDataDetach ($prefix$name) . "\n";
+          push @BODY_WIPE, $opts->{pragma}->exitDataDetach ($prefix$name) . "\n";
         }
       push @BODY_HOST       , "ENDIF\n" unless ($intrinsic);
       push @BODY_LEGACY     , "ENDIF\n" unless ($intrinsic);
@@ -402,8 +401,8 @@ sub processTypes1
                        "LLCREATED = LDCREATED\n",
                        "ENDIF\n",
                        "IF (.NOT. LLCREATED) THEN\n",
-                       'OpenACC'->enterDataCreate ('YD') . "\n",
-                       'OpenACC'->updateDevice ('YD') . "\n",
+                       $opts->{pragma}->enterDataCreate ('YD') . "\n",
+                       $opts->{pragma}->updateDevice ('YD') . "\n",
                        "ENDIF\n";
       push @BODY_SIZE, "LLPRINT = .FALSE.\n",
                        "IF (PRESENT (LDPRINT)) THEN\n",
@@ -453,7 +452,7 @@ sub processTypes1
                        "LLDELETED = LDDELETED\n",
                        "ENDIF",
                        "IF (.NOT. LLDELETED) THEN\n",
-                       'OpenACC'->exitDataDelete ('YD') . "\n",
+                       $opts->{pragma}->exitDataDelete ('YD') . "\n",
                        "ENDIF\n";
                        
   
