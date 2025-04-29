@@ -25,9 +25,9 @@ use Fxtran;
 use Pragma;
 
 my %opts = (dir => '.', 'types-fieldapi-dir' => 'types-fieldapi', 'types-constant-dir' => 'types-constant', pragma => 'OpenACC');
-my @opts_f = qw (size save load copy host crc64 legacy wipe field-api help sorted);
+my @opts_f = qw (size save load copy host crc64 legacy wipe field-api help sorted type-bound-methods);
 my @opts_s = qw (skip-components skip-types only-components only-types 
-                 dir out no-allocate module-map field-api-class tmp 
+                 dir out no-allocate module-map field-api-class tmp
                  types-fieldapi-dir types-constant-dir pragma);
 
 &GetOptions
