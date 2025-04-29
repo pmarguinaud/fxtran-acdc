@@ -459,7 +459,7 @@ sub processTypes1
           push @BODY_LEGACY     , &callSubroutineMethod ($opts, 'YLSUPER', 'LEGACY', "LEGACY_$extends", 0, 'KADDRL', 'KADDRU', 'KDIR=KDIR');
           push @BODY_CRC64      , &callSubroutineMethod ($opts, 'YLSUPER', 'CRC64',  "CRC64_$extends",  0, 'KLUN', 'CDPATH');
           push @BODY_WIPE       , &callSubroutineMethod ($opts, 'YLSUPER', 'WIPE',   "WIPE_$extends",   0, 'LDDELETED=.TRUE.', 'LDFIELDAPI=LDFIELDAPI');
-          push @BODY_SIZE       , "KSIZE = KSIZE + " . &callFunctionMethod ($opts, 'YLSUPER', 'SIZE', "SIZE_$extends", 'CLPATH', 'LLPRINT');
+          push @BODY_SIZE       , "KSIZE = KSIZE + " . &callFunctionMethod ($opts, 'YLSUPER', 'SIZE', "SIZE_$extends", 0, 'CLPATH', 'LLPRINT');
         }
     
       my (%U, %J, %L, %B, %T);

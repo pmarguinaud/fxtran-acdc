@@ -304,7 +304,7 @@ if ($opts{'only-if-newer'})
   }
 
 
-my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag -no-include -no-cpp -line-length 500)], dir => $opts{tmp});
+my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag -no-include -no-cpp -line-length 5000)], dir => $opts{tmp});
 
 &Canonic::makeCanonic ($d);
 
