@@ -214,7 +214,7 @@ NORMAL:
     &runCommand ($f90, @opts, -o => $obj, $F90);
   }
 
-for my $mod (<*.mod>)
+for my $mod (<*.mod>, <*.smod>)
   {
     &move ($mod, "$dir/$mod");
   }
