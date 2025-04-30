@@ -42,7 +42,6 @@ sub addSuffix
     }
 
   return if ($opts{'merge-interfaces'});
-           
 
   PROC: for my $proc (keys (%proc))
     {   

@@ -213,7 +213,13 @@ sub processSingleRoutine
   
   unless ($opts{dummy})
     {
-      &Call::addSuffix ($d, suffix => $SUFFIX, match => sub { ! $opts{style}->noComputeRoutine (@_) });
+      &Call::addSuffix 
+      (
+        $d, 
+        suffix => $SUFFIX, 
+        match => sub { ! $opts{style}->noComputeRoutine (@_) },
+        'merge-interfaces' => $opts{'merge-interfaces'},
+      );
     }
   
   $opts{pragma}->insertRoutineSeq ($d);
@@ -241,9 +247,12 @@ sub processSingleRoutine
       
       &DrHook::remove ($d) unless ($opts{drhook});
       
-      &Include::removeUnusedIncludes ($d) 
-        if ($opts{style}->removeUnusedIncludes ());
-      
+
+      unless ($opts{'merge-interfaces'})
+        {
+          &Include::removeUnusedIncludes ($d) 
+            if ($opts{style}->removeUnusedIncludes ());
+        }
 
       $opts{style}->handleMessages ($d, %opts);
 
@@ -256,9 +265,9 @@ sub processSingleRoutine
 }
 
 
-my %opts = (cycle => 49, tmp => '.', style => 'MFPHYS', pragma => 'OpenACC');
+my %opts = (cycle => 49, tmp => '.', pragma => 'OpenACC');
 my @opts_f = qw (help drhook only-if-newer version stdout 
-                 modi value-attribute redim-arguments stack84 
+                 modi value-attribute redim-arguments stack84 merge-interfaces
                  pointers inline-contained debug interfaces dummy inline-comment interface);
 my @opts_s = qw (dir cycle inlined no-check-pointers-dims set-variables files base tmp style pragma);
 
@@ -309,6 +318,7 @@ my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag 
 &Canonic::makeCanonic ($d);
 
 $opts{style} = 'Style'->new (%opts, document => $d);
+
 $opts{pragma} = 'Pragma'->new (%opts);
 
 my $find = 'Finder'->new (files => $opts{files}, base => $opts{base});

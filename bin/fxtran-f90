@@ -78,7 +78,7 @@ sub openacc
   my @cmd = @{ $args{cmd} };
   my $F90 = $args{F90};
 
-  push @cmd, '--dir', '.';
+  push @cmd, '--merge-interfaces', '--dir', '.';
 
   &runCommand (@cmd, $F90);
 
@@ -139,7 +139,7 @@ sub pointerParallel
   push @cmd, 
     '--types-fieldapi-dir', "types-fieldapi",
     '--types-constant-dir', "types-constant",
-    '--dir', '.', @inc;
+    '--dir', '.', '--merge-interfaces', @inc;
 
   &runCommand (@cmd, $F90);
 

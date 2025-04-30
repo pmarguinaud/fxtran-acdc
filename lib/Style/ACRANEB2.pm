@@ -14,7 +14,7 @@ sub preProcessForOpenACC
   my $d = shift;
   my %args = @_;
 
-  $class->SUPER::preProcessForOpenACC (%args);
+  $class->SUPER::preProcessForOpenACC ($d, %args);
 
   my ($pu) = &F ('object/file/program-unit', $d);
 

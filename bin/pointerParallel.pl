@@ -483,6 +483,9 @@ my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments
                  inline-contains gpumemstat contiguous merge-interfaces);
 my @opts_s = qw (skip types-fieldapi-dir types-constant-dir post-parallel dir cycle types-fieldapi-non-blocked files base style pragma);
 
+my @include = grep { m/^-I/o } @ARGV;
+@ARGV = grep { ! m/^-I/o } @ARGV;
+
 &GetOptions
 (
   (map { ($_, \$opts{$_}) } @opts_f),
@@ -533,7 +536,7 @@ if ($opts{'only-if-newer'})
 
 my $NAME = uc (&basename ($F90out, qw (.F90)));
 
-my $find = 'Finder'->new (files => $opts{files}, base => $opts{base});
+my $find = 'Finder'->new (files => $opts{files}, base => $opts{base}, I => \@include);
 
 my $types = &Storable::retrieve ("$opts{'types-fieldapi-dir'}/decls.dat");
 

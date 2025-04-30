@@ -2,12 +2,13 @@ package Style::MFPHYSTOP;
 
 use base qw (Style::MFPHYS);
 use Fxtran;
+use Data::Dumper;
 
 use strict;
 
 sub nproma
 {
-  return qw (YDGEOMETRY%YRDIM%NPROMA YDCPG_OPTS%KLON);
+  return qw (YDGEOMETRY%YRDIM%NPROMA YDGEOMETRY%YRDIM%NPROMNH YDCPG_OPTS%KLON);
 }
 
 sub kidia
@@ -30,6 +31,8 @@ sub matchDocument
   return 1 if (&F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="YDMF_PHYS_OUT"]', $d));
 
   return unless (&F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="YDCPG_OPTS"]', $d));
+
+  return unless (&F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="YDCPG_BNDS"]', $d));
 
   return 1 unless (&F ('./object/file/program-unit/execution-part//do-construct', $d));
 

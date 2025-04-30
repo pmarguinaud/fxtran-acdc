@@ -1,8 +1,11 @@
 
 mkdir -p /tmp/$USER
 
-export PATH=/home/gmap/mrpm/marguina/fxtran-acdc/cy49t1:$PATH
-export PATH=/home/gmap/mrpm/marguina/fxtran-acdc/bin:$PATH
+prefix=$(dirname $0)
+prefix="$prefix/.."
+
+export PATH=$prefix/cy49t1:$PATH
+export PATH=$prefix/bin:$PATH
 
 function resolve ()
 {
