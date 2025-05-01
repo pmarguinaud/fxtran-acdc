@@ -41,11 +41,14 @@ sub addSuffix
       $proc->setData ($proc->textContent . $suffix);
     }
 
-  return if ($opts{'merge-interfaces'});
 
   PROC: for my $proc (keys (%proc))
     {   
-      for my $ext (qw (.intfb.h .h))
+      my @ext = qw (.intfb.h .h);
+
+      shift (@ext) if ($opts{'merge-interfaces'});
+
+      for my $ext (@ext)
         {
           next unless (my ($include) = &F ('./include[string(filename)="?"]', lc ($proc) . $ext, $dp));
   
