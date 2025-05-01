@@ -46,13 +46,13 @@ INTEGER (KIND=JPIM)::IQM
 #include "laitriqm3d_openacc.intfb.h"
 #include "laqmlimiter_openacc.intfb.h"
 #include "laitri_weno_openacc.intfb.h"
-INTEGER (KIND=JPIM) :: JLON
+INTEGER (KIND=JPIM) :: JROF
 
 YLSTACK = YDSTACK
 
 
 
-JLON = KIDIA
+JROF = KST
 
 
 

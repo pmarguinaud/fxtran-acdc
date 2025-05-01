@@ -1,8 +1,8 @@
 
 mkdir -p /tmp/$USER
 
-prefix=$(dirname $0)
-prefix="$prefix/.."
+prefix=$(dirname ${BASH_SOURCE[0]})
+prefix=$prefix/..
 
 export PATH=$prefix/cy49t1:$PATH
 export PATH=$prefix/bin:$PATH

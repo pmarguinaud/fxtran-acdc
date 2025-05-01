@@ -1,5 +1,63 @@
 #!/usr/bin/perl -w
 
+package task;
+
+use strict;
+
+my $count = 0;
+
+sub new
+{
+  my $class = shift;
+  my %args = @_;
+
+  my $self = bless {id => $count++, @_}, $class;
+
+if (1) {
+  my $bash = sprintf ('cmd.%3.3d.sh', $self->{id});
+
+  'FileHandle'->new (">$bash")->print (<< "EOF");
+#!/bin/bash
+
+@{ $args{cmd} }
+
+EOF
+
+  chmod (0755, $bash);
+}
+
+  return $self;
+}
+
+sub run
+{
+  my $self = shift;
+  my %args = @_;
+
+  my @cmd = @{ $self->{cmd} };
+
+  $self->{mess} = `@cmd 2>&1`;
+  $self->{code} = $?;
+
+  if ($args{final}) 
+    {
+      $self->final ();
+    }
+}
+
+sub final
+{
+  my $self = shift;
+
+  if ($self->{code})
+    {
+      print $self->{mess};
+      die ("Command `@{ $self->{cmd} }' failed");
+    }
+}
+
+package main;
+
 use strict;
 use FileHandle;
 use Data::Dumper;
@@ -8,16 +66,20 @@ use File::Basename;
 use File::Spec;
 use File::Copy;
 use FindBin qw ($Bin);
+use lib "$Bin/../lib";
 use Cwd;
+
+use queue;
 
 my $f90 = shift; 
 
 sub runCommand
 {
   my @cmd = @_;
-# print "@cmd\n";
-  system (@cmd) 
-    && die ("Command `@cmd' failed");
+
+  my $task = 'task'->new (cmd => \@cmd);
+
+  $task->run (final => 1);
 }
 
 sub concatenateSource
@@ -51,12 +113,30 @@ sub concatenateObject
 
   my @obj;
 
-  for my $f ($F90, sort <*.F90>)
+  my $q = 'queue'->new (nthread => 4);
+
+  my @F90 = sort <*.F90>;
+  unshift (@F90, $F90) if ($F90);
+
+  for my $i (0 .. $#F90)
     {
-      &runCommand ($f90, @opts, $f);
+      my $f = $F90[$i];
+      my $task = 'task'->new (cmd => [$f90, @opts, $f]);
+      if (($i == 0) || (! $args{parallel}))
+        {
+          $task->run (final => 1);
+        }
+      else
+        {
+          $q->push ($task);
+        }
       (my $obj = &basename ($f)) =~ s/\.F90$/.o/o;
-      unshift @obj, $obj;
+      unshift (@obj, $obj);
     }
+
+  $q->tail (callback => sub { $_[0]->final () });
+
+  $q->finish ();
 
   if (scalar (@obj) == 1)
     {
@@ -104,6 +184,12 @@ sub generateStructureMethods
     '--sorted';
 
   &runCommand (@cmd, $F90);
+
+  if (grep { $_ eq '--type-bound-methods' } @cmd)
+    {
+      delete $args{F90};
+      $args{parallel} = 1;
+    }
 
   &concatenateObject (%args);
 

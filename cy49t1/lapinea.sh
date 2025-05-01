@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. /home/gmap/mrpm/marguina/fxtran-acdc/cy49t1/prolog.sh
+. $(dirname $0)/prolog.sh
 
 set -x
 set -e

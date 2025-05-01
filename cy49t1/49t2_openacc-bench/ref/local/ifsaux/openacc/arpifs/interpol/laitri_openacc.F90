@@ -33,18 +33,26 @@ TYPE(STACK) :: YLSTACK
 INTEGER (KIND=JPIM)::JROF
 INTEGER (KIND=JPIM)::JLEV
 LOGICAL::LLADD
-REAL (KIND=JPRB)::ZXF (KPROMA, KFLEV)
+temp (REAL (KIND=JPRB), ZXF, (KPROMA, KFLEV))
 
 #include "laitri_scalar_openacc.intfb.h"
 #include "laitri_vector_openacc.intfb.h"
 
-INTEGER (KIND=JPIM) :: JLON
 
 YLSTACK = YDSTACK
 
 
 
-JLON = KIDIA
+IF (KIND (ZXF) == 8) THEN
+    alloc8 (ZXF)
+ELSEIF (KIND (ZXF) == 4) THEN
+    alloc4 (ZXF)
+ELSE
+    STOP 1
+ENDIF
+
+
+JROF = KST
 
 
 LLADD=.FALSE.
@@ -82,15 +90,12 @@ ENDIF
 IF (LLADD) THEN
 
   DO JLEV=1, KFLEV
-
-    DO JROF=KST, KEND
-      PXF (JROF, JLEV)=PXF (JROF, JLEV)+ZXF (JROF, JLEV)
-    ENDDO
-
+    
+    PXF (JROF, JLEV)=PXF (JROF, JLEV)+ZXF (JROF, JLEV)
+  
   ENDDO
 
 ENDIF
-
 
 
 ENDSUBROUTINE LAITRI_OPENACC

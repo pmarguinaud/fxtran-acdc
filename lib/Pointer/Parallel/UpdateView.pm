@@ -80,8 +80,16 @@ sub makeParallel
       $do->insertAfter ($_, $do_jblk) for (&s ("CALL $N%UPDATE_VIEW (JBLK)"), 
                                            &t ("\n" . (' ' x ($indent + 2))));
       
-      $prep->insertAfter ($_, $first) for (&s ("CALL HOST ($N)"), 
-                                           &t ("\n" . (' ' x $indent)));
+      if ($opts{'type-bound-methods'})
+        {
+          $prep->insertAfter ($_, $first) for (&s ("CALL $N%HOST ()"), 
+                                               &t ("\n" . (' ' x $indent)));
+        }
+      else
+        {
+          $prep->insertAfter ($_, $first) for (&s ("CALL HOST ($N)"), 
+                                               &t ("\n" . (' ' x $indent)));
+        }
       
     }
 

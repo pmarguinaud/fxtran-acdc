@@ -239,10 +239,10 @@ sub process_decl
 
       my $indent = '  ' x scalar (@ss);
 
-      push @BODY_SAVE  , $indent . &callSubroutineMethod ($opts, "$prefix$name$J", 'SAVE',   "SAVE_$tname",   $isFieldAPI, 'KLUN');
-      push @BODY_LOAD  , $indent . &callSubroutineMethod ($opts, "$prefix$name$J", 'LOAD',   "LOAD_$tname",   $isFieldAPI, 'KLUN');
-      push @BODY_HOST  , $indent . &callSubroutineMethod ($opts, "$prefix$name$J", 'HOST',   "HOST_$tname",   $isFieldAPI);
-      push @BODY_LEGACY, $indent . &callSubroutineMethod ($opts, "$prefix$name$J", 'LEGACY', "LEGACY_$tname", $isFieldAPI, 'KADDRL', 'KADDRU', 'KDIR=KDIR');
+      push @BODY_SAVE  , $indent . &callSubroutineMethod ($opts, "$prefix$name$J", 'SAVE',   "SAVE_$tname",   $isFieldAPI || $isFieldAPI_VIEW || $isFieldAPI_PTR, 'KLUN');
+      push @BODY_LOAD  , $indent . &callSubroutineMethod ($opts, "$prefix$name$J", 'LOAD',   "LOAD_$tname",   $isFieldAPI || $isFieldAPI_VIEW || $isFieldAPI_PTR, 'KLUN');
+      push @BODY_HOST  , $indent . &callSubroutineMethod ($opts, "$prefix$name$J", 'HOST',   "HOST_$tname",   $isFieldAPI || $isFieldAPI_VIEW || $isFieldAPI_PTR);
+      push @BODY_LEGACY, $indent . &callSubroutineMethod ($opts, "$prefix$name$J", 'LEGACY', "LEGACY_$tname", $isFieldAPI || $isFieldAPI_VIEW || $isFieldAPI_PTR, 'KADDRL', 'KADDRU', 'KDIR=KDIR');
 
       if ($isFieldAPI)
         {
@@ -601,7 +601,9 @@ sub processTypes1
           chomp ($_);
         }
   
-      my $type = $abstract ? 'CLASS' : 'TYPE';
+      my $type = 'TYPE';
+      $type = 'CLASS' if ($abstract);
+      $type = 'CLASS' if ($opts->{'type-bound-methods'});
 
       my $HEAD_SAVE = << "EOF";
 SUBROUTINE SAVE_$name (SELF, KLUN)
@@ -826,7 +828,7 @@ sub processTypes
     {
       my ($MOD) = &F ('.//module-N', $doc, 1); my $mod = lc ($MOD);
 
-      my $i = 0;
+      my $count = 1;
 
       my $interface = "INTERFACE\n\n";
 
@@ -846,16 +848,21 @@ sub processTypes
             {
               my $method = $methods->{$methodName};
               my $sub = $mod . '_' . $type->{name} . '_' . $methodName . '_smod'; my $SUB = uc ($sub);
-              my $file = "$opts->{dir}/$sub.F90";
+
+              my $file = "$sub.F90";
      
-              $file = sprintf ('%4.4d.', $i++) if ($opts->{sorted});
+              $file = sprintf ('%4.4d.', $count++) . $file if ($opts->{sorted});
+
+              $file = "$opts->{dir}/$file";
      
               &w ($file, << "EOF");
 SUBMODULE ($MOD) $SUB
 
+IMPLICIT NONE
+
 CONTAINS
 
-$method->{impl}
+MODULE $method->{impl}
 
 END SUBMODULE
 EOF
@@ -880,7 +887,7 @@ EOF
 
       $pu->insertBefore (&t ($interface), $stmt);
 
-      &w ("$opts->{dir}/$mod.F90", $doc->textContent);
+      &w ("$opts->{dir}/0000.$mod.F90", $doc->textContent);
 
     }
   elsif ($opts->{out})

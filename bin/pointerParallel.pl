@@ -395,7 +395,7 @@ sub processSingleRoutine
             {
               push @use_util, &s ("USE FIELD_ARRAY_UTIL_MODULE");
             }
-          else
+          elsif (! $opts{'type-bound-methods'})
             {
               push @use_util, &s ("USE UTIL_${tn}_MOD");
             }
@@ -480,7 +480,7 @@ my %opts = ('types-fieldapi-dir' => 'types-fieldapi', skip => 'PGFL,PGFLT1,PGMVT
              'types-constant-dir' => 'types-constant', 'post-parallel' => 'nullify', cycle => '49', 
              'types-fieldapi-non-blocked' => 'CPG_SL1F_TYPE,CPG_SL_MASK_TYPE', pragma => 'OpenACC');
 my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments stack84 use-acpy use-bcpy 
-                 inline-contains gpumemstat contiguous merge-interfaces);
+                 inline-contains gpumemstat contiguous merge-interfaces type-bound-methods);
 my @opts_s = qw (skip types-fieldapi-dir types-constant-dir post-parallel dir cycle types-fieldapi-non-blocked files base style pragma);
 
 my @include = grep { m/^-I/o } @ARGV;
