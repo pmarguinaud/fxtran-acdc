@@ -2,6 +2,7 @@
 
 use strict;
 
+use Getopt::Long;
 use FileHandle;
 use Data::Dumper;
 use File::Basename;
@@ -18,9 +19,20 @@ use Canonic;
 use Directive;
 use Intrinsic;
 
-my $f = shift;
+my %opts = ();
+my @opts_f = qw (help);
+my @opts_s = qw ();
 
-my $d = &Fxtran::parse (location => $f, fopts => [qw (-construct-tag -no-include -line-length 500 -directive ACDC -canonic)]);
+&GetOptions
+(
+  (map { ($_, \$opts{$_}) } @opts_f),
+  (map { ("$_=s", \$opts{$_}) } @opts_s),
+);
+
+my $F90 = shift;
+
+my $d = &Fxtran::parse (location => $F90, fopts => [qw (-construct-tag -no-include -line-length 500 -directive ACDC -canonic)]);
+
 &Canonic::makeCanonic ($d);
 
 &Directive::parseDirectives ($d, name => 'ACDC');
@@ -29,7 +41,7 @@ my ($pu) = &F ('./object/file/program-unit', $d);
 
 my ($puName) = &F ('./subroutine-stmt/subroutine-N', $pu, 1);
 
-my $DEP = &Outline1::getVariables ($pu);
+my $vars = &Outline1::getVariables ($pu);
 
 my @par = &F ('.//parallel-section', $d);
 
@@ -37,16 +49,10 @@ for my $i (0 .. $#par)
   {
     my $par = $par[$i];
 
-    my $parName = $par->getAttribute ('name') || sprintf ('PARALLEL_%3.3d', $i);
+    my $parName = $par->getAttribute ('name') || sprintf ('OUTLINE_%3.3d', $i);
 
-    &Outline1::outline ($pu, $par, $puName. '_' . $parName, $DEP);
+    &Outline1::outline ($pu, section => $par, sectionName => $puName. '_' . $parName, variables => $vars);
   }
 
-'FileHandle'->new ('>' . &basename ($f))->print ($d->textContent);
+'FileHandle'->new ('>' . &basename ($F90))->print (&Canonic::indent ($d));
 
-__END__
-
-for my $n (keys (%$DEP))
-  {
-    print &Dumper ([$n, $DEP->{$n}]) if (exists ($DEP->{$n}{count}) && ($DEP->{$n}{count} == 0));
-  }

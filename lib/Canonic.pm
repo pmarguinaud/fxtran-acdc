@@ -77,11 +77,12 @@ sub makeCanonic
 {
   my $d = shift;
 
+  &Construct::changeIfStatementsInIfConstructs ($d);
+
   &Associate::resolveAssociates ($d);
   &Dimension::attachArraySpecToEntity ($d);
   &makeCanonicReferences ($d);
   &Decl::forceSingleDecl ($d);
-  &Construct::changeIfStatementsInIfConstructs ($d);
   &removeIfDef ($d, '__INTEL_COMPILER');
   &removeIfDef ($d, 'RS6K');
   &removeIfDef ($d, 'NECSX');

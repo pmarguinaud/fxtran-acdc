@@ -4,6 +4,7 @@ use strict;
 use Fxtran;
 use Intrinsic;
 use Include;
+use Canonic;
 
 use Data::Dumper;
 use List::MoreUtils qw (uniq);
@@ -65,12 +66,12 @@ sub getVariables
 
   my @n = &uniq (@n_expr, @n_rename);
   
-  my %dep;
+  my %var;
   
   for my $n (@n)
     {
-      $dep{$n} = &variableDependencies ($pu, $n);
-      $dep{$n}{count} = $n_expr{$n} if (exists $n_expr{$n}); # Number of occurences of symbol in $pu
+      $var{$n} = &variableDependencies ($pu, $n);
+      $var{$n}{count} = $n_expr{$n} if (exists $n_expr{$n}); # Number of occurences of symbol in $pu
     }
 
   # Rank symbols : 
@@ -84,42 +85,45 @@ sub getVariables
   {
     my $n = shift;
   
-    (my $dep = $dep{$n}) or die;
+    (my $var = $var{$n}) or die;
   
-    if (exists ($dep->{rank}))
+    if (exists ($var->{rank}))
       {
-        return $dep->{rank};
+        return $var->{rank};
       }
   
     my $rank = 0;
   
-    for my $n (@{ $dep->{name} })
+    for my $n (@{ $var->{name} })
       { 
         my $r = $doRank->($n);
         $rank = $r if ($r > $rank);
       }
   
-    $dep->{rank} = 1 + $rank;
+    $var->{rank} = 1 + $rank;
   
-    return $dep->{rank};
+    return $var->{rank};
   };
   
   $doRank->($_) for (@n);
 
-  return \%dep;
+  return \%var;
 }
 
 sub outline
 {
 # outline $sect from $pu
-# $DEP is the hash returned by getVariables
+# $VAR is the hash returned by getVariables
 
-  my ($pu, $sect, $sectName, $DEP) = @_;
+  my $pu = shift;
+  my %args = @_;
+
+  my ($sect, $sectName, $VAR) = @args{qw (section sectionName variables)};
 
   my @nn_expr = &F ('.//named-E/N', $sect, 1); my %nn_expr; $nn_expr{$_}++ for (@nn_expr); # Number of occurences of each symbol
   my @nn = &uniq (@nn_expr);
 
-  # Select symbols used in section + their dependencies from $DEP
+  # Select symbols used in section + their dependencies from $VAR
   
   my %nn;
 
@@ -133,9 +137,9 @@ sub outline
   
     $nn{$n} = 1;
   
-    (my $dep = $DEP->{$n}) or die;
+    (my $var = $VAR->{$n}) or die;
   
-    for my $n (@{ $dep->{name} })
+    for my $n (@{ $var->{name} })
       {
         $doSelect->($n);
       }
@@ -143,7 +147,7 @@ sub outline
   
   $doSelect->($_) for (@nn);
   
-  @nn = sort { $DEP->{$a}{rank} <=> $DEP->{$b}{rank} } keys (%nn);
+  @nn = sort { $VAR->{$a}{rank} <=> $VAR->{$b}{rank} } keys (%nn);
 
   # Select statements for outlining
   
@@ -157,20 +161,21 @@ sub outline
 
   for my $nn (@nn)
     {
-      (my $dep = $DEP->{$nn}) or die;
-      next if ($dep->{intrinsic});
+      (my $var = $VAR->{$nn}) or die;
 
-      (my $stmtPu = $dep->{stmt}) or die &Dumper ([$nn, $dep]);
+      next if ($var->{intrinsic});
+
+      (my $stmtPu = $var->{stmt}) or die &Dumper ([$nn, $var]);
 
       next if ($seen{$stmtPu->unique_key ()}++);
   
       if (exists $nn_expr{$nn})
         {
-          $dep->{count} = $dep->{count} - $nn_expr{$nn};
+          $var->{count} = $var->{count} - $nn_expr{$nn};
         }
 
       my $stmt = $stmtPu->cloneNode (1);
-  
+
       my $stmtType = $stmt->nodeName;
 
       if ($stmtType eq 'use-stmt')
@@ -181,7 +186,7 @@ sub outline
         {
           push @include, $stmt;
 
-          if ($dep->{count} == 0)
+          if ($var->{count} == 0)
             {
               # Remove unneeded includes
               $stmtPu->unbindNode ();
@@ -193,13 +198,13 @@ sub outline
           if ($do{$nn})
             {
               push @declLocal, $stmt;
-              if ($dep->{count} == 0)
+              if ($var->{count} == 0)
                 {
                   # Remove unneeded local
                   $stmtPu->unbindNode ();
                 }
             }
-          elsif ((! $isPuArg) && ($dep->{count} == 0))
+          elsif ((! $isPuArg) && ($var->{count} == 0))
             {
               push @declLocal, $stmt;
               $stmtPu->unbindNode (); # Remove unneeded local
@@ -223,7 +228,18 @@ sub outline
         }
     }
 
+  # Increment argument count use (in $pu)
+
+  for my $nn (@args)
+    {
+      (my $var = $VAR->{$nn}) or die;
+      $var->{count} = $var->{count} + 1;
+    }
+
+  # Create the call statement before renaming arguments
   
+  my $call = &s ("CALL $sectName (" . join (', ', @args) . ')');
+    
   # Rename arguments using DOCTOR norm
   {
     for my $argo (@args)
@@ -249,33 +265,28 @@ sub outline
 
   # Dump routine definition + interface
   
-  my ($fhBody, $fhIntf);
-
-  $fhBody = 'FileHandle'->new ('>' . lc ($sectName) . '.F90');
-  $fhIntf = 'FileHandle'->new ('>' . lc ($sectName) . '.intfb.h');
-
-  $fhIntf->print ("INTERFACE\n");
+  my ($body, $intf) = ('', '');
 
   push @use, &s ("USE YOMHOOK, ONLY : LHOOK, JPHOOK, DR_HOOK");
   push @declLocal, &s ("REAL (KIND=JPHOOK) :: ZHOOK_HANDLE");
       
-  for my $fh ($fhBody, $fhIntf)
+  for my $buf (\$body, \$intf)
     {
-      $fh->print ("SUBROUTINE $sectName (", join (', ', @args) . ")\n\n");
+      $$buf .= "SUBROUTINE $sectName (" . join (', ', @args) . ")\n\n";
      
       for (@use, &t (''), &t ("IMPLICIT NONE"), &t (''), @declArg, &t (''))
         {
-          $fh->print ($_->textContent, "\n");
+          $$buf .= $_->textContent . "\n";
         }
     }
 
   
   for (@include, &t (''), @declLocal, &t (''))
     {
-      $fhBody->print ($_->textContent, "\n");
+      $body .= $_->textContent . "\n";
     }
   
-  $fhBody->print (<< "EOF");
+  $body .= << "EOF";
 
 IF (LHOOK) CALL DR_HOOK ('$sectName',0,ZHOOK_HANDLE)
 
@@ -285,26 +296,41 @@ IF (LHOOK) CALL DR_HOOK ('$sectName',1,ZHOOK_HANDLE)
 
 EOF
 
-  for my $fh ($fhBody, $fhIntf)
+  for my $buf (\$body, \$intf)
     {
-      $fh->print ("END SUBROUTINE\n");
+      $$buf .= "END SUBROUTINE\n";
     }
 
-  $fhIntf->print ("END INTERFACE\n");
-
-  for my $fh ($fhBody, $fhIntf)
-    {
-      $fh->close ();
-    }
-
-  # Replace section by a CALL statement 
-
-  my $call = &s ("CALL $sectName (" . join (', ', @args) . ')');
+  # Replace section by the CALL statement 
 
   &Include::addInclude ($pu, lc ($sectName) . '.intfb.h');
 
   $sect->replaceNode ($call);
 
+  &printCanonic (lc ($sectName) . '.F90', $body);
+  &printCanonic (lc ($sectName) . '.intfb.h', $intf, 1);
+
+}
+
+sub printCanonic
+{
+  use File::Temp;
+
+  my ($file, $text, $intf) = @_;
+
+  my $fh = 'File::Temp'->new (DIR => '.', SUFFIX => '.F90', UNLINK => 1, TEMPLATE => '.XXXXXX');
+
+  $fh->print ($text);
+
+  $fh->close ();
+
+  my $d = &Fxtran::parse (location => $fh->filename (), fopts => [qw (-construct-tag -no-include -line-length 5000 -canonic)]);
+
+  my $fh = 'FileHandle'->new (">$file");
+  $fh->print ("INTERFACE\n") if ($intf);
+  $fh->print (&Canonic::indent ($d));
+  $fh->print ("END INTERFACE\n") if ($intf);
+  $fh->close ();
 }
 
 1;

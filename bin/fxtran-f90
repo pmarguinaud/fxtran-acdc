@@ -49,9 +49,10 @@ sub final
 {
   my $self = shift;
 
+  print $self->{mess};
+
   if ($self->{code})
     {
-      print $self->{mess};
       die ("Command `@{ $self->{cmd} }' failed");
     }
 }
@@ -230,6 +231,24 @@ sub pointerParallel
   &runCommand (@cmd, $F90);
 
   &concatenateObject (%args);
+}
+
+sub outline1
+{
+  shift;
+  my %args = @_;
+
+  my @cmd = @{ $args{cmd} };
+  my $F90 = $args{F90};
+  my @opts = @{ $args{opts} };
+
+  my $pack = $ENV{TARGET_PACK};
+
+  &runCommand (@cmd, $F90);
+
+  delete $args{F90};
+
+  &concatenateObject (%args, parallel => 1);
 }
 
 my $c = grep { $_ eq '-c' } @ARGV;

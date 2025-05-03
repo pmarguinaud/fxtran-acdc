@@ -13,6 +13,7 @@ use Fxtran;
 sub parensToArrayRef
 {
   my $r = shift;
+
   if ($r->nodeName eq 'parens-R')
     {   
       my ($elt) = &F ('./element-LT', $r);
@@ -26,6 +27,7 @@ sub parensToArrayRef
           $i->appendChild ($lb);
         }
     }   
+
 }
 
 sub resolveParensRef
