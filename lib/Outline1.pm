@@ -50,8 +50,8 @@ sub variableDependencies
     }
 
   return {
-           stmt => $stmt,
-           name => \@n,
+           stmt => $stmt,                 # Declaration statement for this symbol (may be a T-decl-stmt, a use-stmt or an include node)
+           name => \@n,                   # Other symbols we depend on for declaring this symbol
            intrinsic => $intrinsic,
          };
 }
@@ -70,8 +70,13 @@ sub getVariables
   for my $n (@n)
     {
       $dep{$n} = &variableDependencies ($pu, $n);
-      $dep{$n}{count} = $n_expr{$n} if (exists $n_expr{$n});
+      $dep{$n}{count} = $n_expr{$n} if (exists $n_expr{$n}); # Number of occurences of symbol in $pu
     }
+
+  # Rank symbols : 
+  # - symbols with rank 0 do not depend on other symbols
+  # - symbols with rank 1 depend on a single other symbol
+  # - etc.
   
   my $doRank;
   
@@ -106,13 +111,18 @@ sub getVariables
 
 sub outline
 {
+# outline $sect from $pu
+# $DEP is the hash returned by getVariables
+
   my ($pu, $sect, $sectName, $DEP) = @_;
 
-  my @nn_expr = &F ('.//named-E/N', $sect, 1); my %nn_expr; $nn_expr{$_}++ for (@nn_expr);
+  my @nn_expr = &F ('.//named-E/N', $sect, 1); my %nn_expr; $nn_expr{$_}++ for (@nn_expr); # Number of occurences of each symbol
   my @nn = &uniq (@nn_expr);
+
+  # Select symbols used in section + their dependencies from $DEP
   
   my %nn;
-  
+
   my $doSelect;
   
   $doSelect = sub
@@ -134,12 +144,14 @@ sub outline
   $doSelect->($_) for (@nn);
   
   @nn = sort { $DEP->{$a}{rank} <=> $DEP->{$b}{rank} } keys (%nn);
+
+  # Select statements for outlining
   
   my (@use, @include, @declArg, @declLocal);
   
-  my %seen;
+  my %seen; # Statements already visited
 
-  my @args;
+  my @args; # Arguments of outlined routine
 
   my %do = map { ($_, 1) } (&F ('.//do-V', $sect, 1), &F ('.//do-construct//a-stmt/E-1/named-E[not (./R-LT/array-R)]/N', $sect, 1));
 
@@ -152,6 +164,11 @@ sub outline
 
       next if ($seen{$stmtPu->unique_key ()}++);
   
+      if (exists $nn_expr{$nn})
+        {
+          $dep->{count} = $dep->{count} - $nn_expr{$nn};
+        }
+
       my $stmt = $stmtPu->cloneNode (1);
   
       my $stmtType = $stmt->nodeName;
@@ -163,16 +180,34 @@ sub outline
       elsif ($stmtType eq 'include')
         {
           push @include, $stmt;
+
+          if ($dep->{count} == 0)
+            {
+              # Remove unneeded includes
+              $stmtPu->unbindNode ();
+            }
         }
       elsif ($stmtType eq 'T-decl-stmt')
         {
+          my $isPuArg = &F ('./attribute[string(attribute-N)="INTENT"]', $stmt);
           if ($do{$nn})
             {
               push @declLocal, $stmt;
+              if ($dep->{count} == 0)
+                {
+                  # Remove unneeded local
+                  $stmtPu->unbindNode ();
+                }
+            }
+          elsif ((! $isPuArg) && ($dep->{count} == 0))
+            {
+              push @declLocal, $stmt;
+              $stmtPu->unbindNode (); # Remove unneeded local
             }
           else
             {
-              unless (&F ('./attribute[string(attribute-N)="INTENT"]', $stmt))
+              # Add INTENT (INOUT) for arguments without INTENT (local variables of $pu)
+              unless ($isPuArg)
                 {
                   my ($ts) = &F ('./_T-spec_', $stmt);
                   $stmt->insertAfter ($_, $ts) 
@@ -186,32 +221,61 @@ sub outline
         {
           die $stmt->textContent;
         }
-    
-      if (exists $nn_expr{$nn})
-        {
-          $dep->{count} = $dep->{count} - $nn_expr{$nn};
-          if (($dep->{count} == 0) && ($stmtType eq 'include'))
-            {
-              $stmtPu->unbindNode ();
-            }
-        }
-
     }
-  
-  my $fh = 'FileHandle'->new (">$sectName.F90");
 
-  $fh->print ("SUBROUTINE $sectName (", join (', ', @args) . ")\n\n");
+  
+  # Rename arguments using DOCTOR norm
+  {
+    for my $argo (@args)
+      {
+        my $argn = $argo;
+     
+        if (($argn =~ s/^YL/YD/o) || ($argn =~ s/^Z/P/o) || ($argn =~ s/^LL/LD/o) || ($argn =~ s/^I/K/o))
+          {
+            for my $x (@declArg, @declLocal, $sect)
+              {
+                my @n = &F ('.//N/n[string(.)="?"]/text()', $argo, $x);
+                for (@n)
+                  {
+                    $_->setData ($argn);
+                  }
+              }
+          }
+
+
+        $argo = $argn;
+      }
+  }
+
+  # Dump routine definition + interface
+  
+  my ($fhBody, $fhIntf);
+
+  $fhBody = 'FileHandle'->new ('>' . lc ($sectName) . '.F90');
+  $fhIntf = 'FileHandle'->new ('>' . lc ($sectName) . '.intfb.h');
+
+  $fhIntf->print ("INTERFACE\n");
 
   push @use, &s ("USE YOMHOOK, ONLY : LHOOK, JPHOOK, DR_HOOK");
   push @declLocal, &s ("REAL (KIND=JPHOOK) :: ZHOOK_HANDLE");
-  
-  for (@use, &t (''), &t ("IMPLICIT NONE"), &t (''), @declArg, &t (''), @include, &t (''), @declLocal, &t (''))
+      
+  for my $fh ($fhBody, $fhIntf)
     {
-      $fh->print ($_->textContent, "\n");
+      $fh->print ("SUBROUTINE $sectName (", join (', ', @args) . ")\n\n");
+     
+      for (@use, &t (''), &t ("IMPLICIT NONE"), &t (''), @declArg, &t (''))
+        {
+          $fh->print ($_->textContent, "\n");
+        }
+    }
+
+  
+  for (@include, &t (''), @declLocal, &t (''))
+    {
+      $fhBody->print ($_->textContent, "\n");
     }
   
-  
-  $fh->print (<< "EOF");
+  $fhBody->print (<< "EOF");
 
 IF (LHOOK) CALL DR_HOOK ('$sectName',0,ZHOOK_HANDLE)
 
@@ -219,8 +283,21 @@ ${ my $t = $sect->textContent; \$t  }
 
 IF (LHOOK) CALL DR_HOOK ('$sectName',1,ZHOOK_HANDLE)
 
-END SUBROUTINE
 EOF
+
+  for my $fh ($fhBody, $fhIntf)
+    {
+      $fh->print ("END SUBROUTINE\n");
+    }
+
+  $fhIntf->print ("END INTERFACE\n");
+
+  for my $fh ($fhBody, $fhIntf)
+    {
+      $fh->close ();
+    }
+
+  # Replace section by a CALL statement 
 
   my $call = &s ("CALL $sectName (" . join (', ', @args) . ')');
 

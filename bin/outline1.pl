@@ -25,24 +25,21 @@ my $d = &Fxtran::parse (location => $f, fopts => [qw (-construct-tag -no-include
 
 &Directive::parseDirectives ($d, name => 'ACDC');
 
-
-
 my ($pu) = &F ('./object/file/program-unit', $d);
 
+my ($puName) = &F ('./subroutine-stmt/subroutine-N', $pu, 1);
 
 my $DEP = &Outline1::getVariables ($pu);
 
 my @par = &F ('.//parallel-section', $d);
 
-
 for my $i (0 .. $#par)
   {
     my $par = $par[$i];
 
-#   my $parName = $par->getAttribute ('name') || sprintf ('PARALLEL.%3.3d', $i);
-    my $parName = sprintf ('PARALLEL_%3.3d', $i);
+    my $parName = $par->getAttribute ('name') || sprintf ('PARALLEL_%3.3d', $i);
 
-    &Outline1::outline ($pu, $par, $parName, $DEP);
+    &Outline1::outline ($pu, $par, $puName. '_' . $parName, $DEP);
   }
 
 'FileHandle'->new ('>' . &basename ($f))->print ($d->textContent);
