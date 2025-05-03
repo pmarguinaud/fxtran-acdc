@@ -10,7 +10,7 @@ package Intrinsic;
 use strict;
 
 my @INTRINSIC = qw (SIGN MAX MIN MOD REAL EXP ASIN FOLH SQRT PRESENT 
-                    ABS TINY SUM ATAN2 COS SIN);
+                    ABS TINY SUM ATAN2 COS SIN NINT);
 my %INTRINSIC = map { ($_, 1) } @INTRINSIC;
 
 sub isIntrinsic
