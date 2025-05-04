@@ -45,11 +45,16 @@ my $vars = &Outline1::getVariables ($pu);
 
 my @par = &F ('.//parallel-section', $d);
 
+my %parName;
+
 for my $i (0 .. $#par)
   {
     my $par = $par[$i];
 
     my $parName = $par->getAttribute ('name') || sprintf ('OUTLINE_%3.3d', $i);
+
+    die ("Duplicate section name `$parName'") 
+      if ($parName{$parName}++);
 
     &Outline1::outline ($pu, section => $par, sectionName => $puName. '_' . $parName, variables => $vars);
   }

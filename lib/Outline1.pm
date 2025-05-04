@@ -85,7 +85,7 @@ sub getVariables
   {
     my $n = shift;
   
-    (my $var = $var{$n}) or die;
+    (my $var = $var{$n}) or die ("Unknonw symbol `$n'");
   
     if (exists ($var->{rank}))
       {
