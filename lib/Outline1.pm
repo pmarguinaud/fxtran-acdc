@@ -241,13 +241,17 @@ sub outline
   my $call = &s ("CALL $sectName (" . join (', ', @args) . ')');
     
   # Rename arguments using DOCTOR norm
+
+  if (1)
   {
     for my $argo (@args)
       {
         my $argn = $argo;
-     
+
         if (($argn =~ s/^YL/YD/o) || ($argn =~ s/^Z/P/o) || ($argn =~ s/^LL/LD/o) || ($argn =~ s/^I/K/o))
           {
+            next if ($nn{$argn});
+
             for my $x (@declArg, @declLocal, $sect)
               {
                 my @n = &F ('.//N/n[string(.)="?"]/text()', $argo, $x);
