@@ -1,6 +1,7 @@
 
 MODULE FIELD_4LM_ARRAY_MODULE
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load --field-api --field-api-class cpg
 
 USE FIELD_4LM_MODULE
 USE FIELD_4LM_FACTORY_MODULE
