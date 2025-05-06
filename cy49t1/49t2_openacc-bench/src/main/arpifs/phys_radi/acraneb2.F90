@@ -18,6 +18,9 @@ SUBROUTINE ACRANEB2( &
 ! - INPUT 2D x 6
  & PDAER)
 
+!$ACDC openacc.pl --stack84 --inline-contained
+
+
 ! Purpose:
 ! --------
 !   ACRANEB2 - Computes radiative fluxes and associated surface diagnostics.

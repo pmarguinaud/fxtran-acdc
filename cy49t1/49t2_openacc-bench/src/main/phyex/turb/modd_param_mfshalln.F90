@@ -6,6 +6,9 @@
 !-----------------------------------------------------------------
 !     #############################
       MODULE MODD_PARAM_MFSHALL_n
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
 !     #############################
 !> @file
 !!      *MODD_PARAM_MFSHALL_n* - Declaration of Mass flux scheme free parameters

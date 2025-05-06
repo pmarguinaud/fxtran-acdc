@@ -1,5 +1,8 @@
 SUBROUTINE GPHLWI(LDVERTFE,KFLEV,KPROMA,KST,KEND,PLNPR,PALPH,PRDETAH,PDETA_RATIO,PWW)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !**** *GPHLWI* - to half-levels interpolation weights
 
 !     Purpose.

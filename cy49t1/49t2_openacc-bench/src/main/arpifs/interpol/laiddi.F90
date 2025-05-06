@@ -3,6 +3,9 @@ SUBROUTINE LAIDDI(KSLB1,KPROMA,KST,KEND,KFLEV, &
  & PCLA,PDLO,PCLO,KL0, &
  & PXSL,PXF)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 ! Purpose :
 ! -------
 !   LAIDDI - semi-Lagrangian scheme: bi-dimensional 12-point

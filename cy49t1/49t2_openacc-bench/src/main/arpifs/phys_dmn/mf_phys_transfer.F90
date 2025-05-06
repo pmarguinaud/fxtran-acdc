@@ -1,5 +1,8 @@
 SUBROUTINE MF_PHYS_TRANSFER (YDCPG_BNDS, YDCPG_OPTS, YDVARS, YDPHY, YDGFL)
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 !**** *MF_PHYS_TRANSFER*
 
 !     Author. 

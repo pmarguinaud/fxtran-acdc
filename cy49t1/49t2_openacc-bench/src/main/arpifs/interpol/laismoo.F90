@@ -2,6 +2,9 @@ SUBROUTINE LAISMOO(KSLB1,KPROMA,KST,KEND,KFLEV,&
  & KFLDN,KFLDX,PDLAT,PDLO,KL0,PDVER,&
  & PXSL,PXF)  
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !**** *LAISMOO  -  semi-LAgrangian scheme:
 !                 Smoothing interpolation by linear least-square fit
 

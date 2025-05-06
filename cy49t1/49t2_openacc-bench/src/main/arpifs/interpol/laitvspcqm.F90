@@ -3,6 +3,9 @@ SUBROUTINE LAITVSPCQM(YDVSLETA,KSLB1,KPROMA,KST,KEND,KFLEV,&
  & PDLAT,PCLA,PDLO,PCLO,KL0,PVINTWS,&
  & PXSPSL,PXF,PXSL)  
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !**** *LAITVSPCQM  -  semi-LAgrangian scheme:
 !                 TRI-dimensional horizontal interpolations 
 !                 cubic B-spline interpolation in the vertical

@@ -4,6 +4,9 @@
 !MNH_LIC for details. version 1.
 !     ##################
       MODULE MODI_SHUMAN_MF
+
+!$ACDC openacc.pl --stack84 --interfaces --inline-contained
+
 !     ##################
 !
 IMPLICIT NONE

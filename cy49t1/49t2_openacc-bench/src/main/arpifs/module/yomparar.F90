@@ -1,5 +1,8 @@
 MODULE YOMPARAR
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
+
 USE PARKIND1  ,ONLY : JPIM     ,JPRB
 !
 USE MODD_PHYEX, ONLY: PHYEX_t

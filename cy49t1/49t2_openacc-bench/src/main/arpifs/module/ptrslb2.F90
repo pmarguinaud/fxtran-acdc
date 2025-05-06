@@ -1,5 +1,8 @@
 MODULE PTRSLB2
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
+
 USE PARKIND1  ,ONLY : JPIM
 
 IMPLICIT NONE

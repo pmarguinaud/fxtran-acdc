@@ -2,6 +2,9 @@ SUBROUTINE LAITRE_GFL(YDGEOMETRY,YGFL,YDML_DYN,&
  & KASLB1,KPROMA,KST,KEND,KFLEV,KFLDN,KFLDX,KHVI,KWK,&
  & CDINT,PWENOALPHA,LDMOM,KNOWENO,KL0,PLSCAW,PRSCAW,PXSL,POUT,PXSPSL)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 ! Purpose :
 ! -------
 !   LAITRE_GFL - semi-Lagrangian scheme: origin point interpolations 

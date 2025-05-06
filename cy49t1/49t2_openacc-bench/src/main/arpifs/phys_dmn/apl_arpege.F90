@@ -2,6 +2,9 @@ SUBROUTINE APL_ARPEGE(YDMF_PHYS_BASE_STATE, YDMF_PHYS_NEXT_STATE, YDGEOMETRY, YD
 & YDCPG_MISC, YDCPG_GPAR, YDCPG_PHY0, YDMF_PHYS, YDCPG_DYN0, YDMF_PHYS_SURF, YDCPG_SL2, YDVARS, YDCFU,&
 & YDMODEL, YDDDH, YDPHYSMWAVE)
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 !**** *APL_ARPEGE*  - Call ARPEGE physics
 
 !     Author. 

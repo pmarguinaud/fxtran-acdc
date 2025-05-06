@@ -3,6 +3,9 @@ SUBROUTINE LASCAW_VINTW(YDDYNA,KPROMA,KFLEV,KST,KEND,&
  & KLEV,PLEV,PDVER,PDVERMAD,PSTDDISW,PKAPPA,PKAPPAT,PVETA,PVCUICO,PVSLD,PVSLDW,PVSLVF,&
  & PVINTW,PVINTWMAD,PVINTWSLD,PVINTWSLT,PVINTWSLVF)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !     ------------------------------------------------------------------
 
 !**** *LASCAW_VINTW  -  Weights for semi-LAgrangian interpolator:

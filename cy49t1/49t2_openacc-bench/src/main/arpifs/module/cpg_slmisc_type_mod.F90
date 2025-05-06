@@ -1,5 +1,8 @@
 MODULE CPG_SLMISC_TYPE_MOD
 
+!$ACDC generateStructureMethods.pl --host --wipe --copy --skip-components cpg --field-api --field-api-class cpg
+
+
 USE PARKIND1, ONLY : JPRB, JPIM
 USE FIELD_MODULE
 USE FIELD_FACTORY_MODULE

@@ -1,5 +1,8 @@
 MODULE YOM_YGFL
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load --skip-components TYPE_GFL_COMP%PREVIOUS --legacy
+
+
 USE PARKIND1 , ONLY : JPIM, JPRB
 USE YOE_AERODIAG, ONLY : NPAERAOT, NPAERLISI_VAR, NPAERLISI_WVL, NPAERLISI, &
   & TYPE_AERO_WVL_DIAG, NPAERO_WVL_DIAG

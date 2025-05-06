@@ -1,6 +1,9 @@
 !OCL  NOEVAL
 MODULE SPNG_MOD
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
+
 ! Purpose :
 ! -------
 !    Module for sponge applied at the top of the models.

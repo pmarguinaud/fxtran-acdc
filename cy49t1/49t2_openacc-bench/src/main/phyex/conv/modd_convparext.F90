@@ -1,5 +1,8 @@
 !     ######spl
       MODULE MODD_CONVPAREXT
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
 !     ######################
 !
 IMPLICIT NONE

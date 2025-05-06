@@ -2,6 +2,9 @@ SUBROUTINE GPGRXYB_EXPL (YDCVER, KPROMA, KST, KEND, KFLEV, LDCOEF, YDVAB, PREL, 
 & PLNPR, PRDELP, PALPH, PRTGR, PRPRE, PRPP, PCOEFD_DER, PLNPRL_DER, PLNPRM_DER, PCOEFA_DER,  &
 & PCOEFAPL_DER, PALPHPLL_DER, PALPHPLM_DER, PALPHL_DER, PALPHM_DER)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !**** *GPGRXYB_EXPL* - Complement to routine "GPXYB".
 !                 Computation of the horizontal gradient of quantities
 !                 "alpha" and "delta" at model levels.

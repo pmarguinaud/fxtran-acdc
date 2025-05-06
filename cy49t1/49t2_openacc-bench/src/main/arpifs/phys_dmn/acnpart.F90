@@ -3,6 +3,9 @@ SUBROUTINE ACNPART(YDCST, YDML_PHY_MF,KIDIA,KFDIA,KLON,KTDIA,KLEV,&
  & PAPHI,PAPHIF,PAPRSF,PDECRD,PNEB,&
  & PCLCH,PCLCM,PCLCL,PCLCT,PCLCT_RAD,&
  ! optional arguments (convective cloud cover)
+
+!$ACDC openacc.pl --stack84
+
  & PCLCC,PNEBC,PTOPC)
 
 ! Purpose:

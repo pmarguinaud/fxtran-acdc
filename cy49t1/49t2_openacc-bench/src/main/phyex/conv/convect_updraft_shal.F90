@@ -5,6 +5,9 @@
                                      PMFLCL, OTRIG, KLCL, KDPL, KPBL,                &
                                      PUMF, PUER, PUDR, PUTHL, PUTHV, PURW,           &
                                      PURC, PURI, PCAPE, KCTL, KETL,GTRIG1 )
+
+!$ACDC openacc.pl --stack84 --inline-contained
+
     USE YOMHOOK , ONLY : LHOOK, DR_HOOK, JPHOOK
 
 !    ###############################################################################

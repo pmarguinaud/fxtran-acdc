@@ -1,6 +1,9 @@
 SUBROUTINE CPG_DYN_SLG (YDGEOMETRY, YDCPG_BNDS, YDCPG_OPTS, YDCPG_TND, YDCPG_MISC, YDCPG_DYN0, YDCPG_DYN9, &
                       & YDVARS, YDCPG_SL1, YDCPG_SL2, YDMODEL, YDCPG_SLMISC, YDCPG_TNDSI_DDH, YDA_PWRL9)
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 !**** *CPG_DYN_SLG *
 
 !     Author.

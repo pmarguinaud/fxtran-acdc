@@ -1,5 +1,8 @@
 !     ############################
       MODULE MODD_PARAM_LIMA_MIXED
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
 !     ###########################{
 !
 !!****  *MODD_PARAM_LIMA_MIXED* - declaration of some descriptive parameters and

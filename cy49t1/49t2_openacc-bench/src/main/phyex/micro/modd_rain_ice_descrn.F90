@@ -4,6 +4,9 @@
 !MNH_LIC for details. version 1.
 !     ##########################
       MODULE MODD_RAIN_ICE_DESCR_n
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
 !     ##########################
 !> @file
 !!****  *MODD_RAIN_ICE_DESCR_n* - declaration of the microphysical descriptive

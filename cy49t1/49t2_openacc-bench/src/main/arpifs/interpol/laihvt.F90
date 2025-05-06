@@ -1,6 +1,9 @@
 SUBROUTINE LAIHVT(KSLB1,KPROMA,KST,KEND,KFLEV,KFLDN,KFLDX,KQM,PDLAT,PCLA,PDLO,PCLO,KL0,&
   PVDERW,PDZ,PXSL,PXF)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 ! Purpose :
 ! -------
 !   LAIHVT - semi-Lagrangian scheme: tri-dimensional 32-point

@@ -1,6 +1,9 @@
 SUBROUTINE LASCAW_CLO(YDDYNA,KFLEV,KPROMA,KST,KEND,LDT,PSLHDKMIN,PDLO,PDLOMAD,PKAPPA,&
  & PCLO,PCLOMAD,PCLOSLD)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !     ------------------------------------------------------------------
 
 !**** *LASCAW_CLO  -  Weights for semi-LAgrangian interpolator:

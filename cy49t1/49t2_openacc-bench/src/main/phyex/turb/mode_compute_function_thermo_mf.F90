@@ -4,6 +4,9 @@
 !MNH_LIC for details. version 1.
 !     ######spl
      MODULE MODE_COMPUTE_FUNCTION_THERMO_MF
+
+!$ACDC openacc.pl --stack84 --interfaces --inline-contained
+
 !    ######################################
 !
 IMPLICIT NONE

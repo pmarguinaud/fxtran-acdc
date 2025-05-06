@@ -1,6 +1,9 @@
 SUBROUTINE LAQMLIMITER(PRDETAR,LDQM3DCONS,KSLB1,KPROMA,KST,KEND,KFLEV, &
  &                   KFLDN,KFLDX,KL0,PXSL,PXF)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 ! Purpose :
 ! -------
 !   LAQMLIMITER - "aposteriori" quasi-monotone limiter for cubic-lagrange interpolation: 

@@ -5,6 +5,9 @@
 !-------------------------------------------------------------------------------
 !     ######################
       MODULE MODD_PARAM_LIMA
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
 !     ######################
 !> @file
 !!      *MODD_PARAM_LIMA* - declaration of the control parameters

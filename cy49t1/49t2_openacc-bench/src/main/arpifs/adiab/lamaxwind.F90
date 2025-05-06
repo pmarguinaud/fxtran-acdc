@@ -1,5 +1,8 @@
 SUBROUTINE LAMAXWIND (YDML_DYN, YDCST, KPROMA, KFLEVG, KST, KEND, PURL, PVRL, PRCOLON, PGEMU)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !**** *LAMAXWIND*  - Check wind maximum values
 
 !     Author. 

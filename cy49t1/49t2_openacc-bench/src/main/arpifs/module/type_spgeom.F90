@@ -1,5 +1,8 @@
 MODULE TYPE_SPGEOM
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
+
 ! Module for spectral geometry structures.
 
 USE PARKIND1 , ONLY : JPIM, JPRB

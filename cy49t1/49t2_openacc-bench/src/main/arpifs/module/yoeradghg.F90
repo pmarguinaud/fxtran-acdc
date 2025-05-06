@@ -1,5 +1,8 @@
 MODULE YOERADGHG
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
+
 !     -------------------------------------------------------------------
 !     *YOERADGHG* - STORAGE OF GAS CLIMATOLOGY INTERPOLATED TO MODEL TIME
 !     -------------------------------------------------------------------

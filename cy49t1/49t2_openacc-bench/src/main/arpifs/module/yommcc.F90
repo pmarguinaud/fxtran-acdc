@@ -1,5 +1,8 @@
 MODULE YOMMCC
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
+
 USE PARKIND1  ,ONLY : JPRD, JPIM     ,JPRB
 USE CPLNG_TYPES_MOD , ONLY : CPLNG_FLD_TYPE
 USE PAR_GFL   ,ONLY : JPCHEM

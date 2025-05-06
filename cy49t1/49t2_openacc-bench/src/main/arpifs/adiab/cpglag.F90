@@ -1,6 +1,9 @@
 SUBROUTINE CPGLAG (YDGEOMETRY, YDCPG_BNDS, YDCPG_OPTS, YDCPG_SL2, YDCPG_DDH_TNDHD, YDMODEL, &
 & YDVARS,  LDCONFX, YDDDH, YDA_PGPSTRESS, YDTDDH, PTRAJEC, PTRAJEC_OOPS)
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 !**** *CPGLAG* - Grid point calculations - lagged part.
 
 !     Purpose.

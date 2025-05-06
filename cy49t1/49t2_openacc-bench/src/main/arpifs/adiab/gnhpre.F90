@@ -2,6 +2,9 @@
 SUBROUTINE GNHPRE(YDGEOMETRY, KPDVAR, KPROMA, KFLEV, KST, KEND, PSPD, PREF, PKAP, PNHPREF, &
 & PNHPPI, PRNHPPI, PDEP, PEQCHAF)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 ! GNHPRE - Computation of the total pressure "pre" at full levels,
 !          from the 'PD' prognostic variable.
 

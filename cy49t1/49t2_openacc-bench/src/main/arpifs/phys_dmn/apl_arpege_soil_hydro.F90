@@ -2,6 +2,9 @@ SUBROUTINE APL_ARPEGE_SOIL_HYDRO (YDMF_PHYS_BASE_STATE, YDCPG_BNDS, YDCPG_OPTS, 
 & YDMF_PHYS_SURF, YDMODEL, PCHROV, PFLU_NEIJ, PFLU_QSAT, PFLU_QSATS, PFLU_VEG, PGWDCS, PHQ, PHTR, &
 & PHU, PQV, PWFC, PWLMX, PWWILT)
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 !**** *APL_ARPEGE_SOIL_HYDRO*
 
 !     Author. 

@@ -1,5 +1,8 @@
 MODULE EINT_MOD
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load --skip-components SL_STRUCT%MASK_SL1,SL_STRUCT%MASK_SL2,SL_STRUCT%MASK_SL2T,SL_STRUCT%MASK_SLD,SL_STRUCT%MASK_SLTOT
+
+
 !--------------------------------------------------------------------------
 ! EINT - Externalisable part of horizonal interpolators and halo management
 !        used for example in the semi-Lagrangian scheme

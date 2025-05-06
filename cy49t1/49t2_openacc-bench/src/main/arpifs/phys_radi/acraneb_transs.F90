@@ -8,6 +8,9 @@ SUBROUTINE ACRANEB_TRANSS(YDCST,YDPHY,YDPHY3,KIDIA,KFDIA,KLON,KTDIA,KLEV,KJN,&
 ! - OUTPUT 2D
  & PDEOSI,PUEOSI)
 
+!$ACDC openacc.pl --stack84 --inline-contained
+
+
 ! Purpose:
 ! --------
 !   ACRANEB_TRANSS - Computation of solar gaseous optical depths.

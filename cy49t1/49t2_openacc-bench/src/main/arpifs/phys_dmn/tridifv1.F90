@@ -6,6 +6,9 @@ SUBROUTINE TRIDIFV1 ( YDPHY,YDPHY0,KIDIA,KFDIA,KLON,KTDIA,KLEV,&
  ! - OUTPUT 2D .
  & PCFA,PCFB)
 
+!$ACDC openacc.pl --stack84
+
+
 !**** *TRIDIFV1 * - Resolution of the tridiag of ACDIFV1
 
 !     Sujet.

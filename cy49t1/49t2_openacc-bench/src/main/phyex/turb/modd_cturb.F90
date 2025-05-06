@@ -4,6 +4,9 @@
 !MNH_LIC for details. version 1.
 !      #######################
           MODULE MODD_CTURB
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
 !      #######################
 !
 !!****   *MODD_CTURB*  - declaration of the turbulent scheme constants

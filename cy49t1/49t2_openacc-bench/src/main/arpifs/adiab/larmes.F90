@@ -6,6 +6,9 @@ SUBROUTINE LARMES(YDGEOMETRY, YDGEOMVARS, YDCST, YDRIP, YDML_DYN, YDCPG_OPTS, YD
 & YDCPG_SL1, YDCPG_SL2, YDMASK_SL2, YDA_KVSEPC, YDA_KVSEPL, PSCO, PLEV, PCCO, PUF, PVF, &
 & PWF, KL0, KLH0, KLEV, PLSCAW, PRSCAW)  
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 !----compiled for Cray with -hcontiguous----
 
 !**** *LARMES - semi-LAgrangian scheme:

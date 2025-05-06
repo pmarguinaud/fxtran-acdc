@@ -1,6 +1,9 @@
 SUBROUTINE LATRAJOUT (YDCST, LDRPRSLTRJ, KPROMA, KFLEVG, KST, KEND, &
                     & KSTEST, KSTESB, PWF, PRCOLON, PGEMU)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !**** *LATRAJOUT*  - Report out of atmosphere & underground trajectories
 
 !     Author. 

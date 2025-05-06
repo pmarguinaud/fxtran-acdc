@@ -9,6 +9,9 @@
 
 MODULE SURFACE_FIELDS_MIX
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load --only-types TYPE_SURF_GEN
+
+
 !     Purpose.
 !     --------
 

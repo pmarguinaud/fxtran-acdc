@@ -2,6 +2,9 @@
 SUBROUTINE GPGRP_EXPL(YDGEOMETRY, KST, KEND, PRT, PRTL, PRTM, PREL, PREM, PRTGR, PALPH, &
 & PHIHL, PHIHM, PHIFL, PHIFM, PSGRTL, PSGRTM, PALPHPLL_DER, PALPHPLM_DER)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !**** *GPGRP_EXPL* - Computation of the pressure gradient force term used in the
 !               RHS of the horizontal wind equation in hydrostatic model.
 !               This term is computed at full levels.

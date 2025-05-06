@@ -8,6 +8,9 @@ SUBROUTINE CUININ &
  & PUU,      PVU,      PUD,      PVD,&
  & PLU  )  
 
+!$ACDC openacc.pl --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
+
+
 !          PURPOSE
 !          -------
 

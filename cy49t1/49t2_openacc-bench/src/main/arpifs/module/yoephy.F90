@@ -9,6 +9,9 @@
 
 MODULE YOEPHY
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load --skip-components TEPHY%YSURF
+
+
 USE PARKIND1, ONLY : JPRB, JPIM
 USE ISO_C_BINDING
 

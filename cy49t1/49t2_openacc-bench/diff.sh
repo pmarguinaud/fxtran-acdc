@@ -1,3 +1,3 @@
 #!/bin/bash
 
-diff -w -x '*.F90.xml' -r ref/local src/local
+diff -B -w -x '*.F90.xml' -r ref/local src/local

@@ -1,5 +1,8 @@
 MODULE YOMDGRADIENT_TYPE_MOD
 
+!$ACDC generateStructureMethods.pl --host --wipe --copy --skip-components cpg --field-api --field-api-class cpg
+
+
 USE FIELD_MODULE
 USE FIELD_REGISTRY_MOD
 USE PARKIND1, ONLY : JPRB, JPIM, JPIB

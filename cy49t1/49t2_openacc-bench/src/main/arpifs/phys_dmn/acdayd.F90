@@ -1,6 +1,9 @@
 !OPTIONS XOPT(NOEVAL)
 SUBROUTINE ACDAYD(YDCST, YDRIP,KIDIA,KFDIA,KLON,KLEV,KTDIA,KSGST,PGEMU,PMU0,PAPHIF,PDELP,PFRSO)
 
+!$ACDC openacc.pl --stack84
+
+
 !**** *ACDAYD * - Compute DAY Duration, as a function of altitude, and correct solar fluxes accordingly.
 
 !-----------------------------------------------------------------------

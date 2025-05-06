@@ -1,5 +1,8 @@
 MODULE YOMCDDH
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
+
 IMPLICIT NONE
 
 SAVE

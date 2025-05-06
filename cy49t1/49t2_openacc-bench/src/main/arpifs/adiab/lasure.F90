@@ -4,6 +4,9 @@ SUBROUTINE LASURE(&
  ! ----- OUTPUT --------------------------------------------------------------
  & PBDT,PREDIV)  
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !**** *LASURE*   Semi-Lagrangian scheme.
 !                Set-up for other subroutines called by LACDYN.
 

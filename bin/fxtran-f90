@@ -12,6 +12,8 @@ use FindBin qw ($Bin);
 use lib "$Bin/../lib";
 use Cwd;
 
+use Bt;
+
 use queue;
 use task;
 
@@ -20,7 +22,7 @@ sub runCommand
   my %args = @_;
   my @cmd = @{ $args{cmd} };
 
-  my $task = 'task'->new (cmd => \@cmd, debug => 1);
+  my $task = 'task'->new (cmd => \@cmd, debug => $args{debug});
 
   $task->run (final => 1);
 }
@@ -62,6 +64,8 @@ sub concatenateObject
   my @f90flags = @{ $args{f90flags} };
   my ($obj, $f90compiler, $F90) = @args{qw (obj f90compiler F90)};
   my $opts = $args{opts};
+
+  return if ($opts->{dryrun});
 
   my @obj;
 
@@ -108,6 +112,12 @@ sub getopt_s
   return $opts->{$name} ? ("--$name", $opts->{$name}) : ();
 }
 
+sub getopt_f
+{
+  my ($opts, $name) = @_;
+  return $opts->{$name} ? ("--$name") : ();
+}
+
 sub openacc
 {
   shift;
@@ -119,7 +129,9 @@ sub openacc
 
   push @cmd, 
     &getopt_s ($opts, 'cycle'), 
-    '--merge-interfaces', '--dir', '.';
+    &getopt_f ($opts, 'interface'),
+    &getopt_f ($opts, 'merge-interfaces'),
+    '--dir', '.';
 
   &runCommand (cmd => [@cmd, $F90], %$opts);
 
@@ -138,7 +150,7 @@ sub generateStructureMethods
   push @cmd, 
     '--types-fieldapi-dir', $opts->{'types-fieldapi-dir'},
     '--types-constant-dir', $opts->{'types-constant-dir'},
-    '--sorted';
+    &getopt_f ($opts, 'sorted');
 
   &runCommand (cmd => [@cmd, $F90], %$opts);
 
@@ -164,22 +176,28 @@ sub pointerParallel
 
   my @inc = grep { m/^-I/ } @f90flags;
 
+  my $tmp = 'File::Temp'->newdir ();
+
+  my @dir;
+
   for my $dir (qw (types-fieldapi-dir types-constant-dir))
     {
       if (-d $opts->{$dir})
         {
-          &runCommand (cmd => ['cp', '-r', $opts->{dir}, $dir], %$opts);
+          &runCommand (cmd => ['cp', '-r', $opts->{$dir}, "$tmp/$dir"], %$opts);
         }
     }
 
-  &runCommand (cmd => ["$Bin/fieldRB.pl"], %$opts);
-  &runCommand (cmd => ["$Bin/linkTypes.pl"], %$opts);
+  &runCommand (cmd => ["$Bin/fieldRB.pl", '--types-fieldapi-dir', "$tmp/types-fieldapi-dir"], %$opts);
+  &runCommand (cmd => ["$Bin/linkTypes.pl", '--types-fieldapi-dir', "$tmp/types-fieldapi-dir"], %$opts);
 
   push @cmd, 
     &getopt_s ($opts, 'cycle'),
-    '--types-fieldapi-dir', 'types-fieldapi-dir',
-    '--types-constant-dir', 'types-constant-dir',
-    '--dir', '.', '--merge-interfaces', @inc;
+    '--types-fieldapi-dir', "$tmp/types-fieldapi-dir",
+    '--types-constant-dir', "$tmp/types-constant-dir",
+    '--dir', '.', 
+    &getopt_f ($opts, 'merge-interfaces'), 
+    @inc;
 
   &runCommand (cmd => [@cmd, $F90], %$opts);
 
@@ -204,7 +222,7 @@ sub outline1
 }
 
 my %opts = ('types-constant-dir' => '.', 'types-fieldapi-dir' => '.');
-my @opts_f = qw (debug dryrun help);
+my @opts_f = qw (debug interface dryrun help sorted merge-interfaces);
 my @opts_s = qw (cycle dir tmp types-fieldapi-dir types-constant-dir);
 
 &GetOptions
@@ -232,6 +250,7 @@ unless ($c)
     exec ($f90compiler, @ARGV) unless ($opts{dryrun});
     exit (0);
   }
+
 
 # Absolute path for includes
 
@@ -263,7 +282,6 @@ my $cwd = &cwd ();
 
 FILE: for my $F90 (@F90)
   {
-    
     my $dir = '.';
 
     if ($opts{dir})

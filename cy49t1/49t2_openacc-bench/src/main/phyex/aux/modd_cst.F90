@@ -5,6 +5,9 @@
 !-----------------------------------------------------------------
 !     ###############
       MODULE MODD_CST
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
 !     ###############
 !
 !!****  *MODD_CST* - declaration of Physic constants 

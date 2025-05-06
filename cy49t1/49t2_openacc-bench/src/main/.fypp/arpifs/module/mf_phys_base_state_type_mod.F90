@@ -1,6 +1,9 @@
 
 MODULE MF_PHYS_BASE_STATE_TYPE_MOD
 
+!$ACDC generateStructureMethods.pl --wipe --copy --field-api --field-api-class cpg
+
+
 USE PARKIND1, ONLY : JPIM, JPRB
 USE CPG_TYPE_MOD, ONLY : CPG_DYN_TYPE, CPG_PHY_TYPE
 USE FIELD_MODULE

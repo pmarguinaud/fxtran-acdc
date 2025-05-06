@@ -2,6 +2,9 @@ SUBROUTINE APL_ARPEGE_HYDRO_BUDGET (YDMF_PHYS_BASE_STATE, YDCPG_BNDS, YDCPG_OPTS
 & YDMF_PHYS, YDMF_PHYS_SURF, YDMODEL, PC3, PCN, PDSA_C1, PDSA_C2, PFLU_FEVI, PFLU_NEIJ, PFLU_VEG, &
 & PFPLSL, PFPLSN, PWFC, PWLMX, PWPMX, PWSEQ, PWSMX)
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 !**** *APL_ARPEGE_HYDRO_BUDGET*
 
 !     Author. 

@@ -1,5 +1,8 @@
 SUBROUTINE SCAN2M_TS (YDGEOMETRY, YDVARS, YDCPG_OPTS, YDCPG_BNDS)
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 USE PARKIND1           , ONLY : JPIM
 USE YOMHOOK            , ONLY : DR_HOOK, JPHOOK, LHOOK
 USE CPG_OPTS_TYPE_MOD  , ONLY : CPG_OPTS_TYPE, CPG_BNDS_TYPE

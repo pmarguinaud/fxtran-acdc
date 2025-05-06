@@ -1,5 +1,8 @@
 MODULE YOERAD
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
+
 USE PARKIND1,            ONLY : JPIM, JPRB
 USE YOE_SPECTRAL_PLANCK, ONLY : TSPECTRALPLANCK
 

@@ -10,6 +10,9 @@
 !-----------------------------------------------------------------
 !     ######################
       MODULE MODD_CLOUDPAR_n
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
 !     ######################
 !
 !!****  *MODD_CLOUDPAR$n* - declaration of the model-n dependant Microphysics 

@@ -1,5 +1,8 @@
 
 MODULE SURFACE_VIEWS_PROGNOSTIC_MODULE
+
+!$ACDC generateStructureMethods.pl --host --wipe --copy --skip-components sfv --field-api --field-api-class sfv
+
   ! The SURFACE_VIEWS type contains namespaced access to groups of
   ! array pointers according to individual surface variable groups.
   !

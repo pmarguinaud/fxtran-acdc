@@ -1,6 +1,9 @@
 SUBROUTINE VERDISINT(YDVFE,YDCVER,CDOPER,CDBC,KPROMA,KST,KEND,KFLEV,PIN,POUT,POUTS,PINS,&
  & KCHUNK,KLOUT)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !**** *VERDISINT*   VERtical DIScretization -
 !                INTerface for finite element type vertical operations:
 !                derivative or integral

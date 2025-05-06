@@ -1,5 +1,8 @@
 SUBROUTINE LATTEX_EXPL_2TL (YDGEOMETRY, YDCPG_BNDS, YDCPG_OPTS, YDML_DYN, YDCPG_SL1, YDVARS, LDCT, LDCTC)
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 USE PARKIND1, ONLY : JPIM, JPRB
 USE YOMHOOK, ONLY : LHOOK, JPHOOK, DR_HOOK
 

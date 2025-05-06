@@ -5,6 +5,9 @@
 !-----------------------------------------------------------------
 !     ###########################
       MODULE MODD_PARAM_LIMA_WARM
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
 !     ###########################
 !
 !!****  *MODD_PARAM_LIMA_WARM* - declaration of some descriptive parameters and

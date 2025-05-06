@@ -3,6 +3,9 @@ SUBROUTINE CUBIDIAG &
  & KCTOP, LD_LCUMASK,&
  & PA,    PB,   PR,   PU )  
 
+!$ACDC openacc.pl --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
+
+
 !          P. Bechtold         E.C.M.W.F.     07/03
 
 !          PURPOSE.

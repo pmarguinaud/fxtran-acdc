@@ -1,4 +1,7 @@
 MODULE MODD_FIELD
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
   USE MODD_PARAMETERS, ONLY: NGRIDUNKNOWN, NMNHNAMELGTMAX, NSTDNAMELGTMAX
   IMPLICIT NONE
   INTEGER, PARAMETER :: NMNHDIM_UNKNOWN             = -2

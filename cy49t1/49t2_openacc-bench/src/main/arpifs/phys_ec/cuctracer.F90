@@ -7,6 +7,9 @@ SUBROUTINE CUCTRACER &
  & PDMFUP,   PDMFDP,&
  & PCEN,     PTENC,    PSCAV  )  
 
+!$ACDC openacc.pl --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
+
+
 !**** *CUCTRACER* - COMPUTE CONVECTIVE TRANSPORT OF CHEM. TRACERS
 !                   IMPORTANT: ROUTINE IS FOR POSITIVE DEFINIT QUANTITIES
 !                              SCAVENGING IS DONE IF SCAVENGING COEFFICIENT>0

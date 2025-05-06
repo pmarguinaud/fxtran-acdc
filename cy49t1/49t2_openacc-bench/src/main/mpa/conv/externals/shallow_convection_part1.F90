@@ -8,6 +8,9 @@
                                   PCH1, PCH1TEN, PTHT, PSTHV, PSTHES,  &
                                   KSDPL, KSPBL, KSLCL, PSTHLCL, PSTLCL,&
                                   PSRVLCL, PSWLCL, PSZLCL, PSTHVELCL, OTRIG1)
+
+!$ACDC openacc.pl --stack84 --modi
+
     USE PARKIND1, ONLY : JPRB
     USE YOMHOOK , ONLY : LHOOK, JPHOOK, DR_HOOK
 !   ###############################################################################

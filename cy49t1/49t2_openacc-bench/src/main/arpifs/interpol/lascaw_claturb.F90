@@ -1,5 +1,8 @@
 SUBROUTINE LASCAW_CLATURB(YDSL,KFLEV,KPROMA,KST,KEND,KILA,PKHTURB,P3DTW,PCLA,PCLASLD)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 ! ------------------------------------------------------------------
 ! Purpose:
 !   Modify PCLA and PCLASLD when 3D turbulence is active

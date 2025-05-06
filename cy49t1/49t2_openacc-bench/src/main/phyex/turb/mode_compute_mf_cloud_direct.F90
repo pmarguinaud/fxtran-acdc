@@ -4,6 +4,9 @@
 !MNH_LIC for details. version 1.
 !     ######spl
      MODULE MODE_COMPUTE_MF_CLOUD_DIRECT
+
+!$ACDC openacc.pl --stack84 --interfaces --inline-contained
+
 !    ###################################
 !
 IMPLICIT NONE

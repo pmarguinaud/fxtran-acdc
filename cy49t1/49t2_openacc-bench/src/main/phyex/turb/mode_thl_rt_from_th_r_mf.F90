@@ -3,6 +3,9 @@
 !MNH_LIC version 1. See LICENSE, CeCILL-C_V1-en.txt and CeCILL-C_V1-fr.txt  
 !MNH_LIC for details. version 1.
 MODULE MODE_THL_RT_FROM_TH_R_MF
+
+!$ACDC openacc.pl --stack84 --interfaces --inline-contained
+
 IMPLICIT NONE
 CONTAINS
       SUBROUTINE THL_RT_FROM_TH_R_MF( D, CST, KRR, KRRL, KRRI,       &

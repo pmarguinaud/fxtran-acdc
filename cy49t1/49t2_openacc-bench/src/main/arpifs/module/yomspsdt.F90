@@ -1,5 +1,8 @@
 MODULE YOMSPSDT
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load --only-types TSPPT_CONFIG
+
+
 ! Purpose :
 ! -------
 !    Define types for the SPPT scheme, which represents model uncertainties

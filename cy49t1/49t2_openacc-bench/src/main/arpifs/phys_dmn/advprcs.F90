@@ -3,6 +3,9 @@ SUBROUTINE ADVPRCS (YDCST, YDML_PHY_MF,KIDIA, KFDIA, KLON, KTDIA, KFLEV,&
  & PQR, PQS, PNEB, &
  & PCP, PR, PAPHI, PAPRSF, PDELP,&
  & PFPLSL, PFPLSN, PFPEVPL, PFPEVPN, PFPFPL, PFPFPN, PSEDIQL, PSEDIQN )  
+
+!$ACDC openacc.pl --stack84
+
 !DEC$ OPTIMIZE:3
 
 ! ========================================================

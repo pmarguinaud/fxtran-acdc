@@ -1,5 +1,8 @@
 MODULE YOMCFU_TYPE
 
+!$ACDC generateStructureMethods.pl --size --wipe --copy --host --skip-components TCFU%CFUBUF_B --field-api --field-api-class flu
+
+
 USE PARKIND1  ,ONLY : JPIM, JPRB
 USE YOMHOOK   ,ONLY : LHOOK, JPHOOK, DR_HOOK
 

@@ -1324,7 +1324,7 @@ sub intfb_body
   
   for (&F ('.//C', $doc))
     {
-      next if ($_->textContent =~ m/^!\$acc\s+routine/o);
+      next if ($_->textContent =~ m/^!\$acc\s+routine/io);
       $_->unbindNode ();
     }
   

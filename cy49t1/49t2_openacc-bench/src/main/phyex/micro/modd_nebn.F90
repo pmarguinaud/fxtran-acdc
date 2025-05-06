@@ -4,6 +4,9 @@
 !MNH_LIC for details. version 1.
 !     ######spl
       MODULE MODD_NEB_n
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
 !     #############################
 !> @file
 !!****  *MODD_NEB_n* - Declaration of nebulosity constants

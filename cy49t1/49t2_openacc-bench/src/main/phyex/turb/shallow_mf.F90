@@ -22,6 +22,9 @@
                 PFRAC_UP,PEMF,PDETR,PENTR,                            &
                 KKLCL,KKETL,KKCTL,PDX,PDY,PRSVS,PSVMIN,               &
                 BUCONF, TBUDGETS, KBUDGETS                            )
+
+!$ACDC openacc.pl --stack84 --interfaces --inline-contained --modi
+
 !     #################################################################
 !!
 !!****  *SHALLOW_MF* - 

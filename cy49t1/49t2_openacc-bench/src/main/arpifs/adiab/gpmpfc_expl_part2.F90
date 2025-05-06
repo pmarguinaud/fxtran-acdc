@@ -1,5 +1,8 @@
 SUBROUTINE GPMPFC_EXPL_PART2 (YDVARS, YDCPG_OPTS, YDCPG_BNDS, PGM)
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 USE PARKIND1, ONLY : JPIM, JPRB
 USE YOMHOOK,  ONLY: LHOOK, JPHOOK, DR_HOOK
 

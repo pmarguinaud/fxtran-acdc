@@ -1,5 +1,8 @@
 MODULE YOMPHY
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
+
 USE PARKIND1  ,ONLY : JPIM
 USE YOMDPRECIPS , ONLY : TDPRECIPS
 USE YOMDVISI  ,ONLY : TDVISI 

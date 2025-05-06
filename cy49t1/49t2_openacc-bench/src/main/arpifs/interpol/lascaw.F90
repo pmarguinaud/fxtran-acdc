@@ -21,6 +21,9 @@ SUBROUTINE LASCAW(&
  & PVDERW,PHVW&
  & )  
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !     ------------------------------------------------------------------
 
 !**** *LASCAW  -  Externalisable interpolator:

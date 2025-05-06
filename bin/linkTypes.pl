@@ -11,6 +11,7 @@ use strict;
 use FileHandle;
 use Data::Dumper;
 use File::Basename;
+use File::Spec;
 use Storable;
 use Getopt::Long;
 use FindBin qw ($Bin);
@@ -44,8 +45,9 @@ my %T;
 
 for my $f (<$dir/*.pl>)
   {
+    $f = 'File::Spec'->rel2abs ($f);
     my $T = &basename ($f, qw (.pl));
-    $T{$T} = do ("./$f");
+    $T{$T} = do ("$f");
   }
 
 

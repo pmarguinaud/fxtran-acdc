@@ -1,6 +1,9 @@
 SUBROUTINE ELARCHE(YDCST,YDML_DYN,KPROMA,KST,KEND,KFLEV,YDSL,YDEGSL,YDEGEO,PSCO,PCCO,&
                  &PGECLO, PGEMU, PGESLO, PGSQM2)
 
+!$ACDC openacc.pl --dummy --stack84 --pointers
+
+
 !**** *ELARCHE  -  semi-Lagrangian scheme:
 !                  research of (lat,lon) coordinates of the origin point
 

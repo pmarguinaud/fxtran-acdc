@@ -1,4 +1,7 @@
 MODULE MODEL_DIAGNOSTICS_MOD
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
   USE YOMCDDH , ONLY : TCDDH
   USE YOMLDDH , ONLY : TLDDH
   USE YOMMDDH , ONLY : TMDDH

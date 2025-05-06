@@ -3,6 +3,9 @@ SUBROUTINE LARCHE(YDTCCO,YDTSCO,KPROMA,KST,KEND,KFLEV,&
  & PLOCEN,PMUCEN,&
  & PSCO,KROT,PCCO,PRCOLON,PRSILON,PGECLO,PGEMU,PGESLO,PGSQM2)  
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !**** *LARCHE  -  semi-LAgrangian scheme:
 !                 Research of the Coordinates (of the medium or origin point).
 

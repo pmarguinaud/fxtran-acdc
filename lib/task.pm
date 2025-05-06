@@ -51,7 +51,7 @@ sub final
 {
   my $self = shift;
 
-  print $self->{mess};
+  print $self->{mess} if ($self->{mess});
 
   if ($self->{code})
     {

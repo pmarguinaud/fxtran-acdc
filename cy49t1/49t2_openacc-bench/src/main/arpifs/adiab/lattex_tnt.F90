@@ -1,6 +1,9 @@
 SUBROUTINE LATTEX_TNT(YDGEOMETRY,YDLDDH,YDDYN,KST,KEND,KXLAG,PESGP,PESGM,PXT9,PMOY1X,PXSI9,&
  & PXSI0,PXT1,PXL0,PXL9,PXLF9,PSIDDHXT1,PSIDDHXL0)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !**** *LATTEX_TNT*   Semi-Lagrangian scheme.
 !                Computation of the t and t-dt useful quantities
 !                 at grid-points. Equations for tri-dimensional

@@ -5,6 +5,9 @@
 
 MODULE CPG_OPTS_TYPE_MOD
 
+!$ACDC generateStructureMethods.pl --crc64 --host --wipe --copy --load --save
+
+
 USE PARKIND1, ONLY : JPIM, JPRB
 USE GEOMETRY_MOD, ONLY : GEOMETRY
 USE YOMCLI, ONLY : TCLI

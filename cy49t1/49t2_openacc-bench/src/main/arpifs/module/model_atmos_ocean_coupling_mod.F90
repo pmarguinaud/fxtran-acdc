@@ -1,4 +1,7 @@
 MODULE MODEL_ATMOS_OCEAN_COUPLING_MOD
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
   USE YOMMCC, ONLY : TMCC
   USE YOMCOM, ONLY : TCOM
   USE YOMCOU, ONLY : TCOU

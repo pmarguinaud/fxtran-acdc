@@ -1,4 +1,7 @@
 MODULE MODD_MISC
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load --skip-components MISC_T%TBUCONF
+
 !
 USE MODD_BUDGET, ONLY: TBUDGETCONF_t
 IMPLICIT NONE

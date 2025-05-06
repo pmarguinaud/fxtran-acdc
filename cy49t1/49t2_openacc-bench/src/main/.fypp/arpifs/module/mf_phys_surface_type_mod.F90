@@ -1,6 +1,9 @@
 
 MODULE MF_PHYS_SURFACE_TYPE_MOD
 
+!$ACDC generateStructureMethods.pl --host --wipe --copy --field-api --field-api-class sfc
+
+
 USE PARKIND1, ONLY : JPIM, JPRB
 USE SURFACE_VARIABLES_MOD, ONLY: SURFACE_VARIABLES
 USE SURFACE_VIEWS_MODULE

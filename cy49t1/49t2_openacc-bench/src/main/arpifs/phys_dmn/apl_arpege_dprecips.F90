@@ -1,5 +1,8 @@
 SUBROUTINE APL_ARPEGE_DPRECIPS (YDMF_PHYS_BASE_STATE, YDCPG_BNDS, YDCPG_OPTS, YDMF_PHYS, YDVARS, YDMODEL, PPRC_DPRECIPS, PPRC_DPRECIPS2)
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 !**** *APL_ARPEGE_DPRECIPS*
 
 !     Author. 

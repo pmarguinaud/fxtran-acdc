@@ -1,5 +1,8 @@
 MODULE SPP_MOD
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load --only-types TSPP_CONFIG
+
+
 ! Purpose :
 ! -------
 !    Define types for the SPP scheme, which represents model uncertainties

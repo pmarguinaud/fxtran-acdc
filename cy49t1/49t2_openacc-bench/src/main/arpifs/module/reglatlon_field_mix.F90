@@ -1,5 +1,8 @@
 MODULE REGLATLON_FIELD_MIX
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
+
 USE PARKIND1  ,ONLY : JPIM     ,JPRB
 USE YOMLUN   , ONLY : NULOUT
 USE YOMHOOK   ,ONLY : LHOOK,   DR_HOOK, JPHOOK

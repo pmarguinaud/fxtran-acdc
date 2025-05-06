@@ -1,6 +1,9 @@
 SUBROUTINE LASSIE(YDCST,YDGEOMETRY,YDVARS,YDCPG_BNDS,YDCPG_OPTS,YDDYN,YDDYNA,PRCORI,&
  & PSDIV0,PSDIV9,PTOD0,PTOD9,PGAGT0L,PGAGT0M,PGAGT9L,PGAGT9M)  
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 !**** *LASSIE*   Semi-Lagrangian scheme.
 !                Computation of linear terms used in the semi-implicit scheme. 
 

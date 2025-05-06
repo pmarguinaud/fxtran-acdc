@@ -16,6 +16,9 @@ SUBROUTINE APLPAR_INIT &
  & KCLPH   &
  & )
 
+!$ACDC openacc.pl --stack84
+
+
 USE PARKIND1  ,ONLY : JPIM     ,JPRB
 USE YOMHOOK   ,ONLY : LHOOK,   DR_HOOK, JPHOOK
 

@@ -1,6 +1,9 @@
 SUBROUTINE LASCAW_CLA(YDSL,YDDYNA,KFLEV,KPROMA,KST,KEND,LDT,PSLHDKMIN,KILA,PDLAT,PKAPPA,&
  & YDDHSLMER,PSLDW,PCLA,PCLASLD)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !     ------------------------------------------------------------------
 
 !**** *LASCAW_CLA  -  Weights for semi-LAgrangian interpolator:

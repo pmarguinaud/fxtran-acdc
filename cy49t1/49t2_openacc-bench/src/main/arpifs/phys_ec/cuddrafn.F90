@@ -8,6 +8,9 @@ SUBROUTINE CUDDRAFN &
  & PMFD,     PMFDS,    PMFDQ,    PDMFDP,&
  & PDMFDE,   PMFDDE_RATE,        PKINED )  
 
+!$ACDC openacc.pl --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
+
+
 !          THIS ROUTINE CALCULATES CUMULUS DOWNDRAFT DESCENT
 
 !          PURPOSE.

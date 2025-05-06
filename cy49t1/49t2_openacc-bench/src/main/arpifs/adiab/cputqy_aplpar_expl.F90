@@ -3,6 +3,9 @@ SUBROUTINE CPUTQY_APLPAR_EXPL(YDCST, YDCPG_BNDS, YDCPG_OPTS, YDDYNA, YDMF_PHYS_N
 & PTENDEFB3, PTENDG, PTENDICONV, PTENDI, PTENDLCONV, PTENDL, PTENDQ, PTENDRCONV, PTENDR, PTENDSCONV,             &
 & PTENDS, PTENDTKE, PFDIS)
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 !     -----------------------------------------------------------------
 !**** *CPUTQY_APLPAR_EXPL*  EVOLUTION DE T, VENT , Q , QI , QL, QR, QS
 !               ET  TKE.

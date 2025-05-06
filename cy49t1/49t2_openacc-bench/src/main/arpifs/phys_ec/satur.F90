@@ -10,6 +10,9 @@
 SUBROUTINE SATUR ( YDTHF, YDCST, KIDIA , KFDIA , KLON  , KTDIA , KLEV, LDPHYLIN, &
  & PAPRSF, PT    , PQSAT , KFLAG)
 
+!$ACDC openacc.pl --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
+
+
 !***
 
 ! **   *SATUR* -  COMPUTES SPECIFIC HUMIDITY AT SATURATION

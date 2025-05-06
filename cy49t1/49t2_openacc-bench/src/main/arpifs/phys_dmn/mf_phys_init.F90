@@ -1,5 +1,8 @@
 SUBROUTINE MF_PHYS_INIT (YDCPG_BNDS, YDCPG_OPTS, YDMF_PHYS, YDCPG_MISC)
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 USE PARKIND1  ,ONLY : JPIM     ,JPRB
 USE YOMHOOK   ,ONLY : LHOOK,   DR_HOOK, JPHOOK
 USE CPG_OPTS_TYPE_MOD   , ONLY : CPG_BNDS_TYPE, CPG_OPTS_TYPE

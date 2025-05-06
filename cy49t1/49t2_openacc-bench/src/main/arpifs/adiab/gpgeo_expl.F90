@@ -1,6 +1,9 @@
 SUBROUTINE GPGEO_EXPL(KPROMA, KST, KEND, KFLEV, PHI, PHIF, PT, PR, PLNPR, PALPH, &
 & YDVGEOM)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !**** *GPGEO_EXPL* - Computes half and full level geopotential height "gz".
 
 !     Purpose.

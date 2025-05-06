@@ -4,6 +4,9 @@ SUBROUTINE ACVPPKF(YDCST, YDML_PHY_MF, YDCPG_BNDS, YDCPG_OPTS, KTDIA, PAPRSF, PA
 & PQ, PQL, PQI, PU, PV, PCP, PTKE, PDIFCQ, PDIFCS, PFCCQL, PFCCQN, PPRODTH, KNLAB,  PQCPP, PNEBPP,    &
 & KNND)
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 !-----------------------------------------------------------------
 
 !  Authors  : E. Bazile and P. Bechtold  (CNRM/GMAP et L.A.)

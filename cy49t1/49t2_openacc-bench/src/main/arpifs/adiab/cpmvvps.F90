@@ -7,6 +7,9 @@ SUBROUTINE CPMVVPS(YDCST, YDVAB,KLON,KIDIA,KFDIA,KFLEV,PDT,&
  !  Variables 2D In/Out
  & PEVEL, PSDVBC, PSPT1)
 
+!$ACDC openacc.pl --stack84
+
+
 !     ------------------------------------------------------------------
 !     MODIFICATION DE LA VITESSE VERTICALE ET DE LA PRESSION DE SURFACE
 !     DANS LE CAS NDPSFI = 1.

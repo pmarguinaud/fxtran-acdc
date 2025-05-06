@@ -8,6 +8,9 @@ SUBROUTINE ACRANEB_SOLVT1 (LDNUMX,KIDIA,KFDIA,KLON,KTDIA,KLEV,&
  & PA4C,PA5C,PA4N,PA5N,&
  & PFDC,PFMC,PFDN,PFMN)
 
+!$ACDC openacc.pl --stack84 --inline-contained
+
+
 ! Purpose:
 ! --------
 !   ACRANEB_SOLVT1 - Adding system solver (thermal band, 1 RHS).

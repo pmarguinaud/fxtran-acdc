@@ -1,5 +1,8 @@
 MODULE TYPE_FLUXES
 
+!$ACDC generateStructureMethods.pl --size --host --copy --wipe
+
+
 !     Purpose.
 !     --------
 !      To define the descriptors of families of model fluxes.

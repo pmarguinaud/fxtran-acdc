@@ -1,5 +1,8 @@
 MODULE CPG_SL_MASK_TYPE_MOD
 
+!$ACDC generateStructureMethods.pl --host --wipe --copy --skip-components cpg --field-api --field-api-class cpg
+
+
 USE PARKIND1, ONLY : JPIM
 USE FIELD_MODULE, ONLY : FIELD_1IM
 

@@ -2,6 +2,9 @@ SUBROUTINE APL_ARPEGE_INIT_SURFEX (YDMF_PHYS_BASE_STATE, YDGEOMETRY, YDCPG_BNDS,
 & YDCPG_MISC, YDCPG_GPAR, YDMF_PHYS, YDVARS, YDMODEL, PALBD, PALBP, PFLU_EMIS, PSGROUPEL, PSRAIN, &
 & PSSNOW, PTSN)
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 !**** *APL_ARPEGE_INIT_SURFEX*  
 
 !     Author. 

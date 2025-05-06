@@ -5,6 +5,9 @@
 !-------------------------------------------------------------------------------
 !        ###############
          MODULE MODD_NSV
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
 !        ###############
 !
 !!****  *MODD_NSV* - declaration of scalar variables numbers

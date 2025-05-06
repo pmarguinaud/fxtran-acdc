@@ -5,6 +5,9 @@
 !-----------------------------------------------------------------
 !     ######spl
      MODULE MODE_COMPUTE_MF_CLOUD_BIGAUS
+
+!$ACDC openacc.pl --stack84 --interfaces --inline-contained
+
 !    ###################################
 !
 IMPLICIT NONE

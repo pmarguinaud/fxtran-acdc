@@ -12,6 +12,9 @@
 
 MODULE TYPE_MODEL
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load --skip-components MODEL%YRML_SPP,MODEL%YRML_SPPT
+
+
 USE PARKIND1                      , ONLY : JPIM
 USE MODEL_GENERAL_CONF_MOD        , ONLY : MODEL_GENERAL_CONF_TYPE
 USE MODEL_ATMOS_OCEAN_COUPLING_MOD, ONLY : MODEL_ATMOS_OCEAN_COUPLING_TYPE

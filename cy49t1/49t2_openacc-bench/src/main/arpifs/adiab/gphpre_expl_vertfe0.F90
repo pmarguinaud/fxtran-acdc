@@ -1,6 +1,9 @@
 SUBROUTINE GPHPRE_EXPL_VERTFE0 (YDCVER, TOPPRES, YDCST, KPROMA, KFLEV, KST, KEND, YDVAB, PRESH, PRESF, LHSET, &
                               & LDELP, LALPHA, LRTGR, LRPP, PDELP, PLNPR, PRDELP, PALPH, PRTGR, PRPRE, PRPP)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !**** *GPHPRE_EXPL_VERTFE0* - Computes half and full level pressure
 !                Modern version of former GPPRE.
 !                Modern version of former GPPREH+GPXYB+GPPREF

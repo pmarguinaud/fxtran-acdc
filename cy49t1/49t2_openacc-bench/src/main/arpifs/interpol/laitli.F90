@@ -4,6 +4,9 @@
 SUBROUTINE LAITLI(KSLB1,KPROMA,KST,KEND,KFLEV,KFLDN,KFLDX,PDLAT,PDLO,KL0,PDVER,&
  & PXSL,PXF,LDADD)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !**** *LAITLI  -  semi-LAgrangian scheme:
 !                 Trilinear interpolations for one variable.
 

@@ -5,6 +5,9 @@ SUBROUTINE ACRANEB_COEFT (KIDIA,KFDIA,KLON,KTDIA,KLEV,&
 ! - OUTPUT 2D
  & PA4C,PA5C,PA4N,PA5N)
 
+!$ACDC openacc.pl --stack84 --inline-contained
+
+
 ! Purpose:
 ! --------
 !   ACRANEB_COEFT - Computes coeficients for delta-two stream adding

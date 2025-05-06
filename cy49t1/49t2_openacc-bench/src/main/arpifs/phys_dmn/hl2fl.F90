@@ -1,5 +1,8 @@
 SUBROUTINE HL2FL ( KIDIA, KFDIA, KLON, KTDIAT, KLEV,&
           & PAPRS, PAPRSF, PXHL, KINI, PXFL)
+
+!$ACDC openacc.pl --stack84
+
 !
 !**** * HL2FL* - Passage des Half-level aux Full-level
 !-----------------------------------------------------------------------

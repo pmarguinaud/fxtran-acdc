@@ -5,6 +5,9 @@
 !-----------------------------------------------------------------
 !     ##################
       MODULE MODD_TURB_n
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
 !     ##################
 !> @file
 !!****  *MODD_TURB$n* - declaration of turbulence scheme free parameters

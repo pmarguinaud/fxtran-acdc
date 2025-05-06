@@ -1,6 +1,9 @@
 SUBROUTINE GPXX(YDGEOMETRY, KFLEV, KPROMA, KST, KEND, PHIHL, PHIHM, PHIFL, PHIFM, &
 & PLNPR, PRT, PUF, PVF, PUH, PVH, PWF2H, PX, PNHPPI, PTAUX_NL, LDVFE  )
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 ! GPXX - Diagnose NHX-term
 
 ! Purpose

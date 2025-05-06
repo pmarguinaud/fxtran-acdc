@@ -10,6 +10,9 @@ SUBROUTINE ACRANEB_COEFS(YDPHY3,KLON,KTDIA,KLEV,KJN,KIIDIA,KIFDIA,KAUCR,&
 ! - OUTPUT 2D
  & PA1C,PA1CUN,PA2C,PA3C,PA4C,PA5C,PA1N,PA1NUN,PA2N,PA3N,PA4N,PA5N)
 
+!$ACDC openacc.pl --stack84 --inline-contained
+
+
 ! Purpose:
 ! --------
 !   ACRANEB_COEFS - Computes coeficients for delta-two stream adding

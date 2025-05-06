@@ -1,5 +1,8 @@
 MODULE TYPE_ECV
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
+
 !     Purpose.
 !     --------
 !       Data and controls for extended control variable

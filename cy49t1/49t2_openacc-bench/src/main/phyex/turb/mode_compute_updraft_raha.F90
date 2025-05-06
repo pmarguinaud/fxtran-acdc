@@ -5,6 +5,9 @@
 !-----------------------------------------------------------------
 !     ######spl
      MODULE MODE_COMPUTE_UPDRAFT_RAHA
+
+!$ACDC openacc.pl --stack84 --interfaces --inline-contained
+
 !    ###########################
 !
 IMPLICIT NONE

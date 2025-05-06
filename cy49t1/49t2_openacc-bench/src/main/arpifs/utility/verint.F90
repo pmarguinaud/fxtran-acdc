@@ -1,5 +1,8 @@
 SUBROUTINE VERINT(KPROMA,KST,KEND,KLEVIN,KLEVOUT,PINTE,PIN,POUT,KTYPE,KCHUNK,POUTS,PINS)
 
+!$ACDC openacc.pl --set-variables LLVERINT_ON_CPU=.FALSE.,LLSIMPLE_DGEMM=.TRUE. --no-check-pointers-dims ZIN,ZOUT --stack84 --pointers
+
+
 !**** *VERINT*   Vertical integral
 
 !     Purpose.

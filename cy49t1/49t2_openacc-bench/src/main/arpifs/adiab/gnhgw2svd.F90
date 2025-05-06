@@ -7,6 +7,9 @@ SUBROUTINE GNHGW2SVD(&
  & PNHX,PLNPR,PDEP,PREF,PGWH,PGWF,PGWS,PGWRF,PGWRS,PGDWR, &
  & PGWDAMP,PTAUD_NL)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !* GNHGW2SVD - Conversion Gw ---> svd.
 
 ! Purpose

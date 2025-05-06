@@ -8,6 +8,9 @@ SUBROUTINE AC_CLOUD_MODEL2(                          &
  & PEOSLDIR ,PUSAI    ,PUSAL    ,PUSBI    ,PUSBL     &
  & )
 
+!$ACDC openacc.pl --stack84 --inline-contained
+
+
 ! Purpose:
 ! --------
 !   AC_CLOUD_MODEL2 - Computes cloud optical coefficients taking into

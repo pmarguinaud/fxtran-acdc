@@ -8,6 +8,9 @@
 ! nor does it submit to any jurisdiction.
 
 MODULE MODEL_PHYSICS_RADIATION_MOD
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load --skip-components MODEL_PHYSICS_RADIATION_TYPE%YRRADF
+
   USE YOMRADF        , ONLY : TRADF
   USE YOERAD         , ONLY : TERAD
   USE YOESW          , ONLY : TESWRT

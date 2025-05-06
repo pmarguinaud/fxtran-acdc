@@ -3,6 +3,9 @@ SUBROUTINE APL_ARPEGE_CLOUDINESS (YDMF_PHYS_BASE_STATE, YDCPG_BNDS, YDCPG_OPTS, 
 & PNEBCH, PNEBS, PNEBS0, PNEB_CVPP, PPFL_FPLCH, PQI, PQL, PQLIS, PQLIS0, PQLI_CVP, PQLI_CVPP, PQV, &
 & PUNEBH, PCLCT_RAD, YDSTA)
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 !**** *APL_ARPEGE_CLOUDINESS*
 
 !     Author. 

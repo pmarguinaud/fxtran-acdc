@@ -1,5 +1,8 @@
 MODULE YEMGEO
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
+
 USE PARKIND1  ,ONLY : JPRB
 
 IMPLICIT NONE

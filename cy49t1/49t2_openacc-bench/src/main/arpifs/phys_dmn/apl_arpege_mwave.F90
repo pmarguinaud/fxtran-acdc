@@ -1,5 +1,8 @@
 SUBROUTINE APL_ARPEGE_MWAVE (YDCPG_MISC, YDMF_PHYS, YDCPG_BNDS, YDCPG_OPTS, YDPHYSMWAVE) 
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 USE PARKIND1         , ONLY : JPIM, JPRB
 USE CPG_TYPE_MOD     , ONLY : CPG_MISC_TYPE
 USE MF_PHYS_TYPE_MOD , ONLY : MF_PHYS_TYPE

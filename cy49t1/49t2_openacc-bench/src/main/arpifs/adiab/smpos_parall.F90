@@ -1,6 +1,9 @@
 SUBROUTINE SMPOS_PARALL(YDGEOMETRY,YDMODEL,KST,KEND,&
  & PGEMU,PGELAM,PSOLO)
 
+!$ACDC openacc.pl --stack84
+
+
 !**** *SMPOS_PARALL*  - Sun and Moon POSitions : compute PARALLax & lunar obscuration of the Sun.
 
 !     Purpose.

@@ -1,5 +1,8 @@
 MODULE CPG_TYPE_MOD
 
+!$ACDC generateStructureMethods.pl --host --wipe --copy --skip-components cpg --field-api --field-api-class cpg
+
+
 USE FIELD_MODULE
 USE FIELD_ARRAY_MODULE
 USE FIELD_FACTORY_MODULE

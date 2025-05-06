@@ -9,6 +9,9 @@ SUBROUTINE SHALLOW_CONVECTION_PART2(CVP_SHAL, CVPEXT, CST, D, NSV,   &
                                     PRVC, PRCC, PRIC, ICTL, IMINCTL, &
                                     PPCH1TEN)
 
+!$ACDC openacc.pl --stack84 --modi
+
+
 USE PARKIND1, ONLY : JPRB
 USE YOMHOOK , ONLY : LHOOK, JPHOOK, DR_HOOK
 USE MODD_CONVPAR, ONLY : CONVPAR_T

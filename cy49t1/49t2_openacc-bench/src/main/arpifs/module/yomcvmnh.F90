@@ -1,5 +1,8 @@
 MODULE YOMCVMNH
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
+
 !Module to define the parameters of the KFB
 !convection parametrization of MNH.
 ! Modified by E. Bazile 09.05.2007

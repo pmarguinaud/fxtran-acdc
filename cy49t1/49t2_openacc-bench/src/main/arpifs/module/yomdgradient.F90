@@ -1,5 +1,8 @@
 MODULE YOMDGRADIENT
 
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
+
 USE YOMHOOK  , ONLY : LHOOK, DR_HOOK, JPHOOK
 !
 IMPLICIT NONE

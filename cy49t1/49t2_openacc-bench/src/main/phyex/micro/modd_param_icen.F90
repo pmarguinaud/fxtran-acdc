@@ -5,6 +5,9 @@
 !-----------------------------------------------------------------
 !     ######spl
       MODULE MODD_PARAM_ICE_n
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
 !     #####################
 !> @file
 !!      *MODD_PARAM_ICE_n* - declaration of the control parameters for the

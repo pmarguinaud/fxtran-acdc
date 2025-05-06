@@ -1,5 +1,8 @@
 SUBROUTINE GPTF2_EXPL_2TL (YDGEOMETRY, KST, KEND, LDFSTEP, P0U, P0V, P9U, P9V)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 !**** *GPTF2_EXPL_2TL*
 
 !     Author.

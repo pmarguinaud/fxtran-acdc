@@ -1,5 +1,8 @@
 SUBROUTINE MF_PHYS_MOCON (YDCPG_BNDS, YDCPG_OPTS, PRDG_LCVQ, PMOC_CLPH, YDMF_PHYS, YDMF_PHYS_BASE_STATE)
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 !**** *MF_PHYS_MOCON*
 
 !     Author. 

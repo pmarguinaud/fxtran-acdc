@@ -2,6 +2,9 @@
 SUBROUTINE LAITRI_WENO(YDDYN,KSLB1,KPROMA,KST,KEND,KFLEV,KFLDN,KFLDX,KQM,CDTYPE,&
  & PDLAT,PCLA,PDLO,PCLO,KL0,KNOWENO,PCW,PVINTW,PXSL,PXF,PALPHA,PRDETAR,LDQM3DCONS,LDADD)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 ! Purpose :
 ! -------
 !   LAITRI_WENO - semi-Lagrangian scheme: tri-dimensional 56-point

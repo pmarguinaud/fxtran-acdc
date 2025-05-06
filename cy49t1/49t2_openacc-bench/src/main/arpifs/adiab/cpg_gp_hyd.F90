@@ -1,6 +1,9 @@
 SUBROUTINE CPG_GP_HYD(YDGEOMETRY, YDCPG_BNDS, YDCPG_OPTS, YDVARS, YDCPG_DYN0, YDCPG_DYN9, YDMODEL,   &
 & P_OROGLL_T0, P_OROGMM_T0, P_OROGLM_T0, P_GDW_T0, P_GWHT_T0, YDCPG_TND)
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 !**** *CPG_GP_HYD* - Grid point calculations at instants t and t-dt for hydrostatic model.
 
 !     Purpose.

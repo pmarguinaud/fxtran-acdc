@@ -1,5 +1,8 @@
 
 MODULE MODEL_PHYSICS_AEROSOL_MOD
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
   USE YOEAERLID, ONLY : TEAERLID
   USE YOEAERMAP, ONLY : TEAERMAP
   USE YOEAERSNK, ONLY : TEAERSNK

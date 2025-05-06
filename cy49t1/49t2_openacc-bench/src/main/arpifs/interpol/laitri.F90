@@ -2,6 +2,9 @@
 SUBROUTINE LAITRI(KSLB1,KPROMA,KST,KEND,KFLEV,KFLDN,KFLDX,KQM,CDTYPE,PDLAT,PCLA,&
  & PDLO,PCLO,KL0,PVINTW,PXSL,PXF,LDADD)
 
+!$ACDC openacc.pl --stack84 --pointers
+
+
 ! Purpose :
 ! -------
 !   LAITRI - semi-Lagrangian scheme: tri-dimensional 32-point

@@ -1,6 +1,9 @@
 SUBROUTINE APL_WIND_GUST (YDMF_PHYS_BASE_STATE, YDCPG_BNDS, YDCPG_OPTS, YDMF_PHYS, &
 & YDVARS, YDMODEL, KMOC_CLPH, PBLH, PDCAPE)
 
+!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+
+
 !**** *APL_WIND_GUST*  
 
 !     Author. 

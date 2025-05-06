@@ -1,4 +1,7 @@
 module spp_def_mod
+
+!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+
   use parkind1, only: jpim, jprb
   use spp_gen_mod
 

@@ -3,6 +3,9 @@ SUBROUTINE CUADJTQS &
  & KK,&
  & PSP,      PT,       PQ,       LDFLAG,   KCALL)  
 
+!$ACDC openacc.pl --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
+
+
 !**   *CUADJTQS* - SIMPLIFIED VERSION OF MOIST ADJUSTMENT
 
 !     PURPOSE.

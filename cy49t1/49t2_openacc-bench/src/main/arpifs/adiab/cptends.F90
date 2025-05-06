@@ -11,6 +11,9 @@ SUBROUTINE CPTENDS ( YDCST, YDML_PHY_MF,KLON, KIDIA, KFDIA, KFLEV, KCSS, PDT,&
  ! - OUTPUT 1D .
  & PTDTS, PTDTP, PTDWS, PTDWSI, PTDWP, PTDWPI, PTDWL, PTDSNS,&
  & PTDALBNS, PTDRHONS )  
+
+!$ACDC openacc.pl --stack84
+
 !****
 !     ------------------------------------------------------------------
 
