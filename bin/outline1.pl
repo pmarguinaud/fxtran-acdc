@@ -18,9 +18,10 @@ use Outline1;
 use Canonic;
 use Directive;
 use Intrinsic;
+use Inline;
 
 my %opts = ();
-my @opts_f = qw (help);
+my @opts_f = qw (inline-contains help);
 my @opts_s = qw ();
 
 &GetOptions
@@ -28,7 +29,6 @@ my @opts_s = qw ();
   (map { ($_, \$opts{$_}) } @opts_f),
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
-
 
 &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 5000));
 &fxtran::setOptions (qw (Statement -line-length 5000));
@@ -40,6 +40,15 @@ my $d = &Fxtran::parse (location => $F90, fopts => [qw (-construct-tag -no-inclu
 &Canonic::makeCanonic ($d);
 
 &Directive::parseDirectives ($d, name => 'ACDC');
+
+if ($opts{'inline-contains'})
+  {
+    my @pu = &F ('./object/file/program-unit', $d);
+    for my $pu (@pu)
+      {
+        &Inline::inlineContainedSubroutines ($pu, skipDimensionCheck => 1);
+      }
+  }
 
 my ($pu) = &F ('./object/file/program-unit', $d);
 
