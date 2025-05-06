@@ -29,6 +29,10 @@ my @opts_s = qw ();
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
 
+
+&fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 5000));
+&fxtran::setOptions (qw (Statement -line-length 5000));
+
 my $F90 = shift;
 
 my $d = &Fxtran::parse (location => $F90, fopts => [qw (-construct-tag -no-include -line-length 500 -directive ACDC -canonic)]);
