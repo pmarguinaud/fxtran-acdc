@@ -2,6 +2,7 @@ package Print;
 
 use strict;
 use Fxtran;
+use Data::Dumper;
 
 sub useABOR1_ACC
 {
@@ -45,7 +46,8 @@ sub removeTRIM
 
   for my $TRIM (@TRIM)
     {
-      my ($str) = &F ('./R-LT/array-R/section-subscript-LT/section-subscript/lower-bound/ANY-E', $TRIM);
+      # element-LT/.. should be replaced by something else
+      my ($str) = &F ('./R-LT/function-R/element-LT/element/ANY-E', $TRIM);
       $TRIM->replaceNode ($str);
     }
 
