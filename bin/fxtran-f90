@@ -19,6 +19,8 @@ if (1) {
   'FileHandle'->new (">$bash")->print (<< "EOF");
 #!/bin/bash
 
+set -x
+
 @{ $args{cmd} }
 
 EOF

@@ -123,6 +123,15 @@ sub outline
   my @nn_expr = &F ('.//named-E/N', $sect, 1); my %nn_expr; $nn_expr{$_}++ for (@nn_expr); # Number of occurences of each symbol
   my @nn = &uniq (@nn_expr);
 
+  # function statement includes : when present, we need to force YDCST presence
+
+  my @func = &F ('./specification-part/declaration-part/include[contains(filename, ".func.h")]', $pu);
+
+  if (@func && $VAR->{YDCST})
+    {
+      push @nn, 'YDCST';
+    }
+
   # Select symbols used in section + their dependencies from $VAR
   
   my %nn;
@@ -215,8 +224,24 @@ sub outline
               unless ($isPuArg)
                 {
                   my ($ts) = &F ('./_T-spec_', $stmt);
+
+                  my $INTENT = 'INOUT';
+
+                  if (my ($param) = &F ('./attribute[string(attribute-N)="PARAMETER"]', $stmt))
+                    {
+                      # Remove PARAMETER attribute
+                      $param->previousSibling->unbindNode; # Remove preceding comma
+                      $param->unbindNode;
+
+                      # Remove PARAMETER value
+                      my ($init) = &F ('.//init-E', $stmt);
+                      $init->previousSibling->unbindNode;
+                      $init->unbindNode; # Remove =
+                     
+                      $INTENT = 'IN';
+                    }
                   $stmt->insertAfter ($_, $ts) 
-                   for (&n ('<attribute><attribute-N>INTENT</attribute-N> (<intent-spec>INOUT</intent-spec>)</attribute>'), &t (', '));
+                    for (&n ("<attribute><attribute-N>INTENT</attribute-N> (<intent-spec>$INTENT</intent-spec>)</attribute>"), &t (', '));
                 }
               push @declArg, $stmt;
               push @args, $nn;
@@ -284,8 +309,7 @@ sub outline
         }
     }
 
-  
-  for (@include, &t (''), @declLocal, &t (''))
+  for (@include, @func, &t (''), @declLocal, &t (''))
     {
       $body .= $_->textContent . "\n";
     }
