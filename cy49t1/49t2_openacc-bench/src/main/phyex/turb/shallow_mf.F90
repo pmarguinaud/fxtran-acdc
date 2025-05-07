@@ -23,7 +23,7 @@
                 KKLCL,KKETL,KKCTL,PDX,PDY,PRSVS,PSVMIN,               &
                 BUCONF, TBUDGETS, KBUDGETS                            )
 
-!$ACDC openacc.pl --stack84 --interfaces --inline-contained --modi
+!$ACDC openacc.pl --stack84 --interfaces --inline-contained
 
 !     #################################################################
 !!

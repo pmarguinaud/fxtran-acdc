@@ -73,4 +73,11 @@ sub preProcessForOpenACC
 
 }
 
+sub generateInterface
+{
+  my $class = shift;
+  my ($F90, %opts) = @_;
+  &Fxtran::intfb ($F90, $opts{dir}, $class->includeExtension ());
+}
+
 1;

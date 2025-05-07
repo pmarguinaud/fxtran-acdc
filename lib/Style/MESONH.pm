@@ -201,4 +201,11 @@ sub matchDocument
   return;
 }
 
+sub generateInterface
+{
+  my $class = shift;
+  my ($F90, %opts) = @_;
+  &Fxtran::modi ($F90, $opts{dir});
+}
+
 1;

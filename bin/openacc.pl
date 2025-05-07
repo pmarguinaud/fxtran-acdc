@@ -267,7 +267,7 @@ sub processSingleRoutine
 
 my %opts = (cycle => 49, tmp => '.', pragma => 'OpenACC');
 my @opts_f = qw (help drhook only-if-newer version stdout 
-                 modi value-attribute redim-arguments stack84 merge-interfaces
+                 value-attribute redim-arguments stack84 merge-interfaces
                  pointers inline-contained debug interfaces dummy inline-comment interface);
 my @opts_s = qw (dir cycle inlined no-check-pointers-dims set-variables files base tmp style pragma);
 
@@ -368,19 +368,9 @@ else
     &updateFile ($F90out, &Canonic::indent ($d));
 
 
-    if ($opts{interface})
+    if ($opts{interface} && $singleRoutine)
       {
-        if ($singleRoutine)
-          {
-            if ($opts{modi})
-              {
-                &Fxtran::modi ($F90out, $opts{dir});
-              }
-            else
-              {
-                &Fxtran::intfb ($F90out, $opts{dir}, $opts{style}->includeExtension ());
-              }
-          }
+        $opts{style}->generateInterface ($F90out, %opts);
       }
   }
 
