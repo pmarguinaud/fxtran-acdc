@@ -1,5 +1,7 @@
 package Style::MESONH;
 
+use List::MoreUtils qw (uniq);
+
 use strict;
 
 use base qw (Style);
@@ -206,6 +208,41 @@ sub generateInterface
   my $class = shift;
   my ($F90, %opts) = @_;
   &Fxtran::modi ($F90, $opts{dir});
+}
+
+sub setOpenACCInterfaces
+{
+  shift;
+  my ($d, %opts) = @_;
+
+  my ($up) = &F ('./specification-part/use-part', $d);
+  my ($dp) = &F ('./specification-part/declaration-part', $d);
+  my ($ep) = &F ('./execution-part', $d);
+
+  my @called = &F ('.//call-stmt/procedure-designator', $ep, 1);
+
+  my $suffix = $opts{suffix};
+
+  # Include MODI_* interfaces
+  
+  my @modi = &F ('./use-stmt[starts-with(string(module-N),"MODI_")]', $up);
+
+  my @called_openacc = &uniq (grep { m/$suffix$/  } @called);
+
+  for my $modi (@modi)
+  {
+    my ($proc) = &F ('./module-N', $modi, 1);
+    $proc =~ s/^MODI_//o;
+    if (grep { $proc eq $_ } @called)
+      {
+        $proc .= $suffix;
+        next unless (grep { $_ eq $proc } @called_openacc);
+        my ($use) = &s ("USE MODI_$proc");
+        $modi->parentNode->insertAfter ($use, $modi);
+        $modi->parentNode->insertAfter (&t ("\n"), $modi);
+      }
+  }
+  
 }
 
 1;

@@ -80,4 +80,44 @@ sub generateInterface
   &Fxtran::intfb ($F90, $opts{dir}, $class->includeExtension ());
 }
 
+sub setOpenACCInterfaces
+{
+  shift;
+
+  # Include *_openacc.intfb.h interfaces
+
+  my ($d, %opts) = @_;
+
+  my ($dp) = &F ('./specification-part/declaration-part', $d);
+  my ($ep) = &F ('./execution-part', $d);
+
+  my $suffix = $opts{suffix};
+
+  my @called = &F ('.//call-stmt/procedure-designator', $ep, 1);
+  
+  my @include = &F ('./include', $dp);
+  
+  for my $include (@include)
+    {
+      my ($proc) = &F ('./filename', $include, 2);
+      for ($proc)
+        {
+          s/\.intfb\.h$//o;
+          s/\.h$//o;
+          $_ = uc ($_);
+        }
+
+      $proc .= '_OPENACC';
+   
+      if ((grep { $proc eq $_ } @called) && ! $opts{'merge-interfaces'})
+        {
+          my $include_openacc = &n ('<include>#include "<filename>' . lc ($proc) . '.intfb.h</filename>"</include>');
+          $include->parentNode->insertAfter ($include_openacc, $include);
+          $include->parentNode->insertAfter (&t ("\n"), $include);
+        }
+      
+    }
+  
+}
+
 1;

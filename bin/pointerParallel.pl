@@ -37,6 +37,8 @@ use Canonic;
 use Directive;
 use Inline;
 use Style;
+use Style::IAL;
+use Style::MESONH;
 use Pragma;
 
 use Cycle49;
@@ -408,53 +410,10 @@ sub processSingleRoutine
   &Decl::declare ($d, @decl);
   &Decl::use ($d, @use_util) if ($useUtilMod);
   
-  # Include *_openacc.intfb.h interfaces
-  
-  my @called = &F ('.//call-stmt/procedure-designator', $d, 1);
-  
-  my @include = &F ('.//include', $d);
-  
-  for my $include (@include)
+  for my $style (qw (Style::IAL Style::MESONH))
     {
-      my ($proc) = &F ('./filename', $include, 2);
-      for ($proc)
-        {
-          s/\.intfb\.h$//o;
-          s/\.h$//o;
-          $_ = uc ($_);
-        }
-      $proc .= '_OPENACC';
-   
-      if ((grep { $proc eq $_ } @called) && ! $opts{'merge-interfaces'})
-        {
-          my $include_openacc = &n ('<include>#include "<filename>' . lc ($proc) . '.intfb.h</filename>"</include>');
-          $include->parentNode->insertAfter ($include_openacc, $include);
-          $include->parentNode->insertAfter (&t ("\n"), $include);
-        }
-      
+      $style->setOpenACCInterfaces ($d, %opts, suffix => '_OPENACC');
     }
-  
-  # Include MODI_* interfaces
-  
-  my @modi = &F ('.//use-stmt[starts-with(string(module-N),"MODI_")]', $d);
-
-  my @called_openacc = &uniq (grep { m/_OPENACC$/o  } &F ('.//call-stmt/procedure-designator', $d, 1));
-
-  for my $modi (@modi)
-  {
-    my ($proc) = &F ('./module-N', $modi, 1);
-    $proc =~ s/^MODI_//o;
-    if (grep { $proc eq $_ } @called)
-      {
-        $proc .= '_OPENACC';
-        next unless (grep { $_ eq $proc } @called_openacc);
-        my ($use) = &s ("USE MODI_$proc");
-        $modi->parentNode->insertAfter ($use, $modi);
-        $modi->parentNode->insertAfter (&t ("\n"), $modi);
-      }
-  }
-  
-  
   
   if (@parallel)
     {
