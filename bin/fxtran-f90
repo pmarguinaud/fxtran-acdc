@@ -10,87 +10,12 @@ use File::Spec;
 use File::Copy;
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
+use lib $Bin;
 use Cwd;
 
 use Bt;
-
-use queue;
+use F90Compiler;
 use task;
-use make;
-
-sub runF90Compiler
-{
-  my %args = @_;
-
-  return if ($args{dryrun});
-
-  my $obj = $args{obj};
-  my @F90 = @{ $args{F90} };
-  my $f90compiler = $args{f90compiler};
-  my @f90flags = @{ $args{f90flags} };
-
-  if (scalar (@F90) == 1)
-    {
-      &task::runCommand (cmd => [$f90compiler, @f90flags, ($obj ? (-o => $obj) : ()), @F90], %args);
-    }
-  else
-    {
-      &make::make (%args);
-    }
-}
-
-sub concatenateSource
-{
-  my %args = @_;
-
-  my @f90flags = @{ $args{f90flags} };
-  my ($obj, $f90compiler, $F90) = @args{qw (obj f90compiler F90)};
-  my $opts = $args{opts};
-
-  my $fho;
-
-  for my $f ($F90, sort <*.F90>)
-    {
-      $fho ||= 'FileHandle'->new ('>' . &basename ($F90));
-      my $code = do { my $fh = 'FileHandle'->new ("<$f"); local $/ = undef; <$fh> };
-      $fho->print ($code);
-      $fho->print ("\n" x 3);
-    }
-
-  $fho->close ();
-
-  &runF90Compiler 
-  (
-    f90compiler => $f90compiler, 
-    f90flags    => \@f90flags, 
-    obj         => $obj, 
-    F90         => [&basename ($F90)], 
-    %$opts 
-  );
-}
-
-sub concatenateObject
-{
-  my %args = @_;
-
-  my @f90flags = @{ $args{f90flags} };
-  my ($obj, $f90compiler, $F90) = @args{qw (obj f90compiler F90)};
-  my $opts = $args{opts};
-
-  return if ($opts->{dryrun});
-
-  my @F90 = <*.F90>;
-  unshift (@F90, $F90) if ($F90);
-
-  &runF90Compiler 
-  (
-    f90compiler => $f90compiler, 
-    f90flags    => \@f90flags, 
-    obj         => $obj, 
-    F90         => \@F90, 
-    %$opts 
-  );
-}
 
 sub getopt_s
 {
@@ -121,7 +46,7 @@ sub openacc
 
   &task::runCommand (cmd => [@cmd, $F90], %$opts);
 
-  &concatenateObject (%args);
+  &F90Compiler::compile (%args);
 }
 
 sub generateStructureMethods
@@ -145,7 +70,7 @@ sub generateStructureMethods
       delete $args{F90};
     }
 
-  &concatenateObject (%args);
+  &F90Compiler::compile (%args);
 }
 
 sub pointerParallel
@@ -185,7 +110,7 @@ sub pointerParallel
 
   &task::runCommand (cmd => [@cmd, $F90], %$opts);
 
-  &concatenateObject (%args);
+  &F90Compiler::compile (%args);
 }
 
 sub outline1
@@ -202,7 +127,7 @@ sub outline1
 
   delete $args{F90};
 
-  &concatenateObject (%args);
+  &F90Compiler::compile (%args);
 }
 
 my %opts = ('types-constant-dir' => '.', 'types-fieldapi-dir' => '.');
@@ -310,7 +235,7 @@ FILE: for my $F90 (@F90)
 
 NORMAL:
 
-    &runF90Compiler 
+    &F90Compiler::run 
     (
       f90compiler => $f90compiler, 
       f90flags    => \@f90flags, 

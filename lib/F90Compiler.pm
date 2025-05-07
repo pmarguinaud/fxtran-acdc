@@ -1,4 +1,4 @@
-package make;
+package F90Compiler;
 
 use strict;
 use FileHandle;
@@ -109,6 +109,80 @@ EOF
   $fh->close ();
 
   &task::runCommand (cmd => ['make', -j => 4], %args);
+}
+
+sub run
+{
+  my %args = @_;
+
+  return if ($args{dryrun});
+
+  my $obj = $args{obj};
+  my @F90 = @{ $args{F90} };
+  my $f90compiler = $args{f90compiler};
+  my @f90flags = @{ $args{f90flags} };
+
+  if (scalar (@F90) == 1)
+    {
+      &task::runCommand (cmd => [$f90compiler, @f90flags, ($obj ? (-o => $obj) : ()), @F90], %args);
+    }
+  else
+    {
+      &make::make (%args);
+    }
+}
+
+sub concatenateSource
+{
+  my %args = @_;
+
+  my @f90flags = @{ $args{f90flags} };
+  my ($obj, $f90compiler, $F90) = @args{qw (obj f90compiler F90)};
+  my $opts = $args{opts};
+
+  my $fho;
+
+  for my $f ($F90, sort <*.F90>)
+    {
+      $fho ||= 'FileHandle'->new ('>' . &basename ($F90));
+      my $code = do { my $fh = 'FileHandle'->new ("<$f"); local $/ = undef; <$fh> };
+      $fho->print ($code);
+      $fho->print ("\n" x 3);
+    }
+
+  $fho->close ();
+
+  &F90Compiler::run 
+  (
+    f90compiler => $f90compiler, 
+    f90flags    => \@f90flags, 
+    obj         => $obj, 
+    F90         => [&basename ($F90)], 
+    %$opts 
+  );
+}
+
+sub compile
+{
+  my %args = @_;
+
+  my @f90flags = @{ $args{f90flags} };
+  my ($obj, $f90compiler, $F90) = @args{qw (obj f90compiler F90)};
+  my $opts = $args{opts};
+
+  return if ($opts->{dryrun});
+
+  my @F90 = <*.F90>;
+  unshift (@F90, $F90) if ($F90);
+
+  &F90Compiler::run 
+  (
+    f90compiler => $f90compiler, 
+    f90flags    => \@f90flags, 
+    obj         => $obj, 
+    F90         => \@F90, 
+    %$opts 
+  );
 }
 
 1;
