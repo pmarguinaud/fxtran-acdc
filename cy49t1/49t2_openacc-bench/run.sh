@@ -22,8 +22,6 @@ do
 
 done
 
-exit
-
 cd src/main
 find . -name '*.F90' > ../../list.src.main
 cd ../..

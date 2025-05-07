@@ -80,11 +80,12 @@ sub make
   
   $fh->print (<< "EOF");
 
-FC=$f90compiler @f90flags
+FC=$f90compiler 
+FCFLAGS=@f90flags
 LD=ld
 
 $obj: @obj
-	\$(LD) -r -o $obj @obj
+	@\$(LD) -r -o $obj @obj
 
 clean:
 	\\rm -f $obj @obj *.mod *.smod *.lst
@@ -99,7 +100,8 @@ EOF
                 @{ $obj2use{$obj} };
       $fh->print (<<"EOF");
 $obj: $F90 @dep
-	\$(FC) -o $obj -c $F90
+	echo "\$(FC) -c $F90"
+	@\$(FC) \$(FCFLAGS) -o $obj -c $F90
   
 EOF
     }
