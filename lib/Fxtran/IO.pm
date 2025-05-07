@@ -887,7 +887,15 @@ EOF
 
       $pu->insertBefore (&t ($interface), $stmt);
 
-      &w ("$opts->{dir}/0000.$mod.F90", $doc->textContent);
+
+      if ($opts->{sorted})
+        {
+          &w ("$opts->{dir}/0000.$mod.F90", $doc->textContent);
+        }
+      else
+        {
+          &w ("$opts->{dir}/$mod.F90", $doc->textContent);
+        }
 
     }
   elsif ($opts->{out})

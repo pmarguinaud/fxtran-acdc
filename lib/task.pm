@@ -59,4 +59,31 @@ sub final
     }
 }
 
+sub runCommand
+{
+  my %args = @_;
+  my @cmd = @{ $args{cmd} };
+
+  $count++;
+
+  if ($args{debug}) 
+    {
+      my $bash = sprintf ('cmd.%3.3d.sh', $count);
+
+      'FileHandle'->new (">$bash")->print (<< "EOF");
+#!/bin/bash
+
+set -x
+
+@{ $args{cmd} }
+
+EOF
+
+      chmod (0755, $bash);
+    }
+
+  system (@cmd)
+   and die ("Command `@cmd' failed");
+}
+
 1;
