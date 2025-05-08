@@ -107,7 +107,7 @@ sub setOpenACCInterfaces
           $_ = uc ($_);
         }
 
-      $proc .= '_OPENACC';
+      $proc .= $suffix;
    
       if ((grep { $proc eq $_ } @called) && ! $opts{'merge-interfaces'})
         {

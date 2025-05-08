@@ -87,7 +87,7 @@ sub processSingleModule
         }
     }
 
-  &Module::addSuffix ($d, $opts{suffix});
+  &Module::addSuffix ($d, $opts{suffixSingleColumn});
 }
 
 sub processSingleInterface
@@ -103,7 +103,7 @@ sub processSingleInterface
       &addValueAttribute ($d);
     }
   
-  &Subroutine::addSuffix ($d, $opts{suffix});
+  &Subroutine::addSuffix ($d, $opts{suffixSingleColumn});
   
   $opts{pragma}->insertRoutineSeq ($d);
   
@@ -156,14 +156,14 @@ sub processSingleRoutine
 
     }
 
-  &Subroutine::addSuffix ($d, $opts{suffix});
+  &Subroutine::addSuffix ($d, $opts{suffixSingleColumn});
   
   unless ($opts{dummy})
     {
       &Call::addSuffix 
       (
         $d, 
-        suffix => $opts{suffix}, 
+        suffix => $opts{suffixSingleColumn}, 
         match => sub { ! $opts{style}->noComputeRoutine (@_) },
         'merge-interfaces' => $opts{'merge-interfaces'},
       );

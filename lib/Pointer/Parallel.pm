@@ -177,7 +177,7 @@ sub processSingleRoutine
   
   &Associate::resolveAssociates ($d);
   
-  if ($opts{'inline-contains'})
+  if ($opts{'inline-contained'})
     {
       &Construct::changeIfStatementsInIfConstructs ($d);
       &Inline::inlineContainedSubroutines ($d, skipDimensionCheck => 1);
@@ -238,7 +238,7 @@ sub processSingleRoutine
      (
        'program-unit' => $d, 
        'symbol-table' => $t,
-       'contiguous'   => $opts{contiguous},
+       'contiguous-pointers' => $opts{'contiguous-pointers'},
      );
 
   # Process ABORT sections
@@ -630,7 +630,7 @@ sub fieldifyDecl
       &Decl::removeAttributes ($stmt, qw (TARGET CONTIGUOUS));
 
       my @attr = qw (POINTER);
-      push @attr, 'CONTIGUOUS' if ($args{contiguous});
+      push @attr, 'CONTIGUOUS' if ($args{'contiguous-pointers'});
 
       &Decl::addAttributes ($stmt, @attr);
 

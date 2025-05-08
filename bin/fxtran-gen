@@ -49,7 +49,7 @@ use click;
   'stack84                   -- Use separate stacks for data types of sizes 4 and 8                                                          ',
   'style=s                   -- Source code style (default: guess from file contents)                                                        ',
   'stdout                    -- Dump generated code to stdout                                                                                ',
-  'suffix=s                  -- Suffix for generated routines                                                                                -- _OPENACC',
+  'suffixSingleColumn=s      -- Suffix for generated routines                                                                                -- _OPENACC',
   'tmp=s                     -- Temporary directory for processing                                                                           -- .',
   'value-attribute           -- Add VALUE attribute to scalar intrinsic arguments                                                            ',
   'version                   -- Append fxtran-acdc version at end of generated content                                                       ',
@@ -64,7 +64,7 @@ sub singlecolumn
 
   $opts->{dir} ||= &dirname ($F90);
   
-  my $suffix = lc ($opts->{suffix});
+  my $suffix = lc ($opts->{suffixSingleColumn});
   (my $F90out = $F90) =~ s/\.F90/$suffix.F90/;
   $F90out = $opts->{dir} . '/' . &basename ($F90out);
   
@@ -140,12 +140,12 @@ sub singlecolumn
 &click
 (
   'base                            -- Base directory for file lookup                                                                        ',
-  'contiguous                      -- Add CONTIGUOUS attribute to pointer accessors                                                         ',
+  'contiguous-pointers             -- Add CONTIGUOUS attribute to pointer accessors                                                         ',
   'cycle=s                         -- Cycle                                                                                                 --  49',
   'dir=s                           -- Dump result in this directory                                                                         ',
   'files=s@                        -- List of files to be looked at for inlining                                                            --',
   'gpumemstat                      -- Add calls to GPUMEMSTAT                                                                               ',
-  'inline-contains                 -- Inline CONTAINed routines                                                                             ',
+  'inline-contained                -- Inline CONTAINed routines                                                                             ',
   'merge-interfaces                -- Consider that single column interfaces and regular interfaces are in the same include file            ',
   'only-if-newer                   -- Do not update file if unchanged content                                                               ',
   'post-parallel=s@                -- Generate code after parallel section                                                                  --  nullify',
