@@ -43,11 +43,6 @@ my @include = grep { m/^-I/o } @ARGV;
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
 
-for my $opt (qw (types-fieldapi-non-blocked))
-  {
-    $opts{$opt} = [split (m/,/o, $opts{$opt})];
-  }
-
 if ($opts{help})
   {
     print
@@ -56,6 +51,11 @@ if ($opts{help})
       join ('', map { "  --$_=...\n" } @opts_f) .
      "\n";
     exit (0);
+  }
+
+for my $opt (qw (types-fieldapi-non-blocked))
+  {
+    $opts{$opt} = [split (m/,/o, $opts{$opt})];
   }
 
 $opts{skip} = [split (m/,/o, $opts{skip} || '')];

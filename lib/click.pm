@@ -203,6 +203,8 @@ sub run
 
   local @ARGV = @_;
 
+  my @I = grep { m/^-I/o } @ARGV;
+  @ARGV = grep { ! m/^-I/o } @ARGV;
 
   defined ($method)
     or die ("No method was defined for package `$package'");
@@ -216,6 +218,8 @@ sub run
   my $help;
  
   &GetOptions (help => \$help, @opts);
+
+  push @opts, I => \@I;
 
   for (@{ $method->{copts} })
     {

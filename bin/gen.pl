@@ -23,6 +23,10 @@ if ($method eq 'openacc')
   {
     $method = 'singlecolumn';
   }
+elsif ($method eq 'pointerParallel')
+  {
+    $method = 'parallel';
+  }
 
 'Gen'->run ($method, @ARGV);
 

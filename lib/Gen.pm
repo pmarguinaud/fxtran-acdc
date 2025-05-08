@@ -11,6 +11,7 @@ use File::Basename;
 use strict;
 
 use SingleColumn;
+use Pointer::Parallel;
 use Fxtran;
 use Canonic;
 use Util;
@@ -152,7 +153,7 @@ sub singlecolumn
   'type-bound-methods              -- Generate & use type bound methods (LOAD, COPY, etc.)                                                  ',
   'types-constant-dir=s            -- Directory with constant type information                                                              --  types-constant',
   'types-fieldapi-dir=s            -- Directory with Field API type information                                                             --  types-fieldapi',
-  'types-fieldapi-non-blocked=s@   -- Non-blocked data types (without NPROMA)                                                               --  CPG_SL1F_TYPE,CPG_SL_MASK_TYPE',
+  'types-fieldapi-non-blocked=s    -- Non-blocked data types (without NPROMA)                                                               --  CPG_SL1F_TYPE,CPG_SL_MASK_TYPE',
   'use-acpy                        -- Avoid pointer aliasing using ACPY                                                                     ',
   'use-bcpy                        -- Avoid pointer aliasing using BCPY                                                                     ',
   'version                         -- Append fxtran-acdc version at end of generated content                                                ',
@@ -160,7 +161,77 @@ sub singlecolumn
 sub parallel
 {
   my ($opts, @args) = @_;
-  print &Dumper ([$opts, @args]);
+
+  for my $opt (qw (types-fieldapi-non-blocked))
+    {
+      $opts->{$opt} = [split (m/,/o, $opts->{$opt})];
+    }
+  
+  $opts->{skip} = [split (m/,/o, $opts->{skip} || '')];
+  
+  $opts->{pragma} = 'Pragma'->new (%$opts);
+  
+  $opts->{nproma} = {};
+  $opts->{jlon} = {};
+  
+  my ($F90) = @args;
+  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{suffixParallel}) . '.F90'}eo;
+  
+  unless ($opts->{dir})
+    {
+      $opts->{dir} = &dirname ($F90out);
+    }
+  
+  $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
+  
+  if ($opts->{'only-if-newer'})
+    {
+      my $st = stat ($F90);
+      my $stout = stat ($F90out);
+      if ($st && $stout)
+        {
+          exit (0) unless ($st->mtime > $stout->mtime);
+        }
+    }
+  
+  my $NAME = uc (&basename ($F90out, qw (.F90)));
+  
+  my $find = 'Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
+  
+  my $types = &Storable::retrieve ("$opts->{'types-fieldapi-dir'}/decls.dat");
+  
+  &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
+  
+  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -directive ACDC -canonic)]);
+  
+  &Canonic::makeCanonic ($d);
+  
+  $opts->{style} = 'Style'->new (%$opts, document => $d);
+  
+  my @pu = &F ('./object/file/program-unit', $d);
+  
+  for my $pu (@pu)
+    {
+      $opts->{style}->preProcessForOpenACC ($pu, %$opts);
+    }
+  
+  for my $pu (@pu)
+    {
+      &Pointer::Parallel::processSingleRoutine ($pu, $NAME, $find, $types, %$opts);
+    }
+  
+  &Util::addVersion ($d)
+    if ($opts->{version});
+  
+  if ($opts->{stdout})
+    {
+      print &Canonic::indent ($d);
+    }
+  else
+    {
+      &Util::updateFile ($F90out, &Canonic::indent ($d));
+    }
+
 }
 
 &click
