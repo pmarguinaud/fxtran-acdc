@@ -30,29 +30,29 @@ use click;
 
 &click
 (
-  'cycle=s                  -- Cycle                                                                                                        -- 49',
-  'dir=s                    -- Dump result in this directory                                                                                -- .',
-  'drhook                   -- Keep DrHook                                                                                                  ',
-  'dummy                    -- Generate a dummy routine (strip all executable code)                                                         ',
-  'inlined=s                -- List of routines to inline                                                                                   --',
-  'inline-comment           -- Add a comment when inlining a routine                                                                        ',
-  'inline-contained         -- Inline contained routines                                                                                    ',
-  'interface                -- Generate an interface file                                                                                   ',
-  'interfaces               -- Transform interfaces into single column interfaces (used for MODI MESONH files)                              ',
-  'merge-interfaces         -- Consider that single column interfaces and regular interfaces are in the same include file                   ',
-  'no-check-pointers-dims=s -- List of pointer variables that should not be checked for their dimensions                                    --',
-  'only-if-newer            -- Do not update file if unchanged content                                                                      ',
-  'pointers                 -- Process pointers (change them to CRAY pointers                                                               ',
-  'pragma=s                 -- Pragma (OpenACC or OpenMP)                                                                                   -- OpenACC',
-  'redim-arguments          -- Transform 1D array arguments to scalars                                                                      ',
-  'set-variables=s          -- Apply variables values and simplify the code                                                                 --',
-  'stack84                  -- Use separate stacks for data types of sizes 4 and 8                                                          ',
-  'style=s                  -- Source code style (default: guess from file contents)                                                        ',
-  'stdout                   -- Dump generated code to stdout                                                                                ',
-  'suffix=s                 -- Suffix for generated routines                                                                                -- _OPENACC',
-  'tmp=s                    -- Temporary directory for processing                                                                           -- .',
-  'value-attribute          -- Add VALUE attribute to scalar intrinsic arguments                                                            ',
-  'version                  -- Append fxtran-acdc version at end of generated content                                                       ',
+  'cycle=s                   -- Cycle                                                                                                        -- 49',
+  'dir=s                     -- Dump result in this directory                                                                                -- .',
+  'drhook                    -- Keep DrHook                                                                                                  ',
+  'dummy                     -- Generate a dummy routine (strip all executable code)                                                         ',
+  'inlined=s@                -- List of routines to inline                                                                                   --',
+  'inline-comment            -- Add a comment when inlining a routine                                                                        ',
+  'inline-contained          -- Inline contained routines                                                                                    ',
+  'interface                 -- Generate an interface file                                                                                   ',
+  'interfaces                -- Transform interfaces into single column interfaces (used for MODI MESONH files)                              ',
+  'merge-interfaces          -- Consider that single column interfaces and regular interfaces are in the same include file                   ',
+  'no-check-pointers-dims=s@ -- List of pointer variables that should not be checked for their dimensions                                    --',
+  'only-if-newer             -- Do not update file if unchanged content                                                                      ',
+  'pointers                  -- Process pointers (change them to CRAY pointers                                                               ',
+  'pragma=s                  -- Pragma (OpenACC or OpenMP)                                                                                   -- OpenACC',
+  'redim-arguments           -- Transform 1D array arguments to scalars                                                                      ',
+  'set-variables=s@          -- Apply variables values and simplify the code                                                                 --',
+  'stack84                   -- Use separate stacks for data types of sizes 4 and 8                                                          ',
+  'style=s                   -- Source code style (default: guess from file contents)                                                        ',
+  'stdout                    -- Dump generated code to stdout                                                                                ',
+  'suffix=s                  -- Suffix for generated routines                                                                                -- _OPENACC',
+  'tmp=s                     -- Temporary directory for processing                                                                           -- .',
+  'value-attribute           -- Add VALUE attribute to scalar intrinsic arguments                                                            ',
+  'version                   -- Append fxtran-acdc version at end of generated content                                                       ',
 );
 sub singlecolumn
 {
@@ -60,11 +60,6 @@ sub singlecolumn
 
   my ($opts, @args) = @_;
 
-  for my $opt (qw (no-check-pointers-dims inlined set-variables))
-    {
-      $opts->{$opt} = [$opts->{$opt} ? split (m/,/o, $opts->{$opt}) : ()];
-    }
-  
   my ($F90) = @args;
 
   $opts->{dir} ||= &dirname ($F90);
