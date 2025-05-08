@@ -41,8 +41,7 @@ use Style::IAL;
 use Style::MESONH;
 use Pragma;
 
-use Cycle49;
-use Cycle50;
+use Cycle;
 use Util;
 
 sub addYDCPG_OPTS
@@ -63,8 +62,6 @@ sub addYDCPG_OPTS
     }
 }
 
-
-my $suffix = '_parallel';
 
 sub processSingleParallel
 {
@@ -184,7 +181,7 @@ sub processSingleRoutine
       $d->unbindNode ();
     }
   
-  &Subroutine::rename ($d, sub { return $_[0] . uc ($suffix) });
+  &Subroutine::rename ($d, sub { return $_[0] . uc ($opts{suffixParallel}) });
   
   # Prepare the code
   
@@ -196,22 +193,13 @@ sub processSingleRoutine
       &Inline::inlineContainedSubroutines ($d, skipDimensionCheck => 1);
     }
   
-  if ($opts{cycle} == 49)
-    {
-      &Cycle49::simplify ($d);
-    }
-  elsif ($opts{cycle} == 50)
-    {
-      &Cycle50::simplify ($d);
-    }
-  
+
+  'Cycle'->simplify ($d, %opts);
   
   if ($opts{addYDCPG_OPTS})
     {
       &addYDCPG_OPTS ($d);
     }
-  
-  &Decl::forceSingleDecl ($d);
   
   &Directive::parseDirectives ($d, name => 'ACDC');
   
@@ -342,7 +330,7 @@ sub processSingleRoutine
                   $include->parentNode->insertAfter (&t ("\n"), $include);
                 }
             }
-          $name->setData ($name->data . uc ($suffix));
+          $name->setData ($name->data . uc ($opts{suffixParallel}));
         }
     }
   
@@ -399,7 +387,7 @@ sub processSingleRoutine
   
   for my $style (qw (Style::IAL Style::MESONH))
     {
-      $style->setOpenACCInterfaces ($d, %opts, suffix => '_OPENACC');
+      $style->setOpenACCInterfaces ($d, %opts, suffix => $opts{suffixSingleColumn});
     }
   
   if (@parallel)
@@ -424,10 +412,12 @@ sub processSingleRoutine
 
 my %opts = ('types-fieldapi-dir' => 'types-fieldapi', skip => 'PGFL,PGFLT1,PGMVT1,PGPSDT2D', 
             'types-constant-dir' => 'types-constant', 'post-parallel' => 'nullify', cycle => '49', 
-            'types-fieldapi-non-blocked' => 'CPG_SL1F_TYPE,CPG_SL_MASK_TYPE', pragma => 'OpenACC');
+            'types-fieldapi-non-blocked' => 'CPG_SL1F_TYPE,CPG_SL_MASK_TYPE', pragma => 'OpenACC',
+            suffixParallel => '_PARALLEL', suffixSingleColumn => '_OPENACC');
 my @opts_f = qw (help only-if-newer version stdout addYDCPG_OPTS redim-arguments stack84 use-acpy use-bcpy 
                  inline-contains gpumemstat contiguous merge-interfaces type-bound-methods);
-my @opts_s = qw (skip types-fieldapi-dir types-constant-dir post-parallel dir cycle types-fieldapi-non-blocked files base style pragma);
+my @opts_s = qw (skip types-fieldapi-dir types-constant-dir post-parallel dir cycle types-fieldapi-non-blocked files 
+                 base style pragma suffixParallel suffixSingleColumn);
 
 my @include = grep { m/^-I/o } @ARGV;
 @ARGV = grep { ! m/^-I/o } @ARGV;
@@ -461,7 +451,7 @@ $opts{nproma} = {};
 $opts{jlon} = {};
 
 my $F90 = shift;
-(my $F90out = $F90) =~ s/.F90$/$suffix.F90/o;
+(my $F90out = $F90) =~ s{.F90$}{lc ($opts{suffixParallel}) . '.F90'}eo;
 
 unless ($opts{dir})
   {

@@ -32,8 +32,7 @@ use Call;
 use Canonic;
 use DrHook;
 use Identifier;
-use Cycle49;
-use Cycle50;
+use Cycle;
 use Decl;
 use Dimension;
 use Include;
@@ -163,14 +162,7 @@ sub processSingleRoutine
           &Inline::inlineContainedSubroutines ($d, find => $find, inlineDeclarations => 1, comment => $opts{'inline-comment'}, style => $opts{style});
         }
      
-      if ($opts{cycle} eq '49')
-        {
-          &Cycle49::simplify ($d, set => $opts{'set-variables'});
-        }
-      elsif ($opts{cycle} eq '50')
-        {
-          &Cycle50::simplify ($d, set => $opts{'set-variables'});
-        }
+      'Cycle'->simplify ($d, %opts);
       
       @pointer = &Pointer::setPointersDimensions ($d, 'no-check-pointers-dims' => $opts{'no-check-pointers-dims'})
         if ($opts{pointers});

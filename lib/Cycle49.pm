@@ -14,10 +14,9 @@ use Data::Dumper;
 
 sub simplify
 {
+  shift;
   my $d = shift;
   my %opts = @_;
-
-  &Construct::changeIfStatementsInIfConstructs ($d);
 
   my $zero = &e ('1');
   $zero->firstChild->firstChild->replaceNode (&t ('0'));
@@ -38,7 +37,7 @@ sub simplify
     '//named-E[string(.)="LLVERINT_ON_CPU"]'                       => &e ('.FALSE.'),
   );
 
-  if (my $set = $opts{set})
+  if (my $set = $opts{'set-variables'})
     {
       my %set;
 
