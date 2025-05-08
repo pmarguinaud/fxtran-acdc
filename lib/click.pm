@@ -21,7 +21,7 @@ sub click
       $oopt = &Storable::dclone ($oopt);
     }
 
-  @opt = map { split (m/\n/o, $_) } @opt;
+  @opt = grep { !/^\s*$/o } map { split (m/\n/o, $_) } @opt;
 
   for (@opt)
     {
