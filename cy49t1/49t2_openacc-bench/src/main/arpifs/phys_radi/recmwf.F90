@@ -15,7 +15,7 @@ SUBROUTINE RECMWF (YDDIMV, YDMODEL, YDCPG_OPTS, YDCPG_BNDS,     &
  & PMU0LU  , PALB     ,  PVRMOON   , PCLDROP    , YSPP_RSWINHF, &
  & YSPP_RLWINHF)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 !**** *RECMWF* - METEO-FRANCE RADIATION INTERFACE TO ECMWF RADIATION SCHEME

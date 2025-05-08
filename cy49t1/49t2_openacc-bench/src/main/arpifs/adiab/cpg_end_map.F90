@@ -1,6 +1,6 @@
 SUBROUTINE CPG_END_MAP (YDGEOMETRY, YDMODEL, YDVARS, YDCPG_BNDS, YDCPG_OPTS)
 
-!$ACDC pointerParallel.pl --stack84 --gpumemstat --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --stack84 --gpumemstat --use-acpy --post-parallel synchost,nullify
 
 
 !**** *CPG_END_MAP*

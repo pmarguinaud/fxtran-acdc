@@ -1,6 +1,6 @@
 MODULE YOMNORGWD
 
-!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+!$ACDC methods --crc64 --size --host --copy --wipe --save --load
 
 
 ! YOMNORGWD -- Parameters/switches for the non-orographic GW parameterization (ACNORGWD)

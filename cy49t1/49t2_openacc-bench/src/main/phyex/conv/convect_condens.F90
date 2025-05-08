@@ -3,7 +3,7 @@
                                   KICE, PPRES, PTHL, PRW, PRCO, PRIO, PZ, &
                                   PT, PEW, PRC, PRI, PLV, PLS, PCPH   )
 
-!$ACDC openacc.pl --stack84 --inline-contained
+!$ACDC singlecolumn --stack84 --inline-contained
 
       USE YOMHOOK , ONLY : LHOOK, DR_HOOK, JPHOOK
 !     #############################################################################

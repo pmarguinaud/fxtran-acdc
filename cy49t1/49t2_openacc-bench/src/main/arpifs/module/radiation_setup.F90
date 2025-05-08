@@ -1,6 +1,6 @@
 MODULE RADIATION_SETUP
 
-!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load --skip-components TRADIATION%RAD_CONFIG
+!$ACDC methods --crc64 --size --host --copy --wipe --save --load --skip-components TRADIATION%RAD_CONFIG
 
 
 ! RADIATION_SETUP - Setting up modular radiation scheme

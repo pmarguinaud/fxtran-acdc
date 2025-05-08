@@ -6,7 +6,7 @@ SUBROUTINE ACDNSHF(YDCST, YDPHY,YDPHY1,KIDIA, KFDIA, KLON, &
  ! - OUTPUT .
  & PDERNSHF)
 
-!$ACDC openacc.pl --stack84
+!$ACDC singlecolumn --stack84
 
 
 !**** ACDNSHF ** -

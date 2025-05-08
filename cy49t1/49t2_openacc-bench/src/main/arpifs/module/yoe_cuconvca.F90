@@ -1,6 +1,6 @@
 MODULE YOE_CUCONVCA
 
-!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load --skip-components TECUCONVCA%YD_RANDOM_STREAM_CA
+!$ACDC methods --crc64 --size --host --copy --wipe --save --load --skip-components TECUCONVCA%YD_RANDOM_STREAM_CA
 
 
 ! Modified : 

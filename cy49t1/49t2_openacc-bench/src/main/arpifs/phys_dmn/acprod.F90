@@ -1,7 +1,7 @@
 SUBROUTINE ACPROD (YDCST, KIDIA, KFDIA, KLON, KLEV, PR, PCP, PT, PQ, PU, PV, PAPRSF, &
                   & PAPHIF, PDIFCQ, PDIFCS, PSTRCU, PSTRCV, PPRODTH)
 
-!$ACDC openacc.pl --stack84
+!$ACDC singlecolumn --stack84
 
 
 

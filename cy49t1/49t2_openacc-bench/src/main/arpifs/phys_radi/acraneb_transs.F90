@@ -8,7 +8,7 @@ SUBROUTINE ACRANEB_TRANSS(YDCST,YDPHY,YDPHY3,KIDIA,KFDIA,KLON,KTDIA,KLEV,KJN,&
 ! - OUTPUT 2D
  & PDEOSI,PUEOSI)
 
-!$ACDC openacc.pl --stack84 --inline-contained
+!$ACDC singlecolumn --stack84 --inline-contained
 
 
 ! Purpose:

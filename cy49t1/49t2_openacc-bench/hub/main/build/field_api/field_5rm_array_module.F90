@@ -1,7 +1,7 @@
 
 MODULE FIELD_5RM_ARRAY_MODULE
 
-!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load --field-api --field-api-class cpg
+!$ACDC methods --crc64 --size --host --copy --wipe --save --load --field-api --field-api-class cpg
 
 USE FIELD_5RM_MODULE
 USE FIELD_5RM_FACTORY_MODULE

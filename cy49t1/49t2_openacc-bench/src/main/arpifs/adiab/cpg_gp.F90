@@ -1,7 +1,7 @@
 SUBROUTINE CPG_GP(YDGEOMETRY, YDCPG_BNDS, YDCPG_OPTS, YDCPG_TND, YDCPG_MISC, YDCPG_GPAR, YDCPG_DYN0, &
 & YDCPG_DYN9, YDHGRAD, YDMF_PHYS_SURF, YDVARS, YDMODEL, YDCPG_SL2, YDPGTERM, YDDDH)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 !**** *CPG_GP* - Grid point calculations:

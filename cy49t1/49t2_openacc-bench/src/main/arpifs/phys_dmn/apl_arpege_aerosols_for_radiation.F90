@@ -1,7 +1,7 @@
 SUBROUTINE APL_ARPEGE_AEROSOLS_FOR_RADIATION (YDMF_PHYS_BASE_STATE, YDCPG_BNDS, YDCPG_OPTS, &
 & YDMF_PHYS_SURF, YDMODEL, PAER, PAERINDS)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 !**** *APL_ARPEGE_AEROSOLS_FOR_RADIATION*  

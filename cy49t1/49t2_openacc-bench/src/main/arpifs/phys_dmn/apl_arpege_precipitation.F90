@@ -2,7 +2,7 @@ SUBROUTINE APL_ARPEGE_PRECIPITATION (YDMF_PHYS_BASE_STATE, YDCPG_BNDS, YDCPG_OPT
 & YDMF_PHYS_SURF, YDVARS, YDMODEL, PFLU_NEIJ, PNEBS, PNEB_CVPP, PQC_DET_PCMT, PQI, PQL, PQLIS, &
 & PQLI_CVPP, PQR, PQS, PQV, PSEDIQI, PSEDIQL, PTENHA, PTENQVA, YDSTA)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 !**** *APL_ARPEGE_PRECIPITATION*

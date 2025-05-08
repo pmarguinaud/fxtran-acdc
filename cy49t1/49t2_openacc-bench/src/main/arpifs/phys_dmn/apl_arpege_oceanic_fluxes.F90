@@ -1,7 +1,7 @@
 SUBROUTINE APL_ARPEGE_OCEANIC_FLUXES (YDMF_PHYS_BASE_STATE, YDCPG_BNDS, YDCPG_OPTS, YDMF_PHYS, YDMF_PHYS_SURF, &
 & YDMODEL, LDHMT, PCDROV, PCEROV, PCHROV, PDPHIT, PDPHIV, PDSA_RS, PFLU_CD, PFLU_CDN, PFLU_CH, PFLU_QSATS)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 !**** *APL_ARPEGE_OCEANIC_FLUXES*  

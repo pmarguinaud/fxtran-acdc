@@ -1,6 +1,6 @@
 MODULE YOM_YGFL
 
-!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load --skip-components TYPE_GFL_COMP%PREVIOUS --legacy
+!$ACDC methods --crc64 --size --host --copy --wipe --save --load --skip-components TYPE_GFL_COMP%PREVIOUS --legacy
 
 
 USE PARKIND1 , ONLY : JPIM, JPRB

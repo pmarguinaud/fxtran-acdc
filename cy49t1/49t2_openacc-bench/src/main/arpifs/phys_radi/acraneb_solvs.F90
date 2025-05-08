@@ -10,7 +10,7 @@ SUBROUTINE ACRANEB_SOLVS(YDPHY,LDNUMX,&
 ! - OUTPUT 1D
  & PFRSODIFS,PFRSODIRS,PFRSODIRS_UN,PFRSODIRS_TRUE)
 
-!$ACDC openacc.pl --stack84 --inline-contained
+!$ACDC singlecolumn --stack84 --inline-contained
 
 
 ! Purpose:

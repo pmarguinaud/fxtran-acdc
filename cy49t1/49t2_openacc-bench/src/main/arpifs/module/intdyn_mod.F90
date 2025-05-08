@@ -1,6 +1,6 @@
 MODULE INTDYN_MOD
 
-!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load --only-types TGFLT,TGMVT,TTND,THWIND,TCTY,TRCP,TXYBDER,TXYB
+!$ACDC methods --crc64 --size --host --copy --wipe --save --load --only-types TGFLT,TGMVT,TTND,THWIND,TCTY,TRCP,TXYBDER,TXYB
 
 
 ! Purpose :

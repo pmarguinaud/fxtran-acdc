@@ -4,7 +4,7 @@
 !MNH_LIC for details. version 1.
 MODULE MODE_TRIDIAG_MASSFLUX
 
-!$ACDC openacc.pl --stack84 --interfaces --inline-contained
+!$ACDC singlecolumn --stack84 --interfaces --inline-contained
 
 IMPLICIT NONE
 CONTAINS

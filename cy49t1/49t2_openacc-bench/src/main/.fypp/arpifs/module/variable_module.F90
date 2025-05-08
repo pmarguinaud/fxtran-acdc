@@ -2,7 +2,7 @@
 
 MODULE VARIABLE_MODULE
 
-!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --legacy --skip-components var --field-api --field-api-class var
+!$ACDC methods --crc64 --size --host --copy --wipe --legacy --skip-components var --field-api --field-api-class var
 
   ! Base class definition of VARIABLE types that manages configuration
   ! and metadata for individual variables and associates them with the

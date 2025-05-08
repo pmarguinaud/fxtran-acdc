@@ -18,7 +18,7 @@ SUBROUTINE ELASCAW(&
  & PDVER,PDVERMAD,PVINTW,PVINTWSLD,PVINTWSLT,PVINTWSLVF,PVINTWMAD,PVINTWS,&
  & PVDERW,PHVW,KDEP)
 
-!$ACDC openacc.pl --dummy --stack84 --pointers
+!$ACDC singlecolumn --dummy --stack84 --pointers
 
 
 !**** *ELASCAW  -  Externalisable interpolator:

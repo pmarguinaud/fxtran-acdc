@@ -22,7 +22,7 @@ SUBROUTINE CUCALLN_MF &
  & PMFUDE_RATE ,       PMFDDE_RATE ,      PCAPE  ,PWU, PWMEAN,  PVDISCU, PDISS,&
  & KTRAC,    PCM1,     PTENC,    PSCAV, PSCAV0 )  
 
-!$ACDC openacc.pl --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
+!$ACDC singlecolumn --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
 
 
 !          *CUCALL* - MASTER ROUTINE - PROVIDES INTERFACE FOR:

@@ -1,6 +1,6 @@
 SUBROUTINE LAIDLI(KSLB1,KPROMA,KST,KEND,KFLEV,KFLDN,KFLDX,PDLAT,PDLO,KL0,PXSL,PXF)
 
-!$ACDC openacc.pl --stack84 --pointers
+!$ACDC singlecolumn --stack84 --pointers
 
 
 !**** *LAIDLI  -  semi-LAgrangian scheme:

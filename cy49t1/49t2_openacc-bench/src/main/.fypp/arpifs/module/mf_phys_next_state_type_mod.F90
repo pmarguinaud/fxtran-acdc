@@ -1,6 +1,6 @@
 MODULE MF_PHYS_NEXT_STATE_TYPE_MOD
 
-!$ACDC generateStructureMethods.pl --wipe --copy --field-api --field-api-class cpg
+!$ACDC methods --wipe --copy --field-api --field-api-class cpg
 
 
 USE PARKIND1, ONLY : JPIM, JPRB

@@ -2,7 +2,7 @@ SUBROUTINE SITNU_GP (YDCST,YDGEOMETRY,YDDYN,KLON,KLEV,&
 &KIDIA,KFDIA,&
 &PD,PT,PSP)
 
-!$ACDC openacc.pl --stack84 --pointers
+!$ACDC singlecolumn --stack84 --pointers
 
 
 !**** *SITNU_GP*   - Continuity equation for semi-implicit.

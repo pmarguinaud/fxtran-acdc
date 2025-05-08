@@ -1,4 +1,14 @@
-package Gen;
+#!/usr/bin/perl -w
+
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
+use local::lib;
+use FindBin qw ($Bin);
+use lib "$Bin/../lib";
 
 use FileHandle;
 use Data::Dumper;
@@ -16,6 +26,7 @@ use Canonic;
 use Util;
 
 use click;
+
 
 &click
 (
@@ -159,7 +170,7 @@ sub singlecolumn
   'use-bcpy                        -- Avoid pointer aliasing using BCPY                                                                     ',
   'version                         -- Append fxtran-acdc version at end of generated content                                                ',
 );
-sub parallel
+sub pointerparallel
 {
   use Pointer::Parallel;
 
@@ -404,4 +415,6 @@ sub methods
 
 }
 
-1;
+'main'->run (@ARGV);
+
+

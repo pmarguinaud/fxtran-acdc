@@ -5,7 +5,7 @@
 
 MODULE CPG_OPTS_TYPE_MOD
 
-!$ACDC generateStructureMethods.pl --crc64 --host --wipe --copy --load --save
+!$ACDC methods --crc64 --host --wipe --copy --load --save
 
 
 USE PARKIND1, ONLY : JPIM, JPRB

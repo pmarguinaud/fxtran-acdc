@@ -1,7 +1,7 @@
 
 MODULE FIELD_4RD_ARRAY_MODULE
 
-!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load --field-api --field-api-class cpg
+!$ACDC methods --crc64 --size --host --copy --wipe --save --load --field-api --field-api-class cpg
 
 USE FIELD_4RD_MODULE
 USE FIELD_4RD_FACTORY_MODULE

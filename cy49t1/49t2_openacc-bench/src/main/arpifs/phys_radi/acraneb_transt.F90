@@ -6,7 +6,7 @@ SUBROUTINE ACRANEB_TRANST(YDCST,YDPHY,YDPHY3,KIDIA,KFDIA,KLON,KTDIA,KLEV,LDAUTO,
  & PDEOTI,PDEOTI2,PUEOTI,PUEOTI2,&
  & PEOLT,PEOXT,PPNER0,PPNER1,PRPROX,PRSURF)
 
-!$ACDC openacc.pl --stack84 --inline-contained
+!$ACDC singlecolumn --stack84 --inline-contained
 
 
 ! Purpose:

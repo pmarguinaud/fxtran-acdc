@@ -1,6 +1,6 @@
 SUBROUTINE ACCTND0 (YDCST, LDT1, YDCPG_OPTS, YDCPG_BNDS, PRCP, PACC, PTND)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 USE PARKIND1 , ONLY : JPIM, JPRB

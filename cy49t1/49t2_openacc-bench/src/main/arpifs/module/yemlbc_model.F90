@@ -1,6 +1,6 @@
 MODULE YEMLBC_MODEL
 
-!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+!$ACDC methods --crc64 --size --host --copy --wipe --save --load
 
 
 ! Purpose :

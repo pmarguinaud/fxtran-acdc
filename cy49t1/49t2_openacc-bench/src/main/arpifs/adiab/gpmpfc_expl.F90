@@ -1,6 +1,6 @@
 SUBROUTINE GPMPFC_EXPL (YDVARS, YDML_GCONF, YDDYN, YDDYNA, YDCPG_OPTS, YDCPG_BNDS, KFLAG, PGM)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 !**** *GPMPFC_EXPL* - Apply map factor to convert 

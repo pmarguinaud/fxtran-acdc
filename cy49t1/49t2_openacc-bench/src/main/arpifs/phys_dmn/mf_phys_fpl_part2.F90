@@ -1,7 +1,7 @@
 SUBROUTINE MF_PHYS_FPL_PART2 (YDCPG_BNDS, YDCPG_OPTS, PPFL_FPLCH, PPFL_FPLSH, PCPF_T1, PSPF_T1, &
 & YDMODEL)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 USE YOMHOOK, ONLY : LHOOK, DR_HOOK, JPHOOK

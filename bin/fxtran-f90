@@ -31,7 +31,7 @@ sub getopt_f
   return $opts->{$name} ? ("--$name") : ();
 }
 
-sub openacc
+sub singlecolumn
 {
   shift;
   my %args = @_;
@@ -51,7 +51,7 @@ sub openacc
   &F90Compiler::compile (%args);
 }
 
-sub generateStructureMethods
+sub methods
 {
   shift;
   my %args = @_;
@@ -75,7 +75,7 @@ sub generateStructureMethods
   &F90Compiler::compile (%args);
 }
 
-sub pointerParallel
+sub pointerparallel
 {
   shift;
   my %args = @_;
@@ -220,7 +220,7 @@ FILE: for my $F90 (@F90)
 
         my ($method) = ($ACDC =~ m/^(\w+)/o);
         my @cmd = split (m/\s+/o, $ACDC);
-        $cmd[0] = "$Bin/$cmd[0]";
+        unshift (@cmd, "$Bin/fxtran-gen");
 
         die ("Method `$method' was not found")
           unless ('main'->can ($method));

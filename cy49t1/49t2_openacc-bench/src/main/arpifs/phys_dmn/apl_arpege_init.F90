@@ -8,7 +8,7 @@ SUBROUTINE APL_ARPEGE_INIT (YDCST, YDMF_PHYS_BASE_STATE, YDCPG_BNDS, YDCPG_OPTS,
 & PSC_FCLN, PSC_FEVI, PSC_FEVN, PSEDIQI, PSEDIQL, PSFSWDIF, PSFSWDIR, PSUDU, PTENHA, PTENQVA, PTENT,     &
 & PTRSOD, PTRSODIF, PTRSODIR, PUNEBH, PXDROV, PXHROV, PXQRO, PXTRO, PXTROV, PXURO, PXUROV)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 USE YOMHOOK, ONLY : LHOOK, DR_HOOK, JPHOOK

@@ -5,7 +5,7 @@ SUBROUTINE ACTKE2 (YDCST, YDML_PHY_MF,KIDIA, KFDIA, KLON, KTDIAT, KTDIAN, KLEV,&
             & PUSLE,PKCLS,PECTCLS, &
             & PFECT , PECT1 , PTPRDY, PEDR)
 
-!$ACDC openacc.pl --stack84
+!$ACDC singlecolumn --stack84
 
 
 !**** *ACTKE * - SCHEMA DE TURBULENCE TKE

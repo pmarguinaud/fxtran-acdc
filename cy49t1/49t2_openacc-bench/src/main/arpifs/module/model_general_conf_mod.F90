@@ -10,7 +10,7 @@
 
 MODULE MODEL_GENERAL_CONF_MOD
 
-!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+!$ACDC methods --crc64 --size --host --copy --wipe --save --load
 
   USE TYPE_GEOMETRY, ONLY : GEOMETRY
   USE YOMDIMF      , ONLY : TDIMF

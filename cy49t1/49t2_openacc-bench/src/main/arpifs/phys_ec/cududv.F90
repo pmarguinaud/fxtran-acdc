@@ -5,7 +5,7 @@ SUBROUTINE CUDUDV &
  & PMFUO,    PMFDO,    PUU,      PUD,      PVU,      PVD,  PGP2DSPP,&
  & PTENU,    PTENV  )  
 
-!$ACDC openacc.pl --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
+!$ACDC singlecolumn --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
 
 
 !**** *CUDUDV* - UPDATES U AND V TENDENCIES,

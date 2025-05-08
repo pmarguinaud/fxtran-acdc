@@ -4,7 +4,7 @@ SUBROUTINE ARP_SHALLOW_MF(YDCST,YDPHYEX,YDCPG_OPTS,YDCPG_BNDS,&
                         & PAPRSF,PDELP,PDIFTQ,PDIFTS,PSTRTU,PSTRTV,YDMF_PHYS_SURF,&
                         & PRODTH_CVPP,PQLI,PNEB,KNLAB,PMF_UP)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 

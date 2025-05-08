@@ -9,7 +9,7 @@ SUBROUTINE ACRANEB_SOLVT3(LDNUMX,KIDIA,KFDIA,KLON,KTDIA,KLEV,&
  & PF2DC,PF2MC,PF2DN,PF2MN,&
  & PF3DC,PF3MC,PF3DN,PF3MN)
 
-!$ACDC openacc.pl --stack84 --inline-contained
+!$ACDC singlecolumn --stack84 --inline-contained
 
 
 ! Purpose:

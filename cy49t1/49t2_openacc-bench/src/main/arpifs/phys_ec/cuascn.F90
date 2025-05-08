@@ -16,7 +16,7 @@ SUBROUTINE CUASCN &
  & PDMFEN,&
  & KCBOT,    KCTOP,    KCTOP0,   KDPL,     PMFUDE_RATE,    PKINEU,  PWU, PWMEAN )  
 
-!$ACDC openacc.pl --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
+!$ACDC singlecolumn --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
 
 
 !          THIS ROUTINE DOES THE CALCULATIONS FOR CLOUD ASCENTS

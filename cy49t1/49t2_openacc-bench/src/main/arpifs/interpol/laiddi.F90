@@ -3,7 +3,7 @@ SUBROUTINE LAIDDI(KSLB1,KPROMA,KST,KEND,KFLEV, &
  & PCLA,PDLO,PCLO,KL0, &
  & PXSL,PXF)
 
-!$ACDC openacc.pl --stack84 --pointers
+!$ACDC singlecolumn --stack84 --pointers
 
 
 ! Purpose :

@@ -11,7 +11,7 @@ SUBROUTINE LARCINB(YDGEOMETRY,YDVARS,&
  & YDCPG_GMVF,YDCPG_GMVF_SI,YDCPG_GMVF_NL,YDCPG_GFLF,PDP,PCF,PCF_SI,PCF_NL,&
  & PUFZ,PVFZ,PUPF,PVPF,PTPF,YDCPG_GFLPF,PDBBCF,PDPHIF,PGWSF)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 !**** *LARCINB    -  semi-LAgrangian scheme:(Interpolation)

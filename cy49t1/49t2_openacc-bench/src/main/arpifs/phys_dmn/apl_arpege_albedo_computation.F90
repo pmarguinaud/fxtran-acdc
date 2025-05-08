@@ -1,7 +1,7 @@
 SUBROUTINE APL_ARPEGE_ALBEDO_COMPUTATION (YDMF_PHYS_BASE_STATE, YDCPG_BNDS, YDCPG_OPTS, YDMF_PHYS, &
 & YDMF_PHYS_SURF, YDMODEL, PALBD, PALBP, PEPS0, PFLU_EMIS, PFLU_NEIJ, PRDG_MU0, PALBDIR)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 !**** *APL_ARPEGE_ALBEDO_COMPUTATION*  

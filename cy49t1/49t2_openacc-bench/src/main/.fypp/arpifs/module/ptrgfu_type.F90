@@ -1,6 +1,6 @@
 MODULE PTRGFU_TYPE
 
-!$ACDC generateStructureMethods.pl --size --wipe --copy --host --skip-components flu --field-api --field-api-class flu
+!$ACDC methods --size --wipe --copy --host --skip-components flu --field-api --field-api-class flu
 
 
 USE PARKIND1  ,ONLY : JPIM

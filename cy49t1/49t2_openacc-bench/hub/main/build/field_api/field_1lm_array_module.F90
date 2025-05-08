@@ -1,7 +1,7 @@
 
 MODULE FIELD_1LM_ARRAY_MODULE
 
-!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load --field-api --field-api-class cpg
+!$ACDC methods --crc64 --size --host --copy --wipe --save --load --field-api --field-api-class cpg
 
 USE FIELD_1LM_MODULE
 USE FIELD_1LM_FACTORY_MODULE

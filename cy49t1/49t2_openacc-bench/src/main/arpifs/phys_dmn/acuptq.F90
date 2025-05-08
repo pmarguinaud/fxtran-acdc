@@ -2,7 +2,7 @@ SUBROUTINE ACUPTQ ( YDCST, KLON, KIDIA, KFDIA, KFLEV, KNBTRA, LDPTQ, PFRSO, PFRT
 & PDIFTQ, PDIFTS, PFCCQL, PFCCQN, PFPLCL, PFPLCN, PFECL, PFECN, PFACL, PFACN, PRDELP, PT, PQ,  &
 & PTS, PTENDH, PTENDQ, PDIFTTRA, PTENTRA_STR )
 
-!$ACDC openacc.pl --stack84
+!$ACDC singlecolumn --stack84
 
 
 !     ------------------------------------------------------------------

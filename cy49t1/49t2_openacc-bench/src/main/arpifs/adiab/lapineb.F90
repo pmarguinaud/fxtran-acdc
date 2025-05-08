@@ -3,7 +3,7 @@ SUBROUTINE LAPINEB(YDMODEL, YDGEOMETRY, YDCPG_OPTS, YDCPG_BNDS, YDSL, LDSLPHY, Y
 & YDA_KL0H, YDA_PLSCAWH, YDA_PRSCAWH, YDA_PUF, YDA_PVF, YDCPG_SL1, YDA_PSCO, YDA_PCCO, YDCPG_SL2,  &
 & YDVARS, YDA_PGFLPC, YDCPG_DDH_TND, YDA_PUP9, YDA_PVP9,  YDA_PTP9, YDCPG_GFLP9)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 !**** *LAPINEB* - semi-LAgrangian scheme(Interpolation):

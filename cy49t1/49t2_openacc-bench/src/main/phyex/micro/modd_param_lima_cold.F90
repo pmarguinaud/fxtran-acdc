@@ -6,7 +6,7 @@
 !     ###########################
       MODULE MODD_PARAM_LIMA_COLD
 
-!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+!$ACDC methods --crc64 --size --host --copy --wipe --save --load
 
 !     ###########################
 !> @file

@@ -2,7 +2,7 @@
 SUBROUTINE LAVENT(YDCST, YDGEOMETRY, YDCPG_OPTS, YDCPG_BNDS, YDVARS, YDCPG_TND, YDCPG_SL1, YDCPG_SL2, &
 & YDRIP, YDML_DYN, YDPARAR, KSETTLOFF, LD2TLFF1, PDTS2, PRDELP, PEVEL, PWRL9, PALPHA)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 !**** *LAVENT*   Semi-Lagrangian scheme.

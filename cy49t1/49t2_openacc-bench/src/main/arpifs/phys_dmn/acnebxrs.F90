@@ -6,7 +6,7 @@ SUBROUTINE ACNEBXRS ( YDPHY,YDPHY0,KIDIA,KFDIA,KLON,KTDIA,KLEV,&
  ! - OUTPUT 2D .
  & PNEB)  
 
-!$ACDC openacc.pl --stack84
+!$ACDC singlecolumn --stack84
 
 
 !**** *ACNEBXR* - CALCUL DE LA NEBULOSITE XU-RANDALL.

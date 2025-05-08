@@ -1,6 +1,6 @@
 SUBROUTINE LOCAL2CARTGEOV(KL1,KFLEV,KPROMA,KST,KEND,PGEMU,PGSQM2,PGECLO,PGESLO,PU,PV,PZ)
 
-!$ACDC openacc.pl --stack84 --pointers
+!$ACDC singlecolumn --stack84 --pointers
 
 ! Purpose:
 !  convert from grid-point local repere to Cartesian repere

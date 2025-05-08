@@ -5,7 +5,7 @@
 !    ######################
      MODULE MODE_MF_TURB_EXPL
 
-!$ACDC openacc.pl --stack84 --interfaces --inline-contained
+!$ACDC singlecolumn --stack84 --interfaces --inline-contained
 
 !    ######################
 IMPLICIT NONE

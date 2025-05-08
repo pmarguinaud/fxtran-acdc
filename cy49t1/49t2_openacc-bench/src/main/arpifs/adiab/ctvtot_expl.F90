@@ -1,6 +1,6 @@
 SUBROUTINE CTVTOT_EXPL (YDCST, YDGEOMETRY, YDVARS, YDCPG_OPTS, YDCPG_BNDS)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 USE GEOMETRY_MOD       , ONLY : GEOMETRY

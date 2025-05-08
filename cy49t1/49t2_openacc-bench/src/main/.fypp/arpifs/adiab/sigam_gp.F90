@@ -3,7 +3,7 @@ SUBROUTINE SIGAM_GP (YDCST,YDGEOMETRY,YDDYN,KLON,KLEV,&
 &KIDIA,KFDIA,&
 &PD,PT,PSP)
 
-!$ACDC openacc.pl --stack84 --pointers
+!$ACDC singlecolumn --stack84 --pointers
 
 
 !**** *SIGAM_GP* - Solve hydrostatic operator in semi-implicit

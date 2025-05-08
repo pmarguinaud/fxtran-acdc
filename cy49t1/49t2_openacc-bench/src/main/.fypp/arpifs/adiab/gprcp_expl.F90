@@ -1,6 +1,6 @@
 SUBROUTINE GPRCP_EXPL (YDCST, YDCPG_BNDS, YDCPG_OPTS, PCP, PR, PKAP, YDVARS, KGFLTYP)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 !**** *GPRCP_EXPL* - Computes Cp, R and R/Cp from Q

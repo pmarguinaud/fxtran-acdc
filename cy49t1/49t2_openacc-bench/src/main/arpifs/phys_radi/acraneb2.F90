@@ -18,7 +18,7 @@ SUBROUTINE ACRANEB2( &
 ! - INPUT 2D x 6
  & PDAER)
 
-!$ACDC openacc.pl --stack84 --inline-contained
+!$ACDC singlecolumn --stack84 --inline-contained
 
 
 ! Purpose:

@@ -9,7 +9,7 @@ SUBROUTINE CULIGHT &
  &   LDLINOX, PLIGH_TOT,  PLIGH_CTG,  PCTOPH, &
  &   PPRECMX, PICE,   PCDEPTH,  PWMFU,  PCHARGE) 
 
-!$ACDC openacc.pl --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
+!$ACDC singlecolumn --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
 
 
 !    THIS ROUTINE CALCULATES LIGHTNING FLASH RATES.

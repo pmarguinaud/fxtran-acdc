@@ -11,7 +11,7 @@ SUBROUTINE ACRALU ( YDRIP,YDPHY3,KIDIA,KFDIA,KLON,KTDIA,KLEV,&
  ! - CONSTANTES .
  & PDAER)
 
-!$ACDC openacc.pl --stack84
+!$ACDC singlecolumn --stack84
 
 
 !**** *ACRALU * - FLUX RADIATIFS LUNAIRES .

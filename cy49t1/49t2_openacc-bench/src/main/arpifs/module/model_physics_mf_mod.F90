@@ -1,6 +1,6 @@
 MODULE MODEL_PHYSICS_MF_MOD
 
-!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+!$ACDC methods --crc64 --size --host --copy --wipe --save --load
 
   USE YOMPHY   , ONLY : TPHY
   USE YOMPHY0  , ONLY : TPHY0

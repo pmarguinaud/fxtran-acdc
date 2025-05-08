@@ -1,7 +1,7 @@
 !     ############################
       MODULE MODD_PARAM_LIMA_MIXED
 
-!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+!$ACDC methods --crc64 --size --host --copy --wipe --save --load
 
 !     ###########################{
 !

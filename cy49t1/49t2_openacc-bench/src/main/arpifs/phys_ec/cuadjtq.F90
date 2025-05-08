@@ -11,7 +11,7 @@ SUBROUTINE CUADJTQ &
  & (YDTHF, YDCST, YDEPHLI,KIDIA,    KFDIA,    KLON,    KLEV,     KK,&
  &  PSP,      PT,       PQ,      LDFLAG,   KCALL,   LDOFLAG)  
 
-!$ACDC openacc.pl --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
+!$ACDC singlecolumn --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
 
 
 !          PURPOSE.

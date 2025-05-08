@@ -1,6 +1,6 @@
 MODULE MODEL_PHYSICS_GENERAL_MOD
 
-!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+!$ACDC methods --crc64 --size --host --copy --wipe --save --load
 
   USE YOMDPHY , ONLY : TDPHY
   USE YOMSLPHY, ONLY : TSLPHY

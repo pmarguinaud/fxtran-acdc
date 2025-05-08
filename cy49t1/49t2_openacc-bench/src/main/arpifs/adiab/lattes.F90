@@ -1,7 +1,7 @@
 SUBROUTINE LATTES(YDCST, YDGEOMETRY, YDCPG_BNDS, YDCPG_OPTS, YDVARS, YDCPG_SL1, YDCPG_SL2, YDRIP, &
 & YDML_DYN, PDTS2, PBDT, PESGP, PESGM, POROGL, POROGM, PSDIV0, PSDIV9, PSDVBC, PRES0, PMIXNL)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 !**** *LATTES*   Semi-Lagrangian scheme.

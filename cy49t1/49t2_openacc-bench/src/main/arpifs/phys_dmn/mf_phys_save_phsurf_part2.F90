@@ -3,7 +3,7 @@ SUBROUTINE MF_PHYS_SAVE_PHSURF_PART2 (YDCPG_BNDS, YDCPG_OPTS, PSAV_DDAL, PSAV_DD
 & PSAV_UNEBH, PGSD_VF_PZ0F, PGSD_VH_PPBLH, PGSD_VH_PQSH, PGSD_VH_PSPSH, PGSD_VK_PUDGRO, PGSD_VV_PHV, &
 & PGSD_VV_PZ0H, PDAL_T0, PDOM_T0, PUAL_T0, PUEN_T0, PUNEBH_T0, PUOM_T0, YDMODEL)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 USE YOMHOOK, ONLY : LHOOK, DR_HOOK, JPHOOK

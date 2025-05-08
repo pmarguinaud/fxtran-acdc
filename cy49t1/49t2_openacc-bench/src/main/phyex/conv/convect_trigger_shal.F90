@@ -5,7 +5,7 @@
                                         PTHLCL, PTLCL, PRVLCL, PWLCL, PZLCL, &
                                         PTHVELCL, KLCL, KDPL, KPBL, OTRIG)
 
-!$ACDC openacc.pl --stack84 --inline-contained
+!$ACDC singlecolumn --stack84 --inline-contained
 
       USE YOMHOOK , ONLY : LHOOK, DR_HOOK, JPHOOK
 !     ########################################################################

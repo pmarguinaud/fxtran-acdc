@@ -2,7 +2,7 @@
 SUBROUTINE LAITRI_SCALAR(KSLB1,KPROMA,KST,KEND,KFLEV,KFLDN,KFLDX,KQM,&
  & PDLAT,PCLA,PDLO,PCLO,KL0,PVINTW,PXSL,PXF)
 
-!$ACDC openacc.pl --dummy --stack84 --pointers
+!$ACDC singlecolumn --dummy --stack84 --pointers
 
 
 USE PARKIND1 , ONLY : JPIM     ,JPRB

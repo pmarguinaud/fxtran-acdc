@@ -1,6 +1,6 @@
 MODULE CPG_DDH_TND_TYPE_MOD
 
-!$ACDC generateStructureMethods.pl --host --wipe --copy --skip-components cpg --field-api --field-api-class cpg
+!$ACDC methods --host --wipe --copy --skip-components cpg --field-api --field-api-class cpg
 
 
 USE YOMMDDH,  ONLY : TMDDH

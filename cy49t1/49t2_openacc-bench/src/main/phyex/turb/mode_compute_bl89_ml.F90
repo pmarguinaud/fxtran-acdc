@@ -1,6 +1,6 @@
 MODULE MODE_COMPUTE_BL89_ML
 
-!$ACDC openacc.pl --stack84 --interfaces --inline-contained
+!$ACDC singlecolumn --stack84 --interfaces --inline-contained
 
 IMPLICIT NONE
 CONTAINS

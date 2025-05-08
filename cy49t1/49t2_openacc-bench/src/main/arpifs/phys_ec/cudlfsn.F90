@@ -9,7 +9,7 @@ SUBROUTINE CUDLFSN &
  & PMFD,     PMFDS,    PMFDQ,    PDMFDP,&
  & KDTOP,    LDDRAF)  
 
-!$ACDC openacc.pl --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
+!$ACDC singlecolumn --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
 
 
 !          THIS ROUTINE CALCULATES LEVEL OF FREE SINKING FOR

@@ -1,7 +1,7 @@
 !     ######spl
       MODULE MODD_CONVPAR_SHAL
 
-!$ACDC generateStructureMethods.pl --crc64 --size --host --copy --wipe --save --load
+!$ACDC methods --crc64 --size --host --copy --wipe --save --load
 
 !     ########################
 !

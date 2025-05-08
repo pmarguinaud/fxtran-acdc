@@ -8,7 +8,7 @@ SUBROUTINE AC_CLOUD_MODEL2(                          &
  & PEOSLDIR ,PUSAI    ,PUSAL    ,PUSBI    ,PUSBL     &
  & )
 
-!$ACDC openacc.pl --stack84 --inline-contained
+!$ACDC singlecolumn --stack84 --inline-contained
 
 
 ! Purpose:

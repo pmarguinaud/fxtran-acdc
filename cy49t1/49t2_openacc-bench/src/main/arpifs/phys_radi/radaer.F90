@@ -4,7 +4,7 @@ SUBROUTINE RADAER ( YDEAERD,YDERAD,YDPHY,KIDIA , KFDIA , KLON , KLEV,&
  & PAESEA, PAELAN, PAESOO, PAEDES, PAESUL, PAEVOL,&
  & PAER, PAERINDS                        )  
 
-!$ACDC openacc.pl --stack84
+!$ACDC singlecolumn --stack84
 
 
 ! ======================================================================

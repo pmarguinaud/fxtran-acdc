@@ -1,6 +1,6 @@
 SUBROUTINE LATTEX_EXPL_VSPLTRANS (YDGEOMETRY, YDCPG_BNDS, YDCPG_OPTS, YDML_DYN, YDCPG_SL1)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
 
 
 USE PARKIND1              , ONLY : JPIM, JPRB

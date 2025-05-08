@@ -1,6 +1,6 @@
 MODULE CPG_GFL_TYPE_MOD
 
-!$ACDC generateStructureMethods.pl --host --skip-components cpg --field-api --field-api-class cpg
+!$ACDC methods --host --skip-components cpg --field-api --field-api-class cpg
 
 
 USE FIELD_MODULE

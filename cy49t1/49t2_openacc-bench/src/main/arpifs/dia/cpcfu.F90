@@ -1,7 +1,7 @@
 SUBROUTINE CPCFU(YDCST, YDCFU, YDRIP, YDCPG_OPTS, YDCPG_BNDS, YDMF_PHYS_OUT, YDCPG_MISC, YDCPG_DYN0, &
 & YDVARS, YDMF_PHYS_SURF, PSTRCU, PSTRCV, PSTRDU, PSTRDV, PSTRTU, PSTRTV)
 
-!$ACDC pointerParallel.pl --gpumemstat --stack84 --inline-contains --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel --gpumemstat --stack84 --inline-contains --use-acpy --post-parallel synchost,nullify
 
 
 !**** *CPCFU* - CUMUL OF FLUX DIAGNOSTICS.
