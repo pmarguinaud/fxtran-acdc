@@ -42,7 +42,7 @@ use click;
   'merge-interfaces          -- Consider that single column interfaces and regular interfaces are in the same include file                   ',
   'no-check-pointers-dims=s@ -- List of pointer variables that should not be checked for their dimensions                                    --',
   'only-if-newer             -- Do not update file if unchanged content                                                                      ',
-  'pointers                  -- Process pointers (change them to CRAY pointers                                                               ',
+  'process-pointers          -- Process pointers (change them to CRAY pointers                                                               ',
   'pragma=s                  -- Pragma (OpenACC or OpenMP)                                                                                   -- OpenACC',
   'redim-arguments           -- Transform 1D array arguments to scalars                                                                      ',
   'set-variables=s@          -- Apply variables values and simplify the code                                                                 --',

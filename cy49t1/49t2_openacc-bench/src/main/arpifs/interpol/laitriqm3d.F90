@@ -2,7 +2,7 @@
 SUBROUTINE LAITRIQM3D(YDVETA,LDQM3DCONS,KSLB1,KPROMA,KST,KEND,KFLEV, &
  & KFLDN,KFLDX,KQM,PDLAT,PCLA,PDLO,PCLO,KL0,PVINTW,PDVER,PXSL,PXF)
 
-!$ACDC singlecolumn --stack84 --pointers
+!$ACDC singlecolumn --stack84 --process-pointers
 
 
 ! Purpose :

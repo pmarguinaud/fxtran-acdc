@@ -59,7 +59,7 @@ sub handleAssociations
 
   my ($ep) = &F ('./execution-part', $d);
 
-  for my $pointer (@{ $opts{pointers} || [] })
+  for my $pointer (@{ $opts{'pointers'} || [] })
     {
       my @assoc = &F ('.//pointer-a-stmt[./E-1[string(.)="?"]][./E-2/named-E[not(R-LT)]', $pointer, $ep);
       for my $assoc (@assoc)

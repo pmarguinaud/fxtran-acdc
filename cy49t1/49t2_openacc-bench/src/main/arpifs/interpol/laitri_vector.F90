@@ -2,7 +2,7 @@
 SUBROUTINE LAITRI_VECTOR(KSLB1,KPROMA,KST,KEND,KFLEV,KFLDN,KFLDX,KQM,&
  & PDLAT,PCLA,PDLO,PCLO,KL0,PVINTW,PXSL,PXF)
 
-!$ACDC singlecolumn --stack84 --pointers
+!$ACDC singlecolumn --stack84 --process-pointers
 
 
 USE PARKIND1 , ONLY : JPIM     ,JPRB     ,JPIB

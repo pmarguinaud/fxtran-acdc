@@ -10,7 +10,7 @@ SUBROUTINE GPUVS( &
  & PUS_L,PVS_L,PUS_M,PVS_M &
  & )
 
-!$ACDC singlecolumn --stack84 --pointers
+!$ACDC singlecolumn --stack84 --process-pointers
 
 
 ! GPUVS - Diagnoses "V_surf" and "grad(V_surf)".

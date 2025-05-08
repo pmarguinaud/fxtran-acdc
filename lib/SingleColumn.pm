@@ -142,7 +142,7 @@ sub processSingleRoutine
       'Cycle'->simplify ($d, %opts);
       
       @pointer = &Pointer::setPointersDimensions ($d, 'no-check-pointers-dims' => $opts{'no-check-pointers-dims'})
-        if ($opts{pointers});
+        if ($opts{'process-pointers'});
       
       &Loop::removeNpromaLoops ($d, style => $opts{style}, pointer => \@pointer);
       
@@ -190,7 +190,7 @@ sub processSingleRoutine
   else
     {
       &Pointer::handleAssociations ($d, pointers => \@pointer)
-        if ($opts{pointers});
+        if ($opts{'process-pointers'});
       
       &DrHook::remove ($d) unless ($opts{drhook});
       

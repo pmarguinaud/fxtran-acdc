@@ -1,7 +1,7 @@
 SUBROUTINE VERDISINT(YDVFE,YDCVER,CDOPER,CDBC,KPROMA,KST,KEND,KFLEV,PIN,POUT,POUTS,PINS,&
  & KCHUNK,KLOUT)
 
-!$ACDC singlecolumn --stack84 --pointers
+!$ACDC singlecolumn --stack84 --process-pointers
 
 
 !**** *VERDISINT*   VERtical DIScretization -

@@ -1,7 +1,7 @@
 SUBROUTINE MCOORDS(YDSCO,YDRIP,KFLEV,KPROMA,KST,KEND,PA,PGEMU,PGSQM2,PGNORDM,PGNORDL,&
   &PU,PV,PSCO,LD2TL,LD2TLM,LDROT)
 
-!$ACDC singlecolumn --stack84 --pointers
+!$ACDC singlecolumn --stack84 --process-pointers
 
 ! Purpose:
 !  compute coordinates (in PSCO) of the 'M' point (middle point of SL trajectory)

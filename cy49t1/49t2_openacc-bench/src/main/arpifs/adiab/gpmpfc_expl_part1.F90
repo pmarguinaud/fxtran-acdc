@@ -3,7 +3,7 @@ SUBROUTINE GPMPFC_EXPL_PART1 (YDML_GCONF, YDDYN, YDDYNA, KPROMA,    &
 & P0SVDL, P0SVDM, P0NHXL, P0NHXM, P9DIV, P9TL, P9TM, P9SPDL, P9SPDM, P9SVDL, P9SVDM, P0SPL, P0SPM, &
 & P9SPL, P9SPM)
 
-!$ACDC singlecolumn --stack84 --pointers
+!$ACDC singlecolumn --stack84 --process-pointers
 
 
 !**** *GPMPFC_EXPL_PART1 *

@@ -3,7 +3,7 @@ SUBROUTINE LAITVSPCQM(YDVSLETA,KSLB1,KPROMA,KST,KEND,KFLEV,&
  & PDLAT,PCLA,PDLO,PCLO,KL0,PVINTWS,&
  & PXSPSL,PXF,PXSL)  
 
-!$ACDC singlecolumn --stack84 --pointers
+!$ACDC singlecolumn --stack84 --process-pointers
 
 
 !**** *LAITVSPCQM  -  semi-LAgrangian scheme:

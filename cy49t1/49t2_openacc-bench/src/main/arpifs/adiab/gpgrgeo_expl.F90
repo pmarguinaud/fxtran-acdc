@@ -3,7 +3,7 @@ SUBROUTINE GPGRGEO_EXPL(YDGEOMETRY, KPROMA, KST, KEND, KFLEV, PRT, PRTL, PRTM, P
 & POROGL, POROGM, PHIFL, PHIFM, PHIHL, PHIHM, LDNHEE, LDNHHY, PRNHPPI, PQCHAL, PQCHAM, PEPS_NL,   &
 & PNH1L, PNH1M, PLNPRL_DER, PLNPRM_DER, PALPHL_DER, PALPHM_DER)  
 
-!$ACDC singlecolumn --stack84 --pointers
+!$ACDC singlecolumn --stack84 --process-pointers
 
 
 !**** *GPGRGEO_EXPL* - Computes half and full level gradient of geopotential height "gz".

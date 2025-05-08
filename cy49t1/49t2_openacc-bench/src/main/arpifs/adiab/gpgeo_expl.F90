@@ -1,7 +1,7 @@
 SUBROUTINE GPGEO_EXPL(KPROMA, KST, KEND, KFLEV, PHI, PHIF, PT, PR, PLNPR, PALPH, &
 & YDVGEOM)
 
-!$ACDC singlecolumn --stack84 --pointers
+!$ACDC singlecolumn --stack84 --process-pointers
 
 
 !**** *GPGEO_EXPL* - Computes half and full level geopotential height "gz".

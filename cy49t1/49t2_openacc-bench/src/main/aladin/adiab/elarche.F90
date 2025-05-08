@@ -1,7 +1,7 @@
 SUBROUTINE ELARCHE(YDCST,YDML_DYN,KPROMA,KST,KEND,KFLEV,YDSL,YDEGSL,YDEGEO,PSCO,PCCO,&
                  &PGECLO, PGEMU, PGESLO, PGSQM2)
 
-!$ACDC singlecolumn --dummy --stack84 --pointers
+!$ACDC singlecolumn --dummy --stack84 --process-pointers
 
 
 !**** *ELARCHE  -  semi-Lagrangian scheme:

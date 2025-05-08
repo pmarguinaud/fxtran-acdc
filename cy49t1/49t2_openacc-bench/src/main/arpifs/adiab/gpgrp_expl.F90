@@ -2,7 +2,7 @@
 SUBROUTINE GPGRP_EXPL(YDGEOMETRY, KST, KEND, PRT, PRTL, PRTM, PREL, PREM, PRTGR, PALPH, &
 & PHIHL, PHIHM, PHIFL, PHIFM, PSGRTL, PSGRTM, PALPHPLL_DER, PALPHPLM_DER)
 
-!$ACDC singlecolumn --stack84 --pointers
+!$ACDC singlecolumn --stack84 --process-pointers
 
 
 !**** *GPGRP_EXPL* - Computation of the pressure gradient force term used in the

@@ -1,6 +1,6 @@
 SUBROUTINE LAMAXWIND (YDML_DYN, YDCST, KPROMA, KFLEVG, KST, KEND, PURL, PVRL, PRCOLON, PGEMU)
 
-!$ACDC singlecolumn --stack84 --pointers
+!$ACDC singlecolumn --stack84 --process-pointers
 
 
 !**** *LAMAXWIND*  - Check wind maximum values

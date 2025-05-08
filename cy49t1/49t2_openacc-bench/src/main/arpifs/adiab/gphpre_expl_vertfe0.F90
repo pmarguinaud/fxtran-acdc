@@ -1,7 +1,7 @@
 SUBROUTINE GPHPRE_EXPL_VERTFE0 (YDCVER, TOPPRES, YDCST, KPROMA, KFLEV, KST, KEND, YDVAB, PRESH, PRESF, LHSET, &
                               & LDELP, LALPHA, LRTGR, LRPP, PDELP, PLNPR, PRDELP, PALPH, PRTGR, PRPRE, PRPP)
 
-!$ACDC singlecolumn --stack84 --pointers
+!$ACDC singlecolumn --stack84 --process-pointers
 
 
 !**** *GPHPRE_EXPL_VERTFE0* - Computes half and full level pressure

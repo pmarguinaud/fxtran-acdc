@@ -1,7 +1,7 @@
 SUBROUTINE LOCAL2CART(KFLEV,KPROMA,KST,KEND,PGEMU,PGSQM2,PGECLO,PGESLO,PGNORDM,PGNORDL,&
   &PU,PV,PX,PY,PZ,LDROT)
 
-!$ACDC singlecolumn --stack84 --pointers
+!$ACDC singlecolumn --stack84 --process-pointers
 
 ! Purpose:
 !  convert from grid-point local repere to Cartesian repere

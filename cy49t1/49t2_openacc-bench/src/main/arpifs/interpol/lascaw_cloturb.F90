@@ -1,6 +1,6 @@
 SUBROUTINE LASCAW_CLOTURB(KFLEV,KPROMA,KST,KEND,PKHTURB,PCLO,PCLOSLD)
 
-!$ACDC singlecolumn --stack84 --pointers
+!$ACDC singlecolumn --stack84 --process-pointers
 
 
 ! ------------------------------------------------------------------

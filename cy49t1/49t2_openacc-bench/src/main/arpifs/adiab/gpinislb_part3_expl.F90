@@ -1,7 +1,7 @@
 SUBROUTINE GPINISLB_PART3_EXPL (YDGEOMETRY, YDDYNA, KST, KEND, PVVEL0, &
 & PZPRE0F, PB2VVEL, PB2GWF, PB2GDW, PB2GWS, PGWFT0, PGDW0, PGWS0)
 
-!$ACDC singlecolumn --stack84 --pointers
+!$ACDC singlecolumn --stack84 --process-pointers
 
 
 !**** *GPINISLB_PART3_EXPL*
