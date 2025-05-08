@@ -50,8 +50,9 @@ sub click
   while ($line <= $#code)
     {
       my $text = $code[$line++];
-      next if ($text =~ m/^\s*#.*|^\s*$/o);
-      next if ($text =~ m/^\s*\{\s*$/o);
+      next if ($text =~ m/^\s*#.*|^\s*$/o); # Skip comments & white lines
+      next if ($text =~ m/^\s*\{\s*$/o);    # Skip {
+      next if ($text =~ m/^\s*use \s*/o);  # Use use statements
       if ($text =~ m/^\s*my\s*\$(self|class)\s*=\s*shift;/o)
         {
           @arg = ($1);

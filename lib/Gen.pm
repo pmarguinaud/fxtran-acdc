@@ -10,8 +10,7 @@ use File::Basename;
 
 use strict;
 
-use SingleColumn;
-use Pointer::Parallel;
+use Common;
 use Fxtran;
 use Canonic;
 use Util;
@@ -46,6 +45,8 @@ use click;
 );
 sub singlecolumn
 {
+  use SingleColumn;
+
   my ($opts, @args) = @_;
 
   for my $opt (qw (no-check-pointers-dims inlined set-variables))
@@ -160,6 +161,8 @@ sub singlecolumn
 );
 sub parallel
 {
+  use Pointer::Parallel;
+
   my ($opts, @args) = @_;
 
   for my $opt (qw (types-fieldapi-non-blocked))
@@ -244,27 +247,161 @@ sub parallel
   'host                            -- Generate HOST method                                                                                  ',
   'legacy                          -- Generate LEGACY method                                                                                ',
   'load                            -- Generate LOAD method                                                                                  ',
-  'module-map=s%                   -- Type/module mapping for methods                                                                       ',
-  'no-allocate=s@                  -- Structures that should not be allocated/deallocated                                                   ',
-  'only-components=s               -- Process only these derived type members                                                               ',
-  'only-types=s                    -- Process only these derived types                                                                      ',
+  'module-map=s                    -- Type/module mapping for methods                                                                       -- ',
+  'no-allocate=s                   -- Structures that should not be allocated/deallocated                                                   -- ',
+  'only-components=s               -- Process only these derived type members                                                               -- ',
+  'only-types=s                    -- Process only these derived types                                                                      -- ',
   'out                             -- Output file name                                                                                      ',
   'pragma                          -- Pragma (OpenACC or OpenMP)                                                                            --  OpenACC',
   'save                            -- Generate SAVE method                                                                                  ',
   'size                            -- Generate SIZE method                                                                                  ',
-  'skip-components=s               -- Skip these derived type members                                                                       ',
-  'skip-types=s                    -- Skip these derived types                                                                              ',
+  'skip-components=s               -- Skip these derived type members                                                                       -- ',
+  'skip-types=s                    -- Skip these derived types                                                                              -- ',
   'sorted                          -- Sort files (with number prefix) in compilation order                                                  ',
   'tmp=s                           -- Temporary directory for ancillary files                                                               ',
-  'type-bound-methods              -- Generate & use type bound methods                                                                     ',
+  'type-bound-methods              -- Generate & use type bound methods                                                                     -- ',
   'types-constant-dir=s            -- Directory with constant type information                                                              --  types-constant',
   'types-fieldapi-dir=s            -- Directory with Field API type information                                                             --  types-fieldapi',
   'wipe                            -- Generate WIPE method                                                                                  ',
 );
 sub methods
 {
+  use Fxtran::IO;
+  use FieldAPI::Register;
+  use Pragma;
+  use List::MoreUtils qw (uniq);
+
   my ($opts, @args) = @_;
-  print &Dumper ([$opts, @args]);
+
+  my ($F90) = @args;  
+
+  ( -d $opts->{dir}) or &mkpath ($opts->{dir});
+  ( -d $opts->{'types-fieldapi-dir'}) or &mkpath ($opts->{'types-fieldapi-dir'});
+  ( -d $opts->{'types-constant-dir'}) or &mkpath ($opts->{'types-constant-dir'});
+  
+  $opts->{pragma} = 'Pragma'->new (%$opts);
+  
+  if (! $opts->{'no-allocate'})
+    {
+      $opts->{'no-allocate'} = [];
+    }
+  else
+    {
+      $opts->{'no-allocate'} = [split (m/,/o, $opts->{'no-allocate'})];
+    }
+  
+  for my $k (qw (RM RB IM LM RD))
+    {
+      for my $i (1 .. 5)
+        {
+          push @{ $opts->{'no-allocate'} }, "FIELD_${i}${k}";
+        }
+    }
+  
+  @{ $opts->{'no-allocate'} } = &uniq (sort (@{ $opts->{'no-allocate'} }));
+  
+  if (! $opts->{'module-map'})
+    {
+      $opts->{'module-map'} = {};
+    }
+  else
+    {
+      $opts->{'module-map'} = {split (m/,/o, $opts->{'module-map'})};
+    }
+  
+  for my $k (qw (RM RB IM LM RD))
+    {
+      for my $i (1 .. 5)
+        {
+          for my $e ("", "_PTR", "_VIEW")
+            {
+              $opts->{'module-map'}{"UTIL_FIELD_${i}${k}${e}_MOD"}       = "FIELD_UTIL_MODULE";
+              $opts->{'module-map'}{"UTIL_FIELD_${i}${k}${e}_ARRAY_MOD"} = "FIELD_ARRAY_UTIL_MODULE";
+            }
+        }
+    }
+  
+
+  my  $parseListOrCodeRef = sub
+  {
+    use FindBin qw ($Bin);
+
+    my ($opts, $kw) = @_;
+  
+    if (-f "$Bin/../lib/$opts->{$kw}.pm")
+      {
+        my $class = 'Fxtran::IO::' . $opts->{$kw};
+        eval "use $class;";
+        my $c = $@;
+        $c && die ($c);
+        $opts->{$kw} = sub { $class->skip (@_) };
+      }
+    elsif ($opts->{$kw} =~ m/^sub /o)
+      {
+        $opts->{$kw} = eval ($opts->{$kw});
+        my $c = $@;
+        die $c if ($c);
+      }
+    elsif ($kw =~ m/-components$/o)
+      {
+        my @comp = split (m/,/o, $opts->{$kw});
+        if ($kw =~ m/^skip-/o)
+          {
+            $opts->{$kw} = sub { my ($type, $comp) = @_; grep { $_ eq "$type$comp" } @comp };
+          }
+        else
+          {
+            $opts->{$kw} = sub { my ($type, $comp) = @_; grep { $_ eq "$type$comp" } @comp };
+          }
+      }
+    elsif ($kw =~ m/-types$/o)
+      {
+        my @type = split (m/,/o, $opts->{$kw});
+        if ($kw =~ m/^skip-/o)
+          {
+            $opts->{$kw} = sub { my ($type) = @_; grep { $_ eq "$type" } @type };
+          }
+        else
+          {
+            $opts->{$kw} = sub { my ($type) = @_; grep { $_ eq "$type" } @type };
+          }
+      }
+  };
+  
+  my $parseSkipOnly = sub
+  {
+    my ($opts, $skip, $only) = @_;
+    if ($opts->{$skip})
+      {
+        $parseListOrCodeRef->($opts, $skip);
+      }
+    elsif ($opts->{$only})
+      {
+        $parseListOrCodeRef->($opts, $only);
+        $opts->{$skip} = sub { ! $opts->{$only}->(@_) };
+      }
+    else
+      {
+        $opts->{$skip} = sub { 0 };
+      }
+  };
+  
+  $parseSkipOnly->($opts, 'skip-components', 'only-components');
+  $parseSkipOnly->($opts, 'skip-types', 'only-types');
+  
+  my $doc = &Fxtran::parse (location => $F90, fopts => [qw (-construct-tag -no-include -line-length 800)], dir => $opts->{tmp});
+  
+  if ($opts->{load} || $opts->{save} || $opts->{size} || $opts->{copy} || $opts->{host} || $opts->{crc64} || $opts->{legacy})
+    {
+      &Fxtran::IO::processTypes ($doc, $opts);
+    }
+  
+  if ($opts->{'field-api'})
+    {
+      &FieldAPI::Register::registerFieldAPI ($doc, $opts);
+    }
+
+
 }
 
 1;

@@ -27,6 +27,10 @@ elsif ($method eq 'pointerParallel')
   {
     $method = 'parallel';
   }
+elsif ($method eq 'generateStructureMethods')
+  {
+    $method = 'methods';
+  }
 
 'Gen'->run ($method, @ARGV);
 
