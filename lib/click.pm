@@ -21,6 +21,14 @@ sub click
       $oopt = &Storable::dclone ($oopt);
     }
 
+  @opt = map { split (m/\n/o, $_) } @opt;
+
+  for (@opt)
+    {
+      chomp;
+      s/^\s*//o;
+    }
+
   my ($package, $file, $line) = caller (0);
   my @code = do { my $fh = 'FileHandle'->new ("<$file"); <$fh> };
 
@@ -126,6 +134,11 @@ sub click
       $list{$name}  = $list;
       $flag{$name}  = ! $val;
 
+      if ((! $list) && (! $hash) && ($opt !~ m/=s/o)) # Allow for --nooption
+        {
+          $opt .= '!';
+        }
+
       push @aopts, $opt, \$hopts{$name};
 
       if ($list)
@@ -138,7 +151,6 @@ sub click
         }
       push @oopts, $name if ($oo);
     }
-
 }
 
 sub help
@@ -179,7 +191,7 @@ sub help
               $default = defined ($m->{hopts}{$opt}) ? $m->{hopts}{$opt} : 'NONE';
             }
 
-          printf("  %-20s %6s : %-20s : %s\n", "--$opt", $kind, $default,
+          printf("  %-30s %6s : %-20s : %s\n", "--$opt", $kind, $default,
 		 (defined ($m->{desc}{$opt}) ? $m->{desc}{$opt} : '?'),
 		);
 	}
