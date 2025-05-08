@@ -1,6 +1,6 @@
 MODULE MODEL_CHEM_MOD
 
-!$ACDC methods --crc64 --size --host --copy --wipe --save --load
+!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
 
   USE YOMOZO  , ONLY : TOZO
   USE YOMCHEM , ONLY : TCHEM

@@ -1,6 +1,6 @@
 MODULE MODD_FIELD
 
-!$ACDC methods --crc64 --size --host --copy --wipe --save --load
+!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
 
   USE MODD_PARAMETERS, ONLY: NGRIDUNKNOWN, NMNHNAMELGTMAX, NSTDNAMELGTMAX
   IMPLICIT NONE

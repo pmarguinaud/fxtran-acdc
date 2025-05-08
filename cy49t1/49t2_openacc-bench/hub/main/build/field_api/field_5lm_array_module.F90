@@ -1,7 +1,7 @@
 
 MODULE FIELD_5LM_ARRAY_MODULE
 
-!$ACDC methods --crc64 --size --host --copy --wipe --save --load --field-api --field-api-class cpg
+!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load --field-api --field-api-class cpg
 
 USE FIELD_5LM_MODULE
 USE FIELD_5LM_FACTORY_MODULE

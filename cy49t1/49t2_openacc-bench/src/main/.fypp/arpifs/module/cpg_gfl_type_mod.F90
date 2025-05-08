@@ -1,6 +1,6 @@
 MODULE CPG_GFL_TYPE_MOD
 
-!$ACDC methods --host --skip-components cpg --field-api --field-api-class cpg
+!$ACDC methods --methods-list=host --skip-components cpg --field-api --field-api-class cpg
 
 
 USE FIELD_MODULE

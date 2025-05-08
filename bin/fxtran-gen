@@ -238,22 +238,16 @@ sub pointerparallel
 
 &click
 (
-  'copy                            -- Generate COPY method                                                                                  ',
-  'crc64                           -- Generate CRC64 method                                                                                 ',
   'dir=s                           -- Dump results in this directory                                                                        --  .',
   'field-api                       -- Dump Field API information                                                                            ',
   'field-api-class=s               -- Field API structure category                                                                          ',
-  'host                            -- Generate HOST method                                                                                  ',
-  'legacy                          -- Generate LEGACY method                                                                                ',
-  'load                            -- Generate LOAD method                                                                                  ',
+  'methods-list=s@                 -- List of methods (copy, crc64, host, legacy, load, save, size, wipe                                    -- ',
   'module-map=s%                   -- Type/module mapping for methods                                                                       -- ',
   'no-allocate=s@                  -- Structures that should not be allocated/deallocated                                                   -- ',
   'only-components=s               -- Process only these derived type members                                                               -- ',
   'only-types=s                    -- Process only these derived types                                                                      -- ',
   'out                             -- Output file name                                                                                      ',
   'pragma                          -- Pragma (OpenACC or OpenMP)                                                                            --  OpenACC',
-  'save                            -- Generate SAVE method                                                                                  ',
-  'size                            -- Generate SIZE method                                                                                  ',
   'skip-components=s               -- Skip these derived type members                                                                       -- ',
   'skip-types=s                    -- Skip these derived types                                                                              -- ',
   'sorted                          -- Sort files (with number prefix) in compilation order                                                  ',
@@ -261,7 +255,6 @@ sub pointerparallel
   'type-bound-methods              -- Generate & use type bound methods                                                                     -- ',
   'types-constant-dir=s            -- Directory with constant type information                                                              --  types-constant',
   'types-fieldapi-dir=s            -- Directory with Field API type information                                                             --  types-fieldapi',
-  'wipe                            -- Generate WIPE method                                                                                  ',
 );
 sub methods
 {
@@ -271,6 +264,12 @@ sub methods
   use List::MoreUtils qw (uniq);
 
   my ($opts, @args) = @_;
+
+  my %methods = map { ($_, 1) } @{ $opts->{'methods-list'} };
+  for my $method (qw (copy crc64 host legacy load save size wipe))
+    {
+      $opts->{$method} = 1 if ($methods{$method});
+    }
 
   my ($F90) = @args;  
 

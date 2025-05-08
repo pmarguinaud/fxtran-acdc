@@ -1,6 +1,6 @@
 MODULE TYPE_FLUXES
 
-!$ACDC methods --size --host --copy --wipe
+!$ACDC methods --methods-list=size,host,copy,wipe
 
 
 !     Purpose.

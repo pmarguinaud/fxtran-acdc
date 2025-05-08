@@ -9,7 +9,7 @@
 
 MODULE YOE_SPECTRAL_PLANCK
 
-!$ACDC methods --crc64 --size --host --copy --wipe --save --load
+!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
 
 
 ! YOE_SPECTRAL_PLANCK

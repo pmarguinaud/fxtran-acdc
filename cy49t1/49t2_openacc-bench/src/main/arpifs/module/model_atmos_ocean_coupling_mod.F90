@@ -1,6 +1,6 @@
 MODULE MODEL_ATMOS_OCEAN_COUPLING_MOD
 
-!$ACDC methods --crc64 --size --host --copy --wipe --save --load
+!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
 
   USE YOMMCC, ONLY : TMCC
   USE YOMCOM, ONLY : TCOM

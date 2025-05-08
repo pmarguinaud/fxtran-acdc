@@ -2,7 +2,7 @@
 
 MODULE FIELD_VARIABLES_MOD
 
-!$ACDC methods --crc64 --size --host --copy --wipe --legacy --field-api
+!$ACDC methods --methods-list=crc64,size,host,copy,wipe,legacy --field-api
 
   ! The FIELD_VARIABLES type provides namespaced access to all core
   ! VARIABLE objects used.

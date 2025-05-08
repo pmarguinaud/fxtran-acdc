@@ -1,7 +1,7 @@
 
 MODULE SURFACE_VARIABLES_MOD
 
-!$ACDC methods --host --wipe --copy --field-api --field-api-class sfc
+!$ACDC methods --methods-list=host,wipe,copy --field-api --field-api-class sfc
 
   ! The SURFACE_VARIABLES type provides namespaced access to individual
   ! groups of surface VARIABLE objects via group-specific container

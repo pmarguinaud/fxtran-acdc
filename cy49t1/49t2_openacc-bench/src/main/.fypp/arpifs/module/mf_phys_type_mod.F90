@@ -1,6 +1,6 @@
 MODULE MF_PHYS_TYPE_MOD
 
-!$ACDC methods --host --wipe --copy --skip-components cpg --field-api --field-api-class cpg
+!$ACDC methods --methods-list=host,wipe,copy --skip-components cpg --field-api --field-api-class cpg
 
 
 USE PARKIND1, ONLY : JPIM, JPRB

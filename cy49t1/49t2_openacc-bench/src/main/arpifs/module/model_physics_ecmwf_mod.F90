@@ -9,7 +9,7 @@
 
 MODULE MODEL_PHYSICS_ECMWF_MOD
 
-!$ACDC methods --crc64 --size --host --copy --wipe --save --load
+!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
 
   USE YOEPHY      , ONLY : TEPHY
   USE YOECLD      , ONLY : TECLD

@@ -1,6 +1,6 @@
 MODULE INTDYN_MOD
 
-!$ACDC methods --crc64 --size --host --copy --wipe --save --load --only-types TGFLT,TGMVT,TTND,THWIND,TCTY,TRCP,TXYBDER,TXYB
+!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load --only-types TGFLT,TGMVT,TTND,THWIND,TCTY,TRCP,TXYBDER,TXYB
 
 
 ! Purpose :

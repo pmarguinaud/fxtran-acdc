@@ -1,6 +1,6 @@
 MODULE EINT_MOD
 
-!$ACDC methods --crc64 --size --host --copy --wipe --save --load --skip-components SL_STRUCT%MASK_SL1,SL_STRUCT%MASK_SL2,SL_STRUCT%MASK_SL2T,SL_STRUCT%MASK_SLD,SL_STRUCT%MASK_SLTOT
+!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load --skip-components SL_STRUCT%MASK_SL1,SL_STRUCT%MASK_SL2,SL_STRUCT%MASK_SL2T,SL_STRUCT%MASK_SLD,SL_STRUCT%MASK_SLTOT
 
 
 !--------------------------------------------------------------------------

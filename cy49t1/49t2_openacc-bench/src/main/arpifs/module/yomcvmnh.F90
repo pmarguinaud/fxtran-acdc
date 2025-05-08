@@ -1,6 +1,6 @@
 MODULE YOMCVMNH
 
-!$ACDC methods --crc64 --size --host --copy --wipe --save --load
+!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
 
 
 !Module to define the parameters of the KFB

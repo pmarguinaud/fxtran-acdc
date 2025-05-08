@@ -9,7 +9,7 @@
 
 MODULE SURFACE_FIELDS_MIX
 
-!$ACDC methods --crc64 --size --host --copy --wipe --save --load --only-types TYPE_SURF_GEN
+!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load --only-types TYPE_SURF_GEN
 
 
 !     Purpose.

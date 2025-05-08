@@ -1,6 +1,6 @@
 MODULE YOMCUMFS
 
-!$ACDC methods --crc64 --size --host --copy --wipe --save --load
+!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
 
 USE PARKIND1, ONLY : JPRB
 USE YOMHOOK, ONLY : LHOOK, DR_HOOK, JPHOOK

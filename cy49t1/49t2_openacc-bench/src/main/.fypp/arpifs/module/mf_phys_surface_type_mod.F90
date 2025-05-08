@@ -1,7 +1,7 @@
 
 MODULE MF_PHYS_SURFACE_TYPE_MOD
 
-!$ACDC methods --host --wipe --copy --field-api --field-api-class sfc
+!$ACDC methods --methods-list=host,wipe,copy --field-api --field-api-class sfc
 
 
 USE PARKIND1, ONLY : JPIM, JPRB

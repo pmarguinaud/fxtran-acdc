@@ -5,7 +5,7 @@
 !     ######spl
       MODULE MODD_NEB_n
 
-!$ACDC methods --crc64 --size --host --copy --wipe --save --load
+!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
 
 !     #############################
 !> @file

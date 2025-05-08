@@ -9,7 +9,7 @@
 
 MODULE YOMPHY2
 
-!$ACDC methods --crc64 --size --host --copy --wipe --save --load
+!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
 
 
 USE PARKIND1  ,ONLY : JPIM     ,JPRB

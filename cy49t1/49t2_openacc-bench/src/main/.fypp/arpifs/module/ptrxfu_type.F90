@@ -1,6 +1,6 @@
 MODULE PTRXFU_TYPE
 
-!$ACDC methods --size --wipe --copy --host --skip-components flu --field-api --field-api-class flu
+!$ACDC methods --methods-list=size,wipe,copy,host --skip-components flu --field-api --field-api-class flu
 
 
 USE PARKIND1  ,ONLY : JPIM    

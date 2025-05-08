@@ -1,6 +1,6 @@
 MODULE YOMXFU_TYPE
 
-!$ACDC methods --size --wipe --copy --host --skip-components TXFU%XFUBUF_B,TXFU%RMWINDCALC_B,TXFU%RMNWINDCALC_B --field-api --field-api-class flu
+!$ACDC methods --methods-list=size,wipe,copy,host --skip-components TXFU%XFUBUF_B,TXFU%RMWINDCALC_B,TXFU%RMNWINDCALC_B --field-api --field-api-class flu
 
 
 USE PARKIND1  ,ONLY : JPIM, JPRB

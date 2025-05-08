@@ -6,7 +6,7 @@
 !     ###########################
       MODULE MODD_PARAM_LIMA_WARM
 
-!$ACDC methods --crc64 --size --host --copy --wipe --save --load
+!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
 
 !     ###########################
 !
