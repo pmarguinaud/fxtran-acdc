@@ -171,7 +171,7 @@ sub processSingleRoutine
       $d->unbindNode ();
     }
   
-  &Subroutine::rename ($d, sub { return $_[0] . uc ($opts{suffixParallel}) });
+  &Subroutine::rename ($d, sub { return $_[0] . uc ($opts{'suffix-parallel'}) });
   
   # Prepare the code
   
@@ -218,7 +218,7 @@ sub processSingleRoutine
   );
   
   my $t = &Pointer::SymbolTable::getSymbolTable 
-    ($d, skip => $opts{skip}, nproma => $opts{nproma}, 
+    ($d, skip => $opts{'skip-arrays'}, nproma => $opts{nproma}, 
      'types-fieldapi-dir' => $opts{'types-fieldapi-dir'},
      'types-constant-dir' => $opts{'types-constant-dir'},
      'types-fieldapi-non-blocked' => $opts{'types-fieldapi-non-blocked'},
@@ -320,7 +320,7 @@ sub processSingleRoutine
                   $include->parentNode->insertAfter (&t ("\n"), $include);
                 }
             }
-          $name->setData ($name->data . uc ($opts{suffixParallel}));
+          $name->setData ($name->data . uc ($opts{'suffix-parallel'}));
         }
     }
   
@@ -377,7 +377,7 @@ sub processSingleRoutine
   
   for my $style (qw (Style::IAL Style::MESONH))
     {
-      $style->setOpenACCInterfaces ($d, %opts, suffix => $opts{suffixSingleColumn});
+      $style->setOpenACCInterfaces ($d, %opts, suffix => $opts{'suffix-single-column'});
     }
   
   if (@parallel)

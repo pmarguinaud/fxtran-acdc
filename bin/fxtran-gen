@@ -49,7 +49,7 @@ use click;
   'stack84                   -- Use separate stacks for data types of sizes 4 and 8                                                          ',
   'style=s                   -- Source code style (default: guess from file contents)                                                        ',
   'stdout                    -- Dump generated code to stdout                                                                                ',
-  'suffixSingleColumn=s      -- Suffix for generated routines                                                                                -- _OPENACC',
+  'suffix-single-column=s    -- Suffix for generated routines                                                                                -- _OPENACC',
   'tmp=s                     -- Temporary directory for processing                                                                           -- .',
   'value-attribute           -- Add VALUE attribute to scalar intrinsic arguments                                                            ',
   'version                   -- Append fxtran-acdc version at end of generated content                                                       ',
@@ -64,7 +64,7 @@ sub singlecolumn
 
   $opts->{dir} ||= &dirname ($F90);
   
-  my $suffix = lc ($opts->{suffixSingleColumn});
+  my $suffix = lc ($opts->{'suffix-single-column'});
   (my $F90out = $F90) =~ s/\.F90/$suffix.F90/;
   $F90out = $opts->{dir} . '/' . &basename ($F90out);
   
@@ -151,12 +151,12 @@ sub singlecolumn
   'post-parallel=s@                -- Generate code after parallel section                                                                  --  nullify',
   'pragma=s                        -- Pragma (OpenACC or OpenMP)                                                                            --  OpenACC',
   'redim-arguments                 -- Transform 1D array arguments to scalars                                                               ',
-  'skip=s@                         -- Arrays not to be processed                                                                            --  PGFL,PGFLT1,PGMVT1,PGPSDT2D',
+  'skip-arrays=s@                  -- Arrays not to be processed                                                                            --  PGFL,PGFLT1,PGMVT1,PGPSDT2D',
   'stack84                         -- Use separate stacks for data types of sizes 4 and 8                                                   ',
   'stdout                          -- Dump generated code to stdout                                                                         ',
   'style=s                         -- Source code style (default: guess from file contents)                                                 ',
-  'suffixParallel                  -- Suffix for parallel routines                                                                          --  _PARALLEL',
-  'suffixSingleColumn              -- Suffix for single column routines                                                                     --  _OPENACC',
+  'suffix-parallel=s               -- Suffix for parallel routines                                                                          --  _PARALLEL',
+  'suffix-single-column=s          -- Suffix for single column routines                                                                     --  _OPENACC',
   'type-bound-methods              -- Generate & use type bound methods (LOAD, COPY, etc.)                                                  ',
   'types-constant-dir=s            -- Directory with constant type information                                                              --  types-constant',
   'types-fieldapi-dir=s            -- Directory with Field API type information                                                             --  types-fieldapi',
@@ -177,7 +177,7 @@ sub pointerparallel
   $opts->{jlon} = {};
   
   my ($F90) = @args;
-  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{suffixParallel}) . '.F90'}eo;
+  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{'suffix-parallel'}) . '.F90'}eo;
   
   unless ($opts->{dir})
     {
