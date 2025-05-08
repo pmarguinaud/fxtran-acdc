@@ -43,20 +43,7 @@ use Pragma;
 
 use Cycle49;
 use Cycle50;
-
-sub updateFile
-{
-  my ($F90, $code) = @_;
-
-  my $c = do { local $/ = undef; my $fh = 'FileHandle'->new ("<$F90"); $fh ? <$fh> : undef };
-  
-  if ((! defined ($c)) || ($c ne $code))
-    {
-      unlink ($F90);
-      &mkpath (&dirname ($F90));
-      'FileHandle'->new (">$F90")->print ($code);
-    }
-}
+use Util;
 
 sub addYDCPG_OPTS
 {
@@ -519,13 +506,8 @@ for my $pu (@pu)
     &processSingleRoutine ($pu, $NAME, $find, $types, %opts);
   }
 
-if ($opts{version})
-  {
-    my $version = &Fxtran::getVersion ();
-    my ($file) = &F ('./object/file', $d);
-    $file->appendChild (&n ("<C>! $version</C>"));
-    $file->appendChild (&t ("\n"));
-  }
+&Util::addVersion ($d)
+  if ($opts{version});
 
 if ($opts{stdout})
   {
@@ -533,7 +515,7 @@ if ($opts{stdout})
   }
 else
   {
-    &updateFile ($F90out, &Canonic::indent ($d));
+    &Util::updateFile ($F90out, &Canonic::indent ($d));
   }
 
 

@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+package SingleColumn;
 
 #
 # Copyright 2022 Meteo-France
@@ -16,11 +16,8 @@ use File::stat;
 use File::Path;
 use File::Copy;
 use File::Basename;
-use FindBin qw ($Bin);
-use lib "$Bin/../lib";
 
 use Common;
-
 use Fxtran;
 use Stack;
 use Associate;
@@ -46,8 +43,6 @@ use Pointer;
 use Print;
 use Style;
 
-my $SUFFIX = '_OPENACC';
-
 sub addValueAttribute
 {
   my $d = shift;
@@ -68,23 +63,6 @@ sub addValueAttribute
         }
     }
 
-}
-
-sub updateFile
-{
-  my ($F90, $code) = @_;
-
-  my $c = do { local $/ = undef; my $fh = 'FileHandle'->new ("<$F90"); $fh ? <$fh> : undef };
-  
-  if ((! defined ($c)) || ($c ne $code))
-    {
-      unlink ($F90);
-      &mkpath (&dirname ($F90));
-      my $fh = 'FileHandle'->new (">$F90"); 
-      $fh or die ("Cannot write to $F90");
-      $fh->print ($code); 
-      $fh->close ();
-    }
 }
 
 sub processSingleModule
@@ -110,7 +88,7 @@ sub processSingleModule
         }
     }
 
-  &Module::addSuffix ($d, $SUFFIX);
+  &Module::addSuffix ($d, $opts{suffix});
 }
 
 sub processSingleInterface
@@ -126,7 +104,7 @@ sub processSingleInterface
       &addValueAttribute ($d);
     }
   
-  &Subroutine::addSuffix ($d, $SUFFIX);
+  &Subroutine::addSuffix ($d, $opts{suffix});
   
   $opts{pragma}->insertRoutineSeq ($d);
   
@@ -209,14 +187,14 @@ sub processSingleRoutine
 
     }
 
-  &Subroutine::addSuffix ($d, $SUFFIX);
+  &Subroutine::addSuffix ($d, $opts{suffix});
   
   unless ($opts{dummy})
     {
       &Call::addSuffix 
       (
         $d, 
-        suffix => $SUFFIX, 
+        suffix => $opts{suffix}, 
         match => sub { ! $opts{style}->noComputeRoutine (@_) },
         'merge-interfaces' => $opts{'merge-interfaces'},
       );
@@ -264,113 +242,4 @@ sub processSingleRoutine
 
 }
 
-
-my %opts = (cycle => 49, tmp => '.', pragma => 'OpenACC');
-my @opts_f = qw (help drhook only-if-newer version stdout 
-                 value-attribute redim-arguments stack84 merge-interfaces
-                 pointers inline-contained debug interfaces dummy inline-comment interface);
-my @opts_s = qw (dir cycle inlined no-check-pointers-dims set-variables files base tmp style pragma);
-
-&GetOptions
-(
-  (map { ($_, \$opts{$_}) } @opts_f),
-  (map { ("$_=s", \$opts{$_}) } @opts_s),
-);
-
-if ($opts{help})
-  {
-    print
-     "Usage: " . &basename ($0) . "\n" .
-      join ('', map { "  --$_\n" } @opts_f) .
-      join ('', map { "  --$_=...\n" } @opts_s) .
-     "\n";
-    exit (0);
-  }
-
-
-for my $opt (qw (no-check-pointers-dims inlined set-variables))
-  {
-    $opts{$opt} = [$opts{$opt} ? split (m/,/o, $opts{$opt}) : ()];
-  }
-
-my $F90 = shift;
-
-$opts{dir} ||= &dirname ($F90);
-
-my $suffix = lc ($SUFFIX);
-(my $F90out = $F90) =~ s/\.F90/$suffix.F90/;
-$F90out = $opts{dir} . '/' . &basename ($F90out);
-
-
-if ($opts{'only-if-newer'})
-  {
-    my $st = stat ($F90);
-    my $stout = stat ($F90out);
-    if ($st && $stout)
-      {
-        exit (0) unless ($st->mtime > $stout->mtime);
-      }
-  }
-
-
-my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag -no-include -no-cpp -line-length 5000)], dir => $opts{tmp});
-
-&Canonic::makeCanonic ($d);
-
-$opts{style} = 'Style'->new (%opts, document => $d);
-
-$opts{pragma} = 'Pragma'->new (%opts);
-
-my $find = 'Finder'->new (files => $opts{files}, base => $opts{base});
-
-$opts{style}->preProcessForOpenACC ($d, %opts, find => $find);
-
-my @pu = &F ('./object/file/program-unit', $d);
-
-my $singleRoutine = scalar (@pu) == 1;
-
-for my $pu (@pu)
-  {
-    my $stmt = $pu->firstChild;
-    (my $kind = $stmt->nodeName) =~ s/-stmt$//o;
-    if ($kind eq 'module')
-      {
-        $singleRoutine = 0;
-        &processSingleModule ($pu, $find, %opts);
-      }
-    elsif ($kind eq 'subroutine')
-      {
-        &processSingleRoutine ($pu, $find, %opts);
-      }
-    else
-      {
-        die;
-      }
-  }
-
-
-if ($opts{version})
-  {
-    my $version = &Fxtran::getVersion ();
-    my ($file) = &F ('./object/file', $d);
-    $file->appendChild (&n ("<C>! $version</C>"));
-    $file->appendChild (&t ("\n"));
-  }
-
-if ($opts{stdout})
-  {
-    print &Canonic::indent ($d);
-  }
-else
-  {
-    &mkpath (&dirname ($F90out));
-    'FileHandle'->new (">$F90out.xml")->print ($d->toString);
-    &updateFile ($F90out, &Canonic::indent ($d));
-
-
-    if ($opts{interface} && $singleRoutine)
-      {
-        $opts{style}->generateInterface ($F90out, %opts);
-      }
-  }
-
+1;

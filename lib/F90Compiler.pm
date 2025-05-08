@@ -1,11 +1,12 @@
 package F90Compiler;
 
-use strict;
 use FileHandle;
 use Data::Dumper;
 use File::Basename;
 
-use task;
+use strict;
+
+use Util;
 
 sub slurp
 {
@@ -108,7 +109,7 @@ EOF
   
   $fh->close ();
 
-  &task::runCommand (cmd => ['make', -j => 4], %args);
+  &Util::runCommand (cmd => ['make', -j => 4], %args);
 }
 
 sub run
@@ -124,7 +125,7 @@ sub run
 
   if (scalar (@F90) == 1)
     {
-      &task::runCommand (cmd => [$f90compiler, @f90flags, ($obj ? (-o => $obj) : ()), @F90], %args);
+      &Util::runCommand (cmd => [$f90compiler, @f90flags, ($obj ? (-o => $obj) : ()), @F90], %args);
     }
   else
     {
