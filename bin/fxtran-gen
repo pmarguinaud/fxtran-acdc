@@ -247,7 +247,7 @@ sub pointerparallel
   'legacy                          -- Generate LEGACY method                                                                                ',
   'load                            -- Generate LOAD method                                                                                  ',
   'module-map=s%                   -- Type/module mapping for methods                                                                       -- ',
-  'no-allocate=s                   -- Structures that should not be allocated/deallocated                                                   -- ',
+  'no-allocate=s@                  -- Structures that should not be allocated/deallocated                                                   -- ',
   'only-components=s               -- Process only these derived type members                                                               -- ',
   'only-types=s                    -- Process only these derived types                                                                      -- ',
   'out                             -- Output file name                                                                                      ',
@@ -279,15 +279,6 @@ sub methods
   ( -d $opts->{'types-constant-dir'}) or &mkpath ($opts->{'types-constant-dir'});
   
   $opts->{pragma} = 'Pragma'->new (%$opts);
-  
-  if (! $opts->{'no-allocate'})
-    {
-      $opts->{'no-allocate'} = [];
-    }
-  else
-    {
-      $opts->{'no-allocate'} = [split (m/,/o, $opts->{'no-allocate'})];
-    }
   
   for my $k (qw (RM RB IM LM RD))
     {
