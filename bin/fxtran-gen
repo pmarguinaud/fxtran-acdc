@@ -246,7 +246,7 @@ sub pointerparallel
   'host                            -- Generate HOST method                                                                                  ',
   'legacy                          -- Generate LEGACY method                                                                                ',
   'load                            -- Generate LOAD method                                                                                  ',
-  'module-map=s                    -- Type/module mapping for methods                                                                       -- ',
+  'module-map=s%                   -- Type/module mapping for methods                                                                       -- ',
   'no-allocate=s                   -- Structures that should not be allocated/deallocated                                                   -- ',
   'only-components=s               -- Process only these derived type members                                                               -- ',
   'only-types=s                    -- Process only these derived types                                                                      -- ',
@@ -298,15 +298,6 @@ sub methods
     }
   
   @{ $opts->{'no-allocate'} } = &uniq (sort (@{ $opts->{'no-allocate'} }));
-  
-  if (! $opts->{'module-map'})
-    {
-      $opts->{'module-map'} = {};
-    }
-  else
-    {
-      $opts->{'module-map'} = {split (m/,/o, $opts->{'module-map'})};
-    }
   
   for my $k (qw (RM RB IM LM RD))
     {
