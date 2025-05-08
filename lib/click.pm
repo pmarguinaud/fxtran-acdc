@@ -25,6 +25,7 @@ sub click
   my @code = do { my $fh = 'FileHandle'->new ("<$file"); <$fh> };
 
   # Find subroutine name
+
   my $name;
 
   while ($line <= $#code)
@@ -158,8 +159,24 @@ sub help
 	  $kind = '(FLAG)' if ($m->{flag}{$opt});
 	  $kind = '(LIST)' if ($m->{list}{$opt});
 
-	  my $default = defined ($m->{hopts}{$opt}) ? $m->{hopts}{$opt} : 'NONE';
-          $default = '' if ($m->{flag}{$opt});
+	  my $default;
+
+          if ($m->{flag}{$opt})
+            {
+              $default = '';
+            }
+          elsif ($m->{list}{$opt} && ref ($m->{hopts}{$opt}))
+            {
+              $default = defined ($m->{hopts}{$opt}) ? join (',', @{$m->{hopts}{$opt}}) : 'NONE';
+            }
+          elsif ($m->{hash}{$opt} && ref ($m->{hopts}{$opt}))
+            {
+              $default = defined ($m->{hopts}{$opt}) ? join (',', %{$m->{hopts}{$opt}}) : 'NONE';
+            }
+          else
+            {
+              $default = defined ($m->{hopts}{$opt}) ? $m->{hopts}{$opt} : 'NONE';
+            }
 
           printf("  %-20s %6s : %-20s : %s\n", "--$opt", $kind, $default,
 		 (defined ($m->{desc}{$opt}) ? $m->{desc}{$opt} : '?'),
@@ -186,7 +203,12 @@ sub run
 
   local @ARGV = @_;
 
-  exists ($method{$package}{$method}) or die ("Command `$method' was not found in package `$package'");
+
+  defined ($method)
+    or die ("No method was defined for package `$package'");
+
+  exists ($method{$package}{$method}) 
+    or die ("Command `$method' was not found in package `$package'");
 
   $method = $method{$package}{$method};
 
@@ -209,6 +231,8 @@ sub run
 
   my %opts = %{ $method->{hopts} };
 
+  my $seen_opts;
+
   my @args;
 
   for my $i (0 .. $#{ $method->{arg} })
@@ -222,6 +246,12 @@ sub run
               push @args, $method->{package};
 	      next;
 	    }
+          elsif ($arg eq 'opts')
+            {
+              $seen_opts = 1;
+              push @args, \%opts;
+              next;
+            }
           elsif ($arg eq 'self')
 	    {
               my @oopts = @{$method->{oopts}};
@@ -236,7 +266,14 @@ sub run
       push @args, $opts{$arg};
     }
 
-  $method->{code}->(@args, %opts);
+  if ($seen_opts)
+    {
+      $method->{code}->(@args, @ARGV);
+    }
+  else
+    {
+      $method->{code}->(@args, %opts, @ARGV);
+    }
 
   $obj->$dtor if ($obj && $dtor);
 }

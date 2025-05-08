@@ -117,29 +117,6 @@ sub processSingleInterface
 
 }
 
-sub saveDebug
-{
-  my ($d) = @_;
-  
-  my ($file, $line) = (caller (0))[1,2];
-
-  $file = &basename ($file);
-
-  my $count = 0;
-
-  my $F90;
-  while (1)
-    {
-      $F90 = "debug/$count.$file:$line.F90";
-      last unless (-f $F90);
-      $count++;
-    }
-
-  (-d 'debug') or mkdir ('debug');
-
-  'FileHandle'->new (">$F90")->print ($d->textContent);
-}
-
 sub processSingleRoutine
 {
   my ($d, $find, %opts) = @_;

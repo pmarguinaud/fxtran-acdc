@@ -28,7 +28,7 @@ use Util;
 my %opts = (cycle => 49, tmp => '.', pragma => 'OpenACC', suffix => '_OPENACC');
 my @opts_f = qw (help drhook only-if-newer version stdout 
                  value-attribute redim-arguments stack84 merge-interfaces
-                 pointers inline-contained debug interfaces dummy inline-comment interface);
+                 pointers inline-contained interfaces dummy inline-comment interface);
 my @opts_s = qw (dir cycle inlined no-check-pointers-dims set-variables files base tmp style pragma suffix);
 
 &GetOptions
