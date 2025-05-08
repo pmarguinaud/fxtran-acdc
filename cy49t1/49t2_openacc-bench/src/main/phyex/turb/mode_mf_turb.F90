@@ -5,7 +5,7 @@
 !    ######################
      MODULE MODE_MF_TURB
 
-!$ACDC singlecolumn --stack84 --interfaces --inline-contained
+!$ACDC singlecolumn --stack84 --process-interfaces --inline-contained
 
 !    ######################
 !

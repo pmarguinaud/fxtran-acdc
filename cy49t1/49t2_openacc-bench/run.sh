@@ -18,7 +18,7 @@ do
 
   /home/gmap/mrpm/marguina/gpupack-w/fxtran-acdc/lib/../bin/fxtran-f90 \
     --types-constant-dir $PWD/types-constant --types-fieldapi-dir $PWD/types-fieldapi \
-    --cycle 49 --interface --dir hub/local/$dir --dryrun -- f90 -c hub/main/$f
+    --cycle 49 --create-interface --dir hub/local/$dir --dryrun -- f90 -c hub/main/$f
 
 done
 
@@ -35,6 +35,6 @@ do
 
   /home/gmap/mrpm/marguina/gpupack-w/fxtran-acdc/lib/../bin/fxtran-f90 \
     --types-constant-dir $PWD/types-constant --types-fieldapi-dir $PWD/types-fieldapi \
-    --cycle 49 --interface --dir src/local/$dir --dryrun -- f90 -c src/main/$f
+    --cycle 49 --create-interface --dir src/local/$dir --dryrun -- f90 -c src/main/$f
 
 done

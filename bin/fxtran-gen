@@ -32,13 +32,13 @@ use click;
 (
   'cycle=s                   -- Cycle                                                                                                        -- 49',
   'dir=s                     -- Dump result in this directory                                                                                -- .',
-  'drhook                    -- Keep DrHook                                                                                                  ',
+  'keep-drhook               -- Keep DrHook                                                                                                  ',
   'dummy                     -- Generate a dummy routine (strip all executable code)                                                         ',
   'inlined=s@                -- List of routines to inline                                                                                   --',
   'inline-comment            -- Add a comment when inlining a routine                                                                        ',
   'inline-contained          -- Inline contained routines                                                                                    ',
-  'interface                 -- Generate an interface file                                                                                   ',
-  'interfaces                -- Transform interfaces into single column interfaces (used for MODI MESONH files)                              ',
+  'create-interface          -- Generate an interface file                                                                                   ',
+  'process-interfaces        -- Transform interfaces into single column interfaces (used for MODI MESONH files)                              ',
   'merge-interfaces          -- Consider that single column interfaces and regular interfaces are in the same include file                   ',
   'no-check-pointers-dims=s@ -- List of pointer variables that should not be checked for their dimensions                                    --',
   'only-if-newer             -- Do not update file if unchanged content                                                                      ',
@@ -129,7 +129,7 @@ sub singlecolumn
       &Util::updateFile ($F90out, &Canonic::indent ($d));
   
   
-      if ($opts->{interface} && $singleRoutine)
+      if ($opts->{'create-interface'} && $singleRoutine)
         {
           $opts->{style}->generateInterface ($F90out, %$opts);
         }

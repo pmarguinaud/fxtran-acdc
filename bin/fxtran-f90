@@ -42,7 +42,7 @@ sub singlecolumn
 
   push @cmd, 
     &getopt_s ($opts, 'cycle'), 
-    &getopt_f ($opts, 'interface'),
+    &getopt_f ($opts, 'create-interface'),
     &getopt_f ($opts, 'merge-interfaces'),
     '--dir', '.';
 
@@ -133,7 +133,7 @@ sub outline1
 }
 
 my %opts = ('types-constant-dir' => '.', 'types-fieldapi-dir' => '.');
-my @opts_f = qw (debug interface dryrun help sorted merge-interfaces);
+my @opts_f = qw (debug create-interface dryrun help sorted merge-interfaces);
 my @opts_s = qw (cycle dir tmp types-fieldapi-dir types-constant-dir);
 
 &GetOptions

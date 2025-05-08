@@ -6,7 +6,7 @@
 !     ######spl
      MODULE MODE_COMPUTE_UPDRAFT_RHCJ10
 
-!$ACDC singlecolumn --stack84 --interfaces --inline-contained
+!$ACDC singlecolumn --stack84 --process-interfaces --inline-contained
 
 !    ###########################
 !

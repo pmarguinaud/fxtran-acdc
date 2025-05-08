@@ -5,7 +5,7 @@
 !     ######spl
      MODULE MODE_COMPUTE_FUNCTION_THERMO_MF
 
-!$ACDC singlecolumn --stack84 --interfaces --inline-contained
+!$ACDC singlecolumn --stack84 --process-interfaces --inline-contained
 
 !    ######################################
 !

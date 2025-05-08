@@ -77,7 +77,7 @@ sub processSingleModule
 
   my ($dp) = &F ('./specification-part/declaration-part', $d);
 
-  if ($opts{interfaces})
+  if ($opts{'process-interfaces'})
     {
       my @pu = &F ('./interface-construct/program-unit', $dp);
      

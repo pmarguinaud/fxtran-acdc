@@ -4,7 +4,7 @@
 !MNH_LIC for details. version 1.
 MODULE MODE_THL_RT_FROM_TH_R_MF
 
-!$ACDC singlecolumn --stack84 --interfaces --inline-contained
+!$ACDC singlecolumn --stack84 --process-interfaces --inline-contained
 
 IMPLICIT NONE
 CONTAINS
