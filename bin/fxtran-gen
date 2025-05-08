@@ -143,15 +143,15 @@ sub singlecolumn
   'contiguous                      -- Add CONTIGUOUS attribute to pointer accessors                                                         ',
   'cycle=s                         -- Cycle                                                                                                 --  49',
   'dir=s                           -- Dump result in this directory                                                                         ',
-  'files=s                         -- List of files to be looked at for inlining                                                            ',
+  'files=s@                        -- List of files to be looked at for inlining                                                            --',
   'gpumemstat                      -- Add calls to GPUMEMSTAT                                                                               ',
   'inline-contains                 -- Inline CONTAINed routines                                                                             ',
   'merge-interfaces                -- Consider that single column interfaces and regular interfaces are in the same include file            ',
   'only-if-newer                   -- Do not update file if unchanged content                                                               ',
-  'post-parallel=s                 -- Generate code after parallel section                                                                  --  nullify',
+  'post-parallel=s@                -- Generate code after parallel section                                                                  --  nullify',
   'pragma=s                        -- Pragma (OpenACC or OpenMP)                                                                            --  OpenACC',
   'redim-arguments                 -- Transform 1D array arguments to scalars                                                               ',
-  'skip=s                          -- Arrays not to be processed                                                                            --  PGFL,PGFLT1,PGMVT1,PGPSDT2D',
+  'skip=s@                         -- Arrays not to be processed                                                                            --  PGFL,PGFLT1,PGMVT1,PGPSDT2D',
   'stack84                         -- Use separate stacks for data types of sizes 4 and 8                                                   ',
   'stdout                          -- Dump generated code to stdout                                                                         ',
   'style=s                         -- Source code style (default: guess from file contents)                                                 ',
@@ -160,7 +160,7 @@ sub singlecolumn
   'type-bound-methods              -- Generate & use type bound methods (LOAD, COPY, etc.)                                                  ',
   'types-constant-dir=s            -- Directory with constant type information                                                              --  types-constant',
   'types-fieldapi-dir=s            -- Directory with Field API type information                                                             --  types-fieldapi',
-  'types-fieldapi-non-blocked=s    -- Non-blocked data types (without NPROMA)                                                               --  CPG_SL1F_TYPE,CPG_SL_MASK_TYPE',
+  'types-fieldapi-non-blocked=s@   -- Non-blocked data types (without NPROMA)                                                               --  CPG_SL1F_TYPE,CPG_SL_MASK_TYPE',
   'use-acpy                        -- Avoid pointer aliasing using ACPY                                                                     ',
   'use-bcpy                        -- Avoid pointer aliasing using BCPY                                                                     ',
   'version                         -- Append fxtran-acdc version at end of generated content                                                ',
@@ -171,13 +171,6 @@ sub pointerparallel
 
   my ($opts, @args) = @_;
 
-  for my $opt (qw (types-fieldapi-non-blocked))
-    {
-      $opts->{$opt} = [split (m/,/o, $opts->{$opt})];
-    }
-  
-  $opts->{skip} = [split (m/,/o, $opts->{skip} || '')];
-  
   $opts->{pragma} = 'Pragma'->new (%$opts);
   
   $opts->{nproma} = {};

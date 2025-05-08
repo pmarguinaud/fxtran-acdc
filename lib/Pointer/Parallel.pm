@@ -704,7 +704,7 @@ sub makeParallel
 {
   my ($par, $t, $find, $types, $NAME, $POST, $onlysimplefields) = @_;
 
-  my %POST = map { ($_, 1) } grep { $_ } split (m/,/o, $POST || '');
+  my %POST = map { ($_, 1) } grep { $_ } @$POST;
 
   my $FILTER = $par->getAttribute ('filter');
   my $SUBROUTINE = $FILTER && $par->getAttribute ('subroutine');

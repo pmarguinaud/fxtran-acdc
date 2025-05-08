@@ -12,7 +12,7 @@ sub new
   my %args = @_;
   my $self = bless {}, $class;
 
-  my @files = split (m/,/o, $args{files});
+  my @files = @{ $args{files} };
 
   %$self = map { (&basename ($_), $args{base} . '/'. $_) } @files;
 
