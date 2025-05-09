@@ -16,7 +16,7 @@ use File::Spec;
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
 
-use Common;
+use Fxtran::Common;
 use Fxtran;
 use Fxtran::IO;
 

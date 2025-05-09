@@ -1,0 +1,368 @@
+package Fxtran::Canonic;
+
+#
+# Copyright 2022 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
+
+use strict;
+use Fxtran;
+use Data::Dumper;
+use Fxtran::Intrinsic;
+use Fxtran::Ref;
+use Fxtran::Decl;
+use Fxtran::Associate;
+use Fxtran::Construct;
+use Fxtran::Dimension;
+use Fxtran::DIR;
+use Fxtran::Scope;
+
+sub removeIfDef
+{
+  my ($d, $t) = @_;
+  my @cpp = &F ("//cpp[string(.)='#ifdef $t']", $d);
+  for my $cpp (@cpp)
+    {
+      my @item;
+      for (my $item = $cpp; $item; $item = $item->nextSibling)
+        {
+          push @item, $item;
+          last if (($item->nodeName eq 'cpp') && ($item->textContent eq '#endif'));
+        }
+      for (@item)
+        {
+          $_->unbindNode ();
+        }
+    }
+}
+
+sub makeCanonicReferences
+{
+  my $d = shift;
+
+  for my $p (&F ('.//parens-R', $d))
+    {
+      my $expr = &Fxtran::expr ($p);
+
+      if ($p->previousSibling)
+        {
+          &Fxtran::Ref::parensToArrayRef ($p);
+          goto DONE;
+        }
+
+      my ($n) = &F ('./N', $expr, 1);
+      if (&Fxtran::Intrinsic::isIntrinsic ($n))
+        {
+          $p->setNodeName ('function-R');
+          goto DONE;
+        }
+      
+      if (substr ($n, 0, 1) eq 'F')
+        {
+          $p->setNodeName ('function-R');
+          goto DONE;
+        }
+ 
+      &Fxtran::Ref::parensToArrayRef ($p);
+
+DONE:
+
+    }
+
+}
+
+sub makeCanonic
+{
+  my $d = shift;
+
+  &Fxtran::Construct::changeIfStatementsInIfConstructs ($d);
+
+  &Fxtran::Associate::resolveAssociates ($d);
+  &Fxtran::Dimension::attachArraySpecToEntity ($d);
+  &makeCanonicReferences ($d);
+  &Fxtran::Decl::forceSingleDecl ($d);
+  &removeIfDef ($d, '__INTEL_COMPILER');
+  &removeIfDef ($d, 'RS6K');
+  &removeIfDef ($d, 'NECSX');
+
+  &Fxtran::DIR::removeDIR ($d);
+
+  for my $pu (&F ('./object/file/program-unit', $d))
+    {
+      &makeCanonicUnit ($pu);
+    }
+
+}
+
+sub makeCanonicUnit
+{
+  my $pu = shift;
+  my $first = $pu->firstChild;
+
+  if ($first->nodeName eq 'subroutine-stmt')
+    {
+      &makeCanonicSubroutine ($pu);
+    }
+  elsif ($first->nodeName eq 'function-stmt')
+    {
+      &makeCanonicFunction ($pu);
+    }
+  elsif ($first->nodeName eq 'module-stmt')
+    {
+      &makeCanonicModule ($pu);
+    }
+  else
+    {
+      die;
+    }
+}
+
+sub makeCanonicModule
+{
+  my $pu = shift;
+
+  for (&F ('./program-unit', $pu), &F ('./interface-construct/program-unit', $pu))
+    {
+      &makeCanonicUnit ($_);
+    }
+
+  my @node;
+
+  for my $node (&F ('./node()', $pu))
+    {
+      last if ($node->nodeName =~ m/^(?:contains-stmt|end-module-stmt)$/o);
+      push @node, $node;
+    }
+
+  my $spec = &n ("<specification-part><use-part/>\n<implicit-part/>\n<declaration-part/></specification-part>");
+
+  &fillSpecificationPart ($pu, $spec, @node);
+
+}
+
+sub makeCanonicFunction
+{
+  my $pu = shift;
+  &makeCanonicSubroutine ($pu);
+}
+
+sub makeCanonicSubroutine
+{
+  my $pu = shift;
+
+  for (&F ('./program-unit', $pu), &F ('./interface-construct/program-unit', $pu))
+    {
+      &makeCanonicUnit ($_);
+    }
+
+  my $first = $pu->firstChild;
+
+  my $exec = &n ('<execution-part/>');
+
+  if (my @drhook = &F ('./if-stmt[./action-stmt/call-stmt[string(procedure-designator)="DR_HOOK"]]', $pu))
+    {
+      my ($ex1, $ex2) = ($drhook[0], $drhook[-1]);
+
+      $ex1->parentNode->insertBefore ($exec, $ex1);
+
+      for my $node ($ex1, &F ('following-sibling::node()', $ex1))
+        {
+          $exec->appendChild ($node);
+          last if ($ex2->unique_key eq $node->unique_key);
+        }
+    }
+  else
+    {
+      my $noexec = &Fxtran::Scope::getNoExec ($pu);
+
+      for my $node (&F ('following-sibling::node()', $noexec))
+        {
+          last unless ($node->nextSibling);
+          $exec->appendChild ($node);
+        }
+
+      $pu->insertAfter ($_, $noexec) for ($exec, &t ("\n"));
+    }
+
+  $pu->normalize ();
+
+  my $spec = &n ("<specification-part><use-part/>\n<implicit-part/>\n<declaration-part/></specification-part>");
+
+  &fillSpecificationPart ($pu, $spec, &F ('preceding-sibling::node()', $exec));
+
+
+  
+}
+
+sub fillSpecificationPart
+{
+  my ($pu, $spec, @node) = @_;
+
+  my $first = $pu->firstChild;
+
+  my $space = $first->nextSibling;
+
+  my ($usePart, $implicitPart, $declarationPart) = grep { $_->nodeName ne '#text' } $spec->childNodes ();
+
+  $space->parentNode->insertAfter ($spec, $space);
+
+  for my $node (@node)
+    {
+      next if ($space->unique_key eq $node->unique_key);
+
+      if ($node->nodeName eq '#text')
+        {
+          $node->unbindNode ();
+          next;
+        }
+
+      next if ($first->unique_key eq $node->unique_key);
+      next if ($spec->unique_key eq $node->unique_key);
+      
+      my $part;
+
+      if ($node->nodeName =~ m/^(?:use-stmt|import-stmt)$/o)
+        {
+          $part = $usePart;
+        }
+      elsif ($node->nodeName =~ m/^(?:implicit-none-stmt)$/o)
+        {
+          $part = $implicitPart;
+        }
+      else
+        {
+          $part = $declarationPart;
+        }
+
+      if ($part->childNodes)
+        {
+          $part->appendChild (&t ("\n"));
+        }
+      $part->appendChild ($node);
+    
+    }
+  
+  $space->parentNode->insertAfter (&t ("\n"), $spec);
+}
+
+sub indentCr
+{
+  my $e = shift;
+  my @cr = &F ('.//text()[contains(.,"?")]', "\n", $e); pop (@cr);
+  for my $cr (@cr)
+    {
+      if (my $next = $cr->nextSibling)
+        {
+          next if ($next->nodeName eq 'cpp');
+        }
+      (my $tt = $cr->data) =~ s/\n/\n  /goms;
+      $cr->setData ($tt);
+    }
+}
+
+sub indent
+{
+  my $d = shift;
+  my %args = @_;
+
+  $d = $d->cloneNode (1);
+
+  my $width = $args{width} || 100;
+  
+  for my $pu (&F ('.//program-unit', $d))
+    {
+      $pu->parentNode->insertAfter (&t ("\n"), $pu);
+    }
+
+  for my $stmt (&F ('.//ANY-stmt', $d))
+    {
+      my $name = $stmt->nodeName;
+
+      if ($name eq 'implicit-none-stmt')
+        {
+          $stmt->parentNode->insertBefore (&t ("\n"), $stmt);
+          $stmt->parentNode->insertAfter (&t ("\n"), $stmt);
+          $stmt->firstChild->setData ('IMPLICIT NONE');
+        }
+
+      my $text = $stmt->textContent;
+      my @text;
+  
+      my $length = length ($text);
+  
+      if ($length < $width)
+        {
+          @text = ($text);
+        }
+      else
+        {
+          my $n = int (($length+$width-1) / $width);
+          my $w = 2 + int ($length / $n);
+          while (length (my $t = substr ($text, 0, $w, '')))
+            {
+              $w-- unless (@text);
+             
+              while ($text && ($text =~ m/^\b/o))
+                {
+                  $t .= substr ($text, 0, 1, '');
+                }
+
+              push @text, $t;
+            }
+        }
+      $text = join ("&\n&", @text);
+      $name = $stmt->nodeName;
+      my $t = &t ($text);
+      my $s = &n ("<$name/>");
+      $s->appendChild ($t);
+      $stmt->replaceNode ($s);
+    }
+  
+  for my $construct (&F ('.//ANY-construct', $d))
+    {
+      if (my @block = &F ('./ANY-block', $construct))
+        {
+          for my $i (0 .. $#block)
+            {
+              my $block = $block[$i];
+              &indentCr ($block);
+            }
+        }
+      else
+        {
+          &indentCr ($construct);
+        }
+      $construct->normalize ();
+      $construct->parentNode->insertAfter (&t ("\n"), $construct);
+      my $prev = $construct->previousSibling;
+      if ($prev && $prev->nodeName eq '#text')
+        {
+          (my $tt = $prev->data) =~ s/\n/\n\n/goms;
+          $prev->setData ($tt);
+        }
+    }
+
+  my @do = &F ('.//do-stmt[starts-with(string(.),"DOWHILE")]/text()', $d);
+
+  for my $do (@do)
+    {
+      my $tt = $do->textContent;
+      $tt =~ s/DOWHILE/DO WHILE/o;
+      $do->setData ($tt);
+    }
+
+  my @line = split (m/\n/o, $d->textContent);
+
+  for (@line)
+    {
+      s/^\s*#/#/o;
+      $_ .= "\n";
+    }
+
+  return join ('', @line);
+}
+
+
+1;

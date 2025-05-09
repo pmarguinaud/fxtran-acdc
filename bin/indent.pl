@@ -15,8 +15,8 @@ use FindBin qw ($Bin);
 
 use lib "$Bin/../lib";
 
-use Common;
-use Canonic;
+use Fxtran::Common;
+use Fxtran::Canonic;
 use Fxtran;
 
 
@@ -24,6 +24,6 @@ for my $f (@ARGV)
   {
     my $d = &Fxtran::parse (location => $f, fopts => [qw (-line-length 500 -canonic -no-cpp -construct-tag)]);
     print "==> $f <==\n";
-    print &Canonic::indent ($d);
+    print &Fxtran::Canonic::indent ($d);
   }
 

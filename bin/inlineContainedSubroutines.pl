@@ -14,20 +14,20 @@ use Data::Dumper;
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
 
-use Common;
+use Fxtran::Common;
 
 use Fxtran;
-use Inline;
-use Canonic;
+use Fxtran::Inline;
+use Fxtran::Canonic;
 
 my $f = shift;
 
 my $d = &Fxtran::parse (location => $f, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]);
 
-&Canonic::makeCanonic ($d);
+&Fxtran::Canonic::makeCanonic ($d);
 
-&Inline::inlineContainedSubroutines ($d, @ARGV);
+&Fxtran::Inline::inlineContainedSubroutines ($d, @ARGV);
 
-#print (&Canonic::indent ($d));
-'FileHandle'->new (">$f.new")->print (&Canonic::indent ($d));
+#print (&Fxtran::Canonic::indent ($d));
+'FileHandle'->new (">$f.new")->print (&Fxtran::Canonic::indent ($d));
 

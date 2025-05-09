@@ -15,16 +15,16 @@ use File::Basename;
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
 
-use Common;
+use Fxtran::Common;
 
 use Fxtran;
-use FieldAPI::Parallel;
+use Fxtran::FieldAPI::Parallel;
 
 my ($f) = @ARGV;
 
 my $d = &Fxtran::parse (location => $f, fopts => [qw (-line-length 500)]);
 
-&FieldAPI::Parallel::makeParallelUpdateView ($d);
+&Fxtran::FieldAPI::Parallel::makeParallelUpdateView ($d);
 
 print $d->textContent;
 

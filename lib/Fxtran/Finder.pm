@@ -1,0 +1,38 @@
+package Fxtran::Finder;
+
+use strict;
+use Fxtran::Finder::Pack;
+use Fxtran::Finder::Pack::Build;
+use Fxtran::Finder::Include;
+use Fxtran::Finder::Files;
+
+sub new
+{
+  my $class = shift;
+
+  my %args;
+
+  if ((scalar (@_) % 2) == 0)
+    {
+      %args = @_;
+    }
+
+  if ($ENV{TARGET_PACK})
+    {
+      return 'Fxtran::Finder::Pack::Build'->new (@_);
+    }
+  elsif (-f '.gmkview')
+    { 
+      return 'Fxtran::Finder::Pack'->new (@_);
+    }
+  elsif ($args{files})
+    {
+      return 'Fxtran::Finder::Files'->new (@_);
+    }
+  else
+    {
+      return 'Fxtran::Finder::Include'->new (@_);
+    }
+}
+
+1;

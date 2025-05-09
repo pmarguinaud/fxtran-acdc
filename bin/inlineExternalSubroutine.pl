@@ -13,12 +13,12 @@ use Data::Dumper;
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
 
-use Common;
+use Fxtran::Common;
 use Fxtran;
-use Inline;
-use Canonic;
-use Decl;
-use Dimension;
+use Fxtran::Inline;
+use Fxtran::Canonic;
+use Fxtran::Decl;
+use Fxtran::Dimension;
 
 my ($f, @f) = @ARGV;
 
@@ -26,18 +26,18 @@ my ($d, @d) = map { &Fxtran::parse (location => $_, fopts => [qw (-construct-tag
 
 for ($d, @d)
   {
-    &Canonic::makeCanonic ($_);
-    &Dimension::attachArraySpecToEntity ($_);
+    &Fxtran::Canonic::makeCanonic ($_);
+    &Fxtran::Dimension::attachArraySpecToEntity ($_);
   }
 
-'FileHandle'->new (">$f.old")->print (&Canonic::indent ($d));
+'FileHandle'->new (">$f.old")->print (&Fxtran::Canonic::indent ($d));
 
 for (@d)
   {
-    &Inline::inlineExternalSubroutine ($d, $_, skipDimensionCheck => 0);
+    &Fxtran::Inline::inlineExternalSubroutine ($d, $_, skipDimensionCheck => 0);
   }
 
 $d->normalize ();
 
-'FileHandle'->new (">$f.new")->print (&Canonic::indent ($d));
+'FileHandle'->new (">$f.new")->print (&Fxtran::Canonic::indent ($d));
 

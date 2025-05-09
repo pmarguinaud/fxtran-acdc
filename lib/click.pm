@@ -305,7 +305,7 @@ sub getMethodList
 {
   shift;
   my $package = shift;
-  return sort keys (%{ $METHODS{$package} || {} });
+  return sort keys (%{ $METHOD{$package} || {} });
 }
 
 sub getOptionList
@@ -321,7 +321,7 @@ sub getOptionList
   if ($method) 
     {
       my $i = 0;
-      my @aopts = grep { ++$i } @{ $METHODS{$package}{$method}{aopts} };
+      my @aopts = grep { ++$i } @{ $METHOD{$package}{$method}{aopts} };
       return @aopts;
     }
   else

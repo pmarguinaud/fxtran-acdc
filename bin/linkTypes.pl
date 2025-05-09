@@ -17,7 +17,7 @@ use Getopt::Long;
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
 
-use Common;
+use Fxtran::Common;
 
 my %opts = ('types-fieldapi-dir' => 'types-fieldapi');
 my @opts_f = qw (help);

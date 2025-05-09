@@ -11,14 +11,14 @@ use List::MoreUtils qw (uniq);
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
 
-use Common;
+use Fxtran::Common;
 
 use Fxtran;
-use Outline1;
-use Canonic;
-use Directive;
-use Intrinsic;
-use Inline;
+use Fxtran::Outline1;
+use Fxtran::Canonic;
+use Fxtran::Directive;
+use Fxtran::Intrinsic;
+use Fxtran::Inline;
 
 my %opts = ();
 my @opts_f = qw (inline-contained help);
@@ -37,16 +37,16 @@ my $F90 = shift;
 
 my $d = &Fxtran::parse (location => $F90, fopts => [qw (-construct-tag -no-include -line-length 500 -directive ACDC -canonic)]);
 
-&Canonic::makeCanonic ($d);
+&Fxtran::Canonic::makeCanonic ($d);
 
-&Directive::parseDirectives ($d, name => 'ACDC');
+&Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
 
 if ($opts{'inline-contained'})
   {
     my @pu = &F ('./object/file/program-unit', $d);
     for my $pu (@pu)
       {
-        &Inline::inlineContainedSubroutines ($pu, skipDimensionCheck => 1);
+        &Fxtran::Inline::inlineContainedSubroutines ($pu, skipDimensionCheck => 1);
       }
   }
 
@@ -54,7 +54,7 @@ my ($pu) = &F ('./object/file/program-unit', $d);
 
 my ($puName) = &F ('./subroutine-stmt/subroutine-N', $pu, 1);
 
-my $vars = &Outline1::getVariables ($pu);
+my $vars = &Fxtran::Outline1::getVariables ($pu);
 
 my @par = &F ('.//parallel-section', $d);
 
@@ -69,8 +69,8 @@ for my $i (0 .. $#par)
     die ("Duplicate section name `$parName'") 
       if ($parName{$parName}++);
 
-    &Outline1::outline ($pu, section => $par, sectionName => $puName. '_' . $parName, variables => $vars);
+    &Fxtran::Outline1::outline ($pu, section => $par, sectionName => $puName. '_' . $parName, variables => $vars);
   }
 
-'FileHandle'->new ('>' . &basename ($F90))->print (&Canonic::indent ($d));
+'FileHandle'->new ('>' . &basename ($F90))->print (&Fxtran::Canonic::indent ($d));
 

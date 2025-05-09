@@ -11,11 +11,11 @@ use strict;
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
 
-use Common;
+use Fxtran::Common;
 use Fxtran;
-use Inline;
-use Canonic;
-use Decl;
+use Fxtran::Inline;
+use Fxtran::Canonic;
+use Fxtran::Decl;
 
 my ($f1, $f2) = @ARGV;
 

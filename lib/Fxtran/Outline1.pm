@@ -1,0 +1,364 @@
+package Fxtran::Outline1;
+
+use strict;
+use Fxtran;
+use Fxtran::Intrinsic;
+use Fxtran::Include;
+use Fxtran::Canonic;
+
+use Data::Dumper;
+use List::MoreUtils qw (uniq);
+
+sub variableDependencies
+{
+  my ($pu, $n) = @_;
+
+  my ($up) = &F ('./specification-part/use-part', $pu);
+  my ($dp) = &F ('./specification-part/declaration-part', $pu);
+
+  my ($decl, $use, $include);
+
+  ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string (EN-N)="?"]]', $n, $dp);
+
+  my $use;
+
+  if (! $decl)
+    {
+      ($use) = &F ('./use-stmt[./rename-LT/rename[string(use-N)="?"]]', $n, $up);
+    }
+
+  if ((! $decl) && (! $use))
+    {
+      ($include) = &F ('./include[string(filename)="?" or string(filename)="?"]', lc ($n) . '.h', lc ($n) . '.intfb.h', $dp);
+    }
+
+  my @n;
+
+  if ($decl)
+    {
+      @n = grep { $_ ne $n } &uniq (&F ('.//n', $decl, 1));
+    }
+
+  my $stmt = ($decl or $use or $include);
+
+  my $intrinsic;
+
+  unless ($stmt)
+    {
+      die ("Declaration of `$n' was not found") 
+        unless (&Fxtran::Intrinsic::isIntrinsic ($n));
+      $intrinsic = 1;
+    }
+
+  return {
+           stmt => $stmt,                 # Declaration statement for this symbol (may be a T-decl-stmt, a use-stmt or an include node)
+           name => \@n,                   # Other symbols we depend on for declaring this symbol
+           intrinsic => $intrinsic,
+         };
+}
+
+sub getVariables
+{
+  my $pu = shift;
+
+  my @n_expr = &F ('.//named-E/N/n', $pu, 1); my %n_expr; $n_expr{$_}++ for (@n_expr);
+  my @n_rename = &F ('.//rename', $pu, 1); 
+
+  my @n = &uniq (@n_expr, @n_rename);
+  
+  my %var;
+  
+  for my $n (@n)
+    {
+      $var{$n} = &variableDependencies ($pu, $n);
+      $var{$n}{count} = $n_expr{$n} if (exists $n_expr{$n}); # Number of occurences of symbol in $pu
+    }
+
+  # Rank symbols : 
+  # - symbols with rank 0 do not depend on other symbols
+  # - symbols with rank 1 depend on a single other symbol
+  # - etc.
+  
+  my $doRank;
+  
+  $doRank = sub
+  {
+    my $n = shift;
+  
+    (my $var = $var{$n}) or die ("Unknonw symbol `$n'");
+  
+    if (exists ($var->{rank}))
+      {
+        return $var->{rank};
+      }
+  
+    my $rank = 0;
+  
+    for my $n (@{ $var->{name} })
+      { 
+        my $r = $doRank->($n);
+        $rank = $r if ($r > $rank);
+      }
+  
+    $var->{rank} = 1 + $rank;
+  
+    return $var->{rank};
+  };
+  
+  $doRank->($_) for (@n);
+
+  return \%var;
+}
+
+sub outline
+{
+# outline $sect from $pu
+# $VAR is the hash returned by getVariables
+
+  my $pu = shift;
+  my %args = @_;
+
+  my ($sect, $sectName, $VAR) = @args{qw (section sectionName variables)};
+
+  my @nn_expr = &F ('.//named-E/N', $sect, 1); my %nn_expr; $nn_expr{$_}++ for (@nn_expr); # Number of occurences of each symbol
+  my @nn = &uniq (@nn_expr);
+
+  # function statement includes : when present, we need to force YDCST presence
+
+  my @func = &F ('./specification-part/declaration-part/include[contains(filename, ".func.h")]', $pu);
+
+  if (@func && $VAR->{YDCST})
+    {
+      push @nn, 'YDCST';
+    }
+
+  # Select symbols used in section + their dependencies from $VAR
+  
+  my %nn;
+
+  my $doSelect;
+  
+  $doSelect = sub
+  {
+    my $n = shift;
+  
+    return if ($nn{$n});
+  
+    $nn{$n} = 1;
+  
+    (my $var = $VAR->{$n}) or die;
+  
+    for my $n (@{ $var->{name} })
+      {
+        $doSelect->($n);
+      }
+  };
+  
+  $doSelect->($_) for (@nn);
+  
+  @nn = sort { $VAR->{$a}{rank} <=> $VAR->{$b}{rank} } keys (%nn);
+
+  # Select statements for outlining
+  
+  my (@use, @include, @declArg, @declLocal);
+  
+  my %seen; # Statements already visited
+
+  my @args; # Arguments of outlined routine
+
+  my %do = map { ($_, 1) } (&F ('.//do-V', $sect, 1), &F ('.//do-construct//a-stmt/E-1/named-E[not (./R-LT/array-R)]/N', $sect, 1));
+
+  for my $nn (@nn)
+    {
+      (my $var = $VAR->{$nn}) or die;
+
+      next if ($var->{intrinsic});
+
+      (my $stmtPu = $var->{stmt}) or die &Dumper ([$nn, $var]);
+
+      next if ($seen{$stmtPu->unique_key ()}++);
+  
+      if (exists $nn_expr{$nn})
+        {
+          $var->{count} = $var->{count} - $nn_expr{$nn};
+        }
+
+      my $stmt = $stmtPu->cloneNode (1);
+
+      my $stmtType = $stmt->nodeName;
+
+      if ($stmtType eq 'use-stmt')
+        {
+          push @use, $stmt;
+        }
+      elsif ($stmtType eq 'include')
+        {
+          push @include, $stmt;
+
+          if ($var->{count} == 0)
+            {
+              # Remove unneeded includes
+              $stmtPu->unbindNode ();
+            }
+        }
+      elsif ($stmtType eq 'T-decl-stmt')
+        {
+          my $isPuArg = &F ('./attribute[string(attribute-N)="INTENT"]', $stmt);
+          if ($do{$nn})
+            {
+              push @declLocal, $stmt;
+              if ($var->{count} == 0)
+                {
+                  # Remove unneeded local
+                  $stmtPu->unbindNode ();
+                }
+            }
+          elsif ((! $isPuArg) && ($var->{count} == 0))
+            {
+              push @declLocal, $stmt;
+              $stmtPu->unbindNode (); # Remove unneeded local
+            }
+          else
+            {
+              # Add INTENT (INOUT) for arguments without INTENT (local variables of $pu)
+              unless ($isPuArg)
+                {
+                  my ($ts) = &F ('./_T-spec_', $stmt);
+
+                  my $INTENT = 'INOUT';
+
+                  if (my ($param) = &F ('./attribute[string(attribute-N)="PARAMETER"]', $stmt))
+                    {
+                      # Remove PARAMETER attribute
+                      $param->previousSibling->unbindNode; # Remove preceding comma
+                      $param->unbindNode;
+
+                      # Remove PARAMETER value
+                      my ($init) = &F ('.//init-E', $stmt);
+                      $init->previousSibling->unbindNode;
+                      $init->unbindNode; # Remove =
+                     
+                      $INTENT = 'IN';
+                    }
+                  $stmt->insertAfter ($_, $ts) 
+                    for (&n ("<attribute><attribute-N>INTENT</attribute-N> (<intent-spec>$INTENT</intent-spec>)</attribute>"), &t (', '));
+                }
+              push @declArg, $stmt;
+              push @args, $nn;
+            }
+        }
+      else
+        {
+          die $stmt->textContent;
+        }
+    }
+
+  # Increment argument count use (in $pu)
+
+  for my $nn (@args)
+    {
+      (my $var = $VAR->{$nn}) or die;
+      $var->{count} = $var->{count} + 1;
+    }
+
+  # Create the call statement before renaming arguments
+  
+  my $call = &s ("CALL $sectName (" . join (', ', @args) . ')');
+    
+  # Rename arguments using DOCTOR norm
+
+  if (1)
+  {
+    for my $argo (@args)
+      {
+        my $argn = $argo;
+
+        if (($argn =~ s/^YL/YD/o) || ($argn =~ s/^Z/P/o) || ($argn =~ s/^LL/LD/o) || ($argn =~ s/^I/K/o))
+          {
+            next if ($nn{$argn});
+
+            for my $x (@declArg, @declLocal, $sect)
+              {
+                my @n = &F ('.//N/n[string(.)="?"]/text()', $argo, $x);
+                for (@n)
+                  {
+                    $_->setData ($argn);
+                  }
+              }
+          }
+
+
+        $argo = $argn;
+      }
+  }
+
+  # Dump routine definition + interface
+  
+  my ($body, $intf) = ('', '');
+
+  push @use, &s ("USE YOMHOOK, ONLY : LHOOK, JPHOOK, DR_HOOK");
+  push @declLocal, &s ("REAL (KIND=JPHOOK) :: ZHOOK_HANDLE");
+      
+  for my $buf (\$body, \$intf)
+    {
+      $$buf .= "SUBROUTINE $sectName (" . join (', ', @args) . ")\n\n";
+     
+      for (@use, &t (''), &t ("IMPLICIT NONE"), &t (''), @declArg, &t (''))
+        {
+          $$buf .= $_->textContent . "\n";
+        }
+    }
+
+  for (@include, @func, &t (''), @declLocal, &t (''))
+    {
+      $body .= $_->textContent . "\n";
+    }
+  
+  $body .= << "EOF";
+
+IF (LHOOK) CALL DR_HOOK ('$sectName',0,ZHOOK_HANDLE)
+
+${ my $t = $sect->textContent; \$t  }
+
+IF (LHOOK) CALL DR_HOOK ('$sectName',1,ZHOOK_HANDLE)
+
+EOF
+
+  for my $buf (\$body, \$intf)
+    {
+      $$buf .= "END SUBROUTINE\n";
+    }
+
+  # Replace section by the CALL statement 
+
+  &Fxtran::Include::addInclude ($pu, lc ($sectName) . '.intfb.h');
+
+  $sect->replaceNode ($call);
+
+  &printCanonic (lc ($sectName) . '.F90', $body);
+  &printCanonic (lc ($sectName) . '.intfb.h', $intf, 1);
+
+}
+
+sub printCanonic
+{
+  use File::Temp;
+
+  my ($file, $text, $intf) = @_;
+
+  my $fh = 'File::Temp'->new (DIR => '.', SUFFIX => '.F90', UNLINK => 1, TEMPLATE => '.XXXXXX');
+
+  $fh->print ($text);
+
+  $fh->close ();
+
+  my $d = &Fxtran::parse (location => $fh->filename (), fopts => [qw (-construct-tag -no-include -line-length 5000 -canonic)]);
+
+  my $fh = 'FileHandle'->new (">$file");
+  $fh->print ("INTERFACE\n") if ($intf);
+  $fh->print (&Fxtran::Canonic::indent ($d));
+  $fh->print ("END INTERFACE\n") if ($intf);
+  $fh->close ();
+}
+
+1;

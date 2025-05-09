@@ -15,9 +15,9 @@ use Cwd;
 
 use strict;
 
-use Bt;
-use F90Compiler;
-use Util;
+use Fxtran::Bt;
+use Fxtran::F90Compiler;
+use Fxtran::Util;
 
 sub getopt_s
 {
@@ -46,9 +46,9 @@ sub singlecolumn
     &getopt_f ($opts, 'merge-interfaces'),
     '--dir', '.';
 
-  &Util::runCommand (cmd => [@cmd, $F90], %$opts);
+  &Fxtran::Util::runCommand (cmd => [@cmd, $F90], %$opts);
 
-  &F90Compiler::compile (%args);
+  &Fxtran::F90Compiler::compile (%args);
 }
 
 sub methods
@@ -65,14 +65,14 @@ sub methods
     '--types-constant-dir', $opts->{'types-constant-dir'},
     &getopt_f ($opts, 'sorted');
 
-  &Util::runCommand (cmd => [@cmd, $F90], %$opts);
+  &Fxtran::Util::runCommand (cmd => [@cmd, $F90], %$opts);
 
   if (grep { $_ eq '--type-bound-methods' } @cmd)
     {
       delete $args{F90};
     }
 
-  &F90Compiler::compile (%args);
+  &Fxtran::F90Compiler::compile (%args);
 }
 
 sub pointerparallel
@@ -95,12 +95,12 @@ sub pointerparallel
     {
       if (-d $opts->{$dir})
         {
-          &Util::runCommand (cmd => ['cp', '-r', $opts->{$dir}, "$tmp/$dir"], %$opts);
+          &Fxtran::Util::runCommand (cmd => ['cp', '-r', $opts->{$dir}, "$tmp/$dir"], %$opts);
         }
     }
 
-  &Util::runCommand (cmd => ["$Bin/fieldRB.pl", '--types-fieldapi-dir', "$tmp/types-fieldapi-dir"], %$opts);
-  &Util::runCommand (cmd => ["$Bin/linkTypes.pl", '--types-fieldapi-dir', "$tmp/types-fieldapi-dir"], %$opts);
+  &Fxtran::Util::runCommand (cmd => ["$Bin/fieldRB.pl", '--types-fieldapi-dir', "$tmp/types-fieldapi-dir"], %$opts);
+  &Fxtran::Util::runCommand (cmd => ["$Bin/linkTypes.pl", '--types-fieldapi-dir', "$tmp/types-fieldapi-dir"], %$opts);
 
   push @cmd, 
     &getopt_s ($opts, 'cycle'),
@@ -110,9 +110,9 @@ sub pointerparallel
     &getopt_f ($opts, 'merge-interfaces'), 
     @inc;
 
-  &Util::runCommand (cmd => [@cmd, $F90], %$opts);
+  &Fxtran::Util::runCommand (cmd => [@cmd, $F90], %$opts);
 
-  &F90Compiler::compile (%args);
+  &Fxtran::F90Compiler::compile (%args);
 }
 
 sub outline1
@@ -125,11 +125,11 @@ sub outline1
   my @f90flags = @{ $args{f90flags} };
   my $opts = $args{opts};
 
-  &Util::runCommand (cmd => [@cmd, $F90], %$opts);
+  &Fxtran::Util::runCommand (cmd => [@cmd, $F90], %$opts);
 
   delete $args{F90};
 
-  &F90Compiler::compile (%args);
+  &Fxtran::F90Compiler::compile (%args);
 }
 
 my %opts = ('types-constant-dir' => '.', 'types-fieldapi-dir' => '.');
@@ -237,7 +237,7 @@ FILE: for my $F90 (@F90)
 
 NORMAL:
 
-    &F90Compiler::run 
+    &Fxtran::F90Compiler::run 
     (
       f90compiler => $f90compiler, 
       f90flags    => \@f90flags, 

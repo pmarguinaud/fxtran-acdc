@@ -51,21 +51,31 @@ sub processList
 
   my @lst = @_;
 
-  my @t;
-
-  my $q = 'Thread::Queue'->new ();
-
-  for (1 .. $opts->{threads})
+  if ($opts->{threads} > 1)
     {
-      push @t, 'threads'->create (sub { while (my $f = $q->dequeue ()) { &processFile ($f); } });
+       my @t;
+      
+       my $q = 'Thread::Queue'->new ();
+      
+       for (1 .. $opts->{threads})
+         {
+           push @t, 'threads'->create (sub { while (my $f = $q->dequeue ()) { &processFile ($f); } });
+         }
+      
+       for my $f (@lst, (0) x $opts->{threads})
+         {
+           $q->enqueue ($f);
+         }
+      
+       $_->join () for (@t);
     }
-
-  for my $f (@lst, (0) x $opts->{threads})
+  else
     {
-      $q->enqueue ($f);
+      for my $f (@lst)
+        {
+          &processFile ($f);
+        }
     }
-
-  $_->join () for (@t);
 }
 
 my $cwd = &cwd ();

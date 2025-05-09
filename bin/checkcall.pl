@@ -12,8 +12,8 @@ use Data::Dumper;
 use Memoize;
 
 use lib "/home/gmap/mrpm/marguina/fxtran-acdc/lib";
-use Bt;
-use Finder::Pack;
+use Fxtran::Bt;
+use Fxtran::Finder::Pack;
 
 
 sub center
@@ -312,7 +312,7 @@ sub checkcalls
     }
 }
 
-my $find = 'Finder::Pack'->new ();
+my $find = 'Fxtran::Finder::Pack'->new ();
 
 &checkcalls ($find, $ARGV[0]);
 

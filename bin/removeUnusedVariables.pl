@@ -14,9 +14,9 @@ use FileHandle;
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
 
-use Common;
+use Fxtran::Common;
 use Fxtran;
-use Decl;
+use Fxtran::Decl;
 
 
 my $F90 = shift;
@@ -26,7 +26,7 @@ my $d = &Fxtran::parse (location => $F90, fopts => [qw (-construct-tag -no-inclu
 my @args = &F ('.//dummy-arg-LT/arg-N', $d, 1);
 my %args = map { ($_, 1) } @args;
 
-&Decl::forceSingleDecl ($d);
+&Fxtran::Decl::forceSingleDecl ($d);
 
 for my $en_decl (&F ('.//EN-decl', $d))
   {

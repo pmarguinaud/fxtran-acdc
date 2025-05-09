@@ -20,10 +20,10 @@ use File::Basename;
 
 use strict;
 
-use Common;
+use Fxtran::Common;
 use Fxtran;
-use Canonic;
-use Util;
+use Fxtran::Canonic;
+use Fxtran::Util;
 
 use click;
 
@@ -31,7 +31,7 @@ use click;
 my %options= do
 {
   my $options = << "EOF";
-  cycle=s                   -- Cycle                                                                                                        -- 49
+  cycle=s                   -- 49
   dir=s                     -- Dump result in this directory                                                                                -- .
   only-if-newer             -- Do not update file if unchanged content                                                                      
   merge-interfaces          -- Consider that single column interfaces and regular interfaces are in the same include file                   
@@ -76,7 +76,7 @@ EOF
 EOF
 sub singlecolumn
 {
-  use SingleColumn;
+  use Fxtran::SingleColumn;
 
   my ($opts, @args) = @_;
 
@@ -101,13 +101,13 @@ sub singlecolumn
 
   my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag -no-include -no-cpp -line-length 5000)], dir => $opts->{tmp});
   
-  &Canonic::makeCanonic ($d);
+  &Fxtran::Canonic::makeCanonic ($d);
   
-  $opts->{style} = 'Style'->new (%$opts, document => $d);
+  $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
   
-  $opts->{pragma} = 'Pragma'->new (%$opts);
+  $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
   
-  my $find = 'Finder'->new (files => $opts->{files}, base => $opts->{base});
+  my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base});
   
   $opts->{style}->preProcessForOpenACC ($d, %$opts, find => $find);
   
@@ -122,11 +122,11 @@ sub singlecolumn
       if ($kind eq 'module')
         {
           $singleRoutine = 0;
-          &SingleColumn::processSingleModule ($pu, $find, %$opts);
+          &Fxtran::SingleColumn::processSingleModule ($pu, $find, %$opts);
         }
       elsif ($kind eq 'subroutine')
         {
-          &SingleColumn::processSingleRoutine ($pu, $find, %$opts);
+          &Fxtran::SingleColumn::processSingleRoutine ($pu, $find, %$opts);
         }
       else
         {
@@ -135,18 +135,18 @@ sub singlecolumn
     }
   
   
-  &Util::addVersion ($d)
+  &Fxtran::Util::addVersion ($d)
     if ($opts->{version});
   
   if ($opts->{stdout})
     {
-      print &Canonic::indent ($d);
+      print &Fxtran::Canonic::indent ($d);
     }
   else
     {
       &mkpath (&dirname ($F90out));
       'FileHandle'->new (">$F90out.xml")->print ($d->toString);
-      &Util::updateFile ($F90out, &Canonic::indent ($d));
+      &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
   
   
       if ($opts->{'create-interface'} && $singleRoutine)
@@ -174,11 +174,11 @@ sub singlecolumn
 EOF
 sub pointerparallel
 {
-  use Pointer::Parallel;
+  use Fxtran::Pointer::Parallel;
 
   my ($opts, @args) = @_;
 
-  $opts->{pragma} = 'Pragma'->new (%$opts);
+  $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
   
   $opts->{nproma} = {};
   $opts->{jlon} = {};
@@ -205,7 +205,7 @@ sub pointerparallel
   
   my $NAME = uc (&basename ($F90out, qw (.F90)));
   
-  my $find = 'Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
+  my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
   
   my $types = &Storable::retrieve ("$opts->{'types-fieldapi-dir'}/decls.dat");
   
@@ -213,9 +213,9 @@ sub pointerparallel
   
   my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -directive ACDC -canonic)]);
   
-  &Canonic::makeCanonic ($d);
+  &Fxtran::Canonic::makeCanonic ($d);
   
-  $opts->{style} = 'Style'->new (%$opts, document => $d);
+  $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
   
   my @pu = &F ('./object/file/program-unit', $d);
   
@@ -226,19 +226,19 @@ sub pointerparallel
   
   for my $pu (@pu)
     {
-      &Pointer::Parallel::processSingleRoutine ($pu, $NAME, $find, $types, %$opts);
+      &Fxtran::Pointer::Parallel::processSingleRoutine ($pu, $NAME, $find, $types, %$opts);
     }
   
-  &Util::addVersion ($d)
+  &Fxtran::Util::addVersion ($d)
     if ($opts->{version});
   
   if ($opts->{stdout})
     {
-      print &Canonic::indent ($d);
+      print &Fxtran::Canonic::indent ($d);
     }
   else
     {
-      &Util::updateFile ($F90out, &Canonic::indent ($d));
+      &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
     }
 
 }
@@ -261,8 +261,8 @@ EOF
 sub methods
 {
   use Fxtran::IO;
-  use FieldAPI::Register;
-  use Pragma;
+  use Fxtran::FieldAPI::Register;
+  use Fxtran::Pragma;
   use List::MoreUtils qw (uniq);
 
   my ($opts, @args) = @_;
@@ -279,7 +279,7 @@ sub methods
   ( -d $opts->{'types-fieldapi-dir'}) or &mkpath ($opts->{'types-fieldapi-dir'});
   ( -d $opts->{'types-constant-dir'}) or &mkpath ($opts->{'types-constant-dir'});
   
-  $opts->{pragma} = 'Pragma'->new (%$opts);
+  $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
   
   for my $k (qw (RM RB IM LM RD))
     {
@@ -380,7 +380,7 @@ sub methods
   
   if ($opts->{'field-api'})
     {
-      &FieldAPI::Register::registerFieldAPI ($doc, $opts);
+      &Fxtran::FieldAPI::Register::registerFieldAPI ($doc, $opts);
     }
 
 
