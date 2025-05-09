@@ -8,7 +8,7 @@ use Storable;
 use base qw (Exporter);
 our @EXPORT = qw (click run);
 
-my %method;
+my %METHOD;
 
 sub click
 {
@@ -101,7 +101,7 @@ sub click
 
   my (%hopts, @aopts, @copts, @oopts, %desc, %list, %flag);
 
-  $method{$package}{$name} =
+  $METHOD{$package}{$name} =
   {
     package => $package,
     name  => $name,
@@ -162,10 +162,10 @@ sub help
 
   print &basename ($0), ":\n\n";
 
-  for my $method (sort keys (%{ $method{$package} }))
+  for my $method (sort keys (%{ $METHOD{$package} }))
     {
       print "* $method\n";
-      my $m = $method{$package}{$method};
+      my $m = $METHOD{$package}{$method};
       for my $opt (sort keys (%{ $m->{desc} }))
         {
           my $kind = '';
@@ -222,10 +222,10 @@ sub run
   defined ($method)
     or die ("No method was defined for package `$package'");
 
-  exists ($method{$package}{$method}) 
+  exists ($METHOD{$package}{$method}) 
     or die ("Command `$method' was not found in package `$package'");
 
-  $method = $method{$package}{$method};
+  $method = $METHOD{$package}{$method};
 
   my @opts = @{ $method->{aopts} };
   my $help;
@@ -293,6 +293,46 @@ sub run
     }
 
   $obj->$dtor if ($obj && $dtor);
+}
+
+sub getPackageList
+{
+  shift;
+  return sort keys (%METHOD);
+}
+
+sub getMethodList
+{
+  shift;
+  my $package = shift;
+  return sort keys (%{ $METHODS{$package} || {} });
+}
+
+sub getOptionList
+{
+  my $class = shift;
+
+  my %opts = @_;
+
+  my ($package, $method) = @opts{qw (package method)};
+
+  return unless ($package);
+    
+  if ($method) 
+    {
+      my $i = 0;
+      my @aopts = grep { ++$i } @{ $METHODS{$package}{$method}{aopts} };
+      return @aopts;
+    }
+  else
+    {
+      my @aopts;
+      for my $method ($class->getMethodList ())
+        {
+          push @aopts, $class->getOptionList (%opts, method => $method);
+        }
+      return @aopts;
+    }
 }
 
 1;
