@@ -2,12 +2,16 @@
 
 use strict;
 
+use threads;
+use Thread::Queue;
+
 use Cwd;
 use FileHandle;
 use Data::Dumper;
 use File::Path;
 use File::Basename;
 use FindBin qw ($Bin);
+use Getopt::Long;
 
 sub getLines
 {
@@ -17,36 +21,64 @@ sub getLines
   return @lst;
 }
 
-
-sub processList
+sub processFile
 {
-  my @lst = @_;
+  my $f = shift;
 
   my $cwd = &cwd ();
 
-  for my $f (@lst)
-    {
-      my ($dir, $view, $F90) = ($f =~ m{^(\w+)/(\w+)/(.*)$}o);
-      
-      $dir = join ('/', $dir, 'local', &dirname ($F90));
+  my ($dir, $view, $F90) = ($f =~ m{^(\w+)/(\w+)/(.*)$}o);
   
-      &mkpath ($dir) unless (-d $dir);
+  $dir = join ('/', $dir, 'local', &dirname ($F90));
   
-      my @cmd = ("$Bin/../../bin/fxtran-f90", 
-                 '--types-constant-dir', "$cwd/types-constant", 
-                 '--types-fieldapi-dir', "$cwd/types-fieldapi",
-                 '--cycle', '49', '--create-interface', '--dir', $dir, 
-                 '--dryrun', '--', 'f90', '-c', $f);
+  &mkpath ($dir) unless (-d $dir);
+  
+  my @cmd = ("$Bin/../../bin/fxtran-f90", 
+             '--types-constant-dir', "$cwd/types-constant", 
+             '--types-fieldapi-dir', "$cwd/types-fieldapi",
+             '--cycle', '49', '--create-interface', '--dir', $dir, 
+             '--dryrun', '--', 'f90', '-c', $f);
 
-      print "@cmd\n";
+  print "@cmd\n";
   
-      system (@cmd) 
-        and die ("Command `@cmd' failed");
+  system (@cmd) 
+    and die ("Command `@cmd' failed");
+}
+
+sub processList
+{
+  my $opts = shift;
+
+  my @lst = @_;
+
+  my @t;
+
+  my $q = 'Thread::Queue'->new ();
+
+  for (1 .. $opts->{threads})
+    {
+      push @t, 'threads'->create (sub { while (my $f = $q->dequeue ()) { &processFile ($f); } });
     }
 
+  for my $f (@lst, (0) x $opts->{threads})
+    {
+      $q->enqueue ($f);
+    }
+
+  $_->join () for (@t);
 }
 
 my $cwd = &cwd ();
+
+my %opts = (threads => 4);
+my @opts_f = qw (help);
+my @opts_s = qw (threads);
+
+&GetOptions
+(
+  (map { ($_, \$opts{$_}) } @opts_f),
+  (map { ("$_=s", \$opts{$_}) } @opts_s),
+);
 
 $ENV{TMPDIR}      = "$cwd/tmp";
 $ENV{TARGET_PACK} = $cwd;
@@ -54,6 +86,6 @@ $ENV{TARGET_PACK} = $cwd;
 my @mod = &getLines ("list.mod");
 my @src = &getLines ("list.src");
 
-&processList (@mod);
-&processList (@src);
+&processList (\%opts, @mod);
+&processList (\%opts, @src);
 
