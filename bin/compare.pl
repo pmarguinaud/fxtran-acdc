@@ -13,9 +13,6 @@ use lib "$Bin/../lib";
 
 use Fxtran::Common;
 use Fxtran;
-use Fxtran::Inline;
-use Fxtran::Canonic;
-use Fxtran::Decl;
 
 my ($f1, $f2) = @ARGV;
 
