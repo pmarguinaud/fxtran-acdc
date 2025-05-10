@@ -73,4 +73,12 @@ EOF
 
 }
 
+sub loadModule
+{
+  my $module = shift;
+  eval "use $module";
+  my $c = $@;
+  die ($c) if ($c);
+}
+
 1;

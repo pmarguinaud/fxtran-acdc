@@ -96,7 +96,7 @@ $ENV{TARGET_PACK} = $cwd;
 my @mod = &getLines ("list.mod");
 my @src = &getLines ("list.src");
 
-for my $d (qw (types-fieldapi types-constant))
+for my $d (qw (types-fieldapi types-constant src/local hub/local))
   {
     &rmtree ($d) if (-d $d);
   }

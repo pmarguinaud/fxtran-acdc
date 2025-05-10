@@ -1,0 +1,138 @@
+package Fxtran::IO::Link;
+
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
+use File::Spec;
+use File::Basename;
+use Data::Dumper;
+
+use strict;
+
+sub link
+{
+  my %opts = @_;
+
+  my $dir = $opts{'types-fieldapi-dir'};
+  
+  my %T;
+  
+  for my $f (<$dir/*.pl>)
+    {
+      $f = 'File::Spec'->rel2abs ($f);
+      my $T = &basename ($f, qw (.pl));
+      $T{$T} = do ("$f");
+    }
+  
+if (! $ENV{OK}) {
+  # Create JPRB field array definitions (duplicate JPRD)
+  for my $f (<$dir/FIELD_*RD_ARRAY.pl>)
+    {
+      $f = 'File::Spec'->rel2abs ($f);
+
+      my $text = do { my $fh = "FileHandle"->new ("<$f"); local $/ = undef; <$fh> };
+
+      my $T = &basename ($f, qw (.pl));
+
+      for ($text, $T)
+        {
+          s/JPRD/JPRB/go;
+          s/RD_/RB_/go;
+        }
+
+      $T{$T} = eval ($text);
+
+      if (my $c = $@)
+        {
+          die ($c);
+        }
+    }
+}
+  
+  for my $T (keys (%T))
+    {
+      if (my $super = $T{$T}{super})
+        {
+          $T{$T}{super} = $T{$super};
+        }
+      for my $v (values (%{ $T{$T}{comp} }))
+        {
+          next unless (my $ref = ref ($v));
+          if ($ref eq 'SCALAR')
+            {
+              my $t = $$v;
+              $v = $T{$t};
+            }
+        }
+    }
+  
+  my %TT;
+  
+  while (my ($t, $h) = each (%T))
+    {
+      my %h;
+      for (my $hh = $h; $hh; $hh = $hh->{super})
+        {
+          while (my ($k, $v) = each (%{ $hh->{comp} }))
+            {
+              next unless (my $ref = ref ($v));
+              if ($ref eq 'HASH')
+                {
+                  $TT{$v->{name}} ||= {};
+                  $h{$k} = $TT{$v->{name}};
+                }
+              elsif ($ref eq 'ARRAY')
+                {
+                  $h{$k} = $v;
+                }
+            }
+        }
+      $TT{$t} ||= {};
+      %{ $TT{$t} } = %h;
+    }
+  
+  #print &Dumper (\%TT);
+  
+  my %UU;
+  
+  for my $T (keys (%T))
+    {
+      $UU{$T} = $T{$T}{update_view};
+    }
+  
+  my $walk;
+
+  $walk = sub
+  {
+    my ($p, $h, $r) = @_;
+  
+    if (ref ($h) eq 'ARRAY')
+      {
+        my ($k) = ($p =~ m/%(\w+)$/o);
+        $r->{$p} = $h->[2] . ' :: ' . $k . '(' . join (',', (':') x $h->[1]) . ')';
+      }
+    elsif (ref ($h) eq 'HASH')
+      {
+        for my $k (sort keys (%$h))
+          {
+            $walk->($p . '%' . $k, $h->{$k}, $r);
+          }
+      }
+  
+  };
+  
+  my %RR;
+  
+  for my $t (sort keys (%TT))
+    {
+      $walk->($t, $TT{$t}, \%RR);
+    }
+  
+  return {types => \%TT, 'update-view' => \%UU, decls => \%RR};
+  
+}
+
+1;

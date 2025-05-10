@@ -44,7 +44,7 @@ sub callFunctionMethod
     }
 }
 
-sub process_decl
+sub processDecl
 {
   my ($opts, $en_decl, $sname, $prefix, 
       $BODY_SAVE, $BODY_LOAD, $BODY_COPY, $BODY_WIPE, $BODY_SIZE, $BODY_HOST, $BODY_LEGACY, $BODY_CRC64,
@@ -473,9 +473,9 @@ sub processTypes1
         }
       for my $en_decl (@en_decl)
         {
-          &process_decl ($opts, $en_decl, "$tname%", 'SELF%', 
-                         \@BODY_SAVE, \@BODY_LOAD, \@BODY_COPY, \@BODY_WIPE, \@BODY_SIZE, \@BODY_HOST, \@BODY_LEGACY, \@BODY_CRC64,
-                         \%U, \%J, \%L, \%B, \%T, \%en_decl);
+          &processDecl ($opts, $en_decl, "$tname%", 'SELF%', 
+                        \@BODY_SAVE, \@BODY_LOAD, \@BODY_COPY, \@BODY_WIPE, \@BODY_SIZE, \@BODY_HOST, \@BODY_LEGACY, \@BODY_CRC64,
+                        \%U, \%J, \%L, \%B, \%T, \%en_decl);
 
         }
 

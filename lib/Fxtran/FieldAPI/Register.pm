@@ -83,6 +83,7 @@ sub registerFieldAPI
       next if ($opts->{'skip-types'}->($type));
       my $h = &registerFieldAPI1 ($tc, $opts, $class);
       local $Data::Dumper::Sortkeys = 1;
+      local $Data::Dumper::Terse = 1;
       'FileHandle'->new (">$opts->{'types-fieldapi-dir'}/$type.pl")->print (&Dumper ($h));
   }
 

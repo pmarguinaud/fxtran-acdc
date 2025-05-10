@@ -327,13 +327,13 @@ sub getOptionList
   if ($method) 
     {
       my $i = 0;
-      my @aopts = grep { ++$i } @{ $METHOD{$package}{$method}{aopts} };
+      my @aopts = grep { (++$i) % 2 } @{ $METHOD{$package}{$method}{aopts} };
       return @aopts;
     }
   else
     {
       my @aopts;
-      for my $method ($class->getMethodList ())
+      for my $method ($class->getMethodList ($package))
         {
           push @aopts, $class->getOptionList (%opts, method => $method);
         }

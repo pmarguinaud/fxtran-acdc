@@ -24,7 +24,7 @@ sub getFieldAPIList
   for my $decl (@decl)
     {
       my ($type) = &F ('./_T-spec_/derived-T-spec/T-N', $decl, 1);
-      if (-f "$dir/$type.pl")
+      if ((-f "$dir/$type.pl") || ($type =~ m/^FIELD_\dRB_ARRAY$/o))
         {
           my @N = &F ('.//EN-N', $decl, 1);
           push @object, @N;

@@ -49,8 +49,7 @@ sub singlecolumn
   push @cmd, 
     &getopt_s ($opts, 'cycle'), 
     &getopt_f ($opts, 'create-interface'),
-    &getopt_f ($opts, 'merge-interfaces'),
-    '--dir', '.';
+    &getopt_f ($opts, 'merge-interfaces');
 
   &Fxtran::Util::runCommand (cmd => [@cmd, $F90], %$opts);
 
@@ -68,8 +67,7 @@ sub methods
 
   push @cmd, 
     '--types-fieldapi-dir', $opts->{'types-fieldapi-dir'},
-    '--types-constant-dir', $opts->{'types-constant-dir'},
-    &getopt_f ($opts, 'sorted');
+    '--types-constant-dir', $opts->{'types-constant-dir'};
 
   &Fxtran::Util::runCommand (cmd => [@cmd, $F90], %$opts);
 
@@ -105,14 +103,10 @@ sub pointerparallel
         }
     }
 
-  &Fxtran::Util::runCommand (cmd => ["$Bin/fieldRB.pl", '--types-fieldapi-dir', "$tmp/types-fieldapi-dir"], %$opts);
-  &Fxtran::Util::runCommand (cmd => ["$Bin/linkTypes.pl", '--types-fieldapi-dir', "$tmp/types-fieldapi-dir"], %$opts);
-
   push @cmd, 
     &getopt_s ($opts, 'cycle'),
     '--types-fieldapi-dir', "$tmp/types-fieldapi-dir",
     '--types-constant-dir', "$tmp/types-constant-dir",
-    '--dir', '.', 
     &getopt_f ($opts, 'merge-interfaces'), 
     @inc;
 
@@ -139,8 +133,8 @@ sub outline1
 }
 
 my %opts = ('types-constant-dir' => '.', 'types-fieldapi-dir' => '.');
-my @opts_f = qw (debug create-interface dryrun help sorted merge-interfaces);
-my @opts_s = qw (cycle dir tmp types-fieldapi-dir types-constant-dir);
+my @opts_f = qw (debug create-interface dryrun help merge-interfaces);
+my @opts_s = qw (cycle dir tmp types-fieldapi-dir types-constant-dir package);
 
 &GetOptions
 (
@@ -167,7 +161,6 @@ unless ($c)
     exec ($f90compiler, @ARGV) unless ($opts{dryrun});
     exit (0);
   }
-
 
 # Absolute path for includes
 
