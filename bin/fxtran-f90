@@ -91,22 +91,10 @@ sub pointerparallel
 
   my @inc = grep { m/^-I/ } @f90flags;
 
-  my $tmp = 'File::Temp'->newdir ();
-
-  my @dir;
-
-  for my $dir (qw (types-fieldapi-dir types-constant-dir))
-    {
-      if (-d $opts->{$dir})
-        {
-          &Fxtran::Util::runCommand (cmd => ['cp', '-r', $opts->{$dir}, "$tmp/$dir"], %$opts);
-        }
-    }
-
   push @cmd, 
     &getopt_s ($opts, 'cycle'),
-    '--types-fieldapi-dir', "$tmp/types-fieldapi-dir",
-    '--types-constant-dir', "$tmp/types-constant-dir",
+    '--types-fieldapi-dir', $opts->{'types-fieldapi-dir'},
+    '--types-constant-dir', $opts->{'types-constant-dir'},
     &getopt_f ($opts, 'merge-interfaces'), 
     @inc;
 
