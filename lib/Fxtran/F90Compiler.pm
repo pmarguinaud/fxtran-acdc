@@ -1,5 +1,11 @@
 package Fxtran::F90Compiler;
 
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
 use FileHandle;
 use Data::Dumper;
 use File::Basename;

@@ -96,6 +96,12 @@ $ENV{TARGET_PACK} = $cwd;
 my @mod = &getLines ("list.mod");
 my @src = &getLines ("list.src");
 
+for my $d (qw (types-fieldapi types-constant))
+  {
+    &rmtree ($d) if (-d $d);
+  }
+
+
 &processList (\%opts, @mod);
 &processList (\%opts, @src);
 

@@ -1,5 +1,11 @@
 package Fxtran::Style::MFPHYSTOP;
 
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
 use base qw (Fxtran::Style::MFPHYS);
 use Fxtran;
 use Data::Dumper;

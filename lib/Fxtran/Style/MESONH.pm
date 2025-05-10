@@ -1,5 +1,11 @@
 package Fxtran::Style::MESONH;
 
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
 use List::MoreUtils qw (uniq);
 
 use strict;

@@ -1,5 +1,11 @@
 package Fxtran::Finder;
 
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
 use strict;
 use Fxtran::Finder::Pack;
 use Fxtran::Finder::Pack::Build;

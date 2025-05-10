@@ -1,5 +1,11 @@
 package Fxtran::Outline1;
 
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
 use strict;
 use Fxtran;
 use Fxtran::Intrinsic;

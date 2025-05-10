@@ -1,14 +1,10 @@
-#!/usr/bin/perl -w
+package Fxtran::Generate;
 
 #
 # Copyright 2025 Meteo-France
 # All rights reserved
 # philippe.marguinaud@meteo.fr
 #
-
-use local::lib;
-use FindBin qw ($Bin);
-use lib "$Bin/../lib";
 
 use FileHandle;
 use Data::Dumper;
@@ -386,6 +382,4 @@ sub methods
 
 }
 
-'main'->run (@ARGV);
-
-
+1;

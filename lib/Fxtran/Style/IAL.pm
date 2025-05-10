@@ -1,5 +1,11 @@
 package Fxtran::Style::IAL;
 
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
 use base qw (Fxtran::Style);
 use Fxtran;
 use Data::Dumper;

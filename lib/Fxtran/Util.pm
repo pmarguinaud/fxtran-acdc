@@ -1,5 +1,11 @@
 package Fxtran::Util;
 
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
 use FileHandle;
 use File::Path;
 use File::Basename;
