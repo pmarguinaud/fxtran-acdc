@@ -71,11 +71,6 @@ sub methods
 
   &Fxtran::Util::runCommand (cmd => [@cmd, $F90], %$opts);
 
-  if (grep { $_ eq '--type-bound-methods' } @cmd)
-    {
-      delete $args{F90};
-    }
-
   &Fxtran::F90Compiler::compile (%args);
 }
 
@@ -114,8 +109,6 @@ sub outline1
   my $opts = $args{opts};
 
   &Fxtran::Util::runCommand (cmd => [@cmd, $F90], %$opts);
-
-  delete $args{F90};
 
   &Fxtran::F90Compiler::compile (%args);
 }

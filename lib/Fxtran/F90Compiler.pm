@@ -174,13 +174,12 @@ sub compile
   my %args = @_;
 
   my @f90flags = @{ $args{f90flags} };
-  my ($obj, $f90compiler, $F90) = @args{qw (obj f90compiler F90)};
+  my ($obj, $f90compiler) = @args{qw (obj f90compiler)};
   my $opts = $args{opts};
 
   return if ($opts->{dryrun});
 
   my @F90 = <*.F90>;
-  unshift (@F90, $F90) if ($F90);
 
   &Fxtran::F90Compiler::run 
   (

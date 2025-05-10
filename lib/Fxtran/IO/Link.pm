@@ -27,7 +27,6 @@ sub link
       $T{$T} = do ("$f");
     }
   
-if (! $ENV{OK}) {
   # Create JPRB field array definitions (duplicate JPRD)
   for my $f (<$dir/FIELD_*RD_ARRAY.pl>)
     {
@@ -50,7 +49,6 @@ if (! $ENV{OK}) {
           die ($c);
         }
     }
-}
   
   for my $T (keys (%T))
     {

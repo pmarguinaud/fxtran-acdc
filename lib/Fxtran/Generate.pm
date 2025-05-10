@@ -78,7 +78,10 @@ sub singlecolumn
 
   my ($F90) = @args;
 
-  $opts->{dir} ||= &dirname ($F90);
+  if ($opts->{dir} ne &dirname ($F90))
+    {
+      &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
+    }
   
   my $suffix = lc ($opts->{'suffix-single-column'});
   (my $F90out = $F90) =~ s/\.F90/$suffix.F90/;
@@ -175,18 +178,16 @@ sub pointerparallel
 
   my ($opts, @args) = @_;
 
+  my ($F90) = @args;
+
   $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
   
-  $opts->{nproma} = {};
-  $opts->{jlon} = {};
-  
-  my ($F90) = @args;
-  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{'suffix-parallel'}) . '.F90'}eo;
-  
-  unless ($opts->{dir})
+  if ($opts->{dir} ne &dirname ($F90))
     {
-      $opts->{dir} = &dirname ($F90out);
+      &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
     }
+  
+  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{'suffix-parallel'}) . '.F90'}eo;
   
   $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
   
@@ -199,8 +200,6 @@ sub pointerparallel
           exit (0) unless ($st->mtime > $stout->mtime);
         }
     }
-  
-  my $NAME = uc (&basename ($F90out, qw (.F90)));
   
   my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
   
@@ -221,6 +220,8 @@ sub pointerparallel
     {
       $opts->{style}->preProcessForOpenACC ($pu, %$opts);
     }
+  
+  my $NAME = uc (&basename ($F90out, qw (.F90)));
   
   for my $pu (@pu)
     {
@@ -272,6 +273,11 @@ sub methods
     }
 
   my ($F90) = @args;  
+
+  if ($opts->{'type-bound-methods'} && (&dirname ($F90) eq $opts->{dir}))
+    {
+      die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
+    }
 
   ( -d $opts->{dir}) or &mkpath ($opts->{dir});
   ( -d $opts->{'types-fieldapi-dir'}) or &mkpath ($opts->{'types-fieldapi-dir'});
