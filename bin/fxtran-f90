@@ -122,7 +122,7 @@ my $hopts = 'click'->getOptionList (package => $package);
 
 my %opts = (package => $package);
 
-my @opts_f = qw (dryrun help);
+my @opts_f = qw (dryrun help debug);
 my @opts_s = qw (package);
 
 &GetOptions
@@ -193,7 +193,7 @@ my $tmp = delete $opts{tmp};
 FILE: for my $F90 (@F90)
   {
 
-    if ($opts{tmp})
+    if ($tmp)
       {
         $dir = 'File::Temp'->newdir (CLEANUP => ! $opts{debug}, DIR => $opts{tmp});
       }
