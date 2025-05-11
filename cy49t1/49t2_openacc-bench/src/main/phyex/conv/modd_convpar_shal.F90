@@ -1,7 +1,7 @@
 !     ######spl
       MODULE MODD_CONVPAR_SHAL
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
+!$ACDC methods 
 
 !     ########################
 !

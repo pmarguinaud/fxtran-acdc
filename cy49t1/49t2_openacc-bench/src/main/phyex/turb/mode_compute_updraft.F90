@@ -6,7 +6,7 @@
 !     ######spl
      MODULE MODE_COMPUTE_UPDRAFT
 
-!$ACDC singlecolumn --stack84 --process-interfaces --inline-contained
+!$ACDC singlecolumn   
 
 !    ###########################
 !

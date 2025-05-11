@@ -1,6 +1,6 @@
 SUBROUTINE CPG_END_SFC (YDMODEL, YDCPG_OPTS, YDCPG_BNDS, YDMF_PHYS_SURF, KUPTRA)
 
-!$ACDC pointerparallel --stack84 --gpumemstat --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel    
 
 
 !**** *CPG_END_SFC*

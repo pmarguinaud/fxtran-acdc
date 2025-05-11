@@ -33,11 +33,7 @@ sub processFile
   
   &mkpath ($dir) unless (-d $dir);
   
-  my @cmd = ("$Bin/../../bin/fxtran-f90", 
-             '--types-constant-dir', "$cwd/types-constant", 
-             '--types-fieldapi-dir', "$cwd/types-fieldapi",
-             '--cycle', '49', '--create-interface', '--dir', $dir, 
-             '--dryrun', '--', 'f90', '-c', $f);
+  my @cmd = ("$Bin/../../bin/fxtran-f90", '--config', 'generate.conf', '--dir', $dir, '--dryrun', '--', 'f90', '-c', $f);
 
   print "@cmd\n";
   

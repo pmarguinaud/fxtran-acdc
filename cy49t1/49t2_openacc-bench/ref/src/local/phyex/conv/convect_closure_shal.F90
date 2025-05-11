@@ -7,7 +7,7 @@
                                       PUMF, PUER, PUDR, PUTHL, PURW,              &
                                       PURC, PURI, PCAPE, PTIMEC, KFTSTEPS         )
 
-!$ACDC singlecolumn --stack84 --inline-contained
+!$ACDC singlecolumn  
 
      USE YOMHOOK , ONLY : LHOOK, DR_HOOK, JPHOOK
 !    ##############################################################################

@@ -9,7 +9,7 @@ SUBROUTINE LATTEX(YDCST,YDGEOMETRY,YDVARS,YDCPG_TND,YDCPG_SL1,YDCPG_SL2,YDCPG_BN
  ! --- INPUT/OUTPUT -------------------------------------------
  & YDCPG_TNDSI_DDH)
 
-!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel    
 
 
 !**** *LATTEX*   Semi-Lagrangian scheme.

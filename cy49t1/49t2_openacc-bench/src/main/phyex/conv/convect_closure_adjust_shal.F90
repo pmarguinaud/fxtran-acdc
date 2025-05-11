@@ -2,7 +2,7 @@
      SUBROUTINE CONVECT_CLOSURE_ADJUST_SHAL( CVPEXT, D, PADJ,        &
                                              PUMF, PZUMF, PUER, PZUER, PUDR, PZUDR  )
 
-!$ACDC singlecolumn --stack84 --inline-contained
+!$ACDC singlecolumn  
 
      USE YOMHOOK , ONLY : LHOOK, DR_HOOK, JPHOOK
 !    ################################################################################

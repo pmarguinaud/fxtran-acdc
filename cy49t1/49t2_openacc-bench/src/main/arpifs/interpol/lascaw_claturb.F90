@@ -1,6 +1,6 @@
 SUBROUTINE LASCAW_CLATURB(YDSL,KFLEV,KPROMA,KST,KEND,KILA,PKHTURB,P3DTW,PCLA,PCLASLD)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 ! ------------------------------------------------------------------

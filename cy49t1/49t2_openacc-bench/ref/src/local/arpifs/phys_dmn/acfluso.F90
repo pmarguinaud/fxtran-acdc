@@ -11,7 +11,7 @@ SUBROUTINE ACFLUSO (YDCST, YDML_PHY_MF,KIDIA,KFDIA,KLON,KLEV,&
  & PQCLS,PRHCLS,PTCLS,PUCLS,PVCLS,&
  & PURAF,PVRAF)
 
-!$ACDC singlecolumn --stack84
+!$ACDC singlecolumn 
 
 
 !     Sujet.

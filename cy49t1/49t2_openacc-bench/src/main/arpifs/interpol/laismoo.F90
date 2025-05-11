@@ -2,7 +2,7 @@ SUBROUTINE LAISMOO(KSLB1,KPROMA,KST,KEND,KFLEV,&
  & KFLDN,KFLDX,PDLAT,PDLO,KL0,PDVER,&
  & PXSL,PXF)  
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 !**** *LAISMOO  -  semi-LAgrangian scheme:

@@ -21,7 +21,7 @@ SUBROUTINE LASCAW(&
  & PVDERW,PHVW&
  & )  
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 !     ------------------------------------------------------------------

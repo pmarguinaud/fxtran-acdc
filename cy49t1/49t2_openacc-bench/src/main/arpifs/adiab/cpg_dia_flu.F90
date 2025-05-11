@@ -1,7 +1,7 @@
 SUBROUTINE CPG_DIA_FLU (YDCPG_BNDS, YDCPG_OPTS, YDCPG_MISC, YDMF_PHYS_OUT, YDCPG_DYN0, &
 & YDMF_PHYS_SURF, YDVARS, YDCFU, YDXFU, YDMODEL)
 
-!$ACDC pointerparallel --stack84 --gpumemstat --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel    
 
 
 USE YOMHOOK                 , ONLY : DR_HOOK, LHOOK, JPHOOK

@@ -7,7 +7,7 @@ SUBROUTINE LARCINA(YDGEOMETRY, YDCST, YDML_DYN, KST, KEND, YDSL, KHVI, LDFINDVSE
 & PCCO, PUF0, PVF0, PZF0, PWF0, PWFSM, KL0, KLH0, KLEV, PLSCAW, PRSCAW, KDEP, KNOWENO,   PRCOLON, &
 & PRSILON, PGECLO, PGEMU, PGESLO, PGSQM2)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 !**** *LARCINA  -  semi-LAgrangian scheme:(Trajectory)

@@ -1,6 +1,6 @@
 MODULE MODEL_PHYSICS_SIMPLINEAR_MOD
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
+!$ACDC methods 
 
   USE YOEPHLI    , ONLY : TEPHLI
   USE YOMCUMFS   , ONLY : TCUMFS

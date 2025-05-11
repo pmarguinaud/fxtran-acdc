@@ -1,6 +1,6 @@
 SUBROUTINE GPHLUV_EXPL (YDDIMV, KPROMA, KST, KEND, PU, PV, PWWI, PUH, PVH)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 !**** *GPHLUV_EXPL* - wind components calculation in half-levels

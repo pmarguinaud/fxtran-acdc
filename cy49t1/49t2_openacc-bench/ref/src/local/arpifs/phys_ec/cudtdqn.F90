@@ -9,7 +9,7 @@ SUBROUTINE CUDTDQN &
  & PMFUL,    PDMFUP,   PDPMEL,   PMFLXR,   PMFLXS,&
  & PTENT,    PTENQ,    PENTH )
 
-!$ACDC singlecolumn --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
+!$ACDC singlecolumn  --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
 
 
 !**** *CUDTDQ* - UPDATES T AND Q TENDENCIES, PRECIPITATION RATES

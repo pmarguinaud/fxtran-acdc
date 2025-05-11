@@ -1,6 +1,6 @@
 SUBROUTINE VERDER(KPROMA,KST,KEND,KLEVIN,KLEVOUT,PDERI,PIN,POUT)
 
-!$ACDC singlecolumn --set-variables LLVERINT_ON_CPU=.FALSE.,LLSIMPLE_DGEMM=.TRUE. --no-check-pointers-dims ZIN,ZOUT --stack84 --process-pointers
+!$ACDC singlecolumn --set-variables LLVERINT_ON_CPU=.FALSE.,LLSIMPLE_DGEMM=.TRUE. --no-check-pointers-dims ZIN,ZOUT  --process-pointers
 
 
 !**** *VERDER*   Vertical derivative for VFE.

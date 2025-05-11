@@ -2,7 +2,7 @@
       SUBROUTINE CONVECT_MIXING_FUNCT( D,  &
                                        PMIXC, KMF, PER, PDR )
 
-!$ACDC singlecolumn --stack84 --inline-contained
+!$ACDC singlecolumn  
 
       USE YOMHOOK , ONLY : LHOOK, DR_HOOK, JPHOOK
 !     #######################################################

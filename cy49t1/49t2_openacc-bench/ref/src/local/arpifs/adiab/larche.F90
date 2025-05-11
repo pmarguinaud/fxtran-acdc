@@ -3,7 +3,7 @@ SUBROUTINE LARCHE(YDTCCO,YDTSCO,KPROMA,KST,KEND,KFLEV,&
  & PLOCEN,PMUCEN,&
  & PSCO,KROT,PCCO,PRCOLON,PRSILON,PGECLO,PGEMU,PGESLO,PGSQM2)  
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 !**** *LARCHE  -  semi-LAgrangian scheme:

@@ -4,7 +4,7 @@ SUBROUTINE LASURE(&
  ! ----- OUTPUT --------------------------------------------------------------
  & PBDT,PREDIV)  
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 !**** *LASURE*   Semi-Lagrangian scheme.

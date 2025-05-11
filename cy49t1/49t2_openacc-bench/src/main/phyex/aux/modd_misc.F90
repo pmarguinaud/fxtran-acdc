@@ -1,6 +1,6 @@
 MODULE MODD_MISC
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load --skip-components MISC_T%TBUCONF
+!$ACDC methods  --skip-components MISC_T%TBUCONF
 
 !
 USE MODD_BUDGET, ONLY: TBUDGETCONF_t

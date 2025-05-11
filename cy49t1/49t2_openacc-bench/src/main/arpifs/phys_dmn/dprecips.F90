@@ -1,7 +1,7 @@
 SUBROUTINE DPRECIPS(YDCST, YDPRECIPS,KIDIA,KFDIA,KLON,KLEV,POROG,PCLSTPW,PDIAGH,PAPHIFM,PDZZ,PTPW,&
         &PQCM,PFPLSL,PFPLSN,PFPLSG,PDPRECIPS)
 
-!$ACDC singlecolumn --stack84
+!$ACDC singlecolumn 
 
 
 !**** *DPRECIPS*   -  Compute precipitation type diagnostic

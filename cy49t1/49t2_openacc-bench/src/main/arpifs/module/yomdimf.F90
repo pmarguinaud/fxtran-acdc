@@ -1,6 +1,6 @@
 MODULE YOMDIMF
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
+!$ACDC methods 
 
 
 USE PARKIND1 , ONLY : JPIM

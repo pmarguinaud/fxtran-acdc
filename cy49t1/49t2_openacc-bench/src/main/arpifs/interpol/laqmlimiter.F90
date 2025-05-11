@@ -1,7 +1,7 @@
 SUBROUTINE LAQMLIMITER(PRDETAR,LDQM3DCONS,KSLB1,KPROMA,KST,KEND,KFLEV, &
  &                   KFLDN,KFLDX,KL0,PXSL,PXF)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 ! Purpose :

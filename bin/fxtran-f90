@@ -104,26 +104,48 @@ sub outline1
 }
 
 
-my $package = 'generate';
+my ($package, $config, $istop) = ('generate');
 
 for (my $i = 0; $i < $#ARGV; $i++)
   {
-    if ($ARGV[$i] eq '--package')
+    if ($ARGV[$i] eq '--')
+      {
+        $istop = $i;
+        last;
+      }
+    elsif ($ARGV[$i] eq '--package')
       {
         $package = $ARGV[$i+1];
+      }
+    elsif ($ARGV[$i] eq '--config')
+      {
+        $config = $ARGV[$i+1];
       }
   }
 
 $package = 'Fxtran::' . ucfirst ($package);
 
+my %opts = (package => $package);
+
+if ($config)
+  {
+    die ("Configution file `$config' was not found") 
+      unless (-f $config);
+    $config = 'File::Spec'->rel2abs ($config);
+    $config = do ("$config");
+    if (my $c = $@)
+      {
+        die ($c);
+      }
+    @ARGV = (@ARGV[0..$istop-1], @$config, @ARGV[$istop..$#ARGV]);
+  }
+
 &Fxtran::Util::loadModule ($package);
 
 my $hopts = 'click'->getOptionList (package => $package);
 
-my %opts = (package => $package);
-
 my @opts_f = qw (dryrun help debug);
-my @opts_s = qw (package);
+my @opts_s = qw (package config);
 
 &GetOptions
 (
@@ -138,7 +160,6 @@ my @opts_s = qw (package);
   (map { ($_, \$opts{$_}) } @opts_f),
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
-
 
 if ($opts{help})
   {

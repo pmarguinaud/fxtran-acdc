@@ -2,7 +2,7 @@ SUBROUTINE LACONE(KPROMA,KST,KEND,KFLEV,KSTTYP,K2DINI,&
  & YDSWE,POMEGA,PDSTRET,PC2M1,PC2P1,PMUCEN,PRA,PI,&
  & PLON,PLAT,POMVR9L,POMVR9M)  
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 !**** *LACONE*  - Analytic computation of 2.Omega.Vec.r 

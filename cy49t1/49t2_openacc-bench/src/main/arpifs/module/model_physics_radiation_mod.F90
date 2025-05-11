@@ -9,7 +9,7 @@
 
 MODULE MODEL_PHYSICS_RADIATION_MOD
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load --skip-components MODEL_PHYSICS_RADIATION_TYPE%YRRADF
+!$ACDC methods  --skip-components MODEL_PHYSICS_RADIATION_TYPE%YRRADF
 
   USE YOMRADF        , ONLY : TRADF
   USE YOERAD         , ONLY : TERAD

@@ -8,7 +8,7 @@ SUBROUTINE CUBASEN &
  & KLAB,     LDCUM,    LDSC,     KCBOT,    KBOTSC,&
  & KCTOP,    KDPL,     PCAPE )  
 
-!$ACDC singlecolumn --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
+!$ACDC singlecolumn  --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
 
 
 !          THIS ROUTINE CALCULATES CLOUD BASE FIELDS

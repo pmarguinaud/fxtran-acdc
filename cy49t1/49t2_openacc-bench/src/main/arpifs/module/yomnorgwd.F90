@@ -1,6 +1,6 @@
 MODULE YOMNORGWD
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
+!$ACDC methods 
 
 
 ! YOMNORGWD -- Parameters/switches for the non-orographic GW parameterization (ACNORGWD)

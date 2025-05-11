@@ -1,7 +1,7 @@
 SUBROUTINE GPRT(LDSPRT,KPROMA,KST,KEND,KLEV,PRD,PRV,PR,&
  & PT,PTL,PTM,PQL,PQM,PRT,PRTL,PRTM,PRL,PRM)  
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 !*    *GPRT* 

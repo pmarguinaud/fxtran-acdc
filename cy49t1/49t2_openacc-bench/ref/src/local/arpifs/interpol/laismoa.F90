@@ -1,6 +1,6 @@
 SUBROUTINE LAISMOA(KSLB1,KPROMA,KST,KEND,KFLEV,KFLDN,KFLDX,PDLO,KL0,PDVER,PXSL,PXF)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 !**** *LAISMOA  -  semi-LAgrangian scheme:

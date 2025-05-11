@@ -5,7 +5,7 @@
 !     ######spl
      MODULE MODE_COMPUTE_MF_CLOUD_DIRECT
 
-!$ACDC singlecolumn --stack84 --process-interfaces --inline-contained
+!$ACDC singlecolumn   
 
 !    ###################################
 !

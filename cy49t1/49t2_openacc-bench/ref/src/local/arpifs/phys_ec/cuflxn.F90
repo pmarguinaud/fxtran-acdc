@@ -11,7 +11,7 @@ SUBROUTINE CUFLXN &
  & PDMFUP,   PDMFDP,   PDPMEL,   PLGLAC,&
  & PMFLXR,   PMFLXS,   PRAIN,    PMFUDE_RATE,  PMFDDE_RATE )  
 
-!$ACDC singlecolumn --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
+!$ACDC singlecolumn  --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
 
 
 !          PURPOSE

@@ -13,7 +13,7 @@ SUBROUTINE ACRANEB_SOLVT( &
 ! - OUTPUT 1D
  & PFRTHDS)
 
-!$ACDC singlecolumn --stack84 --inline-contained
+!$ACDC singlecolumn  
 
 
 ! Purpose:

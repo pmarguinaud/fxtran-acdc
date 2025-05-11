@@ -2,7 +2,7 @@ SUBROUTINE CPXFU(YDXFU, YDPRECIPS, YDCPG_OPTS, YDCPG_BNDS, YDMF_PHYS_OUT, YDCPG_
 & PSTRDU, PSTRDV, PSTRTU, PSTRTV, PXUCLS, PXVCLS, PXNUCLS, PXNVCLS, PXUGST, PXVGST, PDPRECIPS,        &
 & PDPRECIPS2)
 
-!$ACDC pointerparallel --gpumemstat --stack84 --inline-contained --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel     
 
 
 !**** *CPXFU* - INTERFACE FOR INSTANTANEOUS FLUXES.

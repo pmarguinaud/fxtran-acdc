@@ -1,6 +1,6 @@
 MODULE YOE_AERODIAG
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load,legacy
+!$ACDC methods ,legacy
 
 
 USE PARKIND1  ,ONLY : JPIM     ,JPRB

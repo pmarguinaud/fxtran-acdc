@@ -9,7 +9,7 @@
                                   KSDPL, KSPBL, KSLCL, PSTHLCL, PSTLCL,&
                                   PSRVLCL, PSWLCL, PSZLCL, PSTHVELCL, OTRIG1)
 
-!$ACDC singlecolumn --stack84
+!$ACDC singlecolumn 
 
     USE PARKIND1, ONLY : JPRB
     USE YOMHOOK , ONLY : LHOOK, JPHOOK, DR_HOOK

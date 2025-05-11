@@ -1,6 +1,6 @@
 SUBROUTINE GPINISLB_PART2_EXPL (YDDYN, YDDYNA, YDCPG_BNDS, YDCPG_OPTS, YDVARS)
 
-!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel    
 
 
 USE PARKIND1, ONLY : JPIM, JPRB

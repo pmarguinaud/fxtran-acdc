@@ -5,7 +5,7 @@
 !     ##################
       MODULE MODI_SHUMAN_MF
 
-!$ACDC singlecolumn --stack84 --process-interfaces --inline-contained
+!$ACDC singlecolumn   
 
 !     ##################
 !

@@ -1,6 +1,6 @@
 SUBROUTINE LAVABO(YDGEOMETRY,YDMODEL,YDCPG_BNDS,YDCPG_OPTS,YDCPG_SL1,LD2TLFF1)
 
-!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel    
 
 
 !**** *LAVABO*   Semi-Lagrangian scheme.

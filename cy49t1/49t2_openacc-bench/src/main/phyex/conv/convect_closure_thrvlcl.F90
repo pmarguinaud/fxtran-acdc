@@ -4,7 +4,7 @@
                                          PTHLCL, PRVLCL, PZLCL, PTLCL, PTELCL,&
                                           KLCL, KDPL, KPBL )
 
-!$ACDC singlecolumn --stack84 --inline-contained
+!$ACDC singlecolumn  
 
       USE YOMHOOK , ONLY : LHOOK, DR_HOOK, JPHOOK
 !     #########################################################################

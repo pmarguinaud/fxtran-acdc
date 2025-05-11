@@ -1,6 +1,6 @@
 SUBROUTINE PPWETPOINT(YDCST,YDPHY,KIDIA,KFDIA,KLON,KLEV,PAPRS,PT,PQV,PQL,PQI,PWETPOINT)
 
-!$ACDC singlecolumn --stack84
+!$ACDC singlecolumn 
 
 !-----------------------------------------------------------------------
 ! - INPUT .

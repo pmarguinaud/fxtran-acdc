@@ -1,6 +1,6 @@
 MODULE TYPE_SPGEOM
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
+!$ACDC methods 
 
 
 ! Module for spectral geometry structures.

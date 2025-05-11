@@ -11,7 +11,7 @@ SUBROUTINE LAPINEA(&
  & YDA_RSAVEDP,YDA_PCCO,YDA_PUF,YDA_PVF,YDA_KL0,YDA_KLH0,YDA_PLSCAW,YDA_PRSCAW,YDA_KL0H,YDA_PLSCAWH,YDA_PRSCAWH,&
  & YDA_PSCO,YDVARS,YDA_KNOWENO)
 
-!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel    
 
 
 !**** *LAPINEA* - semi-LAgrangian scheme(Trajectory):

@@ -1,6 +1,6 @@
 SUBROUTINE SCAN2M_TS (YDGEOMETRY, YDVARS, YDCPG_OPTS, YDCPG_BNDS)
 
-!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel    
 
 
 USE PARKIND1           , ONLY : JPIM

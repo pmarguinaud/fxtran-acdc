@@ -3,7 +3,7 @@
 
 MODULE MODEL_PHYSICS_STOCHAST_MOD
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load --skip-components MODEL_PHYSICS_STOCHAST_TYPE%YR_RANDOM_STREAMS
+!$ACDC methods  --skip-components MODEL_PHYSICS_STOCHAST_TYPE%YR_RANDOM_STREAMS
 
   USE STOPH_MIX        , ONLY : TSTOPH
   USE YOMRANDOM_STREAMS, ONLY : TRANDOM_STREAMS

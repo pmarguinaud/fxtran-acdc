@@ -1,6 +1,6 @@
 SUBROUTINE MEANWIND_XFU (KLON, KIDIA, KFDIA, KMEANSTEPS, PXFU, PXFV, PXU, PXV, PMWINDCALC, ZUM, ZVM)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 USE PARKIND1         , ONLY : JPIM, JPRB

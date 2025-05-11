@@ -2,7 +2,7 @@
 SUBROUTINE GP_TNDLAGADIAB_UV(LDRPLANE, YDGEOMETRY, YDEPHY, YDDYN, KST, KEND, PRCORI, PGNORDL, &
 & PGNORDM, PSGRTL, PSGRTM, PU, PV, PTNDU, PTNDV, PTNDU_NOC, PTNDV_NOC)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 !**** *GP_TNDLAGADIAB_UV*   Compute adiabatic Lagrangian tendency of horizontal wind.

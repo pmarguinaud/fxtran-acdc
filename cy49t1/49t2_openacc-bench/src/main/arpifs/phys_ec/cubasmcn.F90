@@ -7,7 +7,7 @@ SUBROUTINE CUBASMCN &
  & PTU,      PQU,      PLU,&
  & PMFUS,    PMFUQ,    PMFUL,    PDMFUP )  
 
-!$ACDC singlecolumn --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
+!$ACDC singlecolumn  --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
 
 
 !          M.TIEDTKE         E.C.M.W.F.     12/89

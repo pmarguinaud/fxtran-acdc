@@ -1,6 +1,6 @@
 SUBROUTINE ROTUVGEO(KFLEV,KPROMA,KST,KEND,PGNORDM,PGNORDL,PU,PV,PRU,PRV,LDIR,LDADD,LDSUB)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 ! Purpose:
 !  rotate U/V wind between geographical North and computation grid

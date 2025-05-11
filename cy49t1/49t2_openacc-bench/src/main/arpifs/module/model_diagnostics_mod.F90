@@ -1,6 +1,6 @@
 MODULE MODEL_DIAGNOSTICS_MOD
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
+!$ACDC methods 
 
   USE YOMCDDH , ONLY : TCDDH
   USE YOMLDDH , ONLY : TLDDH

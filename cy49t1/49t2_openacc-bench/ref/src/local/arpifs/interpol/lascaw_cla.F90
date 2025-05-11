@@ -1,7 +1,7 @@
 SUBROUTINE LASCAW_CLA(YDSL,YDDYNA,KFLEV,KPROMA,KST,KEND,LDT,PSLHDKMIN,KILA,PDLAT,PKAPPA,&
  & YDDHSLMER,PSLDW,PCLA,PCLASLD)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 !     ------------------------------------------------------------------

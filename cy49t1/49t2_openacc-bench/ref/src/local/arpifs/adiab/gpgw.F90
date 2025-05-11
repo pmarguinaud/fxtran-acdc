@@ -1,7 +1,7 @@
 SUBROUTINE GPGW(YDGEOMETRY,LDNHDYN,KFLEV,KPROMA,KST,KEND,LDGWF,LDGDWI,POROGL,POROGM,PLNPR,PALPH,&
  & PUS,PVS,PRT,PDVER,PGWH,PGWF,LDVFE,PRNHPPI,PTAUD_NL,PGDW)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 ! GPGW - Diagnoses "Gw" from the vertical divergence "dver" or from "-G dw".

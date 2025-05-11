@@ -12,7 +12,7 @@
 
 MODULE TYPE_MODEL
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load --skip-components MODEL%YRML_SPP,MODEL%YRML_SPPT
+!$ACDC methods  --skip-components MODEL%YRML_SPP,MODEL%YRML_SPPT
 
 
 USE PARKIND1                      , ONLY : JPIM

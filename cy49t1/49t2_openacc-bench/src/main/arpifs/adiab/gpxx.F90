@@ -1,7 +1,7 @@
 SUBROUTINE GPXX(YDGEOMETRY, KFLEV, KPROMA, KST, KEND, PHIHL, PHIHM, PHIFL, PHIFM, &
 & PLNPR, PRT, PUF, PVF, PUH, PVH, PWF2H, PX, PNHPPI, PTAUX_NL, LDVFE  )
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 ! GPXX - Diagnose NHX-term

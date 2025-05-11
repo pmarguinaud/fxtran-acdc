@@ -1,7 +1,7 @@
 !OPTIONS XOPT(NOEVAL)
 SUBROUTINE ACRSO(YDPHY0,KIDIA,KFDIA,KLON,KLEV,KTDIA,KSGST,PGEMU,PMU0,PAPHIF,PDELP,PFRSO)
 
-!$ACDC singlecolumn --stack84
+!$ACDC singlecolumn 
 
 
 !**** *ACRSO * - Reduce SOlar fluxes, depending on solar zenithal angle.

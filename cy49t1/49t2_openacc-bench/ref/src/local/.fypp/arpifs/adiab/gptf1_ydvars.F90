@@ -2,7 +2,7 @@
 SUBROUTINE GPTF1_YDVARS (YDGEOMETRY, YDML_GCONF, YDDYN, YDDYNA, YDVARS, &
                        & LDTF1, YDCPG_BNDS, YDCPG_OPTS, LDLSTEP)
 
-!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel    
 
 
 !**** *GPTF1_YDVARS* - Timefilter part 1

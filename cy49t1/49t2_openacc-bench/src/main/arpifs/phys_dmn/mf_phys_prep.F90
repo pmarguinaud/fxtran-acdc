@@ -1,7 +1,7 @@
 SUBROUTINE MF_PHYS_PREP(YDGEOMETRY, YDCPG_BNDS, YDCPG_OPTS, YDARPHY, YDDYNA, YDCPG_DYN0, YDCPG_DYN9, &
 & YDCPG_PHY0, YDCPG_PHY9, YDVARS)
 
-!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel    
 
 
 !**** *MF_PHYS_PREP* .

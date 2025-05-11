@@ -1,7 +1,7 @@
 SUBROUTINE GP_SPV(YDGEOMETRY, YDDYN, YDDYNA, YDSIMPHL, LDTL, KST, KEND, &
 & PSPT0, PSPT0L, PSPT0M, PSPT9, PSPT9L, PSPT9M, PRE0, PRE0L, PRE0M, PRE9, PRE9L, PRE9M)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 !     ------------------------------------------------------------------

@@ -5,7 +5,7 @@ SUBROUTINE ACRANEB_COEFT (KIDIA,KFDIA,KLON,KTDIA,KLEV,&
 ! - OUTPUT 2D
  & PA4C,PA5C,PA4N,PA5N)
 
-!$ACDC singlecolumn --stack84 --inline-contained
+!$ACDC singlecolumn  
 
 
 ! Purpose:

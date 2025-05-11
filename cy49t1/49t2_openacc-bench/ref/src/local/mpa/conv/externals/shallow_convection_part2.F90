@@ -9,7 +9,7 @@ SUBROUTINE SHALLOW_CONVECTION_PART2(CVP_SHAL, CVPEXT, CST, D, NSV,   &
                                     PRVC, PRCC, PRIC, ICTL, IMINCTL, &
                                     PPCH1TEN)
 
-!$ACDC singlecolumn --stack84
+!$ACDC singlecolumn 
 
 
 USE PARKIND1, ONLY : JPRB

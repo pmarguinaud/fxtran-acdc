@@ -10,7 +10,7 @@
 
 MODULE MODEL_GENERAL_CONF_MOD
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
+!$ACDC methods 
 
   USE TYPE_GEOMETRY, ONLY : GEOMETRY
   USE YOMDIMF      , ONLY : TDIMF

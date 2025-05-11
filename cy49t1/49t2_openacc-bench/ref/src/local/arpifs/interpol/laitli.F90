@@ -4,7 +4,7 @@
 SUBROUTINE LAITLI(KSLB1,KPROMA,KST,KEND,KFLEV,KFLDN,KFLDX,PDLAT,PDLO,KL0,PDVER,&
  & PXSL,PXF,LDADD)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 !**** *LAITLI  -  semi-LAgrangian scheme:

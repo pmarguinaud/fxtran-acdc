@@ -3,7 +3,7 @@ SUBROUTINE LATTEX_DNT(KSTEP,YDGEOMETRY,YDLDDH,YDRIP,YDDYN,YDDYNA,KST,KEND,&
  & PXSI,PXNLT9,PXT1,PXL0,PXL9,PXLF9,PCXNLT9,&
  & PSIDDHXT1,PSIDDHXT9,PSIDDHXL0,PXLF0,LDNESC)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 !------------------------------------------------------------------------------

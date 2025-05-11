@@ -1,7 +1,7 @@
 SUBROUTINE LAITLIF(YDTLSCAW,KASLB1,KPROMA,KFLEV,KST,KPROF,KL0,LDCOMAD,PLSCAW,PXSL,POUT,&
   LDADD,LD2D)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 USE PARKIND1               , ONLY : JPIM, JPRB
 USE YOMHOOK                , ONLY : LHOOK, DR_HOOK, JPHOOK

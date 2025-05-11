@@ -5,7 +5,7 @@
 !     ######spl
       MODULE MODD_RAIN_ICE_PARAM_n
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
+!$ACDC methods 
 
 !     ##########################
 !> @file

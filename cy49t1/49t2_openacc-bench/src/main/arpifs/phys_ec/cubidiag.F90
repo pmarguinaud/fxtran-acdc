@@ -3,7 +3,7 @@ SUBROUTINE CUBIDIAG &
  & KCTOP, LD_LCUMASK,&
  & PA,    PB,   PR,   PU )  
 
-!$ACDC singlecolumn --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
+!$ACDC singlecolumn  --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
 
 
 !          P. Bechtold         E.C.M.W.F.     07/03

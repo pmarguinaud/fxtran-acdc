@@ -1,6 +1,6 @@
 MODULE YOMCDDH
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
+!$ACDC methods 
 
 
 IMPLICIT NONE

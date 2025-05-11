@@ -3,7 +3,7 @@ SUBROUTINE LAIDDI(KSLB1,KPROMA,KST,KEND,KFLEV, &
  & PCLA,PDLO,PCLO,KL0, &
  & PXSL,PXF)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 ! Purpose :

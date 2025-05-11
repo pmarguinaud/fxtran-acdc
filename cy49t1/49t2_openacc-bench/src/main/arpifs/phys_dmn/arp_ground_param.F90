@@ -26,7 +26,7 @@ SUBROUTINE ARP_GROUND_PARAM ( YDCST, YDMCC,YDML_PHY_MF,KIDIA,KFDIA,KLON,KTDIA,KL
  ! - INPUT/OUTPUT 1D .
  & PGZ0F,PGZ0HF)
 
-!$ACDC singlecolumn --stack84
+!$ACDC singlecolumn 
 
 
 !!     Sujet.

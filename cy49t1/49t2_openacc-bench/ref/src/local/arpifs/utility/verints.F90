@@ -1,6 +1,6 @@
 SUBROUTINE VERINTS(KPROMA,KST,KEND,KLEVIN,KLEVOUT,PINTE,PIN,POUTS)
 
-!$ACDC singlecolumn --set-variables LLVERINT_ON_CPU=.FALSE.,LLSIMPLE_DGEMM=.TRUE. --no-check-pointers-dims ZIN,ZOUT --stack84 --process-pointers
+!$ACDC singlecolumn --set-variables LLVERINT_ON_CPU=.FALSE.,LLSIMPLE_DGEMM=.TRUE. --no-check-pointers-dims ZIN,ZOUT  --process-pointers
 
 ! Purpose:
 !  compute the full vertical integral in VFE scheme

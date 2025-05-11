@@ -4,7 +4,7 @@ SUBROUTINE CUCCDIA &
  & LDCUM,    PQU,      PLU,      PMFU,     PRAIN,&
  & PARPRC,   KTOPC,    KBASEC                   )  
 
-!$ACDC singlecolumn --stack84 --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
+!$ACDC singlecolumn  --inlined cuadjtq.F90,cubasmcn.F90,cuentr.F90,cuadjtqs.F90
 
 
 !**** *CUCCDIA*- UPDATES PRECIPITAION, CLOUD BASE AND CLOUD TOP

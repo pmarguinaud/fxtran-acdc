@@ -1,6 +1,6 @@
 SUBROUTINE APL_ARPEGE_MWAVE (YDCPG_MISC, YDMF_PHYS, YDCPG_BNDS, YDCPG_OPTS, YDPHYSMWAVE) 
 
-!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel    
 
 
 USE PARKIND1         , ONLY : JPIM, JPRB

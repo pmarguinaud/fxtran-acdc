@@ -1,7 +1,7 @@
 SUBROUTINE LATRAJOUT (YDCST, LDRPRSLTRJ, KPROMA, KFLEVG, KST, KEND, &
                     & KSTEST, KSTESB, PWF, PRCOLON, PGEMU)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 !**** *LATRAJOUT*  - Report out of atmosphere & underground trajectories

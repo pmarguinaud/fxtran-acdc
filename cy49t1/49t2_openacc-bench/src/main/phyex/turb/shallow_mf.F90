@@ -23,7 +23,7 @@
                 KKLCL,KKETL,KKCTL,PDX,PDY,PRSVS,PSVMIN,               &
                 BUCONF, TBUDGETS, KBUDGETS                            )
 
-!$ACDC singlecolumn --stack84 --process-interfaces --inline-contained
+!$ACDC singlecolumn   
 
 !     #################################################################
 !!

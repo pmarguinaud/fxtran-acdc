@@ -1,6 +1,6 @@
 MODULE YOMSPSDT
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load --only-types TSPPT_CONFIG
+!$ACDC methods  --only-types TSPPT_CONFIG
 
 
 ! Purpose :

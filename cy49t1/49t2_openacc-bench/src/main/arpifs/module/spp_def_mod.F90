@@ -1,6 +1,6 @@
 module spp_def_mod
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
+!$ACDC methods 
 
   use parkind1, only: jpim, jprb
   use spp_gen_mod

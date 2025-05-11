@@ -1,6 +1,6 @@
 SUBROUTINE GPHLWI(LDVERTFE,KFLEV,KPROMA,KST,KEND,PLNPR,PALPH,PRDETAH,PDETA_RATIO,PWW)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 !**** *GPHLWI* - to half-levels interpolation weights

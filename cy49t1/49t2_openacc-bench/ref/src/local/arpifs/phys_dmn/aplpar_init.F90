@@ -16,7 +16,7 @@ SUBROUTINE APLPAR_INIT &
  & KCLPH   &
  & )
 
-!$ACDC singlecolumn --stack84
+!$ACDC singlecolumn 
 
 
 USE PARKIND1  ,ONLY : JPIM     ,JPRB

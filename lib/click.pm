@@ -327,6 +327,7 @@ sub getOptionList
   if ($method) 
     {
       my $i = 0;
+      die ("Unknown method `$method'") unless ($METHOD{$package}{$method});
       my %hopts = @{ $METHOD{$package}{$method}{aopts} };
       return {map { ($_, ${ $hopts{$_} }) } keys (%hopts)};
     }

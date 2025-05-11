@@ -1,7 +1,7 @@
 SUBROUTINE LATTEX_TNT(YDGEOMETRY,YDLDDH,YDDYN,KST,KEND,KXLAG,PESGP,PESGM,PXT9,PMOY1X,PXSI9,&
  & PXSI0,PXT1,PXL0,PXL9,PXLF9,PSIDDHXT1,PSIDDHXL0)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 !**** *LATTEX_TNT*   Semi-Lagrangian scheme.

@@ -1,7 +1,7 @@
 
 MODULE MODEL_PHYSICS_AEROSOL_MOD
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
+!$ACDC methods 
 
   USE YOEAERLID, ONLY : TEAERLID
   USE YOEAERMAP, ONLY : TEAERMAP

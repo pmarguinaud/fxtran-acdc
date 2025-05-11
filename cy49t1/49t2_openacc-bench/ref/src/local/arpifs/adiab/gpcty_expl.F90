@@ -3,7 +3,7 @@ SUBROUTINE GPCTY_EXPL(YDVFE, YDCVER, KPROMA, KST, KEND, KFLEV, LDRUBC, YDVAB, YD
 & PEVT, PSPL, PSPM, PRPREF, PDPHYCTY, PDELP, PLNPR, PRDELP, PALPH, PRTGR, PRPRE, PRPP, PEVEL, PVVEL, &
 & PPSDIV, PPSDVBC, PDIVDP)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 
 !**** *GPCTY_EXPL* - Computes vertical velocities.

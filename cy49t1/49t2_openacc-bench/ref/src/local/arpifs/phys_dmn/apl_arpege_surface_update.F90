@@ -1,7 +1,7 @@
 SUBROUTINE APL_ARPEGE_SURFACE_UPDATE (YDCPG_BNDS, YDCPG_OPTS, YDCPG_GPAR, YDMF_PHYS, YDMF_PHYS_SURF, &
 & YDMODEL, LDCONFX, PDTPHY, PDSA_C1, PDSA_C2, PFLU_FEVI, PFLU_VEG)
 
-!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel    
 
 
 !**** *APL_ARPEGE_SURFACE_UPDATE*

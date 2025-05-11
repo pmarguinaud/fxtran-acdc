@@ -1,6 +1,6 @@
 SUBROUTINE CPUTQY0 (LDT1, YDCPG_BNDS, YDCPG_OPTS, YDCPG_DIMS_VAR, PDT, PVAR, PTND)
 
-!$ACDC pointerparallel --gpumemstat --stack84 --use-acpy --post-parallel synchost,nullify
+!$ACDC pointerparallel    
 
 
 !**** *CPUTQY0*  

@@ -1,6 +1,6 @@
 MODULE MODEL_PHYSICS_GENERAL_MOD
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
+!$ACDC methods 
 
   USE YOMDPHY , ONLY : TDPHY
   USE YOMSLPHY, ONLY : TSLPHY

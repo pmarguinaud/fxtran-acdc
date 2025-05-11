@@ -1,6 +1,6 @@
 SUBROUTINE ROTUV(KFLEV,KPROMA,KST,KEND,PU,PV,PP,PQ,PRU,PRV,LDIR,LDADD,LDSUB)
 
-!$ACDC singlecolumn --stack84 --process-pointers
+!$ACDC singlecolumn  --process-pointers
 
 ! Purpose:
 !  rotate U/V wind following a rotation matrix P/Q

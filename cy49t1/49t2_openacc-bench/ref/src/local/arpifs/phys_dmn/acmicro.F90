@@ -6,7 +6,7 @@ SUBROUTINE ACMICRO( YDCST, YDML_PHY_MF,KIDIA, KFDIA, KLON, KTDIA, KLEV,&
  ! - OUTPUT -
  & PAUTOL, PAUTOI )
 
-!$ACDC singlecolumn --stack84
+!$ACDC singlecolumn 
 
 
 !**** *ACMICRO * - CALCULS D'AUTOCONVERSION.

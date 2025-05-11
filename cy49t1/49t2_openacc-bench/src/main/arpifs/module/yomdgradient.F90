@@ -1,6 +1,6 @@
 MODULE YOMDGRADIENT
 
-!$ACDC methods --methods-list=crc64,size,host,copy,wipe,save,load
+!$ACDC methods 
 
 
 USE YOMHOOK  , ONLY : LHOOK, DR_HOOK, JPHOOK

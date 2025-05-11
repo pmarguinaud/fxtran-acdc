@@ -5,7 +5,7 @@ SUBROUTINE QNGCOR ( YDCST, YDPHY2,KIDIA, KFDIA, KLON, KTDIA, KLEV,&
  & PFASL  , PFASN  , PFACL  , PFACN  ,&
  & PFCCQL , PFCCQN , PFCSQL , PFCSQN , PFCQNG )  
 
-!$ACDC singlecolumn --stack84
+!$ACDC singlecolumn 
 
 
 !--------------------------------------------------------------------
