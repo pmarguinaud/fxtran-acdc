@@ -72,9 +72,9 @@ EOF
 EOF
 sub singlecolumn
 {
-  use Fxtran::SingleColumn;
-
   my ($opts, @args) = @_;
+
+  &Fxtran::Util::loadModule ('Fxtran::SingleColumn');
 
   my ($F90) = @args;
 
@@ -173,10 +173,10 @@ sub singlecolumn
 EOF
 sub pointerparallel
 {
-  use Fxtran::Pointer::Parallel;
-  use Fxtran::IO::Link;
-
   my ($opts, @args) = @_;
+
+  &Fxtran::Util::loadModule ('Fxtran::Pointer::Parallel');
+  &Fxtran::Util::loadModule ('Fxtran::IO::Link');
 
   my ($F90) = @args;
 
@@ -259,12 +259,13 @@ sub pointerparallel
 EOF
 sub methods
 {
-  use Fxtran::IO;
-  use Fxtran::FieldAPI::Register;
-  use Fxtran::Pragma;
   use List::MoreUtils qw (uniq);
 
   my ($opts, @args) = @_;
+
+  &Fxtran::Util::loadModule ('Fxtran::IO');
+  &Fxtran::Util::loadModule ('Fxtran::FieldAPI::Register');
+  &Fxtran::Util::loadModule ('Fxtran::Pragma');
 
   my %methods = map { ($_, 1) } @{ $opts->{'methods-list'} };
   for my $method (qw (copy crc64 host legacy load save size wipe))

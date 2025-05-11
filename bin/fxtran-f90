@@ -15,9 +15,9 @@ use File::Basename;
 use File::Spec;
 use File::Copy;
 use FindBin qw ($Bin);
-use lib "$Bin/../lib";
-use lib $Bin;
 use Cwd;
+
+use lib "$Bin/../lib";
 
 use strict;
 
@@ -25,75 +25,65 @@ use Fxtran::Bt;
 use Fxtran::F90Compiler;
 use Fxtran::Util;
 
-sub getopt_s
+sub getMethodOptions
 {
-  my ($opts, $name) = @_;
-  return $opts->{$name} ? ("--$name", $opts->{$name}) : ();
+  my ($opts, $method) = @_;
+
+  my $hopts = 'click'->getOptionList (package => $opts->{package}, method => $method);
+
+  return
+    map 
+    { 
+      my $key = my $opt = $_;
+
+      my ($type, @v) = ('');
+      if ($key =~ s/\!$//o)
+        {
+          $type = 'f'; # Flag
+        }
+      elsif ($key =~ s/=s$//o)
+        {
+          $type = 's'; # Value
+        }
+      if (defined ($opts->{$key})) # Option is set
+        {
+          if (($type eq 'f') && ($opts->{$key}))
+            {
+              push @v, "--$key" 
+            }
+          elsif (($type eq 'f') && (! $opts->{$key}))
+            {
+              push @v, "--no$key" 
+            }
+          elsif ($type eq 's')
+            {
+              push @v, "--$key", $opts->{$key};
+            }
+          else 
+            {
+              die $opt;
+            }
+        }
+      @v
+    } keys ($hopts);
 }
 
-sub getopt_f
+sub runACDCMethod
 {
-  my ($opts, $name) = @_;
-  return $opts->{$name} ? ("--$name") : ();
-}
+  use FindBin qw ($Bin);
 
-sub singlecolumn
-{
-  shift;
   my %args = @_;
 
-  my @cmd = @{ $args{cmd} };
-  my $F90 = $args{F90};
-  my $opts = $args{opts};
+  my ($opts, $ACDC, $obj, $F90) = @args{qw (opts ACDC obj F90)};
 
-  push @cmd, 
-    &getopt_s ($opts, 'cycle'), 
-    &getopt_f ($opts, 'create-interface'),
-    &getopt_f ($opts, 'merge-interfaces');
-
-  &Fxtran::Util::runCommand (cmd => [@cmd, $F90], %$opts);
-
-  &Fxtran::F90Compiler::compile (%args);
-}
-
-sub methods
-{
-  shift;
-  my %args = @_;
-
-  my @cmd = @{ $args{cmd} };
-  my $F90 = $args{F90};
-  my $opts = $args{opts};
-
-  push @cmd, 
-    '--types-fieldapi-dir', $opts->{'types-fieldapi-dir'},
-    '--types-constant-dir', $opts->{'types-constant-dir'};
-
-  &Fxtran::Util::runCommand (cmd => [@cmd, $F90], %$opts);
-
-  &Fxtran::F90Compiler::compile (%args);
-}
-
-sub pointerparallel
-{
-  shift;
-  my %args = @_;
-
-  my @cmd = @{ $args{cmd} };
-  my $F90 = $args{F90};
   my @f90flags = @{ $args{f90flags} };
-  my $opts = $args{opts};
 
-  my @inc = grep { m/^-I/ } @f90flags;
+  $ACDC =~ s/^(\w+)\s*//o;
+  my $method = $1;
 
-  push @cmd, 
-    &getopt_s ($opts, 'cycle'),
-    '--types-fieldapi-dir', $opts->{'types-fieldapi-dir'},
-    '--types-constant-dir', $opts->{'types-constant-dir'},
-    &getopt_f ($opts, 'merge-interfaces'), 
-    @inc;
-
-  &Fxtran::Util::runCommand (cmd => [@cmd, $F90], %$opts);
+  my @cmd = ("$Bin/fxtran-gen", $method, &getMethodOptions ($opts, $method), split (m/\s+/o, $ACDC), $F90);
+  
+  &Fxtran::Util::runCommand (cmd => \@cmd, %$opts);
 
   &Fxtran::F90Compiler::compile (%args);
 }
@@ -113,15 +103,42 @@ sub outline1
   &Fxtran::F90Compiler::compile (%args);
 }
 
-my %opts = ('types-constant-dir' => '.', 'types-fieldapi-dir' => '.');
-my @opts_f = qw (debug create-interface dryrun help merge-interfaces);
-my @opts_s = qw (cycle dir tmp types-fieldapi-dir types-constant-dir package);
+
+my $package = 'generate';
+
+for (my $i = 0; $i < $#ARGV; $i++)
+  {
+    if ($ARGV[$i] eq '--package')
+      {
+        $package = $ARGV[$i+1];
+      }
+  }
+
+$package = 'Fxtran::' . ucfirst ($package);
+
+&Fxtran::Util::loadModule ($package);
+
+my $hopts = 'click'->getOptionList (package => $package);
+
+my %opts = (package => $package);
+
+my @opts_f = qw (dryrun help);
+my @opts_s = qw (package);
 
 &GetOptions
 (
+  (map
+  {
+    my $key = my $opt = $_; 
+    $key =~ s/(?:=s|\!)$//o;
+    $opts{$key} = $hopts->{$key};
+    ($opt, \$opts{$key})
+  }
+  keys (%$hopts)),
   (map { ($_, \$opts{$_}) } @opts_f),
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
+
 
 if ($opts{help})
   {
@@ -170,16 +187,13 @@ my @F90 = grep { m/\.(?:F90|F)$/io } @ARGV;
 my @f90flags = grep { ! m/\.(?:F90|F)$/io } @ARGV;
 
 my $cwd = &cwd ();
+my $dir = (delete $opts{dir}) || '.';
+my $tmp = delete $opts{tmp};
 
 FILE: for my $F90 (@F90)
   {
-    my $dir = '.';
 
-    if ($opts{dir})
-      {
-        $dir = $opts{dir};
-      }
-    elsif ($opts{tmp})
+    if ($opts{tmp})
       {
         $dir = 'File::Temp'->newdir (CLEANUP => ! $opts{debug}, DIR => $opts{tmp});
       }
@@ -198,17 +212,10 @@ FILE: for my $F90 (@F90)
       {
         goto NORMAL if ($ACDC =~ m/\{\s*$/o);
 
-        my ($method) = ($ACDC =~ m/^(\w+)/o);
-        my @cmd = split (m/\s+/o, $ACDC);
-        unshift (@cmd, "$Bin/fxtran-gen");
-
-        die ("Method `$method' was not found")
-          unless ('main'->can ($method));
-
-        'main'->$method 
+        &runACDCMethod
         (
           obj => $obj, f90compiler => $f90compiler, F90 => $F90, opts => \%opts,
-          f90flags => \@f90flags, cmd => \@cmd, cwd => $cwd,
+          f90flags => \@f90flags, cwd => $cwd, ACDC => $ACDC,
         );
 
         next FILE;

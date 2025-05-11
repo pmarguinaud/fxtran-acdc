@@ -327,17 +327,18 @@ sub getOptionList
   if ($method) 
     {
       my $i = 0;
-      my @aopts = grep { (++$i) % 2 } @{ $METHOD{$package}{$method}{aopts} };
-      return @aopts;
+      my %hopts = @{ $METHOD{$package}{$method}{aopts} };
+      return {map { ($_, ${ $hopts{$_} }) } keys (%hopts)};
     }
   else
     {
-      my @aopts;
+      my %hopts;
       for my $method ($class->getMethodList ($package))
         {
-          push @aopts, $class->getOptionList (%opts, method => $method);
+          my $hopts = $class->getOptionList (%opts, method => $method);
+          %hopts = (%hopts, %$hopts);
         }
-      return @aopts;
+      return \%hopts;
     }
 }
 
