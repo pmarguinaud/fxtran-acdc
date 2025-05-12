@@ -14,9 +14,9 @@ use File::Temp;
 use File::Basename;
 use File::Spec;
 use File::Copy;
-use FindBin qw ($Bin);
 use Cwd;
 
+use FindBin qw ($Bin);
 use lib "$Bin/../lib";
 
 use strict;
@@ -37,6 +37,7 @@ sub getMethodOptions
       my $key = my $opt = $_;
 
       my ($type, @v) = ('');
+
       if ($key =~ s/\!$//o)
         {
           $type = 'f'; # Flag
@@ -45,6 +46,7 @@ sub getMethodOptions
         {
           $type = 's'; # Value
         }
+
       if (defined ($opts->{$key})) # Option is set
         {
           if (($type eq 'f') && ($opts->{$key}))
@@ -104,13 +106,13 @@ sub outline1
 }
 
 
-my ($package, $config, $istop) = ('generate');
+my ($package, $config, $ilast) = ('generate');
 
 for (my $i = 0; $i < $#ARGV; $i++)
   {
     if ($ARGV[$i] eq '--')
       {
-        $istop = $i;
+        $ilast = $i;
         last;
       }
     elsif ($ARGV[$i] eq '--package')
@@ -137,7 +139,7 @@ if ($config)
       {
         die ($c);
       }
-    @ARGV = (@ARGV[0..$istop-1], @$config, @ARGV[$istop..$#ARGV]);
+    @ARGV = (@ARGV[0..$ilast-1], @$config, @ARGV[$ilast..$#ARGV]);
   }
 
 &Fxtran::Util::loadModule ($package);

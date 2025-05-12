@@ -4,3 +4,4 @@ types-constant/
 types-fieldapi/
 tmp/
 run.*.log
+run/

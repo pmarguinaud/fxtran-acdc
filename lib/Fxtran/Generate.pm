@@ -87,7 +87,6 @@ sub singlecolumn
   (my $F90out = $F90) =~ s/\.F90/$suffix.F90/;
   $F90out = $opts->{dir} . '/' . &basename ($F90out);
   
-  
   if ($opts->{'only-if-newer'})
     {
       my $st = stat ($F90);

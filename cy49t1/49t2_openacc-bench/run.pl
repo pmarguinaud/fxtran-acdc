@@ -9,9 +9,19 @@ use Cwd;
 use FileHandle;
 use Data::Dumper;
 use File::Path;
+use File::Copy;
 use File::Basename;
 use FindBin qw ($Bin);
 use Getopt::Long;
+
+my $FXTRAN_F90 = &Cwd::realpath ("$Bin/../../bin/fxtran-f90");
+
+sub runCommand
+{
+  my @cmd = @_;
+  system (@cmd)
+    and die ("Command `@cmd' failed");
+}
 
 sub getLines
 {
@@ -24,20 +34,17 @@ sub getLines
 sub processFile
 {
   my %args = @_;
-  my $f = $args{file};
-  my $log = $args{log};
+  my ($file, $log, $config) = @args{qw (file log config)};
 
   my $cwd = &cwd ();
 
-  my ($dir, $view, $F90) = ($f =~ m{^(\w+)/(\w+)/(.*)$}o);
+  my ($dir, $view, $F90) = ($file =~ m{^(\w+)/(\w+)/(.*)$}o);
   
   $dir = join ('/', $dir, 'local', &dirname ($F90));
   
   &mkpath ($dir) unless (-d $dir);
 
-  my $conf = 'typebound';
-  
-  my @cmd = ("$Bin/../../bin/fxtran-f90", '--config', "fxtran-$conf.conf", '--dir', $dir, '--dryrun', '--', 'f90', '-c', $f);
+  my @cmd = ($FXTRAN_F90, '--config', $config, '--dir', $dir, '--dryrun', '--', 'f90', '-c', $file);
 
   print "@cmd\n";
 
@@ -56,8 +63,6 @@ sub processList
 
   my @lst = @_;
 
-  unlink ($_) for (<run.*.log>);
-
   if ($opts->{threads} > 1)
     {
        my @t;
@@ -74,7 +79,7 @@ sub processList
                {
                  while (my $f = $q->dequeue ()) 
                    { 
-                     &processFile (tid => $tid, file => $f, log => $fh); 
+                     &processFile (tid => $tid, file => $f, log => $fh, config => $opts->{config}); 
                    } 
                };
              my $c = $@;
@@ -108,6 +113,9 @@ sub processList
     }
 }
 
+unlink ($_) for (<run.*.log>);
+
+
 my $cwd = &cwd ();
 
 my %opts = (threads => 4);
@@ -126,12 +134,32 @@ $ENV{TARGET_PACK} = $cwd;
 my @mod = &getLines ("list.mod");
 my @src = &getLines ("list.src");
 
-for my $d (qw (types-fieldapi types-constant src/local hub/local))
+for my $type (qw (typebound util))
   {
-    &rmtree ($d) if (-d $d);
+    my $config = "fxtran-$type.conf";
+
+    for my $d (qw (types-fieldapi types-constant src/local hub/local))
+      {
+        &rmtree ($d) if (-d $d);
+      }
+
+    &processList ({%opts, config => $config},  @mod);
+    &processList ({%opts, config => $config},  @src);
+
+    &rmtree ("run/$type");
+    &mkpath ("run/$type") or die;
+
+    for my $dir (qw (hub src))
+      {
+        &mkpath ("run/$type/$dir") or die;
+        if (-d "$dir/local")
+          {
+            &move ("$dir/local", "run/$type/$dir/local") 
+              or die ("Cannot move `$dir/local' into `run/$type/$dir/local'");
+          }
+
+        &runCommand (qw (diff -B -w -x *.F90.xml -r), "ref/$type/$dir/local", "run/$type/$dir/local");
+      }
+
   }
-
-
-&processList (\%opts, @mod);
-&processList (\%opts, @src);
 
