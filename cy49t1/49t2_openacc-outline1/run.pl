@@ -22,6 +22,7 @@ my $FXTRAN_F90 = &Cwd::realpath ("$Bin/../../bin/fxtran-f90");
 sub runCommand
 {
   my @cmd = @_;
+  print "@cmd\n";
   system (@cmd)
     and die ("Command `@cmd' failed");
 }
@@ -119,8 +120,6 @@ sub processList
 unlink ($_) for (<run.*.log>);
 
 
-my $cwd = &cwd ();
-
 my %opts = (threads => 4);
 my @opts_f = qw (help);
 my @opts_s = qw (threads);
@@ -131,13 +130,17 @@ my @opts_s = qw (threads);
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
 
+my $cwd = &cwd ();
+
 $ENV{TMPDIR}      = "$cwd/tmp";
 $ENV{TARGET_PACK} = $cwd;
 
 my @mod = &getLines ("list.mod");
 my @src = &getLines ("list.src");
 
-for my $type (qw (outline1))
+my @type = map { m/^fxtran-(\w+)\.conf$/o; $1 } <fxtran-*.conf>;
+
+for my $type (@type)
   {
     my $config = "fxtran-$type.conf";
 
