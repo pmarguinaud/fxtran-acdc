@@ -1,0 +1,73 @@
+SUBROUTINE LOCAL2CART(KFLEV,KPROMA,KST,KEND,PGEMU,PGSQM2,PGECLO,PGESLO,PGNORDM,PGNORDL,&
+  &PU,PV,PX,PY,PZ,LDROT)
+
+!$ACDC singlecolumn  --process-pointers
+
+! Purpose:
+!  convert from grid-point local repere to Cartesian repere
+!
+! Input:
+!  PGEMU/GSQM2/GECLO/GESLO: geographical coordinates of grid-points
+!  PGNORDM/GNORDL: compass components of grid-points
+!  PU/PV: 'Local' U/V components of horizontal wind (ie local repere of each grid-point)
+!  LDROT: switch for 'North-rotating' or not the input wind (PU/PV)
+!
+! Output:
+!  PX/PY/PZ: Cartesian 'geocentric' components of horizontal wind
+!
+! Author:
+!  H Petithomme, Dec 2023: extracted from larmes/larcinb
+
+USE PARKIND1, ONLY: JPIM, JPRB
+USE YOMHOOK, ONLY: LHOOK, DR_HOOK, JPHOOK
+
+IMPLICIT NONE
+
+INTEGER(KIND=JPIM) ,INTENT(IN)             :: KFLEV,KPROMA,KST,KEND
+LOGICAL            ,INTENT(IN)  ,OPTIONAL  :: LDROT
+REAL(KIND=JPRB)    ,INTENT(IN)             :: PGEMU(KPROMA),PGSQM2(KPROMA),PGECLO(KPROMA),PGESLO(KPROMA)
+REAL(KIND=JPRB)    ,INTENT(IN)             :: PGNORDM(KPROMA),PGNORDL(KPROMA)
+REAL(KIND=JPRB)    ,INTENT(IN)             :: PU(KPROMA,KFLEV)
+REAL(KIND=JPRB)    ,INTENT(IN)             :: PV(KPROMA,KFLEV)
+REAL(KIND=JPRB)    ,INTENT(OUT)            :: PX(KPROMA,KFLEV)
+REAL(KIND=JPRB)    ,INTENT(OUT)            :: PY(KPROMA,KFLEV)
+REAL(KIND=JPRB)    ,INTENT(OUT)            :: PZ(KPROMA,KFLEV)
+
+INTEGER(KIND=JPIM) :: JLEV,JROF
+LOGICAL :: LLROT
+REAL(KIND=JPRB) :: ZU,ZV
+REAL(KIND=JPHOOK) :: ZHOOK_HANDLE
+
+#include "rotate.func.h"
+
+IF (LHOOK) CALL DR_HOOK("LOCAL2CART",0,ZHOOK_HANDLE)
+
+LLROT = .FALSE.
+IF (PRESENT(LDROT)) LLROT = LDROT
+
+! both ZU and ZV are needed in case of aliasing with swapping of U and V
+IF (LLROT) THEN
+  DO JLEV=1,KFLEV
+    DO JROF=KST,KEND
+      ZU = FROTU(PU(JROF,JLEV),PV(JROF,JLEV),PGNORDM(JROF),PGNORDL(JROF))
+      ZV = FROTV(PU(JROF,JLEV),PV(JROF,JLEV),PGNORDM(JROF),PGNORDL(JROF))
+      PX(JROF,JLEV) = -ZU*PGESLO(JROF)-ZV*PGECLO(JROF)*PGEMU(JROF)
+      PY(JROF,JLEV) = ZU*PGECLO(JROF)-ZV*PGESLO(JROF)*PGEMU(JROF)
+      PZ(JROF,JLEV) = ZV*PGSQM2(JROF)
+    ENDDO
+  ENDDO
+ELSE
+  DO JLEV=1,KFLEV
+    DO JROF=KST,KEND
+      ZU = PU(JROF,JLEV)
+      ZV = PV(JROF,JLEV)
+      PX(JROF,JLEV)=-PU(JROF,JLEV)*PGESLO(JROF)-PV(JROF,JLEV)*PGECLO(JROF)*PGEMU(JROF)
+      PY(JROF,JLEV)=PU(JROF,JLEV)*PGECLO(JROF)-PV(JROF,JLEV)*PGESLO(JROF)*PGEMU(JROF)
+      PZ(JROF,JLEV)=PV(JROF,JLEV)*PGSQM2(JROF)
+    ENDDO
+  ENDDO
+ENDIF
+
+IF (LHOOK) CALL DR_HOOK("LOCAL2CART",1,ZHOOK_HANDLE)
+END SUBROUTINE LOCAL2CART
+

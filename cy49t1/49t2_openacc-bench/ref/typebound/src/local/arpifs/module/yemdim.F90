@@ -1,0 +1,122 @@
+MODULE YEMDIM
+
+!$ACDC methods 
+
+
+USE PARKIND1, ONLY : JPIM
+
+IMPLICIT NONE
+
+SAVE
+
+!     ------------------------------------------------------------------
+
+!*    Dimensions of model working arrays (YEMDIM)
+
+!   NSECPLG: dimension for the Laplace operator
+
+!*    Width of coupling/relaxation belts
+
+!   NBZONG : half-difference between the size of C+I and C zone in meridional direction
+!   NBZONL : half-difference between the size of C+I and C zone in zonal direction
+!   NBZONU : number of levels in coupling zone
+!   NNOEXTZL : alternative extension zone (E') zonal dimension
+!   NNOEXTZG : alternative extension zone (E') meridional dimension
+
+!   NISNAX : zonal limit wavenumbers within the ellipse
+!   NISMAX : meridional limit wavenumbers within the ellipse
+
+!   LBIPINCI  : Boyd coupling business (...)
+!   NBIPINCIX : Boyd coupling business (...)
+!   NBIPINCIY : Boyd coupling business (...)
+
+!*    Key to be moved out (in YOMOPH or so ?)
+
+!   NEDOM  : key: options for file ALADIN :
+!                        -1 --- Gridpoint file
+!                         1 --- Spectral file (Aladin standard)
+
+
+TYPE :: TEDIM
+INTEGER(KIND=JPIM) :: NSECPLG
+INTEGER(KIND=JPIM) :: NBZONG
+INTEGER(KIND=JPIM) :: NBZONL
+INTEGER(KIND=JPIM) :: NBZONU
+INTEGER(KIND=JPIM) :: NNOEXTZG
+INTEGER(KIND=JPIM) :: NNOEXTZL
+INTEGER(KIND=JPIM), POINTER :: NISMAX(:) => NULL()
+INTEGER(KIND=JPIM), POINTER :: NISNAX(:) => NULL()
+LOGICAL :: LBIPINCI
+INTEGER(KIND=JPIM) :: NBIPINCIX
+INTEGER(KIND=JPIM) :: NBIPINCIY
+INTEGER(KIND=JPIM) :: NEDOM
+CONTAINS
+PROCEDURE :: COPY => COPY_TEDIM
+PROCEDURE :: CRC64 => CRC64_TEDIM
+PROCEDURE :: HOST => HOST_TEDIM
+PROCEDURE :: LOAD => LOAD_TEDIM
+PROCEDURE :: SAVE => SAVE_TEDIM
+PROCEDURE :: SIZE => SIZE_TEDIM
+PROCEDURE :: WIPE => WIPE_TEDIM
+END TYPE TEDIM
+
+
+!     ------------------------------------------------------------------
+INTERFACE
+
+MODULE SUBROUTINE COPY_TEDIM (SELF, LDCREATED, LDFIELDAPI)
+
+IMPLICIT NONE
+CLASS (TEDIM), INTENT (IN), TARGET :: SELF
+LOGICAL, OPTIONAL, INTENT (IN) :: LDCREATED, LDFIELDAPI
+END SUBROUTINE
+
+MODULE SUBROUTINE CRC64_TEDIM (SELF, KLUN, CDPATH)
+USE CRC64_INTRINSIC, ONLY : FCRC64 => CRC64
+
+IMPLICIT NONE
+CLASS (TEDIM), TARGET :: SELF
+INTEGER, INTENT (IN) :: KLUN
+CHARACTER(LEN=*), INTENT (IN) :: CDPATH
+END SUBROUTINE
+
+MODULE SUBROUTINE HOST_TEDIM (SELF)
+
+IMPLICIT NONE
+CLASS (TEDIM), TARGET :: SELF
+END SUBROUTINE
+
+MODULE SUBROUTINE LOAD_TEDIM (SELF, KLUN)
+
+IMPLICIT NONE
+CLASS (TEDIM), INTENT (OUT), TARGET :: SELF
+INTEGER, INTENT (IN) :: KLUN
+END SUBROUTINE
+
+MODULE SUBROUTINE SAVE_TEDIM (SELF, KLUN)
+
+IMPLICIT NONE
+CLASS (TEDIM), INTENT (IN), TARGET :: SELF
+INTEGER, INTENT (IN) :: KLUN
+END SUBROUTINE
+
+MODULE FUNCTION SIZE_TEDIM (SELF, CDPATH, LDPRINT) RESULT (KSIZE)
+
+IMPLICIT NONE
+CLASS (TEDIM),     INTENT (IN), TARGET :: SELF
+CHARACTER(LEN=*), INTENT (IN), OPTIONAL :: CDPATH
+LOGICAL,          INTENT (IN), OPTIONAL :: LDPRINT
+INTEGER*8 :: KSIZE
+END FUNCTION
+
+MODULE SUBROUTINE WIPE_TEDIM (SELF, LDDELETED, LDFIELDAPI)
+
+IMPLICIT NONE
+CLASS (TEDIM), INTENT (IN), TARGET :: SELF
+LOGICAL, OPTIONAL, INTENT (IN) :: LDDELETED, LDFIELDAPI
+END SUBROUTINE
+
+
+END INTERFACE
+
+END MODULE YEMDIM

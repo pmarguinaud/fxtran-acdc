@@ -1,0 +1,142 @@
+MODULE YEMDYN
+
+!$ACDC methods 
+
+
+USE PARKIND1  ,ONLY : JPRB
+
+IMPLICIT NONE
+
+SAVE
+
+TYPE  :: TEDYN
+!     ------------------------------------------------------------------
+
+!===========   MAIN HORIZONTAL DIFFUSION SCHEME  ==============================
+
+! * LEVEL AND WAVENUMBER DEPENDENT INVERSE CHARACTERISTIC TIMES:
+! RDIVORE  : for diffusion of vorticity.
+! RDIDIVE  : for diffusion of divergence.
+! RDITE    : for diffusion of temperature.
+! RDIGFLE  : for diffusion of GFL vars.
+! RDIPDE   : for diffusion of pressure departure (NH).
+! RDIVDE   : for diffusion of vertical divergence (NH).
+! RDISPE   : for diffusion of surface pressure.
+
+REAL(KIND=JPRB),ALLOCATABLE:: RDIVORE(:,:)
+REAL(KIND=JPRB),ALLOCATABLE:: RDIDIVE(:,:)
+REAL(KIND=JPRB),ALLOCATABLE:: RDITE(:,:)
+REAL(KIND=JPRB),ALLOCATABLE:: RDIGFLE(:,:,:)
+REAL(KIND=JPRB),ALLOCATABLE:: RDIPDE(:,:)
+REAL(KIND=JPRB),ALLOCATABLE:: RDIVDE(:,:)
+REAL(KIND=JPRB),ALLOCATABLE:: RDISPE(:)
+
+!===========   ADDITIONAL HORIZONTAL DIFFUSION SCHEME FOR SLHD  ===============
+
+! * LEVEL AND WAVENUMBER DEPENDENT INVERSE CHARACTERISTIC TIMES:
+! RDSVORE  : for diffusion of vorticity.
+! RDSDIVE  : for diffusion of divergence.
+! RDSVDE   : for diffusion of vertical divergence (NH).
+
+REAL(KIND=JPRB),ALLOCATABLE:: RDSVORE(:,:)
+REAL(KIND=JPRB),ALLOCATABLE:: RDSDIVE(:,:)
+REAL(KIND=JPRB),ALLOCATABLE:: RDSVDE(:,:)
+
+!===========   "LGRADSP" OPTION  ==============================================
+
+! REFILV: for filtering of vorticity.
+! REFILD: for filtering of pressure departure.
+REAL(KIND=JPRB),ALLOCATABLE :: REFILV(:,:)
+REAL(KIND=JPRB),ALLOCATABLE :: REFILD(:,:)
+
+!===========   SEMI-IMPLICIT SCHEME ===========================================
+
+! LESIDG   : .F.: Semi-implicit-scheme with reduced divergence.
+!            .T.: Semi-implicit scheme with not reduced divergence.
+! RTHRESIDG: threshold on RSTRET for activation of LESIDG option
+
+LOGICAL :: LESIDG
+REAL(KIND=JPRB) :: RTHRESIDG
+
+!===========   LAM MODEL MASS CORRECTOR =======================================
+
+! * XMALD:  imposed dry air mass for mass corrector in LAM models
+
+REAL(KIND=JPRB) :: XMALD
+
+!===========   MISCELLANEOUS  =================================================
+
+! TCDIS    : ??? (no comment provided, used in the transform package).
+
+REAL(KIND=JPRB) :: TCDIS
+
+CONTAINS
+PROCEDURE :: COPY => COPY_TEDYN
+PROCEDURE :: CRC64 => CRC64_TEDYN
+PROCEDURE :: HOST => HOST_TEDYN
+PROCEDURE :: LOAD => LOAD_TEDYN
+PROCEDURE :: SAVE => SAVE_TEDYN
+PROCEDURE :: SIZE => SIZE_TEDYN
+PROCEDURE :: WIPE => WIPE_TEDYN
+END TYPE TEDYN
+
+!     ------------------------------------------------------------------
+INTERFACE
+
+MODULE SUBROUTINE COPY_TEDYN (SELF, LDCREATED, LDFIELDAPI)
+
+IMPLICIT NONE
+CLASS (TEDYN), INTENT (IN), TARGET :: SELF
+LOGICAL, OPTIONAL, INTENT (IN) :: LDCREATED, LDFIELDAPI
+END SUBROUTINE
+
+MODULE SUBROUTINE CRC64_TEDYN (SELF, KLUN, CDPATH)
+USE CRC64_INTRINSIC, ONLY : FCRC64 => CRC64
+
+IMPLICIT NONE
+CLASS (TEDYN), TARGET :: SELF
+INTEGER, INTENT (IN) :: KLUN
+CHARACTER(LEN=*), INTENT (IN) :: CDPATH
+END SUBROUTINE
+
+MODULE SUBROUTINE HOST_TEDYN (SELF)
+
+IMPLICIT NONE
+CLASS (TEDYN), TARGET :: SELF
+END SUBROUTINE
+
+MODULE SUBROUTINE LOAD_TEDYN (SELF, KLUN)
+USE PARKIND1, ONLY : JPRD
+
+IMPLICIT NONE
+CLASS (TEDYN), INTENT (OUT), TARGET :: SELF
+INTEGER, INTENT (IN) :: KLUN
+END SUBROUTINE
+
+MODULE SUBROUTINE SAVE_TEDYN (SELF, KLUN)
+
+IMPLICIT NONE
+CLASS (TEDYN), INTENT (IN), TARGET :: SELF
+INTEGER, INTENT (IN) :: KLUN
+END SUBROUTINE
+
+MODULE FUNCTION SIZE_TEDYN (SELF, CDPATH, LDPRINT) RESULT (KSIZE)
+
+IMPLICIT NONE
+CLASS (TEDYN),     INTENT (IN), TARGET :: SELF
+CHARACTER(LEN=*), INTENT (IN), OPTIONAL :: CDPATH
+LOGICAL,          INTENT (IN), OPTIONAL :: LDPRINT
+INTEGER*8 :: KSIZE
+END FUNCTION
+
+MODULE SUBROUTINE WIPE_TEDYN (SELF, LDDELETED, LDFIELDAPI)
+
+IMPLICIT NONE
+CLASS (TEDYN), INTENT (IN), TARGET :: SELF
+LOGICAL, OPTIONAL, INTENT (IN) :: LDDELETED, LDFIELDAPI
+END SUBROUTINE
+
+
+END INTERFACE
+
+END MODULE YEMDYN

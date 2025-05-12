@@ -1,0 +1,62 @@
+SUBROUTINE LASCAW_CLOTURB(KFLEV,KPROMA,KST,KEND,PKHTURB,PCLO,PCLOSLD)
+
+!$ACDC singlecolumn  --process-pointers
+
+
+! ------------------------------------------------------------------
+! Purpose:
+!   Modify PCLO and PCLOSLD when 3D turbulence is active
+!
+! INPUT:
+!   KFLEV    - Vertical dimension
+!   KPROMA   - horizontal dimension.
+!   KST      - first element of arrays where computations are performed.
+!   KEND    - depth of work.
+!   PKHTURB  - horizontal exchange coefficients for 3D turbulence
+!
+! INPUT/OUTPUT:
+!   PCLO     - weights for horizontal cubic interpolations in longitude.
+!   PCLOSLD  - cf. PCLO, SLHD case.
+!
+! Author:
+!   H Petithomme (Dec 2020): after lascaw_cla (original from K Yessad, 2009)
+! ------------------------------------------------------------------
+
+USE PARKIND1,ONLY: JPIB,JPIM,JPRB
+USE YOMHOOK, ONLY: LHOOK,DR_HOOK, JPHOOK
+
+IMPLICIT NONE
+
+INTEGER(KIND=JPIM), INTENT(IN)  :: KFLEV
+INTEGER(KIND=JPIM), INTENT(IN)  :: KPROMA
+INTEGER(KIND=JPIM), INTENT(IN)  :: KST
+INTEGER(KIND=JPIM), INTENT(IN)  :: KEND
+REAL(KIND=JPRB)   , INTENT(IN)  :: PKHTURB(KPROMA,KFLEV)
+REAL(KIND=JPRB)   , INTENT(INOUT) :: PCLO(KPROMA,KFLEV,3)
+REAL(KIND=JPRB)   , INTENT(INOUT) :: PCLOSLD(KPROMA,KFLEV,3)
+
+INTEGER(KIND=JPIM) :: JROF,JLEV
+REAL(KIND=JPRB)    :: ZKH,ZWDS1
+REAL(KIND=JPHOOK)  :: ZHOOK_HANDLE
+
+IF (LHOOK) CALL DR_HOOK('LASCAW_CLOTURB',0,ZHOOK_HANDLE)
+
+! apply the horizontal Laplacian to both PCLO and PCLOSLD:
+DO JLEV=1,KFLEV
+  DO JROF=KST,KEND
+    ZKH = 1._JPRB-2._JPRB*PKHTURB(JROF,JLEV)
+    PCLO(JROF,JLEV,3)=PKHTURB(JROF,JLEV)*PCLO(JROF,JLEV,2)+PCLO(JROF,JLEV,3)
+    ZWDS1=ZKH*PCLO(JROF,JLEV,1)+PKHTURB(JROF,JLEV)*PCLO(JROF,JLEV,2)
+    PCLO(JROF,JLEV,2)=ZKH*PCLO(JROF,JLEV,2)+PKHTURB(JROF,JLEV)*PCLO(JROF,JLEV,1)
+    PCLO(JROF,JLEV,1)=ZWDS1
+
+    PCLOSLD(JROF,JLEV,3)=PKHTURB(JROF,JLEV)*PCLOSLD(JROF,JLEV,2)+PCLOSLD(JROF,JLEV,3)
+    ZWDS1=ZKH*PCLOSLD(JROF,JLEV,1)+PKHTURB(JROF,JLEV)*PCLOSLD(JROF,JLEV,2)
+    PCLOSLD(JROF,JLEV,2)=ZKH*PCLOSLD(JROF,JLEV,2)+PKHTURB(JROF,JLEV)*PCLOSLD(JROF,JLEV,1)
+    PCLOSLD(JROF,JLEV,1)=ZWDS1
+  ENDDO
+ENDDO
+
+IF (LHOOK) CALL DR_HOOK('LASCAW_CLOTURB',1,ZHOOK_HANDLE)
+END SUBROUTINE LASCAW_CLOTURB
+

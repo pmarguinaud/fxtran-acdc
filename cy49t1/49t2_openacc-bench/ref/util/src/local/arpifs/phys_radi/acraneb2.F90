@@ -1,0 +1,1347 @@
+!OPTIONS XOPT(NOEVAL)
+SUBROUTINE ACRANEB2( &
+! - INPUT
+ & YDCST,YDERDI,YDRIP,YDML_PHY_MF,LDCONFX, &
+ & KIDIA,KFDIA,KLON,KTDIA,KLEV,KJN,KSTEP,KNFRRC, &
+! - INPUT 2D
+ & PAPRS,PAPRSF,PCP,PR,PDELP,PNEB,PQ,PQCO2,PQICE,PQLI,PQO3,PT, &
+! - INPUT 1D
+ & PALB,PALBDIR,PEMIS,PGELAM,PGEMU,PMU0,PMU0LU,PTS,PDECRD,PCLCT, &
+! - INPUT/OUTPUT
+ & PGDEOSI,PGUEOSI,PGMU0,PGMU0_MIN,PGMU0_MAX, &
+ & PGDEOTI,PGDEOTI2,PGUEOTI,PGUEOTI2,PGEOLT,PGEOXT, &
+ & PGRPROX,PGMIXP,PGFLUXC,PGRSURF,PSDUR, &
+! - OUTPUT 2D
+ & PFRSO,PFRTH, &
+! - OUTPUT 1D
+ & PFRSOC,PFRTHC,PFRSODIFS,PFRSODIRS,PFRSOLU,PFRTHDS, &
+! - INPUT 2D x 6
+ & PDAER)
+
+!$ACDC singlecolumn  
+
+
+! Purpose:
+! --------
+!   ACRANEB2 - Computes radiative fluxes and associated surface diagnostics.
+!   Upgraded and modularized version of original ACRANEB routine.
+
+! Interface:
+! ----------
+! INPUT:
+!   LDCONFX   - true for diagnostic timestep STEPX
+!   KIDIA     - initial index for horizontal loops
+!   KFDIA     - final index for horizontal loops
+!   KLON      - horizontal dimension of arrays
+!   KTDIA     - initial index for vertical loops (usually 1)
+!   KLEV      - vertical dimension of full level arrays
+!   KJN       - maximum number of day/night intervals within NPROMA slice
+!   KSTEP     - current timestep
+!   KNFRRC    - frequency of clearsky calculations
+!   PAPRS     - half level pressure
+!   PAPRSF    - full level pressure
+!   PCP       - specific heat of moist air at constant pressure
+!   PR        - gas constant of moist air
+!   PDELP     - pressure thickness of the layer
+!   PNEB      - cloud fraction
+!   PQ        - specific humidity
+!   PQCO2     - specific mass of CO2 with respect to dry air
+!   PQICE     - specific mass of cloud ice
+!   PQLI      - specific mass of cloud water
+!   PQO3      - specific mass of ozone with respect to dry air
+!               (element 0 contains ozone column above model top)
+!   PT        - temperature
+!   PALB      - diffuse surface albedo
+!   PALBDIR   - direct (parallel) surface albedo
+!   PEMIS     - surface emissivity
+!   PGELAM    - longitude
+!   PGEMU     - sine of latitude
+!   PMU0      - cosine of solar zenithal angle (instantaneous value)
+!   PMU0LU    - cosine of lunar zenithal angle (instantaneous value)
+!   PTS       - surface temperature
+!   PDECRD    - decorrelation depth for cloud overlaps [Pa]
+!   PCLCT     - total cloud cover
+! INPUT/OUTPUT (for solar/thermal intermittency):
+!   PGDEOSI   - min/max descending incremental optical depths, solar
+!   PGUEOSI   - min/max ascending incremental optical depths, solar
+!   PGMU0     - cosine of solar zenith angle, approximate actual value
+!   PGMU0_MIN - cosine of solar zenith angle, min value
+!   PGMU0_MAX - cosine of solar zenith angle, max value
+!   PGDEOTI   - descending incremental optical depths, dB/dT(T0) weights
+!   PGDEOTI2  - descending incremental optical depths, B weights with
+!               linear T_e correction
+!   PGUEOTI   - ascending incremental optical depths, dB/dT(T0) weights
+!   PGUEOTI2  - ascending incremental optical depths, B weights with
+!               linear T_e correction
+!   PGEOLT    - local optical depths, dB/dT(T0) weights
+!   PGEOXT    - maximum optical depths for EBL-EAL, dB/dT(T0) weights
+!   PGRPROX   - correction term for adjacent exchanges
+!   PGMIXP    - non-statistical weights for bracketing
+!   PGFLUXC   - out of bracket part of EBL, RESP. EBL-EAL flux
+!   PGRSURF   - corrective ratio for surface CTS contribution
+!   PSDUR     - sunshine duration in seconds
+! OUTPUT:
+!   PFRSO     - net solar   flux (positive downwards)
+!   PFRTH     - net thermal flux (positive downwards)
+!   PFRSOC    - net clearsky solar   flux at TOA and surface
+!   PFRTHC    - net clearsky thermal flux at TOA and surface
+!   PFRSODIFS - downward diffuse           solar flux at surface
+!   PFRSODIRS - downward direct (parallel) solar flux at surface
+!   PFRSOLU   - downward direct + diffuse  lunar flux at surface
+!   PFRTHDS   - downward diffuse         thermal flux at surface
+! INPUT again:
+!   PDAER     - layer optical depths of 6 aerosol types
+ 
+! Externals:
+! ----------
+!   AC_CLOUD_MODEL2
+!   ACRANEB_COEFS
+!   ACRANEB_SOLVS
+!   ACRANEB_SOLVT
+!   ACRANEB_TRANSS
+!   ACRANEB_TRANST
+
+! Method:
+! -------
+
+! Reference:
+! ----------
+
+! Author:
+! -------
+!   1989-12, J.-F. Geleyn (original ACRANEB)
+
+! Modifications:
+! --------------
+!   2009-10, T. Kral      Removed obsolete keys LREWS, LRSTAB.
+!                         Removed obsolete solar eclipse computation.
+!                         Externalized code of gaseous transmissions
+!                         computation, preparation of adding system
+!                         coefficients and adding system solvers.
+!   2011-06, R. Brozkova  Intermittency for thermal gaseous transmissions.
+!   2013-11, J. Masek     New gaseous transmissions and statistical model,
+!                         intermittency for bracketing weights, cleaning.
+!   2014-11, J. Masek     Solar band computation intermittency.
+!   2016-04, J. Masek     True direct solar flux, exponential-random cloud
+!                         overlap.
+!   2016-09, J. Masek     Revised true direct solar flux, proper calculation
+!                         of sunshine duration.
+!   2017-09, J. Masek     Optimized SW/LW intermittency in the last timestep,
+!                         prevented extrapolation of SW gaseous transmissions.
+!   2019-09, J. Masek     Further modularization of SW/LW solvers, enabling
+!                         efficient clearsky computations.
+! End Modifications
+!-------------------------------------------------------------------------------
+
+USE MODEL_PHYSICS_MF_MOD , ONLY : MODEL_PHYSICS_MF_TYPE
+USE PARKIND1 ,ONLY : JPIM     ,JPRB
+USE YOMHOOK  ,ONLY : LHOOK    ,DR_HOOK,  JPHOOK
+USE YOMCST   ,ONLY : TCST
+
+USE YOMRIP   ,ONLY : TRIP
+USE YOERDI   ,ONLY : TERDI
+
+!-------------------------------------------------------------------------------
+
+IMPLICIT NONE
+
+TYPE(TCST)                 ,INTENT(IN) :: YDCST
+TYPE(TERDI)                ,INTENT(IN) :: YDERDI
+TYPE(MODEL_PHYSICS_MF_TYPE),INTENT(IN) :: YDML_PHY_MF
+TYPE(TRIP)                 ,INTENT(IN) :: YDRIP
+
+LOGICAL,INTENT(IN) :: LDCONFX
+
+INTEGER(KIND=JPIM),INTENT(IN) :: KIDIA 
+INTEGER(KIND=JPIM),INTENT(IN) :: KFDIA 
+INTEGER(KIND=JPIM),INTENT(IN) :: KLON 
+INTEGER(KIND=JPIM),INTENT(IN) :: KTDIA 
+INTEGER(KIND=JPIM),INTENT(IN) :: KLEV 
+INTEGER(KIND=JPIM),INTENT(IN) :: KJN
+INTEGER(KIND=JPIM),INTENT(IN) :: KSTEP
+INTEGER(KIND=JPIM),INTENT(IN) :: KNFRRC
+
+REAL(KIND=JPRB),INTENT(IN)    :: PAPRS(KLON,0:KLEV) 
+REAL(KIND=JPRB),INTENT(IN)    :: PAPRSF(KLON,KLEV) 
+REAL(KIND=JPRB),INTENT(IN)    :: PCP(KLON,KLEV) 
+REAL(KIND=JPRB),INTENT(IN)    :: PR(KLON,KLEV) 
+REAL(KIND=JPRB),INTENT(IN)    :: PDELP(KLON,KLEV) 
+REAL(KIND=JPRB),INTENT(IN)    :: PNEB(KLON,KLEV) 
+REAL(KIND=JPRB),INTENT(IN)    :: PQ(KLON,KLEV) 
+REAL(KIND=JPRB),INTENT(IN)    :: PQCO2(KLON,KLEV) 
+REAL(KIND=JPRB),INTENT(IN)    :: PQICE(KLON,KLEV) 
+REAL(KIND=JPRB),INTENT(IN)    :: PQLI(KLON,KLEV) 
+REAL(KIND=JPRB),INTENT(IN)    :: PQO3(KLON,0:KLEV) 
+REAL(KIND=JPRB),INTENT(IN)    :: PT(KLON,KLEV) 
+REAL(KIND=JPRB),INTENT(IN)    :: PALB(KLON) 
+REAL(KIND=JPRB),INTENT(IN)    :: PALBDIR(KLON) 
+REAL(KIND=JPRB),INTENT(IN)    :: PEMIS(KLON) 
+REAL(KIND=JPRB),INTENT(IN)    :: PGELAM(KLON) 
+REAL(KIND=JPRB),INTENT(IN)    :: PGEMU(KLON) 
+REAL(KIND=JPRB),INTENT(IN)    :: PMU0(KLON) 
+REAL(KIND=JPRB),INTENT(IN)    :: PMU0LU(KLON) 
+REAL(KIND=JPRB),INTENT(IN)    :: PTS(KLON) 
+REAL(KIND=JPRB),INTENT(IN)    :: PDECRD(KLON)
+REAL(KIND=JPRB),INTENT(IN)    :: PCLCT(KLON)
+REAL(KIND=JPRB),INTENT(INOUT) :: PGDEOSI(KLON,0:KLEV,2)
+REAL(KIND=JPRB),INTENT(INOUT) :: PGUEOSI(KLON,0:KLEV,2)
+REAL(KIND=JPRB),INTENT(INOUT) :: PGMU0(KLON,0:YDML_PHY_MF%YRPHY%NSORAYFR-1)
+REAL(KIND=JPRB),INTENT(INOUT) :: PGMU0_MIN(KLON)
+REAL(KIND=JPRB),INTENT(INOUT) :: PGMU0_MAX(KLON)
+REAL(KIND=JPRB),INTENT(INOUT) :: PGDEOTI(KLON,0:KLEV)
+REAL(KIND=JPRB),INTENT(INOUT) :: PGDEOTI2(KLON,0:KLEV)
+REAL(KIND=JPRB),INTENT(INOUT) :: PGUEOTI(KLON,0:KLEV)
+REAL(KIND=JPRB),INTENT(INOUT) :: PGUEOTI2(KLON,0:KLEV)
+REAL(KIND=JPRB),INTENT(INOUT) :: PGEOLT(KLON,KLEV)
+REAL(KIND=JPRB),INTENT(INOUT) :: PGEOXT(KLON,KLEV)
+REAL(KIND=JPRB),INTENT(INOUT) :: PGRPROX(KLON,0:KLEV)
+REAL(KIND=JPRB),INTENT(INOUT) :: PGMIXP(KLON,0:KLEV)
+REAL(KIND=JPRB),INTENT(INOUT) :: PGFLUXC(KLON,0:KLEV)
+REAL(KIND=JPRB),INTENT(INOUT) :: PGRSURF(KLON)
+REAL(KIND=JPRB),INTENT(INOUT) :: PSDUR(KLON)
+REAL(KIND=JPRB),INTENT(OUT)   :: PFRSO(KLON,0:KLEV)
+REAL(KIND=JPRB),INTENT(OUT)   :: PFRTH(KLON,0:KLEV)
+REAL(KIND=JPRB),INTENT(OUT)   :: PFRSOC(KLON,0:1)
+REAL(KIND=JPRB),INTENT(OUT)   :: PFRTHC(KLON,0:1)
+REAL(KIND=JPRB),INTENT(OUT)   :: PFRSODIFS(KLON)
+REAL(KIND=JPRB),INTENT(OUT)   :: PFRSODIRS(KLON)
+REAL(KIND=JPRB),INTENT(OUT)   :: PFRSOLU(KLON)
+REAL(KIND=JPRB),INTENT(OUT)   :: PFRTHDS(KLON)
+REAL(KIND=JPRB),INTENT(IN)    :: PDAER(KLON,KLEV,6)
+
+!-------------------------------------------------------------------------------
+
+REAL(KIND=JPRB) :: ZBB(KLON,0:KLEV)
+
+! CLOUD GEOMETRY COEFFICIENTS
+REAL(KIND=JPRB) :: ZB1(KLON,KLEV),ZB2(KLON,KLEV),ZB3(KLON,KLEV),ZB4(KLON,KLEV)
+REAL(KIND=JPRB) :: ZB1C(KLON,KLEV),ZNEBC(KLON,KLEV)
+
+! MATRIX COEFFICIENTS
+REAL(KIND=JPRB) :: ZA1C(KLON,KLEV),ZA1CUN(KLON,KLEV),ZA2C(KLON,KLEV),&
+  & ZA3C(KLON,KLEV),ZA4C(KLON,KLEV),ZA5C(KLON,KLEV),ZA1N(KLON,KLEV),&
+  & ZA1NUN(KLON,KLEV),ZA2N(KLON,KLEV),ZA3N(KLON,KLEV),ZA4N(KLON,KLEV),&
+  & ZA5N(KLON,KLEV)
+
+REAL(KIND=JPRB) :: ZQICE(KLON,KLEV),ZQLI(KLON,KLEV)
+
+REAL(KIND=JPRB) :: ZDAMP(KLON,KLEV)
+
+REAL(KIND=JPRB) :: ZFLUXE(KLON)&
+  &,ZNMNB(KLON),ZNMNH(KLON),ZNMXB(KLON),ZNMXH(KLON)&
+  &,ZII0(KLON),ZMU0(KLON),ZMU00(KLON),ZMU0I(KLON),ZDM0I(KLON)&
+  &,ZDM0I_MIN(KLON),ZDM0I_MAX(KLON),ZWEIGHT(KLON),ZRSURF(KLON)
+
+REAL(KIND=JPRB) :: ZCOLAT(KLON),ZCOLON(KLON),ZSILON(KLON)
+REAL(KIND=JPRB) :: ZTAUC(KLON),ZTAUCUN(KLON),ZFRSODIRT(KLON)
+REAL(KIND=JPRB) :: ZFRSODIRS_TRUE(KLON),ZFRSODIRS_UN(KLON)
+REAL(KIND=JPRB) :: ZFRSODIRS_C(KLON),ZFRSODIRS_CUN(KLON)
+REAL(KIND=JPRB) :: ZCLCT(KLON)
+
+REAL(KIND=JPRB) :: ZPNER0(KLON,KLEV,KLEV),ZPNER1(KLON,KLEV,KLEV)&
+  &,ZFLUXD(KLON,0:KLEV),ZFLUXL(KLON,0:KLEV)&
+  &,ZFLUXR(KLON,0:KLEV),ZFLUXC(KLON,0:KLEV)&
+  &,ZRPROX(KLON,0:KLEV),ZMIXP(KLON,0:KLEV)&
+  &,ZTAUD(KLON,KLEV),ZTAUL(KLON,KLEV),ZTAU(KLON,0:KLEV,0:KLEV)
+
+! CLOUD/AEROSOL OPTICAL COEFFICIENTS
+REAL(KIND=JPRB) :: ZBSFSI(KLON,KLEV),ZBSFSN(KLON,KLEV),ZBSFTI(KLON,KLEV),&
+  & ZBSFTN(KLON,KLEV),ZEO1TI(KLON,KLEV),ZEO1TN(KLON,KLEV),ZEO2TI(KLON,KLEV),&
+  & ZEO2TN(KLON,KLEV),ZEOASI(KLON,KLEV),ZEOASN(KLON,KLEV),ZEOATI(KLON,KLEV),&
+  & ZEOATN(KLON,KLEV),ZEODSI(KLON,KLEV),ZEODSN(KLON,KLEV),ZEODTI(KLON,KLEV),&
+  & ZEODTN(KLON,KLEV),ZUSAI(KLON,KLEV),ZUSAN(KLON,KLEV),ZUSBI(KLON,KLEV),&
+  & ZUSBN(KLON,KLEV),ZEO2SN(KLON,KLEV),ZEO2SI(KLON,KLEV),ZEO1SN(KLON,KLEV),&
+  & ZEO1SI(KLON,KLEV),ZEOSN(KLON,KLEV),ZEOSNUN(KLON,KLEV),ZEOSI(KLON,KLEV),&
+  & ZEOSIDIR(KLON,KLEV),ZUSN(KLON,KLEV),ZUSI(KLON,KLEV),ZEOSA(KLON,KLEV),&
+  & ZEOSADIR(KLON,KLEV),ZEO1SA(KLON,KLEV),ZEO2SA(KLON,KLEV),&
+  & ZEO3SA(KLON,KLEV),ZEO4SA(KLON,KLEV),ZEO1TA(KLON,KLEV),ZEO2TA(KLON,KLEV)
+
+! GASEOUS OPTICAL DEPTHS
+REAL(KIND=JPRB) :: ZDEOSA(KLON,0:KLEV),&
+  & ZDEOSI(KLON,0:KLEV),ZUEOSI(KLON,0:KLEV),&
+  & ZDEOTI(KLON,0:KLEV),ZDEOTI2(KLON,0:KLEV),&
+  & ZUEOTI(KLON,0:KLEV),ZUEOTI2(KLON,0:KLEV),&
+  & ZEOLT(KLON,KLEV),ZEOXT(KLON,KLEV),&
+  & ZEOTI(KLON,0:KLEV)
+
+INTEGER(KIND=JPIM) :: IFDIA(KJN),IIDIA(KJN)
+
+! LOCAL INTEGER SCALARS
+INTEGER(KIND=JPIM) :: IAUCR,ILEV,ICALS,ICALT,ISTEP
+INTEGER(KIND=JPIM) :: JAE,JLEV,JLEV1,JLEV2,JLON,JN,JSTEP
+
+! LOCAL LOGICAL SCALARS
+LOGICAL :: LLAUTO,LLFDIA,LLIDIA,LLNUMX
+
+! LOCAL REAL SCALARS
+REAL(KIND=JPRB) :: ZARGLI,ZTRLI,ZEARRT,ZDEBL,ZW,&
+  & ZCLOV,ZCNEB,ZCOVSR,ZCOVSR_NEW,ZSIVSR,ZCODT,ZSIDT,&
+  & ZEPS1,ZEPSAL,ZIEART,ZSOLLEV,ZEPSNEB,ZSECUR,ZSIGMA,ZTSTEP,ZUNSCALE,&
+  & ZUSA,ZZEO2TA,ZZEO2SA
+REAL(KIND=JPHOOK) :: ZHOOK_HANDLE
+
+!-------------------------------------------------------------------------------
+
+#include "ac_cloud_model2.intfb.h"
+#include "acraneb_transs.intfb.h"
+#include "acraneb_transt.intfb.h"
+#include "acraneb_coefs.intfb.h"
+#include "acraneb_solvs.intfb.h"
+#include "acraneb_solvt.intfb.h"
+
+!-------------------------------------------------------------------------------
+IF (LHOOK) CALL DR_HOOK('ACRANEB2',0,ZHOOK_HANDLE)
+
+ASSOCIATE(TSPHY=>YDML_PHY_MF%YRPHY2%TSPHY, &
+ & EOATA=>YDML_PHY_MF%YRPHY3%EOATA, USAA=>YDML_PHY_MF%YRPHY3%USAA, EODTA=>YDML_PHY_MF%YRPHY3%EODTA, &
+ & FSM_BB=>YDML_PHY_MF%YRPHY3%FSM_BB, USBA=>YDML_PHY_MF%YRPHY3%USBA, EODSA=>YDML_PHY_MF%YRPHY3%EODSA, &
+ & FSM_AA=>YDML_PHY_MF%YRPHY3%FSM_AA, RII0=>YDML_PHY_MF%YRPHY3%RII0, BSFSA=>YDML_PHY_MF%YRPHY3%BSFSA, &
+ & EOASA=>YDML_PHY_MF%YRPHY3%EOASA, BSFTA=>YDML_PHY_MF%YRPHY3%BSFTA, EARRT=>YDML_PHY_MF%YRPHY3%EARRT, &
+ & RMIXD=>YDML_PHY_MF%YRPHY3%RMIXD, RMIXP0=>YDML_PHY_MF%YRPHY3%RMIXP0, RTL=>YDML_PHY_MF%YRPHY3%RTL, &
+ & LRTPP=>YDML_PHY_MF%YRPHY%LRTPP, LRNUMX=>YDML_PHY_MF%YRPHY%LRNUMX, LRNUEXP=>YDML_PHY_MF%YRPHY%LRNUEXP, &
+ & LRAYLU=>YDML_PHY_MF%YRPHY%LRAYLU, &
+ & LRAYPL=>YDML_PHY_MF%YRPHY%LRAYPL, NTHRAYFR=>YDML_PHY_MF%YRPHY%NTHRAYFR, NRAUTOEV=>YDML_PHY_MF%YRPHY%NRAUTOEV, &
+ & NPHYREP=>YDML_PHY_MF%YRPHY%NPHYREP, LRPROX=>YDML_PHY_MF%YRPHY%LRPROX, NSORAYFR=>YDML_PHY_MF%YRPHY%NSORAYFR, &
+ & RIP0LU=>YDRIP%RIP0LU, RCODEC=>YDRIP%RCODEC, RSIDEC=>YDRIP%RSIDEC, &
+ & RCOVSR=>YDRIP%RCOVSR, RSIVSR=>YDRIP%RSIVSR, &
+ & NSTOP=>YDRIP%NSTOP, RSUNDUR=>YDERDI%RSUNDUR, &
+ & RSIGMA=>YDCST%RSIGMA, RG=>YDCST%RG, RPI=>YDCST%RPI, RDAY=>YDCST%RDAY)
+
+!     I - CALCUL DES PARAMETRES DERIVES, CONSTANTES DE SECURITE (POUR
+!     L'EPAISSEUR EN PRESSION DE LA COUCHE "AU DESSUS DU SOMMET DU
+!     MODELE", L'HUMIDITE SPECIFIQUE ET LA CORRECTION POUR EVITER UNE
+!     SOLUTION ANALYTIQUE RESONNANTE ENTRE RAYONNEMENT PARALLELE ET
+!     RAYONNEMENT DIFFUS) AINSI QU'ARGUMENT LIMITE POUR EVITER
+!     "L'UNDERFLOW" DANS LES CALCULS DE TRANSMISSION.
+
+!     I - COMPUTATION OF DERIVED PARAMETERS, SECURITY CONSTANTS (FOR THE
+!     PRESSURE THICKNESS OF THE LAYER "ABOVE THE MODEL'S TOP, THE
+!     SPECIFIC HUMIDITY AND THE CORRECTION TO AVOID A RESONNANT
+!     ANALYTICAL SOLUTION BETWEEN PARALLEL AND SCATTERED RADIATION) AS
+!     WELL AS A LIMIT ARGUMENT TO AVOID "UNDERFLOW" IN THE COMPUTATIONS
+!     OF TRANSMISSIVITY.
+!-------------------------------------------------------------------------------
+
+! SECURITY CONSTANTS.
+ZEPSNEB=1.E-12_JPRB
+ZSECUR=4._JPRB*RSIGMA*RG*TSPHY
+ZEPS1=1.E-03_JPRB
+ZEPSAL=1.E-04_JPRB
+ZARGLI=-250._JPRB
+ZTRLI=EXP(ZARGLI)
+
+! timestep for sunshine duration
+IF (LDCONFX) THEN
+  ZTSTEP=0._JPRB  ! STEPX case
+ELSE
+  ZTSTEP=TSPHY
+ENDIF
+
+!     II - PRELIMINARY CALCULATIONS.
+!-------------------------------------------------------------------------------
+
+! What to compute for gases in solar band:
+!   ICALS = 0 => transmissions for current sun elevation
+!   ICALS = 1 => transmissions for min/max sun elevation, plus
+!                interpolated transmissions between min/max values
+!   ICALS = 2 => interpolated transmissions between min/max values only
+IF (NSORAYFR == 1) THEN
+  ICALS=0
+ELSEIF (MOD(KSTEP,NSORAYFR) == 0) THEN
+  IF ( KSTEP == NSTOP ) THEN
+    ICALS=0
+  ELSE
+    ICALS=1
+  ENDIF
+ELSE
+  ICALS=2
+ENDIF
+
+! What to update for gases in thermal band:
+!   ICALT = 0 => nothing
+!   ICALT = 1 => transmissions
+!   ICALT = 2 => transmissions and non-statistical weights for bracketing
+ICALT=0
+IF (MOD(KSTEP,NTHRAYFR) == 0) THEN
+  ICALT=1
+  LLAUTO=.FALSE.
+ENDIF
+IF (NRAUTOEV > 0) THEN
+  IF (MOD(KSTEP,NTHRAYFR*NRAUTOEV) == 0.AND. &
+   & (KSTEP < NSTOP.OR.NSTOP == 0)) THEN
+    ICALT=2
+    LLAUTO=.TRUE.
+  ENDIF
+ENDIF
+
+!     II.1 - SET QL AND QI DEFINITIONS TO THEIR VALUE INSIDE THE CLOUD.
+!     COMPUTE AEROSOL OPTICAL PROPERTIES.
+!-------------------------------------------------------------------------------
+
+DO JLEV=KTDIA,KLEV
+  DO JLON=KIDIA,KFDIA
+    ZQICE(JLON,JLEV)=PQICE(JLON,JLEV)/MAX(ZEPSNEB,PNEB(JLON,JLEV))
+    ZQLI (JLON,JLEV)=PQLI (JLON,JLEV)/MAX(ZEPSNEB,PNEB(JLON,JLEV))
+  ENDDO
+ENDDO
+
+! ALPHA1, ALPHA2 FOR AEROSOLS.
+ZEO2TA=0._JPRB
+ZEO2SA=0._JPRB
+ZEO1TA=0._JPRB
+ZEO1SA=0._JPRB
+ZEOSA=0._JPRB
+ZEOSADIR=0._JPRB
+DO JAE=1,6
+  ZUNSCALE=4._JPRB*USAA(JAE)/(3._JPRB+4._JPRB*USAA(JAE))  ! -g
+  ZUNSCALE=1._JPRB/(1._JPRB-ZUNSCALE*ZUNSCALE)            ! 1/(1 - g^2)
+  DO JLEV=KTDIA,KLEV
+    DO JLON=KIDIA,KFDIA
+      ZZEO2TA=2._JPRB*BSFTA(JAE)*EODTA(JAE)*PDAER(JLON,JLEV,JAE)
+      ZZEO2SA=2._JPRB*BSFSA(JAE)*EODSA(JAE)*PDAER(JLON,JLEV,JAE)
+      ZEO2TA(JLON,JLEV)=ZEO2TA(JLON,JLEV)+ZZEO2TA
+      ZEO2SA(JLON,JLEV)=ZEO2SA(JLON,JLEV)+ZZEO2SA
+      ZEO1TA(JLON,JLEV)=ZEO1TA(JLON,JLEV)+ZZEO2TA+2._JPRB*EOATA(JAE)&
+       & *PDAER(JLON,JLEV,JAE)  
+      ZEO1SA(JLON,JLEV)=ZEO1SA(JLON,JLEV)+ZZEO2SA+2._JPRB*EOASA(JAE)&
+       & *PDAER(JLON,JLEV,JAE)
+      ZEOSA(JLON,JLEV)=ZEOSA(JLON,JLEV)+(EODSA(JAE)+EOASA(JAE))&
+       & *PDAER(JLON,JLEV,JAE)
+     ZEOSADIR(JLON,JLEV)=ZEOSADIR(JLON,JLEV)+ &
+       & (EODSA(JAE)*ZUNSCALE+EOASA(JAE))*PDAER(JLON,JLEV,JAE)
+    ENDDO
+  ENDDO
+ENDDO
+
+!     II.2 - CALCULS SOLAIRES ET LUNAIRES.
+!     LORSQUE LE SOLEIL EST LEVE, ZMU0 ET ZII0 SONT CEUX DU SOLEIL.
+!     SI SEULE LA LUNE EST LEVEE, ILS RECOIVENT CEUX DE LA LUNE.
+
+!     II.2 - SOLAR AND LUNAR COMPUTATIONS.
+!     IF SUN IS UP, ZMU0 AND ZII0 ARE RELATIVE TO THE SUN.
+!     IF MOON IS UP AND SUN IS DOWN, ZMU0 AND ZII0 ARE RELATIVE TO THE MOON.
+!-------------------------------------------------------------------------------
+
+! detemine mu_0 and its min/max values within intermittency window
+IF ( ICALS == 1 ) THEN
+  DO JLON=KIDIA,KFDIA
+    PGMU0_MIN(JLON)=1._JPRB
+    PGMU0_MAX(JLON)=0._JPRB
+    ZCOLON(JLON)=COS(PGELAM(JLON))
+    ZSILON(JLON)=SIN(PGELAM(JLON))
+    ZCOLAT(JLON)=SQRT(1.0_JPRB-PGEMU(JLON)**2)
+  ENDDO
+  ZCOVSR=RCOVSR
+  ZSIVSR=RSIVSR
+  ZCODT =COS(2._JPRB*RPI*TSPHY/RDAY)
+  ZSIDT =SIN(2._JPRB*RPI*TSPHY/RDAY)
+  DO JSTEP=0,MIN(NSORAYFR-1,NSTOP-KSTEP)
+    DO JLON=KIDIA,KFDIA
+      ! store mu0 in global storage, so that it is not affected by change
+      ! in solar declination in the following model steps
+      PGMU0(JLON,JSTEP)=MAX( RSIDEC*PGEMU(JLON)   &
+       & -RCODEC*ZCOVSR*ZCOLAT(JLON)*ZCOLON(JLON) &
+       & +RCODEC*ZSIVSR*ZCOLAT(JLON)*ZSILON(JLON) &
+       & ,0.0_JPRB)
+      PGMU0_MIN(JLON)=MIN(PGMU0_MIN(JLON),PGMU0(JLON,JSTEP))
+      PGMU0_MAX(JLON)=MAX(PGMU0_MAX(JLON),PGMU0(JLON,JSTEP))
+    ENDDO
+    ZCOVSR_NEW=ZCOVSR*ZCODT-ZSIVSR*ZSIDT
+    ZSIVSR    =ZSIVSR*ZCODT+ZCOVSR*ZSIDT
+    ZCOVSR    =ZCOVSR_NEW
+  ENDDO
+ENDIF
+
+IF (LRAYLU) THEN
+
+  ! get current solar/lunar mu0 and intensity (lunar when sun is down)
+  DO JLON=KIDIA,KFDIA
+    ZSOLLEV=0.5_JPRB*(1._JPRB-SIGN(1._JPRB,0._JPRB-PMU0(JLON)))
+    ZMU0(JLON)=ZSOLLEV*PMU0(JLON)+(1._JPRB-ZSOLLEV)*PMU0LU(JLON)
+    ZII0(JLON)=ZSOLLEV*RII0+(1._JPRB-ZSOLLEV)*RIP0LU
+  ENDDO
+
+ELSEIF ( ICALS == 0 ) THEN
+
+  ! get current solar mu0 and intensity
+  DO JLON=KIDIA,KFDIA
+    ZMU0(JLON)=PMU0(JLON)
+    ZII0(JLON)=RII0
+  ENDDO
+
+ELSE
+
+  ! get precalculated mu0 from global storage and current intensity
+  ISTEP=MOD(KSTEP,NSORAYFR)
+  DO JLON=KIDIA,KFDIA
+    ZMU0(JLON)=PGMU0(JLON,ISTEP)
+    ZII0(JLON)=RII0
+  ENDDO
+
+ENDIF
+
+!     II.3 - CORRECTION TO ROTUNDITY OF EARTH
+!-------------------------------------------------------------------------------
+
+! - TEMPORAIRE(S) 1D
+
+! ZDM0I     : DEMI DE L'INVERSE DU COSINUS MODIFIE DE L'ANGLE ZENITHAL.
+!           : HALF INVERSE OF THE MODIFIED COSINE OF THE ZENITH ANGLE.
+
+! compute 1/(2.mu_0')
+ZEARRT=EARRT*(EARRT+2._JPRB)
+ZIEART=1._JPRB/EARRT
+DO JLON=KIDIA,KFDIA
+  ZDM0I(JLON)=0.5_JPRB*(SQRT(ZMU0(JLON)*ZMU0(JLON)+ &
+   & ZEARRT)-ZMU0(JLON))*ZIEART
+ENDDO
+
+!     II.4 - CALCUL DES LIMITES JOUR/NUIT.
+
+!     II.4 - COMPUTATION OF DAY/NIGHT LIMITS.
+!-------------------------------------------------------------------------------
+
+! compute day/night limits
+IF (.NOT.LRAYPL.OR.(NPHYREP /= 0 .AND. NPHYREP /= -4)) THEN
+
+  ! PAS DE CALCUL DE "PLAGES" SOLAIRES.
+  ! NO "DAYLIGHT" INTERVALS COMPUTATION.
+  IAUCR=1
+  IIDIA(1)=KIDIA
+  IFDIA(1)=KFDIA
+
+ELSE
+
+  IF ( ICALS == 0 ) THEN
+    DO JLON=KIDIA,KFDIA
+      ZMU00(JLON)=ZMU0(JLON)
+    ENDDO
+  ELSE
+    DO JLON=KIDIA,KFDIA
+      ZMU00(JLON)=PGMU0_MAX(JLON)
+    ENDDO
+  ENDIF
+
+  ! CALCUL DE "PLAGES" SOLAIRES.
+  ! "DAYLIGHT" INTERVALS COMPUTATION.
+  IAUCR=0
+  LLIDIA=ZMU00(KIDIA) > 0._JPRB
+  LLFDIA=.FALSE.
+
+  IF (LLIDIA) THEN
+    IAUCR=1
+    IIDIA(1)=KIDIA
+  ENDIF
+  
+  ! BOUCLE NON VECTORISEE.
+  ! NON VECTORIZED LOOP.
+  DO JLON=KIDIA,KFDIA
+    LLFDIA=ZMU00(JLON) > 0._JPRB
+  
+    IF (LLFDIA.NEQV.LLIDIA) THEN
+  
+      IF (LLFDIA) THEN
+        IAUCR=IAUCR+1
+        IIDIA(IAUCR)=JLON
+      ELSE
+        IFDIA(IAUCR)=JLON-1
+      ENDIF
+  
+      LLIDIA=LLFDIA
+    ENDIF
+  
+  ENDDO
+  
+  IF (LLFDIA) THEN
+    IFDIA(IAUCR)=KFDIA
+  ENDIF
+
+ENDIF
+
+!     III - CALCUL DES EPAISSEURS OPTIQUES GASEUSES. LES CALCULS
+!     DESCENDANTS SONT SYMETRIQUES ENTRE SOLAIRE ET THERMIQUE (AU TERME
+!     D'ALLONGEMENT PRES) MAIS LES CALCULS MONTANTS (DIFFUS TOUS LES
+!     DEUX) SONT POUR UN FLUX SOLAIRE REFLECHI ET UN FLUX THERMIQUE
+!     CORRESPONDANT A L'ECHANGE AVEC LA SURFACE.
+
+!     III - COMPUTATION OF GASEOUS OPTICAL DEPTHS. THE DESCENDING
+!     CALCULATIONS ARE SYMETRICAL BETWEEN SOLAR AND THERMAL (EXCEPT FOR
+!     THE DIFFUSIVITY FACTOR) BUT THE ASCENDING CALCULATIONS (DIFFUSE IN
+!     BOTH CASES) ARE FOR A REFLECTED SOLAR FLUX AND FOR A THERMAL FLUX
+!     CORRESPONDING TO THE EXCHANGE WITH THE SURFACE.
+!-------------------------------------------------------------------------------
+
+! - TEMPORAIRE(S) 2D (1:KLEV)
+
+! ZDEOSI    : EPAISSEUR OPTIQUE "GAZ" DESCENDANTE SOLAIRE.
+!           : GASEOUS OPTICAL DEPTH SOLAR DESCENDING.
+! ZUEOSI    : EPAISSEUR OPTIQUE "GAZ" MONTANTE SOLAIRE.
+!           : GASEOUS OPTICAL DEPTH SOLAR ASCENDING.
+
+!     III.1 - SOLAR GASEOUS OPTICAL DEPTHS
+!-------------------------------------------------------------------------------
+
+! - TEMPORAIRE(S) 1D
+
+! IIDIA     : TABLEAU DES INDICES DE DEBUTS DE "PLAGES" SOLAIRES.
+!           : ARRAY OF INDICES OF BEGINNING OF "DAYLIGHT" INTERVALS.
+! IFDIA     : TABLEAU DES INDICES DE FINS DE "PLAGES" SOLAIRES.
+!           : ARRAY OF INDICES OF END OF "DAYLIGHT" INTERVALS.
+
+! determine min/max 1/(2.mu_0')
+IF ( ICALS > 0 ) THEN
+  DO JN=1,IAUCR
+    DO JLON=IIDIA(JN),IFDIA(JN)
+      ZDM0I_MIN(JLON)=0.5_JPRB*(SQRT(PGMU0_MAX(JLON)*PGMU0_MAX(JLON)+ &
+       & ZEARRT)-PGMU0_MAX(JLON))*ZIEART-ZEPS1
+      ZDM0I_MAX(JLON)=0.5_JPRB*(SQRT(PGMU0_MIN(JLON)*PGMU0_MIN(JLON)+ &
+       & ZEARRT)-PGMU0_MIN(JLON))*ZIEART+ZEPS1
+    ENDDO
+  ENDDO
+ENDIF
+
+! compute optical depths
+IF ( ICALS == 0 ) THEN
+
+  ! compute current optical depths
+  CALL ACRANEB_TRANSS(YDCST,YDML_PHY_MF%YRPHY,YDML_PHY_MF%YRPHY3, &
+   & KIDIA,KFDIA,KLON,KTDIA,KLEV,KJN,IIDIA,IFDIA,IAUCR,&
+   & PAPRS,PAPRSF,PDELP,PR,PT,PQ,PQCO2,PQO3,ZDM0I,&
+   & ZDEOSI,ZUEOSI)
+
+ELSEIF ( ICALS == 1 ) THEN
+
+  ! compute log of optical depths for min 1/(2.mu_0') alias max sun elevation
+  CALL ACRANEB_TRANSS(YDCST,YDML_PHY_MF%YRPHY,YDML_PHY_MF%YRPHY3, &
+   & KIDIA,KFDIA,KLON,KTDIA,KLEV,KJN,IIDIA,IFDIA,IAUCR,&
+   & PAPRS,PAPRSF,PDELP,PR,PT,PQ,PQCO2,PQO3,ZDM0I_MIN,&
+   & ZDEOSI,ZUEOSI)
+  DO JLEV=KTDIA-1,KLEV
+    DO JN=1,IAUCR
+      DO JLON=IIDIA(JN),IFDIA(JN)
+        PGDEOSI(JLON,JLEV,1)=LOG(MAX(ZDEOSI(JLON,JLEV),ZTRLI))
+        PGUEOSI(JLON,JLEV,1)=LOG(MAX(ZUEOSI(JLON,JLEV),ZTRLI))
+      ENDDO
+    ENDDO
+  ENDDO
+
+  ! compute log of optical depths for max 1/(2.mu_0') alias min sun elevation
+  CALL ACRANEB_TRANSS(YDCST,YDML_PHY_MF%YRPHY,YDML_PHY_MF%YRPHY3, &
+   & KIDIA,KFDIA,KLON,KTDIA,KLEV,KJN,IIDIA,IFDIA,IAUCR,&
+   & PAPRS,PAPRSF,PDELP,PR,PT,PQ,PQCO2,PQO3,ZDM0I_MAX,&
+   & ZDEOSI,ZUEOSI)
+  DO JLEV=KTDIA-1,KLEV
+    DO JN=1,IAUCR
+      DO JLON=IIDIA(JN),IFDIA(JN)
+        PGDEOSI(JLON,JLEV,2)=LOG(MAX(ZDEOSI(JLON,JLEV),ZTRLI))
+        PGUEOSI(JLON,JLEV,2)=LOG(MAX(ZUEOSI(JLON,JLEV),ZTRLI))
+      ENDDO
+    ENDDO
+  ENDDO
+
+ENDIF
+
+! interpolate between min/max optical depths
+IF ( ICALS > 0 ) THEN
+
+  ! precompute interpolation weights
+  DO JN=1,IAUCR
+    DO JLON=IIDIA(JN),IFDIA(JN)
+      ZWEIGHT(JLON)=LOG(ZDM0I    (JLON)/ZDM0I_MIN(JLON))/ &
+       &            LOG(ZDM0I_MAX(JLON)/ZDM0I_MIN(JLON))
+    ENDDO
+  ENDDO
+
+  ! interpolation with respect to 1/(2.mu_0') in log-log scale
+  DO JLEV=KTDIA-1,KLEV
+    DO JN=1,IAUCR
+      DO JLON=IIDIA(JN),IFDIA(JN)
+        ZDEOSI(JLON,JLEV)=EXP(PGDEOSI(JLON,JLEV,1)+ZWEIGHT(JLON)* &
+         & (PGDEOSI(JLON,JLEV,2)-PGDEOSI(JLON,JLEV,1)))
+        ZUEOSI(JLON,JLEV)=EXP(PGUEOSI(JLON,JLEV,1)+ZWEIGHT(JLON)* &
+         & (PGUEOSI(JLON,JLEV,2)-PGUEOSI(JLON,JLEV,1)))
+      ENDDO
+    ENDDO
+  ENDDO
+
+ENDIF
+
+!     III.1 - THERMAL GASEOUS OPTICAL DEPTHS
+!-------------------------------------------------------------------------------
+
+IF ( ICALT > 0 ) THEN
+
+  CALL ACRANEB_TRANST(YDCST,YDML_PHY_MF%YRPHY,YDML_PHY_MF%YRPHY3, &
+   & KIDIA,KFDIA,KLON,KTDIA,KLEV,&
+   & LLAUTO,PAPRS,PAPRSF,PDELP,PR,PT,PTS,PQ,PQCO2,PQO3,&
+   & ZDEOTI,ZDEOTI2,ZUEOTI,ZUEOTI2,&
+   & ZEOLT,ZEOXT,ZPNER0,ZPNER1,ZRPROX,ZRSURF)
+
+  IF ( NTHRAYFR /= 1 ) THEN
+
+    ! full timestep within intermittency => store necessary arrays
+    DO JLON=KIDIA,KFDIA
+      PGRSURF(JLON)=ZRSURF(JLON)
+    ENDDO
+    DO JLEV=KTDIA,KLEV
+      DO JLON=KIDIA,KFDIA
+        PGEOXT(JLON,JLEV)=ZEOXT(JLON,JLEV)
+      ENDDO
+      IF ( LRPROX ) THEN
+        DO JLON=KIDIA,KFDIA
+          PGEOLT(JLON,JLEV)=ZEOLT(JLON,JLEV)
+        ENDDO
+      ENDIF
+    ENDDO
+    DO JLEV=KTDIA-1,KLEV
+      DO JLON=KIDIA,KFDIA
+        PGDEOTI (JLON,JLEV)=ZDEOTI (JLON,JLEV)   
+        PGDEOTI2(JLON,JLEV)=ZDEOTI2(JLON,JLEV)   
+        PGUEOTI (JLON,JLEV)=ZUEOTI (JLON,JLEV)   
+        PGUEOTI2(JLON,JLEV)=ZUEOTI2(JLON,JLEV)   
+      ENDDO
+      IF ( LRPROX ) THEN
+        DO JLON=KIDIA,KFDIA
+          PGRPROX(JLON,JLEV)=ZRPROX(JLON,JLEV)
+        ENDDO
+      ENDIF
+    ENDDO
+
+  ENDIF
+
+ELSE
+
+  ! partial timestep within intermittency => read necessary arrays
+  DO JLON=KIDIA,KFDIA
+    ZRSURF(JLON)=PGRSURF(JLON)
+  ENDDO
+  DO JLEV=KTDIA,KLEV
+    DO JLON=KIDIA,KFDIA
+      ZEOXT(JLON,JLEV)=PGEOXT(JLON,JLEV)
+    ENDDO
+    IF ( LRPROX ) THEN
+      DO JLON=KIDIA,KFDIA
+        ZEOLT(JLON,JLEV)=PGEOLT(JLON,JLEV)
+      ENDDO
+    ENDIF
+  ENDDO
+  DO JLEV=KTDIA-1,KLEV
+    DO JLON=KIDIA,KFDIA
+      ZDEOTI (JLON,JLEV)=PGDEOTI (JLON,JLEV)
+      ZDEOTI2(JLON,JLEV)=PGDEOTI2(JLON,JLEV)
+      ZUEOTI (JLON,JLEV)=PGUEOTI (JLON,JLEV)
+      ZUEOTI2(JLON,JLEV)=PGUEOTI2(JLON,JLEV)
+    ENDDO
+    IF ( LRPROX ) THEN
+      DO JLON=KIDIA,KFDIA
+        ZRPROX (JLON,JLEV)=PGRPROX (JLON,JLEV)
+      ENDDO
+    ENDIF
+  ENDDO
+
+ENDIF
+
+! compute minimum optical depth
+DO JLEV=KTDIA-1,KLEV
+  DO JLON=KIDIA,KFDIA
+    ZEOTI(JLON,JLEV)=MIN(ZUEOTI(JLON,JLEV),ZDEOTI(JLON,JLEV))
+  ENDDO
+ENDDO
+
+! compute total solar descending optical depths
+DO JN=1,IAUCR
+  DO JLON=IIDIA(JN),IFDIA(JN)
+    ZDEOSA(JLON,KTDIA-1)=ZDM0I(JLON)*ZDEOSI(JLON,KTDIA-1)
+  ENDDO
+ENDDO
+DO JLEV=KTDIA,KLEV
+  DO JN=1,IAUCR
+    DO JLON=IIDIA(JN),IFDIA(JN)
+      ZDEOSA(JLON,JLEV)=ZDEOSA(JLON,JLEV-1)+ZDM0I(JLON)*ZDEOSI(JLON,JLEV)
+    ENDDO
+  ENDDO
+ENDDO
+
+! call cloud model to compute saturated cloud optical properties
+CALL AC_CLOUD_MODEL2(YDCST,YDML_PHY_MF%YRPHY,YDML_PHY_MF%YRPHY3, &
+ & KIDIA    ,KFDIA    ,KLON     ,KTDIA    ,KLEV     ,&
+ & KJN      ,IIDIA    ,IFDIA    ,IAUCR    ,PDELP    ,&
+ & PNEB     ,ZQICE    ,ZQLI     ,PR       ,PAPRSF   ,&
+ & PT       ,ZDEOSA   ,ZBSFSI   ,ZBSFSN   ,ZBSFTI   ,&
+ & ZBSFTN   ,ZEOASI   ,ZEOASN   ,ZEOATI   ,ZEOATN   ,&
+ & ZEODSI   ,ZEODSN   ,ZEODTI   ,ZEODTN   ,ZEOSIDIR ,&
+ & ZEOSNUN  ,ZUSAI    ,ZUSAN    ,ZUSBI    ,ZUSBN     &
+ & )
+
+! ALPHA1, ALPHA2 FOR ICE/LIQUID (THERMAL BAND).
+DO JLEV=KTDIA,KLEV
+  DO JLON=KIDIA,KFDIA
+    ZEO2TI(JLON,JLEV)=2._JPRB*ZBSFTI(JLON,JLEV)*ZEODTI(JLON,JLEV)
+    ZEO2TN(JLON,JLEV)=2._JPRB*ZBSFTN(JLON,JLEV)*ZEODTN(JLON,JLEV)
+    ZEO1TI(JLON,JLEV)=ZEO2TI(JLON,JLEV)+2._JPRB*ZEOATI(JLON,JLEV)
+    ZEO1TN(JLON,JLEV)=ZEO2TN(JLON,JLEV)+2._JPRB*ZEOATN(JLON,JLEV)
+  ENDDO
+ENDDO
+
+!     IV - CALCUL DES ELEMENTS DE GEOMETRIE NUAGEUSE. LES TERMES ZB
+!     SERVENT DE STOCKAGE TEMPORAIRE POUR LES "ALPHA", "BETA", "GAMMA"
+!     ET "DELTA" POUR LES CALCULS DE RECOUVREMENT MAXIMUM OU (POUR ZB1
+!     SEUL) POUR LE COMPLEMENT A UN DE LA NEBULOSITE DANS LE CAS DE
+!     RECOUVREMENT AU HASARD.
+
+!     IV - COMPUTATION OF THE CLOUD GEOMETRY ELEMENTS. THE TERMS ZB ARE
+!     USED AS TEMPORARY STORAGE FOR THE "ALPHA", "BETA", "GAMMA" AND
+!     "DELTA" COEFFICIENTS OF THE MAXIMUM OVERLAP CALCULATIONS OR (IN
+!     THAT CASE ZB1 ALONE) FOR THE COMPLEMENT TO ONE OF CLOUDINESS IN
+!     THE RANDOM OVERLAP CALCULATIONS.
+!-------------------------------------------------------------------------------
+
+! - TEMPORAIRE(S) 2D (1:KLEV)
+
+! ZB1       : PREMIER STOCKAGE INTERMEDIAIRE DE GEOMETRIE NUAGEUSE.
+!           : FIRST INTERMEDIATE STORAGE FOR CLOUD GEOMETRY.
+! ZB2       : SECOND STOCKAGE INTERMEDIAIRE DE GEOMETRIE NUAGEUSE.
+!           : SECOND INTERMEDIATE STORAGE FOR CLOUD GEOMETRY.
+! ZB3       : TROISIEME STOCKAGE INTERMEDIAIRE DE GEOMETRIE NUAGEUSE.
+!           : THIRD INTERMEDIATE STORAGE FOR CLOUD GEOMETRY.
+! ZB4       : QUATRIEME STOCKAGE INTERMEDIAIRE DE GEOMETRIE NUAGEUSE.
+!           : FOURTH INTERMEDIATE STORAGE FOR CLOUD GEOMETRY.
+
+!     CALCUL OPTIONNEL (EN VERSION RECOUVREMENT MAXIMUM DES PARTIES
+!     NUAGEUSES ADJACENTES) DES COEFFICIENTS MATRICIELS DE TRANSFERT
+!     ENTRE PARTIES CLAIRES ET COUVERTES DE DEUX COUCHES. DANS LE CAS
+!     CONTRAIRE (RECOUVREMENT ALEATOIRE DE TOUTES LES FRACTIONS
+!     NUAGEUSES) ON NE CALCULE QUE LE COMPLEMENT A UN DE LA NEBULOSITE.
+
+!     OPTIONAL CALCULATION (IN MAXIMUM OVERLAP VERSION FOR THE ADJACENT
+!     CLOUDY PARTS) OF THE MATRIX COEFFICIENT FOR TRANSFER BETWEEN CLEAR
+!     AND CLOUDY PARTS OF BOTH LAYERS. IN THE OPPOSITE CASE (RANDOM
+!     OVERLAP OF ALL CLOUD FRACTIONS) ONE COMPUTES ONLY THE COMPLEMENT
+!     TO ONE OF CLOUDINESS.
+
+! - TEMPORAIRE(S) 1D
+
+! ZNMXB     : NEBULOSITE MAXIMUM ADJACENTE "VERS LE BAS".
+!           : MAXIMUM ADJACENT CLOUDINESS "DOWNWARDS".
+! ZNMNB     : NEBULOSITE MINIMUM ADJACENTE "VERS LE BAS".
+!           : MINIMUM ADJACENT CLOUDINESS "DOWNWARDS".
+! ZNMXH     : NEBULOSITE MAXIMUM ADJACENTE "VERS LE HAUT".
+!           : MAXIMUM ADJACENT CLOUDINESS "UPWARDS".
+! ZNMNH     : NEBULOSITE MINIMUM ADJACENTE "VERS LE HAUT".
+!           : MINIMUM ADJACENT CLOUDINESS "UPWARDS".
+
+IF (LRNUMX) THEN
+
+  ! MAXIMUM-RANDOM OVERLAPS
+
+  DO JLON=KIDIA,KFDIA
+    ZB1(JLON,KTDIA)=1._JPRB-PNEB(JLON,KTDIA)
+    ZB3(JLON,KTDIA)=1._JPRB
+    ZNMXB(JLON)=MAX(PNEB(JLON,KTDIA),PNEB(JLON,KTDIA+1))
+    ZNMNB(JLON)=MIN(PNEB(JLON,KTDIA),PNEB(JLON,KTDIA+1))
+    ZB1(JLON,KTDIA+1)=(1._JPRB-ZNMXB(JLON))/(1._JPRB-PNEB(JLON,KTDIA))
+    ZB3(JLON,KTDIA+1)=ZNMNB(JLON)/PNEB(JLON,KTDIA)
+  ENDDO
+
+!cdir unroll=8
+  DO JLEV=KTDIA+1,KLEV-1
+    DO JLON=KIDIA,KFDIA
+      ZNMXH(JLON)=ZNMXB(JLON)
+      ZNMNH(JLON)=ZNMNB(JLON)
+    ENDDO
+    DO JLON=KIDIA,KFDIA
+      ZNMXB(JLON)=MAX(PNEB(JLON,JLEV),PNEB(JLON,JLEV+1))
+      ZNMNB(JLON)=MIN(PNEB(JLON,JLEV),PNEB(JLON,JLEV+1))
+      ZB1(JLON,JLEV+1)=(1._JPRB-ZNMXB(JLON))*(1._JPRB/(1._JPRB-PNEB(JLON,JLEV)))
+      ZB2(JLON,JLEV-1)=(1._JPRB-ZNMXH(JLON))*(1._JPRB/(1._JPRB-PNEB(JLON,JLEV)))
+      ZB3(JLON,JLEV+1)=ZNMNB(JLON)*(1._JPRB/PNEB(JLON,JLEV))
+      ZB4(JLON,JLEV-1)=ZNMNH(JLON)*(1._JPRB/PNEB(JLON,JLEV))
+    ENDDO
+  ENDDO
+
+  DO JLON=KIDIA,KFDIA
+    ZNMXH(JLON)=ZNMXB(JLON)
+    ZNMNH(JLON)=ZNMNB(JLON)
+    ZB2(JLON,KLEV-1)=(1._JPRB-ZNMXH(JLON))/(1._JPRB-PNEB(JLON,KLEV))
+    ZB4(JLON,KLEV-1)=ZNMNH(JLON)/PNEB(JLON,KLEV)
+    ZB2(JLON,KLEV)=1._JPRB
+    ZB4(JLON,KLEV)=1._JPRB
+  ENDDO
+
+  ! relax maximum-random overlaps towards random overlaps according to
+  ! Shonk decorrelation length
+  IF (LRNUEXP) THEN
+    DO JLEV=KTDIA+1,KLEV
+      DO JLON=KIDIA,KFDIA
+        ZCLOV=EXP((PAPRSF(JLON,JLEV-1)-PAPRSF(JLON,JLEV))/PDECRD(JLON))
+        ZCNEB=1._JPRB-PNEB(JLON,JLEV)
+        ZB1(JLON,JLEV)=ZCNEB          +ZCLOV*(ZB1(JLON,JLEV)-ZCNEB          )
+        ZB3(JLON,JLEV)=PNEB(JLON,JLEV)+ZCLOV*(ZB3(JLON,JLEV)-PNEB(JLON,JLEV))
+      ENDDO
+    ENDDO
+    DO JLEV=KTDIA,KLEV-1
+!NEC$ ivdep
+      DO JLON=KIDIA,KFDIA
+        ZCLOV=EXP((PAPRSF(JLON,JLEV)-PAPRSF(JLON,JLEV+1))/PDECRD(JLON))
+        ZCNEB=1._JPRB-PNEB(JLON,JLEV)
+        ZB2(JLON,JLEV)=ZCNEB          +ZCLOV*(ZB2(JLON,JLEV)-ZCNEB          )
+        ZB4(JLON,JLEV)=PNEB(JLON,JLEV)+ZCLOV*(ZB4(JLON,JLEV)-PNEB(JLON,JLEV))
+      ENDDO
+    ENDDO
+  ENDIF
+
+ELSE
+
+  ! RANDOM OVERLAPS
+
+  DO JLEV=KTDIA,KLEV
+    DO JLON=KIDIA,KFDIA
+      ZB1(JLON,JLEV)=1._JPRB-PNEB(JLON,JLEV)
+    ENDDO
+  ENDDO
+
+ENDIF ! LRNUMX
+
+!     V - NER PREPARATIONS.
+!-------------------------------------------------------------------------------
+
+!     V.1 - CALCUL DES FLUX DE CORPS NOIR AU SOMMET DES COUCHES SUPPOSEES
+!     ISOTHERMES ET DE L'EMISSIVITE EFFECTIVE DE SURFACE. LES FLUX DE
+!     CORPS NOIR SONT DANS UN TABLEAU (0:KLEV) CAR LE SOL EST CONSIDERE
+!     COMME UNE COUCHE D'EPAISSEUR OPTIQUE INFINIE.
+
+!     V.1 - COMPUTATION OF THE BLACK-BODY FLUXES AT THE TOP OF LAYERS
+!     (ASSUMED ISOTHERMAL) AND OF THE EFFECTIVE SURFACE EMISSIVITY.
+!     BLACK-BODY FLUXES ARE IN A (0:KLEV) ARRAY SINCE THE SOIL IS
+!     CONSIDERED TO BE A LAYER OF INFINITE OPTICAL DEPTH.
+!-------------------------------------------------------------------------------
+
+! - TEMPORAIRE(S) 2D (0:KLEV)
+
+! ZBB       : FLUX DE CORPS NOIR AU SOMMET DES COUCHES.
+!           : BLACK-BODY FLUX AT THE TOP OF THE LAYERS.
+
+!     FLUX DE CORPS NOIR.
+!     BLACK-BODY FLUX.
+
+DO JLEV=KTDIA,KLEV
+  DO JLON=KIDIA,KFDIA
+    ZBB(JLON,JLEV-1)=RSIGMA*(PT(JLON,JLEV)*PT(JLON,JLEV))&
+     & *(PT(JLON,JLEV)*PT(JLON,JLEV))
+
+!     ATMOSPHERIC-ONLY DAMPING COEFFICIENTS FOR THE TIME-SECURE HANDLING
+!     OF FLUX DIVERGENCES.
+
+    ZDAMP(JLON,JLEV)=ZSECUR*PT(JLON,JLEV)*(PT(JLON,JLEV)&
+     & *PT(JLON,JLEV))/(PDELP(JLON,JLEV)*PCP(JLON,JLEV))
+  ENDDO
+ENDDO
+
+DO JLON=KIDIA,KFDIA
+  ZBB(JLON,KLEV)=RSIGMA*(PTS(JLON)*PTS(JLON))*(PTS(JLON)*PTS(JLON))
+ENDDO
+
+!     V.2 - COMPUTATION OF EBL FLUXES AND BRACKETING WEIGHTS.
+!-------------------------------------------------------------------------------
+
+! computation of clearsky EBL_min/max fluxes for bracketing
+IF ( (NRAUTOEV == 0.AND.ICALT == 1).OR.ICALT == 2 ) THEN
+
+  ! distant and local layer transmissions
+  DO JLEV=KTDIA,KLEV
+    DO JLON=KIDIA,KFDIA
+      ZTAUD(JLON,JLEV)=EXP(MAX(-ZEOTI(JLON,JLEV),ZARGLI))
+      ZTAUL(JLON,JLEV)=EXP(MAX(-ZEOXT(JLON,JLEV),ZARGLI))
+    ENDDO
+  ENDDO
+
+  ! distant 'grey' transmissions for each pair of levels (multiplicative)
+  DO JLEV1=KTDIA-1,KLEV      ! initial half level
+    DO JLON=KIDIA,KFDIA
+      ZTAU(JLON,JLEV1,JLEV1)=1._JPRB
+    ENDDO
+    DO JLEV2=JLEV1+1,KLEV    ! final half level
+      DO JLON=KIDIA,KFDIA
+        ZTAU(JLON,JLEV1,JLEV2)=ZTAU(JLON,JLEV1,JLEV2-1)*ZTAUD(JLON,JLEV2)
+      ENDDO
+    ENDDO
+  ENDDO
+
+  ! EBL flux for 'grey' minimum optical depths
+  ! (zfluxd positive downwards, D - distant)
+  ZFLUXD(:,:)=0._JPRB
+  DO JLEV1=KTDIA,KLEV        ! exchanging layer 1
+    IF ( LRPROX ) THEN
+      ILEV=JLEV1+2           ! exclude exchange between adjacent layers
+    ELSE
+      ILEV=JLEV1+1           ! include exchange between adjacent layers
+    ENDIF
+    DO JLEV2=ILEV,KLEV       ! exchanging layer 2
+      DO JLON=KIDIA,KFDIA
+        ZFLUXE(JLON)=(ZBB(JLON,JLEV2-1)-ZBB(JLON,JLEV1-1))*      &
+         & (ZTAU(JLON,JLEV1,JLEV2  )-ZTAU(JLON,JLEV1-1,JLEV2  )- &
+         &  ZTAU(JLON,JLEV1,JLEV2-1)+ZTAU(JLON,JLEV1-1,JLEV2-1))
+      ENDDO
+      DO JLEV=JLEV1,JLEV2-1  ! half levels between layers 1 and 2
+        DO JLON=KIDIA,KFDIA
+          ZFLUXD(JLON,JLEV)=ZFLUXD(JLON,JLEV)+ZFLUXE(JLON)
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+
+  ! local 'grey' transmissions for each pair of levels (multiplicative)
+  DO JLEV1=KTDIA-1,KLEV      ! initial half level
+    DO JLON=KIDIA,KFDIA
+      ZTAU(JLON,JLEV1,JLEV1)=1._JPRB
+    ENDDO
+    DO JLEV2=JLEV1+1,KLEV    ! final half level
+      DO JLON=KIDIA,KFDIA
+        ZTAU(JLON,JLEV1,JLEV2)=ZTAU(JLON,JLEV1,JLEV2-1)*ZTAUL(JLON,JLEV2)
+      ENDDO
+    ENDDO
+  ENDDO
+ 
+  ! EBL flux for 'grey' maximum optical depths
+  ! (ZFLUXL positive downwards, L - local)
+  ZFLUXL(:,:)=0._JPRB
+  DO JLEV1=KTDIA,KLEV        ! exchanging layer 1
+    IF ( LRPROX ) THEN
+      ILEV=JLEV1+2           ! exclude exchange between adjacent layers
+    ELSE
+      ILEV=JLEV1+1           ! include exchange between adjacent layers
+    ENDIF
+    DO JLEV2=ILEV,KLEV       ! exchanging layer 2
+      DO JLON=KIDIA,KFDIA
+        ZFLUXE(JLON)=(ZBB(JLON,JLEV2-1)-ZBB(JLON,JLEV1-1))*      &
+         & (ZTAU(JLON,JLEV1,JLEV2  )-ZTAU(JLON,JLEV1-1,JLEV2  )- &
+         &  ZTAU(JLON,JLEV1,JLEV2-1)+ZTAU(JLON,JLEV1-1,JLEV2-1))
+      ENDDO
+      DO JLEV=JLEV1,JLEV2-1  ! half levels between layers 1 and 2
+        DO JLON=KIDIA,KFDIA
+          ZFLUXL(JLON,JLEV)=ZFLUXL(JLON,JLEV)+ZFLUXE(JLON)
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+
+ENDIF
+
+! computation of statistically fitted / true clearsky EBL flux
+IF ( NRAUTOEV == 0.AND.ICALT == 1 ) THEN
+
+  ! statistically fitted EBL flux
+  DO JLON=KIDIA,KFDIA
+    ZFLUXR(JLON,KTDIA-1)=0._JPRB
+    ZFLUXR(JLON,KLEV   )=0._JPRB
+  ENDDO
+  DO JLEV=KTDIA,KLEV-1
+    DO JLON=KIDIA,KFDIA
+      ZSIGMA=PAPRS(JLON,JLEV)/PAPRS(JLON,KLEV)
+      ZFLUXR(JLON,JLEV)= &
+       & (FSM_AA(0)+ZSIGMA*(FSM_AA(1)+ZSIGMA*FSM_AA(2)))*ZFLUXD(JLON,JLEV)+ &
+       & (FSM_BB(0)+ZSIGMA*(FSM_BB(1)+ZSIGMA*FSM_BB(2)))*ZFLUXL(JLON,JLEV)
+    ENDDO
+  ENDDO
+
+ELSEIF ( ICALT == 2 ) THEN
+
+  ! true EBL flux
+  ! (ZFLUXR positive downwards, R - real)
+  ZFLUXR(:,:)=0._JPRB
+  DO JLEV1=KTDIA,KLEV        ! exchanging layer 1
+    IF ( LRPROX ) THEN
+      ILEV=JLEV1+2           ! exclude exchange between adjacent layers
+    ELSE
+      ILEV=JLEV1+1           ! include exchange between adjacent layers
+    ENDIF
+    DO JLEV2=ILEV,KLEV       ! exchanging layer 2
+      DO JLON=KIDIA,KFDIA
+        ZFLUXE(JLON)=                                                      &
+         & (ZBB(JLON,JLEV2-1)-ZBB(JLON,JLEV1-1))*ZPNER0(JLON,JLEV1,JLEV2)+ &
+         & 4._JPRB*(PT(JLON,JLEV2)/RTL-1._JPRB)*ZBB(JLON,JLEV2-1)*         &
+         & (ZPNER1(JLON,JLEV1,JLEV2)-ZPNER0(JLON,JLEV1,JLEV2))-            &
+         & 4._JPRB*(PT(JLON,JLEV1)/RTL-1._JPRB)*ZBB(JLON,JLEV1-1)*         &
+         & (ZPNER1(JLON,JLEV1,JLEV2)-ZPNER0(JLON,JLEV1,JLEV2))
+      ENDDO
+      DO JLEV=JLEV1,JLEV2-1  ! half levels between layers 1 and 2
+        DO JLON=KIDIA,KFDIA
+          ZFLUXR(JLON,JLEV)=ZFLUXR(JLON,JLEV)+ZFLUXE(JLON)
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+
+ENDIF
+
+! computation of bracketing weights (with smoothing) and offset
+IF ( (NRAUTOEV == 0.AND.ICALT == 1).OR.ICALT == 2 ) THEN
+
+  DO JLEV=KTDIA-1,KLEV
+    DO JLON=KIDIA,KFDIA
+      ZDEBL=ZFLUXL(JLON,JLEV)-ZFLUXD(JLON,JLEV)
+      ZW   =RMIXD*RMIXD/(RMIXD*RMIXD+ZDEBL*ZDEBL)
+      ZMIXP(JLON,JLEV)=MAX(0._JPRB,MIN(1._JPRB,                    &
+       & ((1._JPRB-ZW)*ZFLUXR(JLON,JLEV)+                          &
+       & ZW*(ZFLUXD(JLON,JLEV)+RMIXP0*(ZFLUXL(JLON,JLEV)-          &
+       & ZFLUXD(JLON,JLEV)))-ZFLUXD(JLON,JLEV))/                   &
+       & SIGN(MAX(ABS(ZFLUXL(JLON,JLEV)-ZFLUXD(JLON,JLEV)),ZEPS1), &
+       & ZFLUXL(JLON,JLEV)-ZFLUXD(JLON,JLEV))))
+      ZFLUXC(JLON,JLEV)=ZFLUXR(JLON,JLEV)-(ZFLUXD(JLON,JLEV)+ &
+       & ZMIXP(JLON,JLEV)*(ZFLUXL(JLON,JLEV)-ZFLUXD(JLON,JLEV)))
+    ENDDO
+  ENDDO
+
+ENDIF
+
+! check if intermittency for bracketing weights is on
+IF (NTHRAYFR /= 1.OR.NRAUTOEV > 1) THEN
+
+  ! store/read bracketing weights
+  IF ( (NRAUTOEV == 0.AND.ICALT == 1).OR.ICALT == 2 ) THEN
+
+    ! timestep with update of bracketing weights => store PGMIXP, PGFLUXC
+    DO JLEV=KTDIA-1,KLEV
+      DO JLON=KIDIA,KFDIA
+        PGMIXP (JLON,JLEV)=ZMIXP (JLON,JLEV)
+        PGFLUXC(JLON,JLEV)=ZFLUXC(JLON,JLEV)
+      ENDDO
+    ENDDO
+
+  ELSE
+
+    ! timestep without update of bracketing weights => read PGMIXP, PGFLUXC
+    DO JLEV=KTDIA-1,KLEV
+      DO JLON=KIDIA,KFDIA
+        ZMIXP (JLON,JLEV)=PGMIXP (JLON,JLEV)
+        ZFLUXC(JLON,JLEV)=PGFLUXC(JLON,JLEV)
+      ENDDO
+    ENDDO
+
+  ENDIF
+
+ENDIF
+
+!     VI - COMPUTATION OF THERMAL FLUXES (NER SOLVER).
+!-------------------------------------------------------------------------------
+
+! calculation of clearsky fluxes
+IF (KNFRRC /= 0) THEN
+  IF(MOD(KSTEP,KNFRRC) == 0) THEN
+
+    ! set trivial clearsky geometry
+    LLNUMX=.FALSE.  ! solver for random cloud overlaps is cheaper
+    ZNEBC(:,:)=0._JPRB
+    ZB1C (:,:)=1._JPRB
+
+    ! clearsky solver
+    CALL ACRANEB_SOLVT(YDML_PHY_MF%YRPHY,LLNUMX,&
+     & KIDIA,KFDIA,KLON,KTDIA,KLEV,&
+    ! - INPUT 2D
+     & ZQICE,ZQLI,ZNEBC,ZB1C,ZB2,ZB3,ZB4,PDELP,ZBB,&
+     & ZDEOTI,ZDEOTI2,ZUEOTI,ZUEOTI2,ZEOLT,ZEOXT,ZRPROX,ZMIXP,ZFLUXC,&
+     & ZEO1TI,ZEO2TI,ZEO1TN,ZEO2TN,ZEO1TA,ZEO2TA,ZDAMP,&
+    ! - INPUT 1D
+     & PEMIS,ZRSURF,&
+    ! - OUTPUT 2D
+     & PFRTH,&
+    ! - OUTPUT 1D
+     & PFRTHDS)
+
+    ! extract clearsky fluxes
+    DO JLON=KIDIA,KFDIA
+      PFRTHC(JLON,0)=PFRTH(JLON,KTDIA-1)
+      PFRTHC(JLON,1)=PFRTH(JLON,KLEV   )
+    ENDDO
+
+  ENDIF
+ENDIF
+
+! solver with clouds
+CALL ACRANEB_SOLVT(YDML_PHY_MF%YRPHY,LRNUMX,&
+ & KIDIA,KFDIA,KLON,KTDIA,KLEV,&
+! - INPUT 2D
+ & ZQICE,ZQLI,PNEB,ZB1,ZB2,ZB3,ZB4,PDELP,ZBB,&
+ & ZDEOTI,ZDEOTI2,ZUEOTI,ZUEOTI2,ZEOLT,ZEOXT,ZRPROX,ZMIXP,ZFLUXC,&
+ & ZEO1TI,ZEO2TI,ZEO1TN,ZEO2TN,ZEO1TA,ZEO2TA,ZDAMP,&
+! - INPUT 1D
+ & PEMIS,ZRSURF,&
+! - OUTPUT 2D
+ & PFRTH,&
+! - OUTPUT 1D
+ & PFRTHDS)
+
+!     VII - SOLAR COMPUTATIONS.
+!-------------------------------------------------------------------------------
+
+!     VII.1 - CALCUL DES TABLEAUX DEPENDANTS DE L'ANGLE SOLAIRE.
+
+!     VII.1 - COMPUTATION OF THE SOLAR ANGLE DEPENDENT ARRAYS.
+!-------------------------------------------------------------------------------
+
+! - TEMPORAIRE(S) 1D
+
+! ZMU0I     : INVERSE DU COSINUS MODIFIE DE L'ANGLE ZENITHAL.
+!           : INVERSE OF THE MODIFIED COSINE OF THE ZENITH ANGLE.
+! ZUSA      : "UPSCATTERED FRACTION" POUR LES AEROSOLS.
+!           : AEROSOLS' UPSCATTERED FRACTION.
+
+DO JN=1,IAUCR
+  DO JLON=IIDIA(JN),IFDIA(JN)
+    ZMU0I(JLON)=2._JPRB*ZDM0I(JLON)
+  ENDDO
+ENDDO
+
+ZEO3SA=0._JPRB
+ZEO4SA=0._JPRB
+DO JAE=1,6
+  DO JLEV=KTDIA,KLEV
+    DO JN=1,IAUCR
+      DO JLON=IIDIA(JN),IFDIA(JN)
+        ZUSA=(0.5_JPRB+USAA(JAE)*ZMU0(JLON))/(1._JPRB+USBA*ZMU0(JLON))
+        ZEO3SA(JLON,JLEV)=ZEO3SA(JLON,JLEV)+EODSA(JAE)*PDAER(JLON,JLEV,JAE)&
+         & *ZUSA
+        ZEO4SA(JLON,JLEV)=ZEO4SA(JLON,JLEV)+EODSA(JAE)*PDAER(JLON,JLEV,JAE)&
+         & *(1._JPRB-ZUSA)
+      ENDDO
+    ENDDO
+  ENDDO
+ENDDO
+
+!     VII.2 - COMPUTE SOLAR OPTICAL PROPERTIES.
+!-------------------------------------------------------------------------------
+
+DO JLEV=KTDIA,KLEV
+  DO JN=1,IAUCR
+    DO JLON=IIDIA(JN),IFDIA(JN)
+      ZEO2SN(JLON,JLEV)=2._JPRB*ZBSFSN(JLON,JLEV)*ZEODSN(JLON,JLEV)
+      ZEO2SI(JLON,JLEV)=2._JPRB*ZBSFSI(JLON,JLEV)*ZEODSI(JLON,JLEV)
+      ZEO1SN(JLON,JLEV)=ZEO2SN(JLON,JLEV)+2._JPRB*ZEOASN(JLON,JLEV)
+      ZEO1SI(JLON,JLEV)=ZEO2SI(JLON,JLEV)+2._JPRB*ZEOASI(JLON,JLEV)
+      ZEOSN(JLON,JLEV)=ZEODSN(JLON,JLEV)+ZEOASN(JLON,JLEV)
+      ZEOSI(JLON,JLEV)=ZEODSI(JLON,JLEV)+ZEOASI(JLON,JLEV)
+      ZUSN(JLON,JLEV)=(0.5_JPRB+ZUSAN(JLON,JLEV)*ZMU0(JLON))&
+       & /(1._JPRB+ZUSBN(JLON,JLEV)*ZMU0(JLON))
+      ZUSI(JLON,JLEV)=(0.5_JPRB+ZUSAI(JLON,JLEV)*ZMU0(JLON))&
+       & /(1._JPRB+ZUSBI(JLON,JLEV)*ZMU0(JLON))
+    ENDDO
+  ENDDO
+ENDDO
+
+CALL ACRANEB_COEFS(YDML_PHY_MF%YRPHY3,KLON,KTDIA,KLEV,KJN,&
+ & IIDIA,IFDIA,IAUCR,&
+ & PAPRSF,PDELP,ZQICE,ZQLI,ZDEOSI,ZEODSI,ZEODSN,&
+ & ZEOSI,ZEOSIDIR,ZEOSN,ZEOSNUN,&
+ & ZEO1SI,ZEO1SN,ZEO2SI,ZEO2SN,ZUEOSI,ZUSI,ZUSN,&
+ & ZEOSA,ZEOSADIR,ZEO1SA,ZEO2SA,ZEO3SA,ZEO4SA,ZMU0I,&
+ & ZA1C,ZA1CUN,ZA2C,ZA3C,ZA4C,ZA5C,ZA1N,ZA1NUN,ZA2N,ZA3N,ZA4N,ZA5N)
+
+! atmospheric transmissions for clearsky direct fluxes at surface
+ZTAUC  (:)=1._JPRB
+ZTAUCUN(:)=1._JPRB
+DO JLEV=KTDIA,KLEV
+  DO JN=1,IAUCR
+    DO JLON=IIDIA(JN),IFDIA(JN)
+      ZTAUC  (JLON)=ZTAUC  (JLON)*ZA1C  (JLON,JLEV)  ! delta-scaled
+      ZTAUCUN(JLON)=ZTAUCUN(JLON)*ZA1CUN(JLON,JLEV)  ! delta-unscaled
+    ENDDO
+  ENDDO
+ENDDO
+
+! initialize top/surface fluxes to zero for security of the night-time case
+DO JLON=KIDIA,KFDIA
+  ZFRSODIRT    (JLON)=0._JPRB
+  ZFRSODIRS_C  (JLON)=0._JPRB
+  ZFRSODIRS_CUN(JLON)=0._JPRB
+ENDDO
+
+!     VII.3 - INCOMING SOLAR FLUXES AT UPPER BOUNDARY, CLEARSKY DIRECT
+!             FLUXES AT SURFACE FOR LRTRUEBBC OPTION.
+!-------------------------------------------------------------------------------
+
+DO JN=1,IAUCR
+  DO JLON=IIDIA(JN),IFDIA(JN)
+    ZFRSODIRT    (JLON)=ZII0(JLON)*ZMU0(JLON)* &
+     & EXP(MAX(-0.5_JPRB*ZMU0I(JLON)*ZDEOSI(JLON,KTDIA-1),ZARGLI))
+    ZFRSODIRS_C  (JLON)=ZFRSODIRT(JLON)*ZTAUC  (JLON)
+    ZFRSODIRS_CUN(JLON)=ZFRSODIRT(JLON)*ZTAUCUN(JLON)
+  ENDDO
+ENDDO
+
+!     VII.4 - SOLVE DELTA-TWO STREAM ADDING SYSTEM FOR SOLAR FLUXES.
+!-------------------------------------------------------------------------------
+
+! calculation of clearsky fluxes
+IF (KNFRRC /= 0) THEN
+  IF(MOD(KSTEP,KNFRRC) == 0) THEN
+
+    ! set trivial clearsky geometry
+    LLNUMX=.FALSE.  ! solver for random cloud overlaps is cheaper
+    ZCLCT(:)  =0._JPRB
+    ZNEBC(:,:)=0._JPRB
+    ZB1C (:,:)=1._JPRB
+
+    ! clearsky solver
+    CALL ACRANEB_SOLVS(YDML_PHY_MF%YRPHY,LLNUMX,&
+     & KLON,KTDIA,KLEV,KJN,IIDIA,IFDIA,IAUCR,&
+     & PALB,PALBDIR,ZCLCT,ZFRSODIRT,ZFRSODIRS_C,ZFRSODIRS_CUN,&
+     & ZNEBC,ZB1C,ZB2,ZB3,ZB4,&
+     & ZA1C,ZA1CUN,ZA2C,ZA3C,ZA4C,ZA5C,ZA1N,ZA1NUN,ZA2N,ZA3N,ZA4N,ZA5N,&
+     & PFRSO,PFRSODIFS,PFRSODIRS,ZFRSODIRS_UN,ZFRSODIRS_TRUE)
+
+    ! extract clearsky fluxes
+    DO JLON=KIDIA,KFDIA
+      PFRSOC(JLON,0)=PFRSO(JLON,KTDIA-1)
+      PFRSOC(JLON,1)=PFRSO(JLON,KLEV   )
+    ENDDO
+
+  ENDIF
+ENDIF
+
+! solver with clouds
+CALL ACRANEB_SOLVS(YDML_PHY_MF%YRPHY,LRNUMX,&
+ & KLON,KTDIA,KLEV,KJN,IIDIA,IFDIA,IAUCR,&
+ & PALB,PALBDIR,PCLCT,ZFRSODIRT,ZFRSODIRS_C,ZFRSODIRS_CUN,&
+ & PNEB,ZB1,ZB2,ZB3,ZB4,&
+ & ZA1C,ZA1CUN,ZA2C,ZA3C,ZA4C,ZA5C,ZA1N,ZA1NUN,ZA2N,ZA3N,ZA4N,ZA5N,&
+ & PFRSO,PFRSODIFS,PFRSODIRS,ZFRSODIRS_UN,ZFRSODIRS_TRUE)
+
+! update sunshine duration
+DO JLON=KIDIA,KFDIA
+  IF ( ZFRSODIRS_C(JLON) > RSUNDUR*PMU0(JLON) ) THEN
+    PSDUR(JLON)=PSDUR(JLON)+(1._JPRB-PCLCT(JLON))*ZTSTEP
+  ENDIF
+  IF ( ZFRSODIRS_UN(JLON)-(1._JPRB-PCLCT(JLON))*ZFRSODIRS_CUN(JLON) > &
+   & RSUNDUR*PMU0(JLON)*PCLCT(JLON) ) THEN
+    PSDUR(JLON)=PSDUR(JLON)+PCLCT(JLON)*ZTSTEP
+  ENDIF
+ENDDO
+
+!     VII.5 - CALCUL DU FLUX LUNAIRE DESCENDANT EN SURFACE.
+!     ATTENTION: ON VEUT LE SEUL FLUX LUNAIRE,
+!     AUSSI CE FLUX EST MIS A ZERO LA OU LE SOLEIL EST LEVE.
+
+!     VII.5 - COMPUTE LUNAR DOWNWARD FLUX AT SURFACE.
+!     WARNING: ONE COMPUTES THE MERE LUNAR FLUX,
+!     SO THIS FLUX IS PUT TO ZERO WHERE THE SUN IS UP.
+!-------------------------------------------------------------------------------
+
+IF (LRAYLU) THEN
+
+  DO JLON=KIDIA,KFDIA
+    PFRSOLU(JLON)=1._JPRB/(MAX(ZEPSAL,1._JPRB-PALB(JLON)))*PFRSO(JLON,KLEV)&
+     & *0.5_JPRB*(1._JPRB+SIGN(1._JPRB,0._JPRB-PMU0(JLON)))
+  ENDDO
+
+ELSE
+
+  DO JLON=KIDIA,KFDIA
+    PFRSOLU(JLON)=0._JPRB
+  ENDDO
+
+ENDIF
+
+!-------------------------------------------------------------------------------
+END ASSOCIATE
+IF (LHOOK) CALL DR_HOOK('ACRANEB2',1,ZHOOK_HANDLE)
+END SUBROUTINE ACRANEB2

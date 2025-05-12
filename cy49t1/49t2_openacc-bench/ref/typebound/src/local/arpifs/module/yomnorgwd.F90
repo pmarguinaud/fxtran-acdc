@@ -1,0 +1,110 @@
+MODULE YOMNORGWD
+
+!$ACDC methods 
+
+
+! YOMNORGWD -- Parameters/switches for the non-orographic GW parameterization (ACNORGWD)
+
+USE PARKIND1, ONLY : JPIM, JPRB
+   
+IMPLICIT NONE
+   
+SAVE  
+
+TYPE TNORGWD
+
+CHARACTER(LEN=4)   :: NORGWD_SCHEME     ! 'RAND' : ORIGINAL PARAM.
+                                        ! 'PREC' : LINKS TO CONVEC. SOURCES
+                                        ! 'ALLS' : LINKS TO ALL SOURCES
+
+REAL(KIND=JPRB)    :: NORGWD_PRMAX      ! maximum of rain for which our theory applies (in kg/m^2/s)
+REAL(KIND=JPRB)    :: NORGWD_DZ         ! Characteristic depth of the source
+REAL(KIND=JPRB)    :: NORGWD_PTROPO     ! Tropopause height for GW spectrum (Pa)
+INTEGER(KIND=JPIM) :: NORGWD_NTROPO     ! Tropopause height for GW spectrum (level)
+ 
+REAL(KIND=JPRB)    :: NORGWD_RUWMAX     ! Max EP-Flux at Launch altitude
+REAL(KIND=JPRB)    :: NORGWD_SAT        ! Saturation parameter
+REAL(KIND=JPRB)    :: NORGWD_RDISS      ! Dissipation coefficient
+REAL(KIND=JPRB)    :: NORGWD_DELTAT     ! Time scale of the life cycle of the waves parameterized
+REAL(KIND=JPRB)    :: NORGWD_KMIN       ! Min horizontal wavenumbers
+REAL(KIND=JPRB)    :: NORGWD_KMAX       ! Max horizontal wavenumbers
+REAL(KIND=JPRB)    :: NORGWD_CMIN       ! Min absolute ph. vel.
+REAL(KIND=JPRB)    :: NORGWD_CMAX       ! Max absolute ph. vel.
+REAL(KIND=JPRB)    :: NORGWD_PLAUNCH    ! Launch height of GW spectrum (Pa)
+INTEGER(KIND=JPIM) :: NORGWD_NLAUNCH    ! Launch height of GW spectrum (level)
+REAL(KIND=JPRB)    :: NORGWD_PNOVERDIF  ! Bottom height for no vertical diffusion (Pa)
+INTEGER(KIND=JPIM) :: NORGWD_NNOVERDIF  ! Bottom height for no vertical diffusion (level)
+
+REAL(KIND=JPRB)    :: NORGWD_DZFRON     ! Characteristic depth of the source (front and jets source)
+REAL(KIND=JPRB)    :: NORGWD_GFRON      ! Parameter G_0 (~1) that controls the amplitude of the EP flux emitted by fronts and jets
+REAL(KIND=JPRB)    :: NORGWD_GB         ! Parameter that controls the amplitude of the EP flux emitted by 'background' sources
+
+CONTAINS
+PROCEDURE :: COPY => COPY_TNORGWD
+PROCEDURE :: CRC64 => CRC64_TNORGWD
+PROCEDURE :: HOST => HOST_TNORGWD
+PROCEDURE :: LOAD => LOAD_TNORGWD
+PROCEDURE :: SAVE => SAVE_TNORGWD
+PROCEDURE :: SIZE => SIZE_TNORGWD
+PROCEDURE :: WIPE => WIPE_TNORGWD
+END TYPE TNORGWD
+
+INTERFACE
+
+MODULE SUBROUTINE COPY_TNORGWD (SELF, LDCREATED, LDFIELDAPI)
+
+IMPLICIT NONE
+CLASS (TNORGWD), INTENT (IN), TARGET :: SELF
+LOGICAL, OPTIONAL, INTENT (IN) :: LDCREATED, LDFIELDAPI
+END SUBROUTINE
+
+MODULE SUBROUTINE CRC64_TNORGWD (SELF, KLUN, CDPATH)
+USE CRC64_INTRINSIC, ONLY : FCRC64 => CRC64
+
+IMPLICIT NONE
+CLASS (TNORGWD), TARGET :: SELF
+INTEGER, INTENT (IN) :: KLUN
+CHARACTER(LEN=*), INTENT (IN) :: CDPATH
+END SUBROUTINE
+
+MODULE SUBROUTINE HOST_TNORGWD (SELF)
+
+IMPLICIT NONE
+CLASS (TNORGWD), TARGET :: SELF
+END SUBROUTINE
+
+MODULE SUBROUTINE LOAD_TNORGWD (SELF, KLUN)
+USE PARKIND1, ONLY : JPRD
+
+IMPLICIT NONE
+CLASS (TNORGWD), INTENT (OUT), TARGET :: SELF
+INTEGER, INTENT (IN) :: KLUN
+END SUBROUTINE
+
+MODULE SUBROUTINE SAVE_TNORGWD (SELF, KLUN)
+
+IMPLICIT NONE
+CLASS (TNORGWD), INTENT (IN), TARGET :: SELF
+INTEGER, INTENT (IN) :: KLUN
+END SUBROUTINE
+
+MODULE FUNCTION SIZE_TNORGWD (SELF, CDPATH, LDPRINT) RESULT (KSIZE)
+
+IMPLICIT NONE
+CLASS (TNORGWD),     INTENT (IN), TARGET :: SELF
+CHARACTER(LEN=*), INTENT (IN), OPTIONAL :: CDPATH
+LOGICAL,          INTENT (IN), OPTIONAL :: LDPRINT
+INTEGER*8 :: KSIZE
+END FUNCTION
+
+MODULE SUBROUTINE WIPE_TNORGWD (SELF, LDDELETED, LDFIELDAPI)
+
+IMPLICIT NONE
+CLASS (TNORGWD), INTENT (IN), TARGET :: SELF
+LOGICAL, OPTIONAL, INTENT (IN) :: LDDELETED, LDFIELDAPI
+END SUBROUTINE
+
+
+END INTERFACE
+
+END MODULE YOMNORGWD

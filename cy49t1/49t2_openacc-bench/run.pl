@@ -34,8 +34,10 @@ sub processFile
   $dir = join ('/', $dir, 'local', &dirname ($F90));
   
   &mkpath ($dir) unless (-d $dir);
+
+  my $conf = 'typebound';
   
-  my @cmd = ("$Bin/../../bin/fxtran-f90", '--config', 'fxtran-util.conf', '--dir', $dir, '--dryrun', '--', 'f90', '-c', $f);
+  my @cmd = ("$Bin/../../bin/fxtran-f90", '--config', "fxtran-$conf.conf", '--dir', $dir, '--dryrun', '--', 'f90', '-c', $f);
 
   print "@cmd\n";
 

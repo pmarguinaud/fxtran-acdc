@@ -1,0 +1,302 @@
+SUBROUTINE LAVABO(YDGEOMETRY,YDMODEL,YDCPG_BNDS,YDCPG_OPTS,YDCPG_SL1,LD2TLFF1)
+
+!$ACDC pointerparallel    
+
+
+!**** *LAVABO*   Semi-Lagrangian scheme.
+!                VAlues at the BOundaries: Upper and lower extrapolations.
+
+!     Purpose.
+!     --------
+!          This subroutine do upper and lower extrapolations of
+!          semi-lagrangian quantities for extra-levels JLEV=0
+!          and JLEV=NFLEVG+1.
+!          Abbreviation "vwv" stands for "vertical wind variable".
+
+!**   Interface.
+!     ----------
+!        *CALL* *LAVABO(......)
+
+!        Explicit arguments :
+!        --------------------
+
+!        INPUT:
+!          KST      : first element of work.
+!          KPROF    : depth of work.
+!          LD2TLFF1 : .T./.F.: Refined treatement of (2*Omega Vec r) at
+!                    the origin point when there is t-dt (or t in SL2TL)
+!                    physics / Other cases.
+
+!        INPUT/OUTPUT:
+!          PB1      : "SLBUF1" buffer for interpolations.
+
+!        Implicit arguments :
+!        --------------------
+
+!     Method.
+!     -------
+!        See documentation
+
+!     Externals.
+!     ----------
+!         None
+!         Called by LACDYN.
+
+!     Reference.
+!     ----------
+!         Arpege documentation Part I  Chapter 3
+!                              Part II Chapter 5 and 6
+!         Documentation about semi-Lagrangian scheme.
+
+!     Author.
+!     -------
+!      K. YESSAD (METEO FRANCE/CNRM/GMAP) after routine
+!        CPLGDY1 coded by Maurice IMBARD.
+!      Original : APRIL 1992.
+
+! Modifications
+! -------------
+!   N. Wedi and K. Yessad (Jan 2008): different dev for NH model and PC scheme
+!   K. Yessad Aug 2008: rationalisation of dummy argument interfaces
+!   F. Vana   15-Oct-2009 : option NSPLTHOI
+!   K. Yessad (Nov 2009): prune lpc_old.
+!   F. Vana   15-Oct-2009 : diffusion of phys. tendencies (NSPLTHOI=1)
+!   K. Yessad (July 2014): Rename some variables.
+!   K. Yessad (Dec 2016): Prune obsolete options.
+!   K. Yessad (June 2017): Introduce NHQE model.
+!   F. Vana    21-Nov-2017: Option LSLDP_CURV + bugfix on SL physics
+!   K. Yessad (Feb 2018): remove deep-layer formulations.
+!   F. Vana July 2018: RK4 scheme for trajectory research.
+!   F. Vana   11-Jul-2019: Option LRHS_CURV
+!   F. Vana   11-Sep-2020: Cleaning
+! End Modifications
+!------------------------------------------------------------------------------
+
+USE PARKIND1         , ONLY : JPRB, JPIM
+USE GEOMETRY_MOD     , ONLY : GEOMETRY
+USE TYPE_MODEL       , ONLY : MODEL
+USE PARKIND1         , ONLY : JPIM
+USE YOMHOOK          , ONLY : DR_HOOK, JPHOOK, LHOOK
+USE CPG_SL1_TYPE_MOD , ONLY : CPG_SL1B_TYPE
+USE CPG_OPTS_TYPE_MOD, ONLY : CPG_OPTS_TYPE, CPG_BNDS_TYPE
+
+
+!     ------------------------------------------------------------------
+
+IMPLICIT NONE
+
+TYPE(GEOMETRY)      ,INTENT(IN)     :: YDGEOMETRY
+TYPE(MODEL)         ,INTENT(IN)     :: YDMODEL
+TYPE(CPG_BNDS_TYPE) ,INTENT(IN)     :: YDCPG_BNDS
+TYPE(CPG_OPTS_TYPE) ,INTENT(IN)     :: YDCPG_OPTS
+TYPE(CPG_SL1B_TYPE) ,INTENT(INOUT)  :: YDCPG_SL1
+LOGICAL             ,INTENT(IN)     :: LD2TLFF1 
+
+
+#include "lavabo_expl_laitvspcqm_part1.intfb.h"
+#include "lavabo_expl_laitvspcqm_part2.intfb.h"
+#include "lavabo_expl_lphy.intfb.h"
+
+INTEGER (KIND=JPIM) :: JLEV1, JLEV2
+
+!     ------------------------------------------------------------------
+
+REAL(KIND=JPHOOK) :: ZHOOK_HANDLE
+
+!     ------------------------------------------------------------------
+
+IF (LHOOK) CALL DR_HOOK('LAVABO',0,ZHOOK_HANDLE)
+ASSOCIATE(YDDIMV=>YDGEOMETRY%YRDIMV,YDDYNA=>YDMODEL%YRML_DYN%YRDYNA,YDDYN=>YDMODEL%YRML_DYN%YRDYN)
+ASSOCIATE(NFLEVG=>YDDIMV%NFLEVG, LSPLTHOIGFL=>YDDYN%LSPLTHOIGFL, NSPDLAG=>YDDYN%NSPDLAG, NSPLTHOI=>YDDYN%NSPLTHOI,  &
+& NSVDLAG=>YDDYN%NSVDLAG, NTLAG=>YDDYN%NTLAG, NVLAG=>YDDYN%NVLAG, NWLAG=>YDDYN%NWLAG, LSLDP_CURV=>YDDYN%LSLDP_CURV, &
+& LSLDP_RK=>YDDYN%LSLDP_RK, LRHS_CURV=>YDDYN%LRHS_CURV)
+ASSOCIATE(KLON => YDCPG_OPTS%KLON, KST => YDCPG_BNDS%KIDIA, KEND => YDCPG_BNDS%KFDIA, KFLEVG => YDCPG_OPTS%KFLEVG)
+
+!     ------------------------------------------------------------------
+
+JLEV1 = 0
+JLEV2 = NFLEVG+1
+
+!$ACDC PARALLEL, TARGET=OpenMP/OpenMPSingleColumn/OpenACCSingleColumn {
+
+!*       1.    UPPER AND LOWER LATERAL BOUNDARIES CONDITIONS SET TO 0.
+!              --------------------------------------------------------
+
+! * P[X]RL0 AND P[X]RL9 FOR [X]=U,V,W:
+YDCPG_SL1%UR0%P(KST:KEND,JLEV1)=0.0_JPRB
+YDCPG_SL1%UR0%P(KST:KEND,JLEV2)=0.0_JPRB
+YDCPG_SL1%VR0%P(KST:KEND,JLEV1)=0.0_JPRB
+YDCPG_SL1%VR0%P(KST:KEND,JLEV2)=0.0_JPRB
+IF (LSLDP_CURV) THEN
+  YDCPG_SL1%ZR0%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%ZR0%P(KST:KEND,JLEV2)=0.0_JPRB
+ENDIF
+YDCPG_SL1%WR0%P(KST:KEND,JLEV1)=0.0_JPRB
+YDCPG_SL1%WR0%P(KST:KEND,JLEV2)=0.0_JPRB
+IF (LSLDP_RK) THEN
+  YDCPG_SL1%UR00%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%UR00%P(KST:KEND,JLEV2)=0.0_JPRB
+  YDCPG_SL1%VR00%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%VR00%P(KST:KEND,JLEV2)=0.0_JPRB
+  IF (LSLDP_CURV) THEN
+    YDCPG_SL1%ZR00%P(KST:KEND,JLEV1)=0.0_JPRB
+    YDCPG_SL1%ZR00%P(KST:KEND,JLEV2)=0.0_JPRB
+  ENDIF
+  YDCPG_SL1%WR00%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%WR00%P(KST:KEND,JLEV2)=0.0_JPRB
+ENDIF
+IF (LD2TLFF1) THEN
+  YDCPG_SL1%UR9%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%UR9%P(KST:KEND,JLEV2)=0.0_JPRB
+  YDCPG_SL1%VR9%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%VR9%P(KST:KEND,JLEV2)=0.0_JPRB
+  IF (LRHS_CURV) THEN
+    YDCPG_SL1%ZR9%P(KST:KEND,JLEV1)=0.0_JPRB
+    YDCPG_SL1%ZR9%P(KST:KEND,JLEV2)=0.0_JPRB
+  ENDIF
+ENDIF
+
+! * P[X]L0 AND P[X]L9 FOR [X]=U,V,T,ADVECTED GFL:
+YDCPG_SL1%U9%P(KST:KEND,JLEV1)=0.0_JPRB
+YDCPG_SL1%U9%P(KST:KEND,JLEV2)=0.0_JPRB
+YDCPG_SL1%V9%P(KST:KEND,JLEV1)=0.0_JPRB
+YDCPG_SL1%V9%P(KST:KEND,JLEV2)=0.0_JPRB
+IF (LRHS_CURV) THEN
+  YDCPG_SL1%Z9%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%Z9%P(KST:KEND,JLEV2)=0.0_JPRB
+ENDIF
+YDCPG_SL1%T9%P(KST:KEND,JLEV1)=0.0_JPRB
+YDCPG_SL1%T9%P(KST:KEND,JLEV2)=0.0_JPRB
+
+!$ACDC }
+
+CALL LAVABO_EXPL_LAITVSPCQM_PART1 (YDGEOMETRY, YDCPG_BNDS, YDCPG_OPTS, YDCPG_SL1)
+
+!$ACDC PARALLEL, TARGET=OpenMP/OpenMPSingleColumn/OpenACCSingleColumn {
+
+IF (NSPLTHOI /= 0) THEN
+  YDCPG_SL1%UF9%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%UF9%P(KST:KEND,JLEV2)=0.0_JPRB
+  YDCPG_SL1%VF9%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%VF9%P(KST:KEND,JLEV2)=0.0_JPRB
+  YDCPG_SL1%TF9%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%TF9%P(KST:KEND,JLEV2)=0.0_JPRB
+ENDIF
+
+!$ACDC }
+
+IF (NSPLTHOI /= 0.OR.LSPLTHOIGFL) THEN
+  CALL LAVABO_EXPL_LAITVSPCQM_PART2 (YDGEOMETRY, YDCPG_BNDS, YDCPG_OPTS, YDCPG_SL1)
+ENDIF
+
+!$ACDC PARALLEL, TARGET=OpenMP/OpenMPSingleColumn/OpenACCSingleColumn {
+
+IF (NWLAG /= 2) THEN
+  YDCPG_SL1%U0%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%U0%P(KST:KEND,JLEV2)=0.0_JPRB
+  YDCPG_SL1%V0%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%V0%P(KST:KEND,JLEV2)=0.0_JPRB
+  IF (LRHS_CURV) THEN
+    YDCPG_SL1%Z0%P(KST:KEND,JLEV1)=0.0_JPRB
+    YDCPG_SL1%Z0%P(KST:KEND,JLEV2)=0.0_JPRB
+  ENDIF
+ENDIF
+IF (NTLAG /= 2) THEN
+  YDCPG_SL1%T0%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%T0%P(KST:KEND,JLEV2)=0.0_JPRB
+ENDIF
+
+! * P[X]L0 AND P[X]L9 FOR [X]=SPD:
+IF (YDDYNA%LNHDYN) THEN !!!! LNHEE
+  YDCPG_SL1%PD9%P(KST:KEND,JLEV1) = 0.0_JPRB
+  YDCPG_SL1%PD9%P(KST:KEND,JLEV2) = 0.0_JPRB
+  IF (NSPDLAG /= 2) THEN
+    YDCPG_SL1%PD0%P(KST:KEND,JLEV1) = 0.0_JPRB
+    YDCPG_SL1%PD0%P(KST:KEND,JLEV2) = 0.0_JPRB
+  ENDIF
+ENDIF
+
+! * P[X]L0 AND P[X]L9 FOR [X]=SVD,NHX:
+IF (YDDYNA%LNHDYN) THEN
+  YDCPG_SL1%VD9%P(KST:KEND,JLEV1) = 0.0_JPRB
+  YDCPG_SL1%VD9%P(KST:KEND,JLEV2) = 0.0_JPRB
+  IF (NSPLTHOI /= 0) THEN
+    YDCPG_SL1%VDF9%P(KST:KEND,JLEV1) = 0.0_JPRB
+    YDCPG_SL1%VDF9%P(KST:KEND,JLEV2) = 0.0_JPRB
+  ENDIF
+  IF (YDDYNA%NVDVAR == 4 .OR. YDDYNA%NVDVAR ==5) THEN
+    YDCPG_SL1%NHX9%P(KST:KEND,JLEV1) = 0.0_JPRB
+    YDCPG_SL1%NHX9%P(KST:KEND,JLEV2) = 0.0_JPRB
+  ENDIF
+  IF (NSVDLAG /= 2) THEN
+    YDCPG_SL1%VD0%P(KST:KEND,JLEV1) = 0.0_JPRB
+    YDCPG_SL1%VD0%P(KST:KEND,JLEV2) = 0.0_JPRB
+  ENDIF
+ENDIF
+
+! * P[X]L0 AND P[X]L9 FOR [X]=C (CONTINUITY EQUATION):
+IF (NVLAG == 2.OR.NVLAG == 3) THEN
+  YDCPG_SL1%C9%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%C9%P(KST:KEND,JLEV2)=0.0_JPRB
+  IF (YDDYNA%LSLINLC2) YDCPG_SL1%C9_SI%P(KST:KEND,JLEV1)=0.0_JPRB
+  IF (YDDYNA%LSLINLC2) YDCPG_SL1%C9_SI%P(KST:KEND,JLEV2)=0.0_JPRB
+ENDIF
+
+!$ACDC }
+
+! * P[X]LP9 for [X]=U,V,T and GFL:
+IF( YDMODEL%YRML_PHY_EC%YREPHY%LSLPHY ) THEN
+
+!$ACDC ABORT {
+
+  ! ky: is it JGFL or YCOMP(JGFL)%MP_SL1 in ISLB1GFLP9?
+  ! fv: Yes, it should be JGFL (see the corresponding code in LARCINB). 
+  YDCPG_SL1%UP9%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%UP9%P(KST:KEND,JLEV2)=0.0_JPRB
+  YDCPG_SL1%VP9%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%VP9%P(KST:KEND,JLEV2)=0.0_JPRB
+  IF (LRHS_CURV) THEN
+    YDCPG_SL1%Z9%P(KST:KEND,JLEV1)=0.0_JPRB
+    YDCPG_SL1%Z9%P(KST:KEND,JLEV2)=0.0_JPRB
+  ENDIF
+  YDCPG_SL1%TP9%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%TP9%P(KST:KEND,JLEV2)=0.0_JPRB
+
+  CALL LAVABO_EXPL_LPHY (YDGEOMETRY, KST, KEND, YDCPG_SL1)
+
+!$ACDC }
+
+ENDIF
+
+! * P[X]L9_SI (GMV equations):
+IF (YDDYNA%LSLINL) THEN
+
+!$ACDC ABORT {
+
+  YDCPG_SL1%U9_SI%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%U9_SI%P(KST:KEND,JLEV2)=0.0_JPRB
+  YDCPG_SL1%V9_SI%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%V9_SI%P(KST:KEND,JLEV2)=0.0_JPRB
+  YDCPG_SL1%T9_SI%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%T9_SI%P(KST:KEND,JLEV2)=0.0_JPRB
+  YDCPG_SL1%VD9_SI%P(KST:KEND,JLEV1)=0.0_JPRB
+  YDCPG_SL1%VD9_SI%P(KST:KEND,JLEV2)=0.0_JPRB
+  IF (YDDYNA%LNHDYN) THEN !!! LNHEE
+    YDCPG_SL1%PD9_SI%P(KST:KEND,JLEV1)=0.0_JPRB
+    YDCPG_SL1%PD9_SI%P(KST:KEND,JLEV2)=0.0_JPRB
+  ENDIF
+
+!$ACDC }
+
+ENDIF 
+
+!     ------------------------------------------------------------------
+
+END ASSOCIATE
+END ASSOCIATE
+END ASSOCIATE
+
+IF (LHOOK) CALL DR_HOOK('LAVABO',1,ZHOOK_HANDLE)
+
+END SUBROUTINE LAVABO
+

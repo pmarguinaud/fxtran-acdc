@@ -1,0 +1,112 @@
+MODULE YOMARPHY
+
+!$ACDC methods 
+
+
+USE PARKIND1, ONLY : JPIM
+
+IMPLICIT NONE
+
+SAVE
+
+TYPE :: TARPHY
+!*
+!    -----------------------------------------------------------------
+
+!    VARIABLES DE CONTROLE DE LA PHYSIQUE AROME :
+!    CONTROL VARIABLES FOR THE AROME PHYSICS:
+
+LOGICAL :: LMPA        ! Global switch for AROME physics coming from MesoNH (turbulence, microphysic, shallow-convection)
+LOGICAL :: LMSE        ! Global switch for surfex use
+
+LOGICAL :: LMICRO      ! Global switch for AROME microphysics 
+LOGICAL :: LTURB       ! Global switch for AROME turbulence
+LOGICAL :: LKFBCONV    ! Global switch for Kain-Fritch Convection
+LOGICAL :: LKFBD       ! Control key to KFB deep convection
+LOGICAL :: LKFBS       ! Control key to KFB shallow convection
+LOGICAL :: LMFSHAL     ! Control key for Shallow Convection Mass Flux scheme (Pergaud et al, 2008)
+LOGICAL :: LUSECHEM    ! Contol key for calling the Gas Chemistry scheme
+LOGICAL :: LORILAM     ! Contol key for calling the Aerosol Chemistry scheme 
+LOGICAL :: LRDUST      ! Contol key for calling the desertic aerosols scheme
+LOGICAL :: LRCO2       ! Contol key for calling the CO2 gas concentration
+LOGICAL :: LINITCHEM   ! Contol key to initialise  Gas Chemistry concentration
+LOGICAL :: LINITORILAM ! Contol key to initialise  Aerosol Chemistry concentration
+LOGICAL :: LINITDUST   ! Contol key to initialise  Desertic aerosol concentration
+LOGICAL :: LRDEPOS     ! Contol key for calling aerosol scavenging
+LOGICAL :: LBUFLUX     ! If TRUE fluxes are calculated in AROEND_BUDGET, if FALSE, tendencies remain
+CHARACTER(LEN=1) :: CCOUPLING ! Type of SURFEX coupling. E - explicit, I - implicit
+LOGICAL :: LMDUST      ! Contol key for calling the desertic aerosols IN ALADIN
+LOGICAL :: LLEONARD
+LOGICAL :: LGOGER
+
+CONTAINS
+PROCEDURE :: COPY => COPY_TARPHY
+PROCEDURE :: CRC64 => CRC64_TARPHY
+PROCEDURE :: HOST => HOST_TARPHY
+PROCEDURE :: LOAD => LOAD_TARPHY
+PROCEDURE :: SAVE => SAVE_TARPHY
+PROCEDURE :: SIZE => SIZE_TARPHY
+PROCEDURE :: WIPE => WIPE_TARPHY
+END TYPE TARPHY
+
+
+!    -------------------------------------------------------------------
+INTERFACE
+
+MODULE SUBROUTINE COPY_TARPHY (SELF, LDCREATED, LDFIELDAPI)
+
+IMPLICIT NONE
+CLASS (TARPHY), INTENT (IN), TARGET :: SELF
+LOGICAL, OPTIONAL, INTENT (IN) :: LDCREATED, LDFIELDAPI
+END SUBROUTINE
+
+MODULE SUBROUTINE CRC64_TARPHY (SELF, KLUN, CDPATH)
+USE CRC64_INTRINSIC, ONLY : FCRC64 => CRC64
+
+IMPLICIT NONE
+CLASS (TARPHY), TARGET :: SELF
+INTEGER, INTENT (IN) :: KLUN
+CHARACTER(LEN=*), INTENT (IN) :: CDPATH
+END SUBROUTINE
+
+MODULE SUBROUTINE HOST_TARPHY (SELF)
+
+IMPLICIT NONE
+CLASS (TARPHY), TARGET :: SELF
+END SUBROUTINE
+
+MODULE SUBROUTINE LOAD_TARPHY (SELF, KLUN)
+
+IMPLICIT NONE
+CLASS (TARPHY), INTENT (OUT), TARGET :: SELF
+INTEGER, INTENT (IN) :: KLUN
+END SUBROUTINE
+
+MODULE SUBROUTINE SAVE_TARPHY (SELF, KLUN)
+
+IMPLICIT NONE
+CLASS (TARPHY), INTENT (IN), TARGET :: SELF
+INTEGER, INTENT (IN) :: KLUN
+END SUBROUTINE
+
+MODULE FUNCTION SIZE_TARPHY (SELF, CDPATH, LDPRINT) RESULT (KSIZE)
+
+IMPLICIT NONE
+CLASS (TARPHY),     INTENT (IN), TARGET :: SELF
+CHARACTER(LEN=*), INTENT (IN), OPTIONAL :: CDPATH
+LOGICAL,          INTENT (IN), OPTIONAL :: LDPRINT
+INTEGER*8 :: KSIZE
+END FUNCTION
+
+MODULE SUBROUTINE WIPE_TARPHY (SELF, LDDELETED, LDFIELDAPI)
+
+IMPLICIT NONE
+CLASS (TARPHY), INTENT (IN), TARGET :: SELF
+LOGICAL, OPTIONAL, INTENT (IN) :: LDDELETED, LDFIELDAPI
+END SUBROUTINE
+
+
+END INTERFACE
+
+END MODULE YOMARPHY
+

@@ -1,0 +1,99 @@
+SUBROUTINE ROTUV(KFLEV,KPROMA,KST,KEND,PU,PV,PP,PQ,PRU,PRV,LDIR,LDADD,LDSUB)
+
+!$ACDC singlecolumn  --process-pointers
+
+! Purpose:
+!  rotate U/V wind following a rotation matrix P/Q
+!
+! Input:
+!  PU/PV: U/V wind components
+!  LDIR: switch for direct or back rotation
+!  LDADD: option to add the rotated wind rot(U/V) to the initial PRU/PRV wind
+!
+! Output:
+!  PRU/PRV: U/V wind components rotated to/from geographical North
+!
+! Author:
+!  H Petithomme, Sep 2023
+
+USE PARKIND1, ONLY: JPIM, JPRB
+USE YOMHOOK, ONLY: LHOOK, DR_HOOK, JPHOOK
+
+IMPLICIT NONE
+
+INTEGER(KIND=JPIM),INTENT(IN) :: KFLEV,KPROMA,KST,KEND
+LOGICAL,INTENT(IN) :: LDIR
+LOGICAL,OPTIONAL,INTENT(IN) :: LDADD,LDSUB
+REAL(KIND=JPRB),INTENT(IN) :: PU(KPROMA,KFLEV)
+REAL(KIND=JPRB),INTENT(IN) :: PV(KPROMA,KFLEV)
+REAL(KIND=JPRB),INTENT(IN) :: PP(KPROMA,KFLEV)
+REAL(KIND=JPRB),INTENT(IN) :: PQ(KPROMA,KFLEV)
+REAL(KIND=JPRB),INTENT(INOUT) :: PRU(KPROMA,KFLEV)
+REAL(KIND=JPRB),INTENT(INOUT) :: PRV(KPROMA,KFLEV)
+
+INTEGER(KIND=JPIM) :: JROF,JLEV
+LOGICAL :: LLADD
+REAL(KIND=JPRB) :: ZA,ZU,ZV
+REAL(KIND=JPHOOK) :: ZHOOK_HANDLE
+
+#include "rotate.func.h"
+
+IF (LHOOK) CALL DR_HOOK("ROTUV",0,ZHOOK_HANDLE)
+
+! note: when .TRUE., LDSUB has precedence over LDADD (both true means substraction)
+! adding is U/V+rot(U/V), substracting is U/V+rot(-U/-V), other is rot(U/V)
+ZA = 1
+LLADD = .FALSE.
+IF (PRESENT(LDADD)) LLADD = LDADD
+IF (PRESENT(LDSUB)) THEN
+  LLADD = LLADD.OR.LDSUB
+  IF (LDSUB) ZA = -1
+ENDIF
+
+! warning: ZU/ZV are ALWAYS needed to protect against aliasing (U/V and RU/RV)
+! do not merge add and "not add" functions because PRU/PRV would have to be zeroed
+! (ie 0*PRU/PRV doesn't account for NaN)
+IF (LDIR) THEN
+  IF (LLADD) THEN
+    DO JLEV=1,KFLEV
+      DO JROF=KST,KEND
+        ZU = ZA*PU(JROF,JLEV)
+        ZV = ZA*PV(JROF,JLEV)
+        PRU(JROF,JLEV) = FROTUADD(PRU(JROF,JLEV),ZU,ZV,PP(JROF,JLEV),PQ(JROF,JLEV))
+        PRV(JROF,JLEV) = FROTVADD(PRV(JROF,JLEV),ZU,ZV,PP(JROF,JLEV),PQ(JROF,JLEV))
+      END DO
+    END DO
+  ELSE
+    DO JLEV=1,KFLEV
+      DO JROF=KST,KEND
+        ZU = PU(JROF,JLEV)
+        ZV = PV(JROF,JLEV)
+        PRU(JROF,JLEV) = FROTU(ZU,ZV,PP(JROF,JLEV),PQ(JROF,JLEV))
+        PRV(JROF,JLEV) = FROTV(ZU,ZV,PP(JROF,JLEV),PQ(JROF,JLEV))
+      END DO
+    END DO
+  ENDIF
+ELSE
+  IF (LLADD) THEN
+    DO JLEV=1,KFLEV
+      DO JROF=KST,KEND
+        ZU = ZA*PU(JROF,JLEV)
+        ZV = ZA*PV(JROF,JLEV)
+        PRU(JROF,JLEV) = FUNROTUADD(PRU(JROF,JLEV),ZU,ZV,PP(JROF,JLEV),PQ(JROF,JLEV))
+        PRV(JROF,JLEV) = FUNROTVADD(PRV(JROF,JLEV),ZU,ZV,PP(JROF,JLEV),PQ(JROF,JLEV))
+      END DO
+    END DO
+  ELSE
+    DO JLEV=1,KFLEV
+      DO JROF=KST,KEND
+        ZU = PU(JROF,JLEV)
+        ZV = PV(JROF,JLEV)
+        PRU(JROF,JLEV) = FUNROTU(ZU,ZV,PP(JROF,JLEV),PQ(JROF,JLEV))
+        PRV(JROF,JLEV) = FUNROTV(ZU,ZV,PP(JROF,JLEV),PQ(JROF,JLEV))
+      END DO
+    END DO
+  ENDIF
+ENDIF
+
+IF (LHOOK) CALL DR_HOOK("ROTUV",1,ZHOOK_HANDLE)
+END SUBROUTINE ROTUV
