@@ -83,7 +83,9 @@ sub runACDCMethod
   $ACDC =~ s/^(\w+)\s*//o;
   my $method = $1;
 
-  my @cmd = ("$Bin/fxtran-gen", $method, &getMethodOptions ($opts, $method), split (m/\s+/o, $ACDC), $F90);
+  my @cmd = ("$Bin/fxtran-gen1", $opts->{package}, $method, 
+             &getMethodOptions ($opts, $method), 
+             split (m/\s+/o, $ACDC), $F90);
   
   &Fxtran::Util::runCommand (cmd => \@cmd, %$opts);
 
@@ -108,6 +110,8 @@ sub outline1
 
 my ($package, $config, $ilast) = ('generate');
 
+# Look for config
+
 for (my $i = 0; $i < $#ARGV; $i++)
   {
     if ($ARGV[$i] eq '--')
@@ -115,19 +119,11 @@ for (my $i = 0; $i < $#ARGV; $i++)
         $ilast = $i;
         last;
       }
-    elsif ($ARGV[$i] eq '--package')
-      {
-        $package = $ARGV[$i+1];
-      }
     elsif ($ARGV[$i] eq '--config')
       {
         $config = $ARGV[$i+1];
       }
   }
-
-$package = 'Fxtran::' . ucfirst ($package);
-
-my %opts = (package => $package);
 
 if ($config)
   {
@@ -141,6 +137,26 @@ if ($config)
       }
     @ARGV = (@ARGV[0..$ilast-1], @$config, @ARGV[$ilast..$#ARGV]);
   }
+
+# Look for package
+
+for (my $i = 0; $i < $#ARGV; $i++)
+  {
+    if ($ARGV[$i] eq '--')
+      {
+        $ilast = $i;
+        last;
+      }
+    elsif ($ARGV[$i] eq '--package')
+      {
+        $package = $ARGV[$i+1];
+      }
+  }
+
+$package = 'Fxtran::' . ucfirst ($package) 
+  unless ($package =~ m/::/o);
+
+my %opts = (package => $package, config => $config);
 
 &Fxtran::Util::loadModule ($package);
 

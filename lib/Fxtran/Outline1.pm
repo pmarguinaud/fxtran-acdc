@@ -6,14 +6,21 @@ package Fxtran::Outline1;
 # philippe.marguinaud@meteo.fr
 #
 
+use Data::Dumper;
+use FileHandle;
+use File::Basename;
+use List::MoreUtils qw (uniq);
+
 use strict;
+
 use Fxtran;
 use Fxtran::Intrinsic;
 use Fxtran::Include;
 use Fxtran::Canonic;
+use Fxtran::Directive;
+use Fxtran::Inline;
 
-use Data::Dumper;
-use List::MoreUtils qw (uniq);
+use click;
 
 sub variableDependencies
 {
@@ -25,8 +32,6 @@ sub variableDependencies
   my ($decl, $use, $include);
 
   ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string (EN-N)="?"]]', $n, $dp);
-
-  my $use;
 
   if (! $decl)
     {
@@ -341,8 +346,8 @@ EOF
 
   $sect->replaceNode ($call);
 
-  &printCanonic (lc ($sectName) . '.F90', $body);
-  &printCanonic (lc ($sectName) . '.intfb.h', $intf, 1);
+  &printCanonic ($args{dir} . '/' . lc ($sectName) . '.F90',     $body, 0);
+  &printCanonic ($args{dir} . '/' . lc ($sectName) . '.intfb.h', $intf, 1);
 
 }
 
@@ -352,7 +357,9 @@ sub printCanonic
 
   my ($file, $text, $intf) = @_;
 
-  my $fh = 'File::Temp'->new (DIR => '.', SUFFIX => '.F90', UNLINK => 1, TEMPLATE => '.XXXXXX');
+  my $fh;
+
+  $fh = 'File::Temp'->new (DIR => '.', SUFFIX => '.F90', UNLINK => 1, TEMPLATE => '.XXXXXX');
 
   $fh->print ($text);
 
@@ -360,11 +367,66 @@ sub printCanonic
 
   my $d = &Fxtran::parse (location => $fh->filename (), fopts => [qw (-construct-tag -no-include -line-length 5000 -canonic)]);
 
-  my $fh = 'FileHandle'->new (">$file");
+  $fh = 'FileHandle'->new (">$file");
   $fh->print ("INTERFACE\n") if ($intf);
   $fh->print (&Fxtran::Canonic::indent ($d));
   $fh->print ("END INTERFACE\n") if ($intf);
   $fh->close ();
+}
+
+&click (<< "EOF");
+  dir=s                     -- Dump result in this directory                                                                                -- .
+  inline-contained          -- Inline contained routines
+EOF
+sub outline1
+{
+  my ($opts, @args) = @_;
+
+  &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 5000));
+  &fxtran::setOptions (qw (Statement -line-length 5000));
+  
+  my ($F90) = @args;
+  
+  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-construct-tag -no-include -line-length 500 -directive ACDC -canonic)]);
+  
+  &Fxtran::Canonic::makeCanonic ($d);
+  
+  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
+  
+  if ($opts->{'inline-contained'})
+    {
+      my @pu = &F ('./object/file/program-unit', $d);
+      for my $pu (@pu)
+        {
+          &Fxtran::Inline::inlineContainedSubroutines ($pu, skipDimensionCheck => 1);
+        }
+    }
+  
+  my ($pu) = &F ('./object/file/program-unit', $d);
+  
+  my ($puName) = &F ('./subroutine-stmt/subroutine-N', $pu, 1);
+  
+  my $vars = &Fxtran::Outline1::getVariables ($pu);
+  
+  my @par = &F ('.//parallel-section', $d);
+  
+  my %parName;
+  
+  for my $i (0 .. $#par)
+    {
+      my $par = $par[$i];
+  
+      my $parName = $par->getAttribute ('name') || sprintf ('OUTLINE_%3.3d', $i);
+  
+      die ("Duplicate section name `$parName'") 
+        if ($parName{$parName}++);
+  
+      &Fxtran::Outline1::outline ($pu, section => $par, sectionName => $puName. '_' . $parName, 
+                                  variables => $vars, dir => $opts->{dir});
+    }
+  
+  'FileHandle'->new (">$opts->{dir}/" . &basename ($F90))->print (&Fxtran::Canonic::indent ($d));
+
 }
 
 1;

@@ -14,8 +14,10 @@ use strict;
 
 use Fxtran::Util;
 
-use Fxtran::Generate;
+my $package = shift;
 
-'Fxtran::Generate'->run (@ARGV);
+&Fxtran::Util::loadModule ($package);
+
+$package->run (@ARGV);
 
 
