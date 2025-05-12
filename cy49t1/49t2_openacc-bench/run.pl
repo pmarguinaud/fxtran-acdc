@@ -23,7 +23,9 @@ sub getLines
 
 sub processFile
 {
-  my $f = shift;
+  my %args = @_;
+  my $f = $args{file};
+  my $log = $args{log};
 
   my $cwd = &cwd ();
 
@@ -33,12 +35,17 @@ sub processFile
   
   &mkpath ($dir) unless (-d $dir);
   
-  my @cmd = ("$Bin/../../bin/fxtran-f90", '--config', 'generate.conf', '--dir', $dir, '--dryrun', '--', 'f90', '-c', $f);
+  my @cmd = ("$Bin/../../bin/fxtran-f90", '--config', 'fxtran-util.conf', '--dir', $dir, '--dryrun', '--', 'f90', '-c', $f);
 
   print "@cmd\n";
+
+  $log->print ("@cmd\n");
   
-  system (@cmd) 
-    and die ("Command `@cmd' failed");
+  if (system (@cmd))
+    {
+      $log->print ("Command `@cmd' failed");
+      die ("Command `@cmd' failed");
+    }
 }
 
 sub processList
@@ -47,15 +54,35 @@ sub processList
 
   my @lst = @_;
 
+  unlink ($_) for (<run.*.log>);
+
   if ($opts->{threads} > 1)
     {
        my @t;
       
        my $q = 'Thread::Queue'->new ();
       
-       for (1 .. $opts->{threads})
+       for my $tid (1 .. $opts->{threads})
          {
-           push @t, 'threads'->create (sub { while (my $f = $q->dequeue ()) { &processFile ($f); } });
+           push @t, 'threads'->create (sub 
+           { 
+             my $fh = 'FileHandle'->new (sprintf ('>run.%4.4d.log', $tid));
+
+             eval 
+               {
+                 while (my $f = $q->dequeue ()) 
+                   { 
+                     &processFile (tid => $tid, file => $f, log => $fh); 
+                   } 
+               };
+             my $c = $@;
+
+             $fh->close ();
+
+             $c && return 0;
+
+             return 1;
+           });
          }
       
        for my $f (@lst, (0) x $opts->{threads})
@@ -63,13 +90,18 @@ sub processList
            $q->enqueue ($f);
          }
       
-       $_->join () for (@t);
+       for (@t)
+         {
+           $_->join () or die;
+         }
     }
   else
-    {
+    { 
+      my $tid = 0;
+      my $fh = 'FileHandle'->new (sprintf ('>run.%4.4d.log', $tid));
       for my $f (@lst)
         {
-          &processFile ($f);
+          &processFile (file => $f, tid => $tid, log => $fh);
         }
     }
 }
