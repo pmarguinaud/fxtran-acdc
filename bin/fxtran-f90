@@ -164,6 +164,9 @@ my @opts_s = qw (package config);
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
 
+$opts{package} = 'Fxtran::' . ucfirst ($opts{package}) 
+  unless ($opts{package} =~ m/::/o);
+
 if ($opts{help})
   {
     print

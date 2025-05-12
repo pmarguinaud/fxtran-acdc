@@ -1,0 +1,472 @@
+SUBROUTINE CPG_GP_HYD(YDGEOMETRY, YDCPG_BNDS, YDCPG_OPTS, YDVARS, YDCPG_DYN0, YDCPG_DYN9, YDMODEL,   &
+& P_OROGLL_T0, P_OROGMM_T0, P_OROGLM_T0, P_GDW_T0, P_GWHT_T0, YDCPG_TND)
+
+!$ACDC outline1    
+
+
+!**** *CPG_GP_HYD* - Grid point calculations at instants t and t-dt for hydrostatic model.
+
+!     Purpose.
+!     --------
+!      Grid-point calculations at instants t and t-dt for hydrostatic model.
+!      Computes some intermediate quantities.
+!      Computes some Lagrangian equation RHS.
+
+!**   Interface.
+!     ----------
+!        *CALL* *CPG_GP_HYD(...)*
+
+!        Explicit arguments :
+!        --------------------
+
+!     INPUT:
+!     ------
+!        KST       : first element of work.
+!        KEND      : last element of work.
+!        KSTGLO    : global offset.
+!        LDUVH     : compute half level winds.
+!        LDGW      : compute [gw].
+!        LDLDIAB   : .T. if complete physics is activated and predictor step.
+!        LDMPA     : AROME upper-air physics.
+!        KIBL      : index into YRGSGEOM/YRCSGEOM types in YDGEOMETRY
+!        POROG     : surface orography.
+!        POROGL    : zonal component of "grad(surf orography)"
+!        POROGM    : meridian component of "grad(surf orography)"
+!        PRE0L     : zonal component of "grad prehyds" at t.
+!        PRE0M     : meridian component of "grad prehyds" at t.
+
+!     INPUT/OUTPUT:
+!     -------------
+!        PGMV      : upper air GMV variables at time t and t-dt.
+!        PRE0      : hydrostatic pressure "prehyd" at half levels at time t.
+!        PRE9      : hydrostatic pressure "prehyd" at half levels at t-dt.
+
+!     OUTPUT:
+!     -------
+!        PRE0F     : hydrostatic pressure "prehyd" at full levels at time t.
+!        PXYB0     : contains pressure depth, "delta", "alpha" at t.
+!        PUVH0     : horizontal wind at time t at half levels.
+!        PHIF0     : geopotential height "gz" at t at full levels.
+!        PRCP0     : contains "cp", "R" and "Kap=R/Cp" at t.
+!        PCTY0     : contains vertical velocities, vertical integral of divergence at t.
+!        PGWFT0    : [gw] at full levels at t.
+!        PKENE0    : kinetic energy at t.
+!        PRE9F     : hydrostatic pressure "prehyd" at full levels at time t-dt.
+!        PXYB9     : contains pressure depth, "delta", "alpha" at t-dt.
+!        PHI9      : geopotential height "gz" at t-dt at half levels.
+!        PHIF9     : geopotential height "gz" at t-dt at full levels.
+!        PRCP9     : contains "cp", "R" and "Kap=R/Cp" at t-dt.
+!        PGWFT9    : [gw] at full levels at t-dt.
+!        PATND     : adiabatic Lagrangian tendencies.
+
+!        Implicit arguments :
+!        --------------------
+
+!     Method.
+!     -------
+!        See documentation
+
+!     Externals.
+!     ----------
+
+!     Reference.
+!     ----------
+!        ARPEGE documentation
+
+!     Author.
+!     -------
+!        K. YESSAD, after part 3 of CPG_GP.
+!        Original : March 2017
+
+! Modifications
+! -------------
+!      K. Yessad (Feb 2018): remove deep-layer formulations.
+!      K. Yessad (Apr 2018): introduce key L_RDRY_VD (ensure consistent definition of "dver" everywhere).
+!      R. El Khatib 27-02-2019 Use pointer function SC2PRG to avoid bounds violation
+!      I. Polichtchouk (June 2020): add LPGFSF option
+!      F. Vana 21-Sep-2020: LPGREUSE specific dataflow
+!   P. Smolikova (Sep 2020): Remove obsolete calculations.
+!   R. El Khatib 08-Jul-2022 Cleaning
+! End Modifications
+!     ------------------------------------------------------------------
+
+USE GEOMETRY_MOD       , ONLY : GEOMETRY
+USE FIELD_VARIABLES_MOD, ONLY : FIELD_VARIABLES
+USE CPG_TYPE_MOD       , ONLY : CPG_DYN_TYPE, CPG_TND_TYPE
+USE CPG_OPTS_TYPE_MOD  , ONLY : CPG_BNDS_TYPE, CPG_OPTS_TYPE
+USE TYPE_MODEL         , ONLY : MODEL
+USE PARKIND1           , ONLY : JPIM, JPRB
+USE YOMHOOK            , ONLY : DR_HOOK, JPHOOK, LHOOK
+USE YOMGWDIAG          , ONLY : LGWDIAGS_ON, UPDATE_GWDIAG
+USE INTDYN_MOD         , ONLY : TPG_TYPE
+
+!     ------------------------------------------------------------------
+
+IMPLICIT NONE
+
+TYPE(GEOMETRY)        ,INTENT(IN)     :: YDGEOMETRY
+TYPE(CPG_BNDS_TYPE)   ,INTENT(IN)     :: YDCPG_BNDS
+TYPE(CPG_OPTS_TYPE)   ,INTENT(IN)     :: YDCPG_OPTS
+TYPE(FIELD_VARIABLES) ,INTENT(INOUT)  :: YDVARS
+TYPE(CPG_DYN_TYPE)    ,INTENT(INOUT)  :: YDCPG_DYN0
+TYPE(CPG_DYN_TYPE)    ,INTENT(INOUT)  :: YDCPG_DYN9
+TYPE(MODEL)           ,INTENT(IN)     :: YDMODEL
+REAL(KIND=JPRB)       ,INTENT(INOUT)  :: P_OROGLL_T0(YDGEOMETRY%YRDIM%NPROMA)
+REAL(KIND=JPRB)       ,INTENT(INOUT)  :: P_OROGMM_T0(YDGEOMETRY%YRDIM%NPROMA)
+REAL(KIND=JPRB)       ,INTENT(INOUT)  :: P_OROGLM_T0(YDGEOMETRY%YRDIM%NPROMA)
+REAL(KIND=JPRB)       ,INTENT(INOUT)  :: P_GDW_T0(YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL(KIND=JPRB)       ,INTENT(INOUT)  :: P_GWHT_T0(YDGEOMETRY%YRDIM%NPROMA,0:YDGEOMETRY%YRDIMV%NFLEVG)
+TYPE(CPG_TND_TYPE)    ,INTENT(INOUT)  :: YDCPG_TND
+
+!     ------------------------------------------------------------------
+
+#include "gphpre_expl.intfb.h"
+#include "gpgrxyb_expl.intfb.h"
+#include "gprcp_expl.intfb.h"
+#include "gprt.intfb.h"
+#include "gpcty_expl.intfb.h"
+#include "gpcty_forc.intfb.h"
+#include "gpgeo_expl.intfb.h"
+#include "gpgrgeo_expl.intfb.h"
+#include "gphlwi.intfb.h"
+#include "gphluv_expl.intfb.h"
+#include "gpuvs.intfb.h"
+#include "gpgrp_expl.intfb.h"
+#include "gpxx.intfb.h"
+#include "gpgw.intfb.h"
+#include "gp_tndlagadiab_uv.intfb.h"
+#include "cpg_gp_hyd_t9.intfb.h"
+
+!     ------------------------------------------------------------------
+
+REAL (KIND=JPRB) :: Z_DPHYCTY_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_DVER_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_GPHL_T0 (YDGEOMETRY%YRDIM%NPROMA,0:YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_GPHM_T0 (YDGEOMETRY%YRDIM%NPROMA,0:YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_NHXT_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_PSGRTL_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_PSGRTM_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_RDT_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_RPREF_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_RT_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_SGRTL_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_SGRTM_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_US_T0 (YDGEOMETRY%YRDIM%NPROMA)
+REAL (KIND=JPRB) :: Z_VS_T0 (YDGEOMETRY%YRDIM%NPROMA)
+REAL (KIND=JPRB) :: Z_XYBDER_ALPHL_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_XYBDER_ALPHM_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_XYBDER_ALPHPLL_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_XYBDER_ALPHPLM_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_XYBDER_COEFAPL_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_XYBDER_COEFA_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_XYBDER_COEFD_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_XYBDER_LNPRL_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+REAL (KIND=JPRB) :: Z_XYBDER_LNPRM_T0 (YDGEOMETRY%YRDIM%NPROMA,YDGEOMETRY%YRDIMV%NFLEVG)
+
+!     ------------------------------------------------------------------
+
+LOGICAL :: LLGPXX, LLUVH
+INTEGER(KIND=JPIM) :: JLEV,JROF
+LOGICAL, PARAMETER :: LLDER  = .FALSE.
+LOGICAL, PARAMETER :: LLGWF0 = .TRUE.
+LOGICAL, PARAMETER :: LLGDWI = .FALSE.
+
+REAL(KIND=JPHOOK) :: ZHOOK_HANDLE
+
+IF (LHOOK) CALL DR_HOOK('CPG_GP_HYD', 0, ZHOOK_HANDLE)
+
+ASSOCIATE(YDDIM=>YDGEOMETRY%YRDIM, YDDIMV=>YDGEOMETRY%YRDIMV, YDVAB=>YDGEOMETRY%YRVERT_GEOM%YRVAB, YDVETA=>YDGEOMETRY%YRVERT_GEOM%YRVETA, &
+& YDVFE=>YDGEOMETRY%YRVERT_GEOM%YRVFE, YGFL=>YDMODEL%YRML_GCONF%YGFL, YDCST => YDMODEL%YRCST, YDDYNA=>YDMODEL%YRML_DYN%YRDYNA,            &
+& YDCVER=>YDGEOMETRY%YRVERT_GEOM%YRCVER, YDARPHY=>YDMODEL%YRML_PHY_MF%YRARPHY)
+ASSOCIATE(NPROMA=>YDDIM%NPROMA, NFLEVG=>YDDIMV%NFLEVG, YRSPEC=>YGFL%YRSPEC, NCURRENT_ITER=>YDMODEL%YRML_DYN%YRDYN%NCURRENT_ITER, &
+& RD => YDCST%RD, RV => YDCST%RV, LMPA=>YDARPHY%LMPA)
+ASSOCIATE (KLON => YDCPG_OPTS%KLON, KST => YDCPG_BNDS%KIDIA, KEND => YDCPG_BNDS%KFDIA, KFLEVG => YDCPG_OPTS%KFLEVG)
+
+
+IF(YDCVER%LVERTFE.AND..NOT.YDCVER%LVFE_ECMWF .OR. .NOT.((YDMODEL%YRML_PHY_MF%YRPHY%LMPHYS.OR.YDMODEL%YRML_PHY_MF%YRSIMPHL%LSIMPH) .AND. NCURRENT_ITER == 0)) THEN
+  LLGPXX=.FALSE.
+ELSE
+  LLGPXX=.TRUE.
+ENDIF
+
+LLUVH=LLGPXX.OR.YDMODEL%YRML_DYN%YRDYNA%LSLHD
+
+!$ACDC PARALLEL, TARGET=OpenMP/OpenMPSingleColumn/OpenACCSingleColumn {
+
+YDCPG_DYN0%NHX(:,:)=0.0_JPRB
+YDCPG_DYN0%GWFT(:,:)=0.0_JPRB
+
+!     ------------------------------------------------------------------
+
+!*       3.    INITIALISE AUXILIARY VARIABLES AND TENDENCIES.
+!              ----------------------------------------------
+
+!---------------------------------------------------
+!      3.1         TIME t0 CALCULATIONS
+!---------------------------------------------------
+
+!*     3.1.1 COMPUTE PRE0, PXYB0, PRE0F.
+
+CALL GPHPRE_EXPL(YDCVER, YDCPG_OPTS%TOPPRES, YDMODEL%YRCST, NPROMA, NFLEVG, KST, KEND,                           &
+& YDVAB, YDCPG_DYN0%PRE, PRESF=YDCPG_DYN0%PREF, PDELP=YDCPG_DYN0%XYB%DELP, PLNPR=YDCPG_DYN0%XYB%LNPR,            &
+& PRDELP=YDCPG_DYN0%XYB%RDELP, PALPH=YDCPG_DYN0%XYB%ALPH,  PRTGR=YDCPG_DYN0%XYB%RTGR, PRPRE=YDCPG_DYN0%XYB%RPRE, &
+& PRPP=YDCPG_DYN0%XYB%RPP)
+
+!*     3.1.2 COMPUTE ZRPRE0F AND ZXYBDER0.
+
+IF(YDCVER%LVERTFE) THEN
+  DO JLEV=1,NFLEVG
+    DO JROF=KST,KEND
+      Z_RPREF_T0(JROF,JLEV)=1.0_JPRB/YDCPG_DYN0%PREF(JROF,JLEV)
+    ENDDO
+  ENDDO
+ENDIF
+
+IF (.NOT.YDDYNA%LPGREUSE) THEN
+  CALL GPGRXYB_EXPL(YDCVER, NPROMA, KST, KEND, NFLEVG, .FALSE., YDVAB, YDCPG_DYN0%PREL,                                     &
+  & YDCPG_DYN0%PREM, PDELP=YDCPG_DYN0%XYB%DELP, PLNPR=YDCPG_DYN0%XYB%LNPR, PRDELP=YDCPG_DYN0%XYB%RDELP,                     &
+  & PALPH=YDCPG_DYN0%XYB%ALPH, PRTGR=YDCPG_DYN0%XYB%RTGR, PRPRE=YDCPG_DYN0%XYB%RPRE,    PRPP=YDCPG_DYN0%XYB%RPP,            &
+  & PCOEFD_DER=Z_XYBDER_COEFD_T0, PLNPRL_DER=Z_XYBDER_LNPRL_T0, PLNPRM_DER=Z_XYBDER_LNPRM_T0, PCOEFA_DER=Z_XYBDER_COEFA_T0, &
+  & PCOEFAPL_DER=Z_XYBDER_COEFAPL_T0, PALPHPLL_DER=Z_XYBDER_ALPHPLL_T0, PALPHPLM_DER=Z_XYBDER_ALPHPLM_T0,                   &
+  & PALPHL_DER=Z_XYBDER_ALPHL_T0, PALPHM_DER=Z_XYBDER_ALPHM_T0)
+ENDIF
+
+!$ACDC }
+
+!*     3.1.3 COMPUTE "R", "Cp" AND "kap=R/Cp".
+
+CALL GPRCP_EXPL (YDMODEL%YRCST, YDCPG_BNDS, YDCPG_OPTS, YDVARS=YDVARS, PCP=YDCPG_DYN0%RCP%CP, &
+&  PR=YDCPG_DYN0%RCP%R, PKAP=YDCPG_DYN0%RCP%KAP)
+
+!*     3.1.4 COMPUTES "RT" AND ITS GRADIENT.
+
+!$ACDC PARALLEL, TARGET=OpenMP/OpenMPSingleColumn/OpenACCSingleColumn {
+
+IF(YRSPEC%LGP) THEN
+  CALL GPRT(YDDYNA%LSPRT, NPROMA, KST, KEND, NFLEVG, RD, RV, YDCPG_DYN0%RCP%R, YDVARS%T%T0, &
+  & YDVARS%T%DL, YDVARS%T%DM, YDVARS%Q%DL, YDVARS%Q%DM, Z_RT_T0, YDCPG_DYN0%RTL,            &
+  & YDCPG_DYN0%RTM, PRL=YDVARS%RSPEC%DL, PRM=YDVARS%RSPEC%DM)
+ELSEIF(.NOT.YDDYNA%LPGREUSE) THEN
+  CALL GPRT(YDDYNA%LSPRT, NPROMA, KST, KEND, NFLEVG, RD, RV, YDCPG_DYN0%RCP%R, YDVARS%T%T0, YDVARS%T%DL, &
+  & YDVARS%T%DM, YDVARS%Q%DL, YDVARS%Q%DM, Z_RT_T0, YDCPG_DYN0%RTL, YDCPG_DYN0%RTM)
+ENDIF
+
+! ZRDT0 is the (RT) at "t" used in definition of "dver".
+IF (YDDYNA%L_RDRY_VD) THEN
+  DO JLEV = 1, NFLEVG
+    DO JROF=KST, KEND
+      Z_RDT_T0(JROF,JLEV) = RD * YDVARS%T%T0(JROF,JLEV)
+    ENDDO
+  ENDDO
+ELSE
+  Z_RDT_T0(KST:KEND,1:NFLEVG)=Z_RT_T0(KST:KEND,1:NFLEVG)
+ENDIF
+
+!*     3.1.7c COMPUTATION OF SOME VERTICAL VELOCITIES.
+!*           Solve continuity equation
+!            Computation of the vertical velocities "etapt (d prehyd / d eta)"
+!            "omega/prehyd" and "W".
+
+!* Mass tendencies from physics as RHS of the continuity equation.
+! Specific mass tendencies (unit: s-1) are computed
+! in the last physics call (previous time step in IFS).
+! They are stored in GFL YPHYCTY.
+IF (YGFL%YPHYCTY%LACTIVE) THEN
+  DO JLEV=1,NFLEVG
+    DO JROF=KST,KEND
+      Z_DPHYCTY_T0(JROF,JLEV)=YDVARS%PHYCTY%T0(JROF,JLEV)
+    ENDDO
+  ENDDO
+ELSE
+  Z_DPHYCTY_T0(:,:)=0.0_JPRB
+ENDIF
+
+CALL GPCTY_EXPL(YDVFE, YDCVER, NPROMA, KST, KEND, NFLEVG, YDMODEL%YRML_DYN%YRDYNA%LRUBC,                                        &
+&  YDVAB, YDVETA, YDVARS%U%T0, YDVARS%V%T0, YDVARS%DIV%T0, YDVARS%EDOT%T0, PSPL=YDCPG_DYN0%PREL, PSPM=YDCPG_DYN0%PREM,          &
+&  PRPREF=Z_RPREF_T0, PDPHYCTY=Z_DPHYCTY_T0, PDELP=YDCPG_DYN0%XYB%DELP, PLNPR=YDCPG_DYN0%XYB%LNPR, PRDELP=YDCPG_DYN0%XYB%RDELP, &
+&  PALPH=YDCPG_DYN0%XYB%ALPH, PRTGR=YDCPG_DYN0%XYB%RTGR, PRPRE=YDCPG_DYN0%XYB%RPRE, PRPP=YDCPG_DYN0%XYB%RPP,                    &
+&  PEVEL=YDCPG_DYN0%CTY%EVEL, PVVEL=YDCPG_DYN0%CTY%VVEL, PPSDIV=YDCPG_DYN0%CTY%PSDIV, PPSDVBC=YDCPG_DYN0%CTY%PSDVBC,            &
+&  PDIVDP=YDCPG_DYN0%CTY%DIVDP)
+
+!$ACDC }
+ 
+
+! Diagnostics of gravity wave noise reflected in surface pressure tendency
+IF(LGWDIAGS_ON) THEN
+
+!$ACDC ABORT {
+
+  CALL UPDATE_GWDIAG(YDGEOMETRY, YDMODEL%YRML_GCONF%YRRIP, NPROMA, NFLEVG, KEND, YDCPG_OPTS%NSTEP, &
+  &    YDCPG_BNDS%KSTGLO, YDCPG_DYN0%PRE, YDCPG_DYN0%CTY%DIVDP(:, 1:))
+
+!$ACDC }
+
+ENDIF
+
+! Overwrite PCTY0 for "EVEL" and "VVEL" with large scale forced values in case
+! of 1D model (SCUM)
+! (in SCUM, these are 0 in GPCTY)
+IF ( YDCPG_OPTS%LSFORC .AND. (YDCPG_OPTS%LSW_FRC.OR.YDCPG_OPTS%LSOMEGA_FRC) ) THEN
+
+!$ACDC ABORT {
+
+  CALL GPCTY_FORC(YDMODEL%YRCST, YDGEOMETRY, YDMODEL%YRML_GCONF, YDMODEL%YRML_PHY_MF%YRPHY2,  YDCPG_BNDS, YDCPG_OPTS, YDVARS, YDCPG_DYN0)
+
+!$ACDC }
+
+ENDIF
+
+!$ACDC PARALLEL, TARGET=OpenMP/OpenMPSingleColumn/OpenACCSingleColumn {
+
+!*     3.1.8 COMPUTES THE GEOPOTENTIAL HEIGHT "gz" AND ITS GRADIENT.
+
+!          if LPGFSF=T, these already computed in gptosptogp.F90 
+IF (.NOT. YDDYNA%LPGREUSE) THEN
+
+  ! * "gz" at full levels and half levels.
+
+  YDCPG_DYN0%PHI(KST:KEND,NFLEVG)=YDVARS%GEOMETRY%OROG%T0(KST:KEND)
+  CALL GPGEO_EXPL(NPROMA, KST, KEND, NFLEVG, YDCPG_DYN0%PHI, YDCPG_DYN0%PHIF, &
+  & YDVARS%T%T0, YDCPG_DYN0%RCP%R, YDCPG_DYN0%XYB%LNPR, YDCPG_DYN0%XYB%ALPH, YDGEOMETRY%YRVERT_GEOM)
+
+  ! * "grad gz" at full levels and half levels.
+
+  CALL GPGRGEO_EXPL(YDGEOMETRY, NPROMA, KST, KEND, NFLEVG, Z_RT_T0, YDCPG_DYN0%RTL,                                 &
+  & YDCPG_DYN0%RTM, YDCPG_DYN0%XYB%LNPR, YDCPG_DYN0%XYB%ALPH, POROGL=YDCPG_DYN0%OROGL, POROGM=YDCPG_DYN0%OROGM,     &
+  & PHIFL=YDCPG_DYN0%PHIFL, PHIFM=YDCPG_DYN0%PHIFM, PHIHL=Z_GPHL_T0, PHIHM=Z_GPHM_T0, PLNPRL_DER=Z_XYBDER_LNPRL_T0, &
+  & PLNPRM_DER=Z_XYBDER_LNPRM_T0, PALPHL_DER=Z_XYBDER_ALPHL_T0, PALPHM_DER=Z_XYBDER_ALPHM_T0)
+
+ENDIF
+
+!*     3.1.9 COMPUTES KINETIC ENERGY.
+
+DO JLEV=1,NFLEVG
+  DO JROF=KST,KEND
+    YDCPG_DYN0%KENE(JROF,JLEV)=0.5_JPRB*(YDVARS%U%T0(JROF,JLEV)**2+YDVARS%V%T0(JROF,JLEV)**2)
+  ENDDO
+ENDDO
+
+!*     3.1.10 COMPUTES HALF-LEVEL WINDS.
+
+IF (LLUVH) THEN
+  CALL GPHLWI(YDCVER%LVFE_COMPATIBLE, NFLEVG, NPROMA, KST, KEND, YDCPG_DYN0%XYB%LNPR, &
+  & YDCPG_DYN0%XYB%ALPH, YDVETA%VRDETAH, YDVETA%VDETA_RATIO, YDCPG_DYN0%UVH%WWI)
+  CALL GPHLUV_EXPL (YDGEOMETRY%YRDIMV, NPROMA, KST, KEND, YDVARS%U%T0, &
+  & YDVARS%V%T0, PWWI=YDCPG_DYN0%UVH%WWI, PUH=YDCPG_DYN0%UVH%UH, PVH=YDCPG_DYN0%UVH%VH)
+ENDIF
+
+IF (LLGPXX.OR.YDDYNA%LSLHD) THEN
+  CALL GPUVS (NFLEVG, NPROMA, KST, KEND, LLDER, YDVARS%U%T0, YDVARS%V%T0, Z_US_T0, Z_VS_T0)
+ENDIF
+
+!*     3.1.12 COMPUTES THE PRESSURE FORCE FOR THE RHS OF MOMENTUM EQN.
+
+!  if LPGFSF=T, this is already computed
+IF (.NOT. YDDYNA%LPGFSF) THEN
+  CALL GPGRP_EXPL(YDGEOMETRY, KST, KEND, Z_RT_T0, YDCPG_DYN0%RTL, YDCPG_DYN0%RTM, YDCPG_DYN0%PREL, YDCPG_DYN0%PREM, &
+  & YDCPG_DYN0%XYB%RTGR, YDCPG_DYN0%XYB%ALPH, PHIHL=Z_GPHL_T0, PHIHM=Z_GPHM_T0, PHIFL=YDCPG_DYN0%PHIFL,             &
+  & PHIFM=YDCPG_DYN0%PHIFM, PSGRTL=Z_PSGRTL_T0, PSGRTM=Z_PSGRTM_T0, PALPHPLL_DER=Z_XYBDER_ALPHPLL_T0, PALPHPLM_DER=Z_XYBDER_ALPHPLM_T0)
+ENDIF
+
+! store for next time-step
+IF( YDDYNA%LGRADSP ) THEN
+
+  DO JLEV = 1, NFLEVG
+    DO JROF = KST, KEND
+      ! adjust field with filter result
+      Z_SGRTL_T0(JROF,JLEV)=Z_PSGRTL_T0(JROF,JLEV) - (YDVARS%SGRTL%T9(JROF,JLEV) - YDVARS%SGRTL%T0(JROF,JLEV))
+      Z_SGRTM_T0(JROF,JLEV)=Z_PSGRTM_T0(JROF,JLEV) - (YDVARS%SGRTM%T9(JROF,JLEV) - YDVARS%SGRTM%T0(JROF,JLEV))
+    ENDDO
+  ENDDO
+
+  ! store for next time-step unfiltered fields
+  YDVARS%SGRTL%T0(KST:KEND,1:NFLEVG)=Z_PSGRTL_T0(KST:KEND,1:NFLEVG)
+  YDVARS%SGRTM%T0(KST:KEND,1:NFLEVG)=Z_PSGRTM_T0(KST:KEND,1:NFLEVG)
+
+  ! set new values for current timestep
+  Z_PSGRTL_T0(KST:KEND,1:NFLEVG)=Z_SGRTL_T0(KST:KEND,1:NFLEVG)
+  Z_PSGRTM_T0(KST:KEND,1:NFLEVG)=Z_SGRTM_T0(KST:KEND,1:NFLEVG)
+
+ENDIF
+
+!*     3.1.13 COMPUTES TERM "NHX".
+
+IF (LLGPXX) THEN
+  CALL GPXX(YDGEOMETRY, NFLEVG, NPROMA, KST, KEND, Z_GPHL_T0, Z_GPHM_T0, YDCPG_DYN0%PHIFL, YDCPG_DYN0%PHIFM, &
+  & YDCPG_DYN0%XYB%LNPR, Z_RT_T0, YDVARS%U%T0, YDVARS%V%T0, YDCPG_DYN0%UVH%UH, YDCPG_DYN0%UVH%VH, YDCPG_DYN0%UVH%WWI, Z_NHXT_T0)
+
+!*     3.1.14 COMPUTES dver.
+
+  IF (YDDYNA%L_RDRY_VD) THEN
+    ! dver_hyd=-(R/Rd)*(D+X+(cv/cp)(omega/prehyd))
+    DO JLEV=1,NFLEVG
+      DO JROF=KST,KEND
+        Z_DVER_T0(JROF,JLEV)=-(YDCPG_DYN0%RCP%R(JROF,JLEV)/RD)*(YDVARS%DIV%T0(JROF,JLEV)&
+         & +Z_NHXT_T0(JROF,JLEV)+(1.0_JPRB-YDCPG_DYN0%RCP%KAP(JROF,JLEV))*YDCPG_DYN0%CTY%VVEL(JROF,JLEV))
+      ENDDO
+    ENDDO
+  ELSE
+    ! dver_hyd=-(D+X+(cv/cp)(omega/prehyd))
+    DO JLEV=1,NFLEVG
+      DO JROF=KST,KEND
+        Z_DVER_T0(JROF,JLEV)=-(YDVARS%DIV%T0(JROF,JLEV)&
+         & +Z_NHXT_T0(JROF,JLEV)+(1.0_JPRB-YDCPG_DYN0%RCP%KAP(JROF,JLEV))*YDCPG_DYN0%CTY%VVEL(JROF,JLEV))
+      ENDDO
+    ENDDO
+  ENDIF
+
+!*     3.1.16 COMPUTES term [gw].
+
+! Caution: must use consistent definitions of RT in ZRDT0 and ZDVER0.
+  CALL GPGW(YDGEOMETRY, YDDYNA%LNHDYN, NFLEVG, NPROMA, KST, KEND, LLGWF0, LLGDWI, YDCPG_DYN0%OROGL, YDCPG_DYN0%OROGM, &
+  & YDCPG_DYN0%XYB%LNPR, YDCPG_DYN0%XYB%ALPH, Z_US_T0, Z_VS_T0, Z_RDT_T0, Z_DVER_T0, P_GWHT_T0, YDCPG_DYN0%GWFT)
+ENDIF
+
+!*     3.1.20a COMPUTES [D V/Dt].
+
+! Pressure gradient term + explicit Coriolis + Rayleigh friction
+CALL GP_TNDLAGADIAB_UV(YDCPG_OPTS%LRPLANE, YDGEOMETRY, YDMODEL%YRML_PHY_EC%YREPHY, YDMODEL%YRML_DYN%YRDYN, &
+&  KST, KEND, YDVARS%GEOMETRY%RCORI%T0, YDVARS%GEOMETRY%GNORDL%T0, YDVARS%GEOMETRY%GNORDM%T0, Z_PSGRTL_T0, &
+& Z_PSGRTM_T0, YDVARS%U%T0, YDVARS%V%T0, YDCPG_TND%TNDU, YDCPG_TND%TNDV, YDCPG_TND%TNDU_NOC, YDCPG_TND%TNDV_NOC)
+
+!*     3.1.24 COMPUTES [DT/Dt].
+
+DO JLEV=1,NFLEVG
+  DO JROF=KST,KEND
+    YDCPG_TND%TNDT(JROF,JLEV)=YDCPG_DYN0%RCP%KAP(JROF,JLEV)*YDVARS%T%T0(JROF,JLEV)*YDCPG_DYN0%CTY%VVEL(JROF,JLEV)
+  ENDDO
+ENDDO
+
+!$ACDC }
+
+!---------------------------------------------------
+!      3.2         TIME t9 CALCULATIONS
+!---------------------------------------------------
+
+IF (.NOT.YDDYNA%LTWOTL .AND. NCURRENT_ITER == 0) THEN
+
+!$ACDC ABORT {
+
+  CALL CPG_GP_HYD_T9 (YDGEOMETRY, YDCPG_BNDS, YDCPG_OPTS, YDVARS, YDCPG_DYN0, YDMODEL, LLGPXX, YDMODEL%YRML_DYN%YRDYNA%L_RDRY_VD, &
+  &    Z_GPHL_T0, Z_GPHM_T0, YDCPG_DYN9, YDCPG_OPTS%LDIAB, LMPA)
+
+!$ACDC }
+
+ENDIF
+
+!$ACDC PARALLEL, TARGET=OpenMP/OpenMPSingleColumn/OpenACCSingleColumn {
+
+P_GWHT_T0(:,:)=0.0_JPRB
+
+!$ACDC }
+
+
+!     ------------------------------------------------------------------
+
+END ASSOCIATE
+END ASSOCIATE
+END ASSOCIATE
+
+IF (LHOOK) CALL DR_HOOK('CPG_GP_HYD', 1, ZHOOK_HANDLE)
+END SUBROUTINE CPG_GP_HYD
+
