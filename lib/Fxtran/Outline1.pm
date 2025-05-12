@@ -376,6 +376,7 @@ sub printCanonic
 
 &click (<< "EOF");
   dir=s                     -- Dump result in this directory                                                                                -- .
+  tmp=s                     -- Temporary directory for processing                                                                           -- .
   inline-contained          -- Inline contained routines
 EOF
 sub outline1
@@ -387,7 +388,7 @@ sub outline1
   
   my ($F90) = @args;
   
-  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-construct-tag -no-include -line-length 500 -directive ACDC -canonic)]);
+  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-construct-tag -no-include -line-length 500 -directive ACDC -canonic)], dir => $opts->{tmp});
   
   &Fxtran::Canonic::makeCanonic ($d);
   

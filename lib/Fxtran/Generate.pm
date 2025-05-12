@@ -156,7 +156,7 @@ sub singlecolumn
 
 
 &click (<< "EOF");
-@options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 stdout style redim-arguments 
+@options{qw (cycle dir tmp only-if-newer merge-interfaces pragma stack84 stdout style redim-arguments 
              suffix-single-column version type-bound-methods types-constant-dir types-fieldapi-dir)}
   base                            -- Base directory for file lookup
   contiguous-pointers             -- Add CONTIGUOUS attribute to pointer accessors
@@ -207,7 +207,7 @@ sub pointerparallel
   
   &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
   
-  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -directive ACDC -canonic)]);
+  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -directive ACDC -canonic)], dir => $opts->{tmp});
   
   &Fxtran::Canonic::makeCanonic ($d);
   

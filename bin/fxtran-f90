@@ -85,28 +85,13 @@ sub runACDCMethod
 
   my @cmd = ("$Bin/fxtran-gen1", $opts->{package}, $method, 
              &getMethodOptions ($opts, $method), 
+             '--tmp' => 'File::Temp'->newdir (CLEANUP => ! $opts->{debug}),
              split (m/\s+/o, $ACDC), $F90);
   
   &Fxtran::Util::runCommand (cmd => \@cmd, %$opts);
 
   &Fxtran::F90Compiler::compile (%args);
 }
-
-sub outline1
-{
-  shift;
-  my %args = @_;
-
-  my @cmd = @{ $args{cmd} };
-  my $F90 = $args{F90};
-  my @f90flags = @{ $args{f90flags} };
-  my $opts = $args{opts};
-
-  &Fxtran::Util::runCommand (cmd => [@cmd, $F90], %$opts);
-
-  &Fxtran::F90Compiler::compile (%args);
-}
-
 
 my ($package, $config, $ilast) = ('generate');
 
@@ -277,6 +262,3 @@ for my $mod (<*.mod>, <*.smod>)
   {
     &move ($mod, "$cwd/$mod");
   }
-
-
-
