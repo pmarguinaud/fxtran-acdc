@@ -10,9 +10,12 @@ package Fxtran::PATH;
 use strict;
 use File::Basename;
 
-my $TOP = $INC{__PACKAGE__ . '.pm'};
+(my $pm = __PACKAGE__) =~ s,::,/,go;
+$pm .= '.pm';
 
-for (1 .. 2)
+my $TOP = $INC{$pm};
+
+for (1 .. 3)
   {
     $TOP = &dirname ($TOP);
   }

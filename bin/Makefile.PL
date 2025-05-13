@@ -16,7 +16,7 @@ use Data::Dumper;
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
 
-use Common;
+use Fxtran::Common;
 
 use Fxtran;
 
@@ -71,7 +71,9 @@ sub deps
       my @inc = ($code =~ m/\n\s*#include\s+"(.*?)"/goms);
       @inc = grep { ! $extern_inc{$_} } @inc;
 
-      my @use = map { uc ($_) } ($code =~ m/\n\s*use\s+(\w+)/gomis);
+      my @use = map { uc ($_) } 
+                (($code =~ m/\n\s*use\s+(\w+)/gomis), 
+                 ($code =~ m/\n\s*submodule\*s\(\s*(\w+)\s*\)/gomis));
       @use = grep { ! $sys{uc ($_)} } @use;
 
       my @mod = map { lc ($_) . '.mod' } @use;
