@@ -21,6 +21,7 @@ use Fxtran;
 use Fxtran::Canonic;
 use Fxtran::Util;
 use Fxtran::Directive;
+use Fxtran::PATH;
 
 use click;
 
@@ -33,8 +34,6 @@ sub changeKidiaToYDCPG_OPTS
   my $kidia = $style->kidia ();
   my $kfdia = $style->kfdia ();
   my $jlon  = $style->jlon ();
-
-'FileHandle'->new (">d.F90.xml")->print ($d);
 
   for (&F ('.//arg-N/N/n/text()[string(.)="?"]', $kidia, $d))
     {
@@ -109,7 +108,7 @@ my %options= do
   redim-arguments           -- Transform 1D array arguments to scalars
   set-variables=s@          -- Apply variables values and simplify the code
   stdout                    -- Dump generated code to stdout
-  suffix-single-column=s    -- Suffix for generated routines                                                                                -- _OPENACC
+  suffix-singlecolumn=s     -- Suffix for generated routines                                                                                -- _OPENACC
   tmp=s                     -- Temporary directory for processing                                                                           -- .
   value-attribute           -- Add VALUE attribute to scalar intrinsic arguments
   version                   -- Append fxtran-acdc version at end of generated content
@@ -117,6 +116,8 @@ my %options= do
   type-bound-methods        -- Generate & use type bound methods
   types-constant-dir=s      -- Directory with constant type information                                                                     --  types-constant
   types-fieldapi-dir=s      -- Directory with Field API type information                                                                    --  types-fieldapi
+  suffix-pointerparallel=s  -- Suffix for parallel routines                                                                                 --  _PARALLEL
+  ydcpg_opts                -- Change KIDIA, KFDIA -> YDCPG_OPTS, YDCPG_BNDS
 EOF
 
   my @options;
@@ -132,7 +133,7 @@ EOF
 
 &click (<< "EOF");
 @options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 style redim-arguments set-variables 
-             stdout suffix-single-column tmp value-attribute version inline-contained)}
+             stdout suffix-singlecolumn tmp value-attribute version inline-contained)}
   keep-drhook               -- Keep DrHook
   dummy                     -- Generate a dummy routine (strip all executable code)
   inlined=s@                -- List of routines to inline
@@ -150,12 +151,12 @@ sub singlecolumn
 
   my ($F90) = @args;
 
-  if ($opts->{dir} ne &dirname ($F90))
+  if ('File::Spec'->rel2abs ($opts->{dir}) ne 'File::Spec'->rel2abs (&dirname ($F90)))
     {
       &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
     }
   
-  my $suffix = lc ($opts->{'suffix-single-column'});
+  my $suffix = lc ($opts->{'suffix-singlecolumn'});
   (my $F90out = $F90) =~ s/\.F90/$suffix.F90/;
   $F90out = $opts->{dir} . '/' . &basename ($F90out);
   
@@ -229,7 +230,7 @@ sub singlecolumn
 
 &click (<< "EOF");
 @options{qw (cycle dir tmp only-if-newer merge-interfaces pragma stack84 stdout style redim-arguments 
-             suffix-single-column version type-bound-methods types-constant-dir types-fieldapi-dir)}
+             suffix-singlecolumn suffix-pointerparallel version type-bound-methods types-constant-dir types-fieldapi-dir)}
   base                            -- Base directory for file lookup
   contiguous-pointers             -- Add CONTIGUOUS attribute to pointer accessors
   files=s@                        -- List of files to be looked at for inlining
@@ -237,11 +238,9 @@ sub singlecolumn
   inline-contained                -- Inline CONTAINed routines
   post-parallel=s@                -- Generate code after parallel section                                                                  --  nullify
   skip-arrays=s@                  -- Arrays not to be processed                                                                            --  PGFL,PGFLT1,PGMVT1,PGPSDT2D
-  suffix-parallel=s               -- Suffix for parallel routines                                                                          --  _PARALLEL
   types-fieldapi-non-blocked=s@   -- Non-blocked data types (without NPROMA)                                                               --  CPG_SL1F_TYPE,CPG_SL_MASK_TYPE
   use-acpy                        -- Avoid pointer aliasing using ACPY
   use-bcpy                        -- Avoid pointer aliasing using BCPY
-  ydcpg_opts                      -- Change KIDIA, KFDIA -> YDCPG_OPTS, YDCPG_BNDS
 EOF
 sub pointerparallel
 {
@@ -254,12 +253,11 @@ sub pointerparallel
 
   $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
   
-  if ($opts->{dir} ne &dirname ($F90))
+  if ('File::Spec'->rel2abs ($opts->{dir}) ne 'File::Spec'->rel2abs (&dirname ($F90)))
     {
       &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
     }
-  
-  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{'suffix-parallel'}) . '.F90'}eo;
+  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{'suffix-pointerparallel'}) . '.F90'}eo;
   
   $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
   
@@ -466,7 +464,121 @@ sub methods
     {
       &Fxtran::FieldAPI::Register::registerFieldAPI ($doc, $opts);
     }
+}
 
+&click (<< "EOF");
+@options{qw (dir pragma tmp merge-interfaces suffix-singlecolumn suffix-pointerparallel ydcpg_opts)}
+EOF
+sub interface
+{
+  my ($opts, @args) = @_;
+
+  my ($F90) = @args;
+
+  my $ext = '.intfb.h';
+
+  my @D = @{ $opts->{D} };
+  my $doc = &Fxtran::parse (location => $F90, fopts => [@D, '-construct-tag', '-no-include', '-line-length' => 500]);
+
+  my @text = split (m/\n/o, $doc->textContent);
+  
+  &Fxtran::intfb_body ($doc);
+
+  my %intfb;
+  
+  # Strip empty lines
+  
+  $intfb{regular} = $doc->textContent ();
+  $intfb{regular} =~ s/^\s*\n$//goms;
+
+  &singlecolumnInterface ($doc, \@text, $opts, \%intfb);
+
+  &pointerparallelInterface ($doc, \@text, $opts, \%intfb);
+
+
+  my $sub = &basename ($F90, qw (.F90));
+  
+  &Fxtran::save_to_file ("$opts->{dir}/$sub$ext", << "EOF");
+INTERFACE
+$intfb{regular}
+$intfb{singlecolumn}
+$intfb{pointerparallel}
+END INTERFACE
+EOF
+
+}
+
+
+sub singlecolumnInterface
+{
+  my ($doc, $text, $opts, $intfb) = @_;
+
+  $intfb->{singlecolumn} = '';
+
+  my ($singlecolumn) = map { m/^!\$ACDC\s+(singlecolumn.*)/o ? ($1) : ()  } @$text;
+
+  if ($singlecolumn && $opts->{'merge-interfaces'})
+    {
+      use File::Temp;
+
+      my @singlecolumn = split (m/\s+/o, $singlecolumn);
+
+      my $tmp = 'File::Temp'->new (SUFFIX => '.F90', TEMPLATE => 'fxtranXXXXX');
+
+      $tmp->print ("!\$ACDC @singlecolumn\n", $doc->textContent);
+
+      my @opts = 'click'->getFormattedOptionsList (method => 'singlecolumn', package => __PACKAGE__, opts => $opts);
+
+      &Fxtran::Util::runCommand (cmd => ['fxtran-f90', @opts, '--dryrun', '--dir', '.', '--', 'f90', '-c', $tmp]);
+
+      my $suffix = lc ($opts->{'suffix-singlecolumn'});
+      (my $tmp_singlecolumn = $tmp) =~ s/\.F90$/$suffix.F90/;
+
+      my $doc = &Fxtran::parse (location => $tmp_singlecolumn, fopts => ['-construct-tag', '-no-include', '-line-length' => 500]);
+
+      $_->unbindNode () for (&F ('.//a-stmt', $doc));
+
+      $intfb->{singlecolumn} = $doc->textContent ();
+      $intfb->{singlecolumn} =~ s/^\s*\n$//goms;
+
+      unlink ($_) for ($tmp_singlecolumn, "$tmp_singlecolumn.xml");
+    }
+}
+
+sub pointerparallelInterface
+{
+  my ($doc, $text, $opts, $intfb) = @_;
+
+  $intfb->{pointerparallel} = '';
+
+  my ($pointerparallel) = map { m/^!\$ACDC\s+(pointerparallel.*)/o ? ($1) : ()  } @$text;
+
+  if ($pointerparallel && $opts->{'merge-interfaces'})
+    {
+      use File::Temp;
+
+      my @pointerparallel = split (m/\s+/o, $pointerparallel);
+
+      my $tmp = 'File::Temp'->new (SUFFIX => '.F90', TEMPLATE => 'fxtranXXXXX');
+
+      $tmp->print ("!\$ACDC @pointerparallel\n", $doc->textContent);
+
+      my @opts = 'click'->getFormattedOptionsList (method => 'pointerparallel', package => __PACKAGE__, opts => $opts);
+
+      &Fxtran::Util::runCommand (cmd => ['fxtran-f90', @opts, '--dryrun', '--dir', '.', '--', 'f90', '-c', $tmp]);
+
+      my $suffix = lc ($opts->{'suffix-pointerparallel'});
+      (my $tmp_pointerparallel = $tmp) =~ s/\.F90$/$suffix.F90/;
+
+      my $doc = &Fxtran::parse (location => $tmp_pointerparallel, fopts => ['-construct-tag', '-no-include', '-line-length' => 500]);
+
+      $_->unbindNode () for (&F ('.//a-stmt', $doc));
+
+      $intfb->{pointerparallel} = $doc->textContent ();
+      $intfb->{pointerparallel} =~ s/^\s*\n$//goms;
+
+      unlink ($_) for ($tmp_pointerparallel, "$tmp_pointerparallel.xml");
+    }
 
 }
 

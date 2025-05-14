@@ -82,6 +82,8 @@ sub make
   
       push @obj, $obj;
     }
+
+  @obj = reverse (sort (@obj));
   
   my $fh = 'FileHandle'->new ('>Makefile');
   

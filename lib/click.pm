@@ -225,6 +225,9 @@ sub run
   my @I = grep { m/^-I/o } @ARGV;
   @ARGV = grep { ! m/^-I/o } @ARGV;
 
+  my @D = grep { m/^-D/o } @ARGV;
+  @ARGV = grep { ! m/^-D/o } @ARGV;
+
   defined ($method)
     or die ("No method was defined for package `$package'");
 
@@ -238,7 +241,6 @@ sub run
  
   &GetOptions (help => \$help, @opts);
 
-  push @opts, I => \@I;
 
   for (@{ $method->{copts} })
     {
@@ -252,7 +254,7 @@ sub run
 
   my ($ctor, $dtor, $obj) = @{$method}{qw (ctor dtor)};
 
-  my %opts = %{ $method->{hopts} };
+  my %opts = (%{ $method->{hopts} }, I => \@I, D => \@D);
 
   my $seen_opts;
 
@@ -341,6 +343,54 @@ sub getOptionList
         }
       return \%hopts;
     }
+}
+
+sub getFormattedOptionsList
+{
+  my $class = shift;
+  my %args = @_;
+
+  my ($method, $package, $opts) = @args{qw (method package opts)};
+
+  my $hopts = $class->getOptionList (package => $package, method => $method);
+
+  return
+    map 
+    { 
+      my $key = my $opt = $_;
+
+      my ($type, @v) = ('');
+
+      if ($key =~ s/\!$//o)
+        {
+          $type = 'f'; # Flag
+        }
+      elsif ($key =~ s/=s$//o)
+        {
+          $type = 's'; # Value
+        }
+
+      if (defined ($opts->{$key})) # Option is set
+        {
+          if (($type eq 'f') && ($opts->{$key}))
+            {
+              push @v, "--$key" 
+            }
+          elsif (($type eq 'f') && (! $opts->{$key}))
+            {
+              push @v, "--no$key" 
+            }
+          elsif ($type eq 's')
+            {
+              push @v, "--$key", $opts->{$key};
+            }
+          else 
+            {
+              die $opt;
+            }
+        }
+      @v
+    } keys ($hopts);
 }
 
 1;

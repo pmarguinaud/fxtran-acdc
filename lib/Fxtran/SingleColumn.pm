@@ -86,7 +86,7 @@ sub processSingleModule
         }
     }
 
-  &Fxtran::Module::addSuffix ($d, $opts{'suffix-single-column'});
+  &Fxtran::Module::addSuffix ($d, $opts{'suffix-singlecolumn'});
 }
 
 sub processSingleInterface
@@ -102,7 +102,7 @@ sub processSingleInterface
       &addValueAttribute ($d);
     }
   
-  &Fxtran::Subroutine::addSuffix ($d, $opts{'suffix-single-column'});
+  &Fxtran::Subroutine::addSuffix ($d, $opts{'suffix-singlecolumn'});
   
   $opts{pragma}->insertRoutineSeq ($d);
   
@@ -153,14 +153,14 @@ sub processSingleRoutine
 
     }
 
-  &Fxtran::Subroutine::addSuffix ($d, $opts{'suffix-single-column'});
+  &Fxtran::Subroutine::addSuffix ($d, $opts{'suffix-singlecolumn'});
   
   unless ($opts{dummy})
     {
       &Fxtran::Call::addSuffix 
       (
         $d, 
-        suffix => $opts{'suffix-single-column'}, 
+        suffix => $opts{'suffix-singlecolumn'}, 
         match => sub { ! $opts{style}->noComputeRoutine (@_) },
         'merge-interfaces' => $opts{'merge-interfaces'},
       );

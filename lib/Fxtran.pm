@@ -1366,7 +1366,7 @@ sub intfb
 
   my $doc = &Fxtran::parse (location => $F90, fopts => ['-construct-tag', '-no-include', '-line-length' => 500]);
   
-  my ($openacc) = &F ('.//C[starts-with(.,"!$ACDC openacc")]', $doc);
+  my ($openacc) = &F ('.//C[starts-with(.,"!$ACDC singlecolumn")]', $doc);
 
   &intfb_body ($doc);
 
@@ -1374,9 +1374,14 @@ sub intfb
 
   if ($openacc && $opts{'merge-interfaces'})
     {
+      $openacc = $openacc->textContent;
       use FindBin qw ($Bin);
       'FileHandle'->new (">tmp.F90")->print ($doc->textContent);
-      system ("$Bin/openacc.pl", '--stack84', 'tmp.F90');
+      $openacc =~ s/^\!\$ACDC\s+//o;
+      my @openacc = split (m/\s+/o, $openacc);
+
+      system ("$Bin/fxtran-gen", @openacc, 'tmp.F90');
+
       my $doc_acc = &Fxtran::parse (location => 'tmp_openacc.F90', fopts => ['-construct-tag', '-no-include', '-line-length' => 500]);
       $_->unbindNode () for (&F ('.//a-stmt', $doc_acc));
       $text_acc = $doc_acc->textContent ();

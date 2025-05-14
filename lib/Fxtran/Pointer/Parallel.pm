@@ -150,7 +150,7 @@ sub processSingleRoutine
       $d->unbindNode ();
     }
   
-  &Fxtran::Subroutine::rename ($d, sub { return $_[0] . uc ($opts{'suffix-parallel'}) });
+  &Fxtran::Subroutine::rename ($d, sub { return $_[0] . uc ($opts{'suffix-pointerparallel'}) });
   
   # Prepare the code
   
@@ -286,7 +286,7 @@ sub processSingleRoutine
                   $include->parentNode->insertAfter (&t ("\n"), $include);
                 }
             }
-          $name->setData ($name->data . uc ($opts{'suffix-parallel'}));
+          $name->setData ($name->data . uc ($opts{'suffix-pointerparallel'}));
         }
     }
   
@@ -343,7 +343,7 @@ sub processSingleRoutine
   
   for my $style (qw (Fxtran::Style::IAL Fxtran::Style::MESONH))
     {
-      $style->setOpenACCInterfaces ($d, %opts, suffix => $opts{'suffix-single-column'});
+      $style->setOpenACCInterfaces ($d, %opts, suffix => $opts{'suffix-singlecolumn'});
     }
   
   if (@parallel)

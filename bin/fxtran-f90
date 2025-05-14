@@ -24,50 +24,13 @@ use strict;
 use Fxtran::Bt;
 use Fxtran::F90Compiler;
 use Fxtran::Util;
+use Fxtran::PATH;
 
 sub getMethodOptions
 {
   my ($opts, $method) = @_;
 
-  my $hopts = 'click'->getOptionList (package => $opts->{package}, method => $method);
-
-  return
-    map 
-    { 
-      my $key = my $opt = $_;
-
-      my ($type, @v) = ('');
-
-      if ($key =~ s/\!$//o)
-        {
-          $type = 'f'; # Flag
-        }
-      elsif ($key =~ s/=s$//o)
-        {
-          $type = 's'; # Value
-        }
-
-      if (defined ($opts->{$key})) # Option is set
-        {
-          if (($type eq 'f') && ($opts->{$key}))
-            {
-              push @v, "--$key" 
-            }
-          elsif (($type eq 'f') && (! $opts->{$key}))
-            {
-              push @v, "--no$key" 
-            }
-          elsif ($type eq 's')
-            {
-              push @v, "--$key", $opts->{$key};
-            }
-          else 
-            {
-              die $opt;
-            }
-        }
-      @v
-    } keys ($hopts);
+  return 'click'->getFormattedOptionsList (package => $opts->{package}, method => $method, opts => $opts);
 }
 
 sub runACDCMethod
@@ -83,7 +46,7 @@ sub runACDCMethod
   $ACDC =~ s/^(\w+)\s*//o;
   my $method = $1;
 
-  my @cmd = ("$Bin/fxtran-gen1", $opts->{package}, $method, 
+  my @cmd = ("fxtran-gen1", $opts->{package}, $method, 
              &getMethodOptions ($opts, $method), 
              '--tmp' => 'File::Temp'->newdir (CLEANUP => ! $opts->{debug}),
              split (m/\s+/o, $ACDC), $F90);
@@ -215,7 +178,7 @@ my @f90flags = grep { ! m/\.(?:F90|F)$/io } @ARGV;
 
 my $cwd = &cwd ();
 my $dir = (delete $opts{dir}) || '.';
-my $tmp = delete $opts{tmp};
+my $tmp = delete $opts{tmp}; $tmp = undef if ($tmp && ($tmp eq '.'));
 
 FILE: for my $F90 (@F90)
   {

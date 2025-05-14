@@ -178,7 +178,9 @@ for my $F90 (@F90)
 
     if ($kind eq 'SUBROUTINE')
       {
-        my $intfb = &Fxtran::intfb ($F90);
+        my $opts = -f 'fxtran.conf' ? do ("./fxtran.conf") : [];
+        $opts = {'merge-interfaces' => (grep ({ '--merge-interfaces' eq  $_ } @$opts) ? 1 : 0)};
+        my $intfb = &Fxtran::intfb ($F90, '.', '.intfb.h', %$opts);
         (my $ok = $intfb) =~ s/\.h$/.ok/o;
         my @deps = &deps ($intfb);
         $fh->print (<< "EOF");
@@ -257,7 +259,7 @@ subclean:
 	\\rm -f @subobj
 
 clean: 
-	\\rm -f *.o *.xml *.a *.x *.mod *.optrpt 
+	\\rm -f *.o *.xml *.a *.x *.mod *.optrpt *.smod
 
 tidy:
 	\\rm -f *.xml *.optrpt
