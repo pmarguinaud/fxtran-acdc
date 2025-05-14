@@ -354,7 +354,7 @@ sub getFormattedOptionsList
 
   my $hopts = $class->getOptionList (package => $package, method => $method);
 
-  return
+  my @opts = 
     map 
     { 
       my $key = my $opt = $_;
@@ -391,6 +391,8 @@ sub getFormattedOptionsList
         }
       @v
     } keys ($hopts);
+
+  return @opts;
 }
 
 1;

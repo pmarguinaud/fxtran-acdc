@@ -35,8 +35,6 @@ sub getMethodOptions
 
 sub runACDCMethod
 {
-  use FindBin qw ($Bin);
-
   my %args = @_;
 
   my ($opts, $ACDC, $obj, $F90) = @args{qw (opts ACDC obj F90)};
@@ -50,7 +48,7 @@ sub runACDCMethod
              &getMethodOptions ($opts, $method), 
              '--tmp' => 'File::Temp'->newdir (CLEANUP => ! $opts->{debug}),
              split (m/\s+/o, $ACDC), $F90);
-  
+
   &Fxtran::Util::runCommand (cmd => \@cmd, %$opts);
 
   &Fxtran::F90Compiler::compile (%args);

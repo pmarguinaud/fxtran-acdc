@@ -10,11 +10,13 @@ use FileHandle;
 use Data::Dumper;
 use File::Path;
 use File::Copy;
+use File::Spec;
 use File::Basename;
 use FindBin qw ($Bin);
 use Getopt::Long;
 
 my $FXTRAN_F90 = &Cwd::realpath ("$Bin/../../bin/fxtran-f90");
+my $FXTRAN_GEN = &Cwd::realpath ("$Bin/../../bin/fxtran-gen");
 
 sub runCommand
 {
@@ -57,6 +59,32 @@ sub processFile
     }
 }
 
+sub processIntf
+{
+  my %args = @_;
+  my ($file, $log, $config) = @args{qw (file log config)};
+
+  my $cwd = &cwd ();
+
+  my ($dir, $view, $F90) = ($file =~ m{^(\w+)/(\w+)/(.*)$}o);
+  
+  $dir = join ('/', $dir, 'local', '.intfb');
+  
+  &mkpath ($dir) unless (-d $dir);
+
+  my @cmd = ($FXTRAN_GEN, 'interface', '--dir', $dir, $file);
+
+  print "@cmd\n";
+
+  $log->print ("@cmd\n");
+  
+  if (system (@cmd))
+    {
+      $log->print ("Command `@cmd' failed");
+      die ("Command `@cmd' failed");
+    }
+}
+
 sub processList
 {
   my $opts = shift;
@@ -79,7 +107,7 @@ sub processList
                {
                  while (my $f = $q->dequeue ()) 
                    { 
-                     &processFile (tid => $tid, file => $f, log => $fh, config => $opts->{config}); 
+                     $opts->{proc}->(tid => $tid, file => $f, log => $fh, config => $opts->{config}); 
                    } 
                };
              my $c = $@;
@@ -133,6 +161,7 @@ $ENV{TARGET_PACK} = $cwd;
 
 my @mod = &getLines ("list.mod");
 my @src = &getLines ("list.src");
+my @int = &getLines ("list.int");
 
 for my $type (qw (typebound util))
   {
@@ -143,8 +172,9 @@ for my $type (qw (typebound util))
         &rmtree ($d) if (-d $d);
       }
 
-    &processList ({%opts, config => $config},  @mod);
-    &processList ({%opts, config => $config},  @src);
+    &processList ({%opts, config => $config, proc => \&processIntf},  @int);
+    &processList ({%opts, config => $config, proc => \&processFile},  @mod);
+    &processList ({%opts, config => $config, proc => \&processFile},  @src);
 
     &rmtree ("run/$type");
     &mkpath ("run/$type") or die;
