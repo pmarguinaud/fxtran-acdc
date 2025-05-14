@@ -40,6 +40,7 @@ use Fxtran::Finder;
 use Fxtran::Pointer;
 use Fxtran::Print;
 use Fxtran::Style;
+use Fxtran::Interface;
 
 sub addValueAttribute
 {
@@ -168,6 +169,14 @@ sub processSingleRoutine
   
   $opts{pragma}->insertRoutineSeq ($d);
 
+  if ($opts{dummy})
+    {
+      &Fxtran::Interface::intfbBody ($d->ownerDocument ());
+      my ($end) = &F ('./end-subroutine-stmt', $d);  
+      my $abort = &s ('CALL ABOR1_ACC ("ERROR : WRONG SETTINGS")');
+      $end->parentNode->insertBefore ($_, $end) for ($abort, &t ("\n"));
+    }
+
   &Fxtran::Stack::addStack 
   (
     $d, 
@@ -177,14 +186,7 @@ sub processSingleRoutine
     pointer => \@pointer,
   );
 
-  if ($opts{dummy})
-    {
-      &Fxtran::intfb_body ($d->ownerDocument ());
-      my ($end) = &F ('./end-subroutine-stmt', $d);  
-      my $abort = &s ('CALL ABOR1_ACC ("ERROR : WRONG SETTINGS")');
-      $end->parentNode->insertBefore ($_, $end) for ($abort, &t ("\n"));
-    }
-  else
+  unless ($opts{dummy})
     {
       &Fxtran::Pointer::handleAssociations ($d, pointers => \@pointer)
         if ($opts{'process-pointers'});

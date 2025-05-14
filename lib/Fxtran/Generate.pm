@@ -22,6 +22,7 @@ use Fxtran::Canonic;
 use Fxtran::Util;
 use Fxtran::Directive;
 use Fxtran::PATH;
+use Fxtran::Interface;
 
 use click;
 
@@ -482,7 +483,7 @@ sub interface
 
   my @text = split (m/\n/o, $doc->textContent);
   
-  &Fxtran::intfb_body ($doc);
+  &Fxtran::Interface::intfbBody ($doc);
 
   my %intfb;
   

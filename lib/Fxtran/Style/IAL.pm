@@ -7,10 +7,12 @@ package Fxtran::Style::IAL;
 #
 
 use base qw (Fxtran::Style);
-use Fxtran;
 use Data::Dumper;
 
 use strict;
+
+use Fxtran;
+use Fxtran::Interface;
 
 sub includeExtension
 {
@@ -83,7 +85,7 @@ sub generateInterface
 {
   my $class = shift;
   my ($F90, %opts) = @_;
-  &Fxtran::intfb ($F90, $opts{dir}, $class->includeExtension ());
+  &Fxtran::Interface::intfb ($F90, $opts{dir}, $class->includeExtension ());
 }
 
 sub setOpenACCInterfaces
