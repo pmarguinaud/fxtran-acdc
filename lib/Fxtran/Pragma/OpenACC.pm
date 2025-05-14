@@ -85,6 +85,13 @@ sub insertParallelLoopGang
   &insertDirective ($p, 'PARALLEL LOOP GANG', %c);
 }
 
+sub insertData
+{
+  shift;
+  my ($p, %c) = @_;
+  &insertDirective ($p, 'DATA', %c);
+}
+
 sub insertLoopVector
 {
   shift;

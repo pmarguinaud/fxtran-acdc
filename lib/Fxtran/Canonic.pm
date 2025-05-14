@@ -18,6 +18,7 @@ use Fxtran::Construct;
 use Fxtran::Dimension;
 use Fxtran::DIR;
 use Fxtran::Scope;
+use Fxtran::Cycle;
 
 sub removeIfDef
 {
@@ -76,6 +77,7 @@ DONE:
 sub makeCanonic
 {
   my $d = shift;
+  my %opts = @_;
 
   &Fxtran::Construct::changeIfStatementsInIfConstructs ($d);
 
@@ -94,6 +96,8 @@ sub makeCanonic
       &makeCanonicUnit ($pu);
     }
 
+  'Fxtran::Cycle'->simplify ($d, %opts);
+      
 }
 
 sub makeCanonicUnit

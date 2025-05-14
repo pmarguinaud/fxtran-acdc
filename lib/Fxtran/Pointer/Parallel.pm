@@ -25,33 +25,12 @@ use Fxtran::Include;
 use Fxtran::DIR;
 use Fxtran::Bt;
 use Fxtran::Canonic;
-use Fxtran::Directive;
 use Fxtran::Inline;
 use Fxtran::Style;
 use Fxtran::Style::IAL;
 use Fxtran::Style::MESONH;
 use Fxtran::Pragma;
-use Fxtran::Cycle;
 use Fxtran::Util;
-
-sub addYDCPG_OPTS
-{
-  my $d = shift;
-  my ($arglist) = &F ('./subroutine-stmt/dummy-arg-LT', $d);
-  $arglist->appendChild (&t (','));
-  $arglist->appendChild (&n ('<arg-N><N><n>YDCPG_OPTS</n></N></arg-N>'));
-  &Fxtran::Decl::declare ($d, 'TYPE (CPG_OPTS), INTENT (IN) :: YDCPG_OPTS');
-  &Fxtran::Decl::use ($d, 'USE CPG_OPTS_TYPE_MOD');
-
-  my @expr = &F ('//named-E[string(N)="KIDIA" or string(N)="KFDIA"]', $d);
-
-  for my $expr (@expr)
-    {
-      my $N = $expr->textContent;
-      $expr->replaceNode (&e ("YDCPG_BNDS%$N"));
-    }
-}
-
 
 sub processSingleParallel
 {
@@ -175,24 +154,11 @@ sub processSingleRoutine
   
   # Prepare the code
   
-  &Fxtran::Associate::resolveAssociates ($d);
-  
   if ($opts{'inline-contained'})
     {
-      &Fxtran::Construct::changeIfStatementsInIfConstructs ($d);
       &Fxtran::Inline::inlineContainedSubroutines ($d, skipDimensionCheck => 1);
     }
-  
 
-  'Fxtran::Cycle'->simplify ($d, %opts);
-  
-  if ($opts{addYDCPG_OPTS})
-    {
-      &addYDCPG_OPTS ($d);
-    }
-  
-  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
-  
   # Add modules
   
   my @use = qw (FIELD_MODULE FIELD_FACTORY_MODULE FIELD_ACCESS_MODULE YOMPARALLELMETHOD STACK_MOD YOMHOOK);

@@ -32,7 +32,6 @@ use Fxtran::Call;
 use Fxtran::Canonic;
 use Fxtran::DrHook;
 use Fxtran::Identifier;
-use Fxtran::Cycle;
 use Fxtran::Decl;
 use Fxtran::Dimension;
 use Fxtran::Include;
@@ -130,7 +129,7 @@ sub processSingleRoutine
         {
           my $f90in = $find->resolve (file => $in);
           my $di = &Fxtran::parse (location => $f90in, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)], dir => $opts{tmp});
-          &Fxtran::Canonic::makeCanonic ($di);
+          &Fxtran::Canonic::makeCanonic ($di, %opts);
           &Fxtran::Inline::inlineExternalSubroutine ($d, $di, %opts);
         }
       
@@ -139,8 +138,6 @@ sub processSingleRoutine
           &Fxtran::Inline::inlineContainedSubroutines ($d, find => $find, inlineDeclarations => 1, comment => $opts{'inline-comment'}, style => $opts{style});
         }
      
-      'Fxtran::Cycle'->simplify ($d, %opts);
-      
       @pointer = &Fxtran::Pointer::setPointersDimensions ($d, 'no-check-pointers-dims' => $opts{'no-check-pointers-dims'})
         if ($opts{'process-pointers'});
       

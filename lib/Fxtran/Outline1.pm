@@ -390,7 +390,7 @@ sub outline1
   
   my $d = &Fxtran::parse (location => $F90, fopts => [qw (-construct-tag -no-include -line-length 500 -directive ACDC -canonic)], dir => $opts->{tmp});
   
-  &Fxtran::Canonic::makeCanonic ($d);
+  &Fxtran::Canonic::makeCanonic ($d, %$opts);
   
   &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
   

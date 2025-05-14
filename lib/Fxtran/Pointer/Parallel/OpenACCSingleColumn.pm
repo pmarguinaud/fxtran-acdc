@@ -62,6 +62,18 @@ sub makeParallel
         }
     }
 
+  my @call = &F ('.//call-stmt', $do);
+
+  my $stackRequired = 0;
+
+  for my $call (@call)
+    {
+      my ($proc) = &F ('./procedure-designator', $call, 1);
+      next if ($proc eq 'YLCPG_BNDS%UPDATE');
+      $stackRequired = 1;
+      last;
+    }
+
   my @x = &F ('./node()', $do);
 
   for my $x (@x)
@@ -105,7 +117,8 @@ EOF
           $do->insertBefore (&t ("\n"), $do_jlon);
           $do->insertBefore (&t ("\n"), $do_jlon);
 
-          &Fxtran::Stack::iniStack ($do_jlon, 0, $opts{stack84}, $JBLKMIN, $KGPBLKS);
+          &Fxtran::Stack::iniStack ($do_jlon, 0, $opts{stack84}, $JBLKMIN, $KGPBLKS)
+             if ($stackRequired);
 
           if ($style->customIterator ())
             {
@@ -146,8 +159,6 @@ EOF
       my ($ss) = &F ('./R-LT/array-R/section-subscript-LT/section-subscript[1]', $expr);
       $ss->replaceNode (&n ("<section-subscript><lower-bound><named-E><N><n>$jlon</n></N></named-E></lower-bound></section-subscript>"));
     }
-
-  my @call = &F ('.//call-stmt', $do_jlon);
 
   for my $call (@call)
     {

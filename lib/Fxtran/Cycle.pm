@@ -13,7 +13,7 @@ sub simplify
   shift;
 
   my ($d, %opts) = @_;
-  my $cycle = $opts{cycle};
+  return unless (my $cycle = $opts{cycle});
 
   my $class = 'Fxtran::Cycle' . $cycle;
 

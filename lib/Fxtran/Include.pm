@@ -88,7 +88,7 @@ sub loadContainedIncludes
       my $text = do { local $/ = undef; my $fh = 'FileHandle'->new ("<$filename"); <$fh> };
       my $di = &Fxtran::parse (string => $text, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]);
 
-      &Fxtran::Canonic::makeCanonic ($di);
+      &Fxtran::Canonic::makeCanonic ($di, %opts);
 
       my @pu = &F ('./object/file/program-unit', $di);
       for my $pu (@pu)

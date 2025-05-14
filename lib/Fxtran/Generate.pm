@@ -20,9 +20,81 @@ use Fxtran::Common;
 use Fxtran;
 use Fxtran::Canonic;
 use Fxtran::Util;
+use Fxtran::Directive;
 
 use click;
 
+sub changeKidiaToYDCPG_OPTS 
+{
+  my ($d, $opts) = @_;
+
+  my $style = $opts->{style};
+
+  my $kidia = $style->kidia ();
+  my $kfdia = $style->kfdia ();
+  my $jlon  = $style->jlon ();
+
+'FileHandle'->new (">d.F90.xml")->print ($d);
+
+  for (&F ('.//arg-N/N/n/text()[string(.)="?"]', $kidia, $d))
+    {
+      $_->setData ('YDCPG_OPTS');
+    }
+
+  for (&F ('.//arg-N/N/n/text()[string(.)="?"]', $kfdia, $d))
+    {
+      $_->setData ('YDCPG_BNDS');
+    }
+
+  for my $expr (&F ('.//named-E[string(N)="?"]', $kidia, $d))
+    {
+      my $par = 0;
+
+      my $stmt = &Fxtran::stmt ($expr);
+      if (($stmt->nodeName eq 'call-stmt') && (&F ('ancestor::parallel-section', $stmt)))
+        {
+          $par = 1;
+        }
+
+      $expr->replaceNode ($par ?  &e ("YDCPG_BNDS%KIDIA") : &e ("YDCPG_OPTS"));
+    }
+
+  for my $expr (&F ('.//named-E[string(N)="?"]', $kfdia, $d))
+    {
+      my $par = 0;
+
+      my $stmt = &Fxtran::stmt ($expr);
+      if (($stmt->nodeName eq 'call-stmt') && (&F ('ancestor::parallel-section', $stmt)))
+        {
+          $par = 1;
+        }
+
+      $expr->replaceNode ($par ? &e ("YDCPG_BNDS%KFDIA") : &e ("YDCPG_BNDS"));
+    }
+
+  for my $nproma ($style->nproma ())
+    {
+       for (&F ('.//named-E[string(N)="?"]', $nproma, $d))
+         {
+           $_->replaceNode (&e ("YDCPG_OPTS%KLON"));
+         }
+    }
+
+  my ($declKIDIA) = &F ('.//T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $kidia, $d);
+  my ($declKFDIA) = &F ('.//T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $kfdia, $d);
+  my ($declJLON)  = &F ('.//T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $jlon, $d);
+
+  $declKIDIA->replaceNode (&s ("TYPE (CPG_OPTS_TYPE), INTENT (IN) :: YDCPG_OPTS"));
+  $declKFDIA->replaceNode (&s ("TYPE (CPG_BNDS_TYPE), INTENT (IN) :: YDCPG_BNDS"));
+  $declJLON->replaceNode (&s ("INTEGER (KIND=JPIM) :: JLON"));
+
+  for (&F ('.//named-E[string(.)="?"]/N/n/text()', $jlon, $d))
+    {
+      $_->setData ('JLON');
+    }
+
+  $opts->{style} = 'Fxtran::Style'->new (document => $d);
+}
 
 my %options= do
 {
@@ -99,7 +171,7 @@ sub singlecolumn
 
   my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag -no-include -no-cpp -line-length 5000)], dir => $opts->{tmp});
   
-  &Fxtran::Canonic::makeCanonic ($d);
+  &Fxtran::Canonic::makeCanonic ($d, %$opts);
   
   $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
   
@@ -169,6 +241,7 @@ sub singlecolumn
   types-fieldapi-non-blocked=s@   -- Non-blocked data types (without NPROMA)                                                               --  CPG_SL1F_TYPE,CPG_SL_MASK_TYPE
   use-acpy                        -- Avoid pointer aliasing using ACPY
   use-bcpy                        -- Avoid pointer aliasing using BCPY
+  ydcpg_opts                      -- Change KIDIA, KFDIA -> YDCPG_OPTS, YDCPG_BNDS
 EOF
 sub pointerparallel
 {
@@ -209,9 +282,16 @@ sub pointerparallel
   
   my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -directive ACDC -canonic)], dir => $opts->{tmp});
   
-  &Fxtran::Canonic::makeCanonic ($d);
+  &Fxtran::Canonic::makeCanonic ($d, %$opts);
+  
+  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
   
   $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
+
+  if ($opts->{ydcpg_opts})
+    {
+      &changeKidiaToYDCPG_OPTS ($d, $opts);
+    }
   
   my @pu = &F ('./object/file/program-unit', $d);
   
@@ -308,7 +388,7 @@ sub methods
     }
   
 
-  my  $parseListOrCodeRef = sub
+  my $parseListOrCodeRef = sub
   {
     use FindBin qw ($Bin);
 
