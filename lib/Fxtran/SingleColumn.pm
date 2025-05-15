@@ -119,7 +119,7 @@ sub processSingleInterface
 
 sub processSingleRoutine
 {
-  my ($d, $find, %opts) = @_;
+  my ($pu, $find, %opts) = @_;
 
   my @pointer;
 
@@ -131,80 +131,81 @@ sub processSingleRoutine
           my $f90in = $find->resolve (file => $in);
           my $di = &Fxtran::parse (location => $f90in, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)], dir => $opts{tmp});
           &Fxtran::Canonic::makeCanonic ($di, %opts);
-          &Fxtran::Inline::inlineExternalSubroutine ($d, $di, %opts);
+          &Fxtran::Inline::inlineExternalSubroutine ($pu, $di, %opts);
         }
       
       if ($opts{'inline-contained'})
         {
-          &Fxtran::Inline::inlineContainedSubroutines ($d, find => $find, inlineDeclarations => 1, comment => $opts{'inline-comment'}, style => $opts{style});
+          &Fxtran::Inline::inlineContainedSubroutines ($pu, find => $find, inlineDeclarations => 1, comment => $opts{'inline-comment'}, style => $opts{style});
         }
      
-      @pointer = &Fxtran::Pointer::setPointersDimensions ($d, 'no-check-pointers-dims' => $opts{'no-check-pointers-dims'})
+      @pointer = &Fxtran::Pointer::setPointersDimensions ($pu, 'no-check-pointers-dims' => $opts{'no-check-pointers-dims'})
         if ($opts{'process-pointers'});
       
-      &Fxtran::Loop::removeNpromaLoops ($d, style => $opts{style}, pointer => \@pointer);
+      &Fxtran::Loop::removeNpromaLoops ($pu, style => $opts{style}, pointer => \@pointer);
       
-      &Fxtran::ReDim::reDim ($d, style => $opts{style}, 'redim-arguments' => $opts{'redim-arguments'});
+      &Fxtran::ReDim::reDim ($pu, style => $opts{style}, 'redim-arguments' => $opts{'redim-arguments'});
       
       
       if ($opts{'value-attribute'})
         {
-          &addValueAttribute ($d);
+          &addValueAttribute ($pu);
         }
 
     }
 
-  &Fxtran::Subroutine::addSuffix ($d, $opts{'suffix-singlecolumn'});
+  &Fxtran::Subroutine::addSuffix ($pu, $opts{'suffix-singlecolumn'});
   
   unless ($opts{dummy})
     {
       &Fxtran::Call::addSuffix 
       (
-        $d, 
+        $pu, 
         suffix => $opts{'suffix-singlecolumn'}, 
         match => sub { ! $opts{style}->noComputeRoutine (@_) },
         'merge-interfaces' => $opts{'merge-interfaces'},
       );
     }
   
-  $opts{pragma}->insertRoutineSeq ($d);
-
-  if ($opts{dummy})
-    {
-      &Fxtran::Interface::intfbBody ($d->ownerDocument ());
-      my ($end) = &F ('./end-subroutine-stmt', $d);  
-      my $abort = &s ('CALL ABOR1_ACC ("ERROR : WRONG SETTINGS")');
-      $end->parentNode->insertBefore ($_, $end) for ($abort, &t ("\n"));
-    }
+  $opts{pragma}->insertRoutineSeq ($pu);
 
   &Fxtran::Stack::addStack 
   (
-    $d, 
+    $pu, 
     skip => sub { $opts{style}->noComputeRoutine (@_) },
     stack84 => $opts{stack84},
     style => $opts{style},
     pointer => \@pointer,
   );
 
-  unless ($opts{dummy})
+  if ($opts{dummy})
     {
-      &Fxtran::Pointer::handleAssociations ($d, pointers => \@pointer)
+      &Fxtran::Interface::intfbBody ($pu->ownerDocument ());
+      my ($end) = &F ('./end-subroutine-stmt', $pu);  
+      my $ep = &n ('<execution-part/>');
+      my $abort = &s ('CALL ABOR1_ACC ("ERROR : WRONG SETTINGS")');
+      $ep->appendChild ($abort);
+      $end->parentNode->insertBefore ($_, $end) for ($ep, &t ("\n"));
+    }
+  else
+    {
+      &Fxtran::Pointer::handleAssociations ($pu, pointers => \@pointer)
         if ($opts{'process-pointers'});
       
-      &Fxtran::DrHook::remove ($d) unless ($opts{drhook});
+      &Fxtran::DrHook::remove ($pu) unless ($opts{drhook});
       
 
       unless ($opts{'merge-interfaces'})
         {
-          &Fxtran::Include::removeUnusedIncludes ($d) 
+          &Fxtran::Include::removeUnusedIncludes ($pu) 
             if ($opts{style}->removeUnusedIncludes ());
         }
 
-      $opts{style}->handleMessages ($d, %opts);
+      $opts{style}->handleMessages ($pu, %opts);
 
-      &Fxtran::Print::useABOR1_ACC ($d);
-      &Fxtran::Print::changeWRITEintoPRINT ($d);
-      &Fxtran::Print::changePRINT_MSGintoPRINT ($d);
+      &Fxtran::Print::useABOR1_ACC ($pu);
+      &Fxtran::Print::changeWRITEintoPRINT ($pu);
+      &Fxtran::Print::changePRINT_MSGintoPRINT ($pu);
     }
 
 

@@ -537,7 +537,9 @@ sub singlecolumnInterface
 
       my $doc = &Fxtran::parse (location => $tmp_singlecolumn, fopts => ['-construct-tag', '-no-include', '-line-length' => 500]);
 
-      $_->unbindNode () for (&F ('.//a-stmt', $doc));
+      &Fxtran::Canonic::makeCanonic ($doc, %$opts);
+
+      &Fxtran::Interface::intfbBody ($doc);
 
       $intfb->{singlecolumn} = $doc->textContent ();
       $intfb->{singlecolumn} =~ s/^\s*\n$//goms;

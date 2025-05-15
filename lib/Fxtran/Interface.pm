@@ -13,6 +13,17 @@ sub intfbBody
 
   my @pu = &F ('./object/file/program-unit', $doc);
 
+  for my $n (&F ('.//n/text()', $doc))
+    {
+      my $t = $n->textContent;
+      if ((my $T = uc ($t)) ne $t)
+        {
+          $n->setData ($T);
+        }
+    }
+
+  
+
   for my $pu (@pu)
     {
       if (my ($ep) = &F ('./execution-part', $pu))
