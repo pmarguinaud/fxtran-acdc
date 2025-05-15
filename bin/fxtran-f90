@@ -30,7 +30,7 @@ sub getMethodOptions
 {
   my ($opts, $method) = @_;
 
-  return 'click'->getFormattedOptionsList (package => $opts->{package}, method => $method, opts => $opts);
+  return 'click'->hashToCommandLine (package => $opts->{package}, method => $method, opts => $opts);
 }
 
 sub runACDCMethod
@@ -108,7 +108,7 @@ my %opts = (package => $package, config => $config);
 
 my $hopts = 'click'->getOptionList (package => $package);
 
-my @opts_f = qw (dryrun help debug);
+my @opts_f = qw (dryrun debug);
 my @opts_s = qw (package config);
 
 &GetOptions

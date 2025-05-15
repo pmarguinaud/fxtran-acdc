@@ -528,7 +528,7 @@ sub singlecolumnInterface
 
       $tmp->print ("!\$ACDC @singlecolumn\n", $doc->textContent);
 
-      my @opts = 'click'->getFormattedOptionsList (method => 'singlecolumn', package => __PACKAGE__, opts => $opts);
+      my @opts = 'click'->hashToCommandLine (method => 'singlecolumn', package => __PACKAGE__, opts => $opts);
 
       &Fxtran::Util::runCommand (cmd => ['fxtran-f90', @opts, '--dryrun', '--dir', '.', '--', 'f90', '-c', $tmp]);
 
@@ -566,7 +566,7 @@ sub pointerparallelInterface
 
       $tmp->print ("!\$ACDC @pointerparallel\n", $doc->textContent);
 
-      my @opts = 'click'->getFormattedOptionsList (method => 'pointerparallel', package => __PACKAGE__, opts => $opts);
+      my @opts = 'click'->hashToCommandLine (method => 'pointerparallel', package => __PACKAGE__, opts => $opts);
 
       &Fxtran::Util::runCommand (cmd => ['fxtran-f90', @opts, '--dryrun', '--dir', '.', '--', 'f90', '-c', $tmp]);
 

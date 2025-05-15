@@ -16,17 +16,34 @@ our @EXPORT = qw (click run);
 
 my %METHOD;
 
+
+my %FILE2CODE;
+
+sub slurpl
+{
+  my $file = shift;
+
+  unless ($FILE2CODE{$file})
+    {
+      my @code = do { my $fh = 'FileHandle'->new ("<$file"); <$fh> };
+      $FILE2CODE{$file} = \@code;
+    }
+
+  return @{ $FILE2CODE{$file} };
+}
+
 sub click
 {
   my @opt = @_;
 
-  my $oopt = [];
+  my $oopt = []; # Options for OO methods
   if (@opt && (ref ($opt[-1]) eq 'ARRAY'))
     {
       $oopt = pop (@opt);
       $oopt = &Storable::dclone ($oopt);
     }
 
+  # Split options text, only line per option
   @opt = grep { !/^\s*$/o } map { split (m/\n/o, $_) } @opt;
 
   for (@opt)
@@ -35,12 +52,14 @@ sub click
       s/^\s*//o;
     }
 
+  # Guess who called us and get the source code
+
   my ($package, $file, $line) = caller (0);
-  my @code = do { my $fh = 'FileHandle'->new ("<$file"); <$fh> };
+  my @code = &slurpl ($file);
 
-  # Find subroutine name
+  # Seek to subroutine declaration
 
-  my $name;
+  my $name; # Subroutine name
 
   while ($line <= $#code)
     {
@@ -50,10 +69,6 @@ sub click
         {
           $name = "$1";
 	  last;
-	}
-      else
-        {
-          next;
 	}
     }
 
@@ -66,12 +81,12 @@ sub click
       my $text = $code[$line++];
       next if ($text =~ m/^\s*#.*|^\s*$/o); # Skip comments & white lines
       next if ($text =~ m/^\s*\{\s*$/o);    # Skip {
-      next if ($text =~ m/^\s*use \s*/o);  # Use use statements
-      if ($text =~ m/^\s*my\s*\$(self|class)\s*=\s*shift;/o)
+      next if ($text =~ m/^\s*use \s*/o);   # Skip use statements
+      if ($text =~ m/^\s*my\s*\$(self|class)\s*=\s*shift;/o)  # Object/class argument
         {
           @arg = ($1);
 	}
-      elsif ($text =~ m/^\s*my\s*\((.*)\)\s*=\s*\@_;/o)
+      elsif ($text =~ m/^\s*my\s*\((.*)\)\s*=\s*\@_;/o)       # List of named arguments
         {
           @arg = ($text =~ m/\$(\w+)/go);
 	}
@@ -101,7 +116,7 @@ sub click
     }
 
 
-  my $h = do { no strict 'refs'; \%{"$package\::"} };
+  my $h = do { no strict 'refs'; \%{"$package\::"} }; # Package symbol table
 
   my $code = $h->{$name};
 
@@ -109,22 +124,22 @@ sub click
 
   $METHOD{$package}{$name} =
   {
-    package => $package,
-    name  => $name,
-    code  => $code,
-    hopts => \%hopts,
-    aopts => \@aopts,
-    copts => \@copts,
-    oopts => \@oopts,
-    arg   => \@arg,
-    ctor  => $ctor || 'new',
-    dtor  => $dtor,
-    desc  => \%desc,
-    list  => \%list,
-    flag  => \%flag,
+    package => $package,                     # Package the method/routine belongs to
+    name  => $name,                          # Routine/method name
+    code  => $code,                          # Routine/method to be called
+    hopts => \%hopts,                        # Hash with all options & values
+    aopts => \@aopts,                        # Hash will all options names & references to values (list of arguments of GetOptions)
+    copts => \@copts,                        # Callback to apply to packed string list arguments (split the string into a reference on a list)
+    oopts => \@oopts,                        # Arguments for constructor method
+    arg   => \@arg,                          # List of routine scalar arguments, to pass to method/routine
+    ctor  => $ctor || 'new',                 # Constructor name
+    dtor  => $dtor,                          # Destructor name
+    desc  => \%desc,                         # Description (help message)
+    list  => \%list,                         # Option is a list
+    flag  => \%flag,                         # Option is a flag
   };
 
-  for my $opt (@{[@opt, @$oopt]})
+  for my $opt (@{[@opt, 'help', @$oopt]})
     {
       my $oo = grep { $_ eq $opt } @$oopt;
 
@@ -157,6 +172,7 @@ sub click
         }
       push @oopts, $name if ($oo);
     }
+
 }
 
 sub help
@@ -164,7 +180,6 @@ sub help
   use File::Basename;
 
   my $package = shift;
-
 
   print &basename ($0), ":\n\n";
 
@@ -174,6 +189,8 @@ sub help
       my $m = $METHOD{$package}{$method};
       for my $opt (sort keys (%{ $m->{desc} }))
         {
+          next if ($opt eq 'help');
+
           my $kind = '';
 	  $kind = '(FLAG)' if ($m->{flag}{$opt});
 	  $kind = '(LIST)' if ($m->{list}{$opt});
@@ -220,13 +237,14 @@ sub run
       &help ($package);
     }
 
-  local @ARGV = @_;
+  my @argv = @_;
 
-  my @I = grep { m/^-I/o } @ARGV;
-  @ARGV = grep { ! m/^-I/o } @ARGV;
+  my %opts = __PACKAGE__->commandLineToHash (method => $method, package => $package, argv => \@argv);
 
-  my @D = grep { m/^-D/o } @ARGV;
-  @ARGV = grep { ! m/^-D/o } @ARGV;
+  if ($opts{help})
+    {
+      &help ($package);
+    }
 
   defined ($method)
     or die ("No method was defined for package `$package'");
@@ -236,25 +254,7 @@ sub run
 
   $method = $METHOD{$package}{$method};
 
-  my @opts = @{ $method->{aopts} };
-  my $help;
- 
-  &GetOptions (help => \$help, @opts);
-
-
-  for (@{ $method->{copts} })
-    {
-      $_->();
-    }
-
-  if ($help)
-    {
-      &help ($package);
-    }
-
   my ($ctor, $dtor, $obj) = @{$method}{qw (ctor dtor)};
-
-  my %opts = (%{ $method->{hopts} }, I => \@I, D => \@D);
 
   my $seen_opts;
 
@@ -266,18 +266,18 @@ sub run
 
       if ($i == 0)
         {
-          if ($arg eq 'class') 
+          if ($arg eq 'class')                                  # class is a reserved argument name = package name
 	    {
-              push @args, $method->{package};
+              push @args, $method->{package}; 
 	      next;
 	    }
-          elsif ($arg eq 'opts')
+          elsif ($arg eq 'opts')                                # opts is a reserved argument name = reference to hashed options
             {
               $seen_opts = 1;
               push @args, \%opts;
               next;
             }
-          elsif ($arg eq 'self')
+          elsif (($arg eq 'self') || ($arg eq 'this'))          # self & this are reserved : the object used to invoke the method
 	    {
               my @oopts = @{$method->{oopts}};
 	      @oopts = map { ($_, $opts{$_}) } @oopts;
@@ -291,13 +291,15 @@ sub run
       push @args, $opts{$arg};
     }
 
+  # Invoke the routine/method with appropriate arguments
+
   if ($seen_opts)
     {
-      $method->{code}->(@args, @ARGV);
+      $method->{code}->(@args, @argv);
     }
   else
     {
-      $method->{code}->(@args, %opts, @ARGV);
+      $method->{code}->(@args, %opts, @argv);
     }
 
   $obj->$dtor if ($obj && $dtor);
@@ -345,10 +347,53 @@ sub getOptionList
     }
 }
 
-sub getFormattedOptionsList
+sub commandLineToHash
 {
   my $class = shift;
   my %args = @_;
+
+# Transform command lines arguments to hashed options
+
+  my ($method, $package) = @args{qw (method package)};
+
+  local @ARGV = @{ $args{argv} };
+
+  my @I = grep { m/^-I/o } @ARGV;         # I is for includes
+  @ARGV = grep { ! m/^-I/o } @ARGV;
+
+  my @D = grep { m/^-D/o } @ARGV;         # D is for macro definition
+  @ARGV = grep { ! m/^-D/o } @ARGV;
+
+  defined ($method)
+    or die ("No method was defined for package `$package'");
+
+  exists ($METHOD{$package}{$method}) 
+    or die ("Command `$method' was not found in package `$package'");
+
+  $method = $METHOD{$package}{$method};
+
+  my @opts = @{ $method->{aopts} };
+
+  &GetOptions (@opts);
+
+  for (@{ $method->{copts} })
+    {
+      $_->();
+    }
+
+  my %opts = (%{ $method->{hopts} }, I => \@I, D => \@D);
+
+  @{ $args{argv} } = @ARGV;
+
+  return %opts;
+}
+
+sub hashToCommandLine
+{
+  my $class = shift;
+  my %args = @_;
+
+# Transform hashed options to command line arguments
 
   my ($method, $package, $opts) = @args{qw (method package opts)};
 
