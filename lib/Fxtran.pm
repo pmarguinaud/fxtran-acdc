@@ -1160,24 +1160,6 @@ sub mute_subroutine_to_call
 
 }
 
-sub save_to_file
-{
-  my ($file, $data) = @_;
-
-  if (-f $file)
-    {
-      my $data0 = do { my $fh = 'FileHandle'->new ("<$file"); local $/ = undef; <$fh> };
-      return if ($data0 eq $data);
-    }
-  use File::Path;
-  use File::Basename;
-
-  &mkpath (&dirname ($file));
-
-  'FileHandle'->new (">$file")->print ($data);
-} 
-
-
 sub add_used_vars
 {
   my ($doc, $mod, @vars) = @_;

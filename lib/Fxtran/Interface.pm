@@ -279,7 +279,7 @@ sub intfb
   
   my $sub = &basename ($F90, qw (.F90));
   
-  &Fxtran::save_to_file ("$dir/$sub$ext", << "EOF");
+  &Fxtran::Util::updateFile ("$dir/$sub$ext", << "EOF");
 INTERFACE
 $text
 $text_acc
@@ -308,7 +308,7 @@ sub modi
   my $sub = &basename ($F90, qw (.F90));
   my $SUB = uc ($sub);
   
-  &Fxtran::save_to_file ("$dir/modi_$sub.F90", << "EOF");
+  &Fxtran::Util::updateFile ("$dir/modi_$sub.F90", << "EOF");
 MODULE MODI_$SUB
 INTERFACE
 $text

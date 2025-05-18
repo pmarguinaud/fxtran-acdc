@@ -501,7 +501,7 @@ sub interface
 
   my $sub = &basename ($F90, qw (.F90));
   
-  &Fxtran::save_to_file ("$opts->{dir}/$sub$ext", << "EOF");
+  &Fxtran::Util::updateFile ("$opts->{dir}/$sub$ext", << "EOF");
 INTERFACE
 $intfb{regular}
 $intfb{singlecolumn}
