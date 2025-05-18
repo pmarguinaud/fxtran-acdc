@@ -492,10 +492,11 @@ sub interface
   $intfb{regular} = $doc->textContent ();
   $intfb{regular} =~ s/^\s*\n$//goms;
 
-  &singlecolumnInterface ($doc, \@text, $opts, \%intfb);
+  use Fxtran::Generate::singlecolumn;
+  use Fxtran::Generate::pointerparallel;
 
-  &pointerparallelInterface ($doc, \@text, $opts, \%intfb);
-
+  &Fxtran::Generate::singlecolumn::interface ($doc, \@text, $opts, \%intfb);
+  &Fxtran::Generate::pointerparallel::interface ($doc, \@text, $opts, \%intfb);
 
   my $sub = &basename ($F90, qw (.F90));
   
@@ -506,82 +507,6 @@ $intfb{singlecolumn}
 $intfb{pointerparallel}
 END INTERFACE
 EOF
-
-}
-
-
-sub singlecolumnInterface
-{
-  my ($doc, $text, $opts, $intfb) = @_;
-
-  $intfb->{singlecolumn} = '';
-
-  my ($singlecolumn) = map { m/^!\$ACDC\s+(singlecolumn.*)/o ? ($1) : ()  } @$text;
-
-  if ($singlecolumn && $opts->{'merge-interfaces'})
-    {
-      use File::Temp;
-
-      my @singlecolumn = split (m/\s+/o, $singlecolumn);
-
-      my $tmp = 'File::Temp'->new (SUFFIX => '.F90', TEMPLATE => 'fxtranXXXXX');
-
-      $tmp->print ("!\$ACDC @singlecolumn\n", $doc->textContent);
-
-      my @opts = 'click'->hashToCommandLine (method => 'singlecolumn', package => __PACKAGE__, opts => $opts);
-
-      &Fxtran::Util::runCommand (cmd => ['fxtran-f90', @opts, '--dryrun', '--dir', '.', '--', 'f90', '-c', $tmp]);
-
-      my $suffix = lc ($opts->{'suffix-singlecolumn'});
-      (my $tmp_singlecolumn = $tmp) =~ s/\.F90$/$suffix.F90/;
-
-      my $doc = &Fxtran::parse (location => $tmp_singlecolumn, fopts => ['-construct-tag', '-no-include', '-line-length' => 500]);
-
-      &Fxtran::Canonic::makeCanonic ($doc, %$opts);
-
-      &Fxtran::Interface::intfbBody ($doc);
-
-      $intfb->{singlecolumn} = $doc->textContent ();
-      $intfb->{singlecolumn} =~ s/^\s*\n$//goms;
-
-      unlink ($_) for ($tmp_singlecolumn, "$tmp_singlecolumn.xml");
-    }
-}
-
-sub pointerparallelInterface
-{
-  my ($doc, $text, $opts, $intfb) = @_;
-
-  $intfb->{pointerparallel} = '';
-
-  my ($pointerparallel) = map { m/^!\$ACDC\s+(pointerparallel.*)/o ? ($1) : ()  } @$text;
-
-  if ($pointerparallel && $opts->{'merge-interfaces'})
-    {
-      use File::Temp;
-
-      my @pointerparallel = split (m/\s+/o, $pointerparallel);
-
-      my $tmp = 'File::Temp'->new (SUFFIX => '.F90', TEMPLATE => 'fxtranXXXXX');
-
-      $tmp->print ("!\$ACDC @pointerparallel\n", $doc->textContent);
-
-      my @opts = 'click'->hashToCommandLine (method => 'pointerparallel', package => __PACKAGE__, opts => $opts);
-
-      &Fxtran::Util::runCommand (cmd => ['fxtran-f90', @opts, '--dryrun', '--dir', '.', '--', 'f90', '-c', $tmp]);
-
-      my $suffix = lc ($opts->{'suffix-pointerparallel'});
-      (my $tmp_pointerparallel = $tmp) =~ s/\.F90$/$suffix.F90/;
-
-      my $doc = &Fxtran::parse (location => $tmp_pointerparallel, fopts => ['-construct-tag', '-no-include', '-line-length' => 500]);
-
-      $_->unbindNode () for (&F ('.//a-stmt', $doc));
-
-      $intfb->{pointerparallel} = $doc->textContent ();
-      $intfb->{pointerparallel} =~ s/^\s*\n$//goms;
-
-      unlink ($_) for ($tmp_pointerparallel, "$tmp_pointerparallel.xml");
-    }
 
 }
 
