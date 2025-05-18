@@ -25,8 +25,6 @@ sub changeIfStatementsInIfConstructs
 
   for my $if_stmt (@if_stmt)
     {
-      my $indent = &Fxtran::getIndent ($if_stmt);
-
       my ($action) = &F ('./action-stmt', $if_stmt);
       my ($stmt) = &F ('./ANY-stmt', $action);
 
@@ -41,14 +39,11 @@ sub changeIfStatementsInIfConstructs
 
       my ($if_construct) = &Fxtran::parse (fragment => << "EOF", fopts => [qw (-line-length 800 -construct-tag)]);
 $if THEN
-  $stmt
+$stmt
 ENDIF
 EOF
 
-     &Fxtran::reIndent ($if_construct, $indent);
-
      $if_stmt->replaceNode ($if_construct);
-      
     }
 
 }

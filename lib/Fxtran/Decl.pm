@@ -26,7 +26,6 @@ sub forceSingleDecl
   for my $en_decl_lst (@en_decl_lst)
     {
       my $stmt = &Fxtran::stmt ($en_decl_lst);
-      my $indent = &Fxtran::getIndent ($stmt);
       my @en_decl = &F ('./EN-decl', $en_decl_lst);
       for my $en_decl (@en_decl)
         {
@@ -38,7 +37,7 @@ sub forceSingleDecl
             }
           $l->appendChild ($en_decl->cloneNode (1));
           $stmt->parentNode->insertAfter ($s, $stmt);
-          $stmt->parentNode->insertAfter (&t ("\n" . (' ' x $indent)), $stmt);
+          $stmt->parentNode->insertAfter (&t ("\n"), $stmt);
         }
       $stmt->unbindNode ();
     }
