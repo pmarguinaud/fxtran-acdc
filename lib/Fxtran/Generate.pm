@@ -492,11 +492,12 @@ sub interface
   $intfb{regular} = $doc->textContent ();
   $intfb{regular} =~ s/^\s*\n$//goms;
 
-  use Fxtran::Generate::singlecolumn;
-  use Fxtran::Generate::pointerparallel;
+  use Fxtran::Generate::Interface;
 
-  &Fxtran::Generate::singlecolumn::interface ($doc, \@text, $opts, \%intfb);
-  &Fxtran::Generate::pointerparallel::interface ($doc, \@text, $opts, \%intfb);
+  for my $method (qw (singlecolumn pointerparallel))
+    {
+      &Fxtran::Generate::Interface::interface ($doc, \@text, $opts, \%intfb, $method);
+    }
 
   my $sub = &basename ($F90, qw (.F90));
   

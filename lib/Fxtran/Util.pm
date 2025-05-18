@@ -17,16 +17,16 @@ use Fxtran;
 
 sub updateFile
 {
-  my ($F90, $code) = @_;
+  my ($file, $code) = @_;
 
-  my $c = do { local $/ = undef; my $fh = 'FileHandle'->new ("<$F90"); $fh ? <$fh> : undef };
+  my $c = do { local $/ = undef; my $fh = 'FileHandle'->new ("<$file"); $fh ? <$fh> : undef };
   
   if ((! defined ($c)) || ($c ne $code))
     {
-      unlink ($F90);
-      &mkpath (&dirname ($F90));
-      my $fh = 'FileHandle'->new (">$F90"); 
-      $fh or die ("Cannot write to $F90");
+      unlink ($file);
+      &mkpath (&dirname ($file));
+      my $fh = 'FileHandle'->new (">$file"); 
+      $fh or die ("Cannot write to $file");
       $fh->print ($code); 
       $fh->close ();
     }
