@@ -44,12 +44,10 @@ sub setOpenMPDirective
 
   my ($do) = &F ('.//do-construct[./do-stmt[string(do-V)="JBLK"]]', $par);
 
-  my $indent = &Fxtran::getIndent ($do);
-
   my $C = &n ('<C>!$OMP PARALLEL DO PRIVATE (' . join (', ', @priv)  . ') FIRSTPRIVATE (' . join (', ', @firstprivate) . ')</C>');
   
   $do->parentNode->insertBefore ($C, $do);
-  $do->parentNode->insertBefore (&t ("\n" . (' ' x $indent)), $do);
+  $do->parentNode->insertBefore (&t ("\n"), $do);
 
 }
 

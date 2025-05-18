@@ -694,10 +694,6 @@ sub makeParallel
 
   $stmt or return;
 
-  my $indent = &Fxtran::getIndent ($stmt);
-
-  my $str = ' ' x $indent;
-
   my ($JBLKMIN, $JBLKMAX);
 
   if ($FILTER)
@@ -711,8 +707,8 @@ sub makeParallel
 
   my ($loop) = &Fxtran::parse (fragment => << "EOF");
 DO JBLK = $JBLKMIN, $JBLKMAX
-${str}  CALL YLCPG_BNDS%UPDATE (JBLK)
-${str}ENDDO
+CALL YLCPG_BNDS%UPDATE (JBLK)
+ENDDO
 EOF
 
   my ($enddo) = &F ('.//end-do-stmt', $loop);
@@ -720,11 +716,8 @@ EOF
 
   for my $node ($par->childNodes ())
     {
-      $p->insertBefore (&t (' ' x (2)), $enddo);
-      &Fxtran::reIndent ($node, 2);
       $p->insertBefore ($node, $enddo);
     }
-  $p->insertBefore (&t (' ' x $indent), $enddo);
   
   $par->appendChild ($loop);
 
@@ -855,11 +848,11 @@ EOF
 
   my %intent2access = qw (IN RDONLY INOUT RDWR OUT WRONLY);
 
-  $par->insertBefore (&t ("\n" . (' ' x $indent)), $loop);
+  $par->insertBefore (&t ("\n"), $loop);
   $par->insertBefore (my $prep = &n ('<prep/>'), $loop);
 
   $par->insertAfter (my $nullify = &n ('<nullify/>'), $loop);
-  $par->insertAfter (&t ("\n" . (' ' x $indent)), $loop);
+  $par->insertAfter (&t ("\n"), $loop);
 
   my $synchost;
 
@@ -876,32 +869,32 @@ EOF
       $if_block->insertAfter (&t ("\n"), $if_then);
     }
 
-  $par->insertAfter (&t ("\n" . (' ' x $indent)), $loop);
+  $par->insertAfter (&t ("\n"), $loop);
 
   if ($FILTER)
     {
       $par->insertAfter (&s ("CALL YL_FGS%SCATTER ()"), $loop);
-      $par->insertAfter (&t ("\n" . (' ' x $indent)), $loop);
+      $par->insertAfter (&t ("\n"), $loop);
       $prep->appendChild (&s ("CALL YL_FGS%INIT (YL_$FILTER, YDCPG_OPTS%KGPTOTB)"));
-      $prep->appendChild (&t ("\n" . (' ' x $indent)));
+      $prep->appendChild (&t ("\n"));
     }
 
   $par->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)"), $loop);
-  $par->insertAfter (&t ("\n" . (' ' x $indent)), $loop);
+  $par->insertAfter (&t ("\n"), $loop);
 
 
   $prep->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:GET_DATA',0,ZHOOK_HANDLE_FIELD_API)"));
-  $prep->appendChild (&t ("\n" . (' ' x $indent)));
+  $prep->appendChild (&t ("\n"));
 
   if ($POST{synchost})
     {
       $synchost->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:SYNCHOST',0,ZHOOK_HANDLE_FIELD_API)"));
-      $synchost->appendChild (&t ("\n" . (' ' x $indent)));
+      $synchost->appendChild (&t ("\n"));
     }
   if ($POST{nullify})
     {
       $nullify->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:NULLIFY',0,ZHOOK_HANDLE_FIELD_API)"));
-      $nullify->appendChild (&t ("\n" . (' ' x $indent)));
+      $nullify->appendChild (&t ("\n"));
     }
     
 
@@ -921,39 +914,39 @@ EOF
           $stmt = &s ("$ptr => GET_HOST_DATA_$access ($var)");
         }
       $prep->appendChild ($stmt);
-      $prep->appendChild (&t ("\n" . (' ' x $indent)));
+      $prep->appendChild (&t ("\n"));
 
       if ($POST{nullify})
         {
           $nullify->appendChild (&s ("$ptr => NULL ()"));
-          $nullify->appendChild (&t ("\n" . (' ' x $indent)));
+          $nullify->appendChild (&t ("\n"));
         }
       if ($POST{synchost})
         {
           $synchost->appendChild (&s ("$ptr => GET_HOST_DATA_RDWR ($var)"));
-          $synchost->appendChild (&t ("\n" . (' ' x $indent)));
+          $synchost->appendChild (&t ("\n"));
         }
     }
   $prep->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:GET_DATA',1,ZHOOK_HANDLE_FIELD_API)"));
-  $prep->appendChild (&t ("\n" . (' ' x $indent)));
+  $prep->appendChild (&t ("\n"));
 
   $prep->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:COMPUTE',0,ZHOOK_HANDLE_COMPUTE)"));
-  $prep->appendChild (&t ("\n" . (' ' x $indent)));
+  $prep->appendChild (&t ("\n"));
 
   if ($POST{nullify})
     {
       $nullify->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:NULLIFY',1,ZHOOK_HANDLE_FIELD_API)"));
-      $nullify->appendChild (&t ("\n" . (' ' x $indent)));
-      $nullify->appendChild (&t ("\n" . (' ' x $indent)));
+      $nullify->appendChild (&t ("\n"));
+      $nullify->appendChild (&t ("\n"));
     }
   if ($POST{synchost})
     {
       $synchost->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:SYNCHOST',1,ZHOOK_HANDLE_FIELD_API)"));
-      $synchost->appendChild (&t ("\n" . (' ' x $indent)));
-      $synchost->appendChild (&t ("\n" . (' ' x $indent)));
+      $synchost->appendChild (&t ("\n"));
+      $synchost->appendChild (&t ("\n"));
     }
 
-  $prep->appendChild (&t ("\n" . (' ' x $indent)));
+  $prep->appendChild (&t ("\n"));
 
   return $par;
 }
@@ -1110,16 +1103,15 @@ sub setupLocalFields
 
   return unless ($drhook1 && $drhook2);
 
-  my ($ind1, $ind2) = map { &Fxtran::getIndent ($_) } ($drhook1, $drhook2);
   my ($p1  , $p2  ) = map { $_->parentNode          } ($drhook1, $drhook2);
 
   $p1->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('CREATE_TEMPORARIES$hook_suffix',1,ZHOOK_HANDLE_FIELD_API)"), $drhook1);
-  $p1->insertAfter (&t ("\n" . (' ' x $ind1)), $drhook1);
+  $p1->insertAfter (&t ("\n"), $drhook1);
 
 
   $p2->insertBefore (&t ("\nCALL GPUMEMSTAT (__FILE__, __LINE__, \"END\")\n\n"), $drhook2) if ($gpumemstat);
   $p2->insertBefore (&s ("IF (LHOOK) CALL DR_HOOK ('DELETE_TEMPORARIES$hook_suffix',0,ZHOOK_HANDLE_FIELD_API)"), $drhook2);
-  $p2->insertBefore (&t ("\n" . (' ' x $ind2)), $drhook2);
+  $p2->insertBefore (&t ("\n"), $drhook2);
 
   for my $n (sort keys (%$t))
     {
@@ -1153,20 +1145,20 @@ sub setupLocalFields
                   : '';
 
       $p1->insertAfter (&s ("CALL FIELD_NEW ($f, ${ubounds}${lbounds}PERSISTENT=.TRUE.)"), $drhook1);
-      $p1->insertAfter (&t ("\n" . (' ' x $ind1)), $drhook1);
+      $p1->insertAfter (&t ("\n"), $drhook1);
 
       $p2->insertBefore (&s ("IF (ASSOCIATED ($f)) CALL FIELD_DELETE ($f)"), $drhook2);
-      $p2->insertBefore (&t ("\n" . (' ' x $ind2)), $drhook2);
+      $p2->insertBefore (&t ("\n"), $drhook2);
       
 
     }
 
   $p1->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('CREATE_TEMPORARIES$hook_suffix',0,ZHOOK_HANDLE_FIELD_API)"), $drhook1);
-  $p1->insertAfter (&t ("\n" . (' ' x $ind1)), $drhook1);
+  $p1->insertAfter (&t ("\n"), $drhook1);
   $p1->insertAfter (&t ("\n\nCALL GPUMEMSTAT (__FILE__, __LINE__, \"BEGIN\")\n\n"), $drhook1) if ($gpumemstat);
 
   $p2->insertBefore (&s ("IF (LHOOK) CALL DR_HOOK ('DELETE_TEMPORARIES$hook_suffix',1,ZHOOK_HANDLE_FIELD_API)"), $drhook2);
-  $p2->insertBefore (&t ("\n" . (' ' x $ind2)), $drhook2);
+  $p2->insertBefore (&t ("\n"), $drhook2);
 
 
 }
