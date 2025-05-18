@@ -93,62 +93,6 @@ sub removeListElement
 
 
 
-sub getIndent
-{
-  my $stmt = shift;
-
-  $stmt or croak;
-
-  my $n = $stmt->previousSibling;
-
-  unless ($n) 
-    {    
-      if ($stmt->parentNode)
-        {
-          return &getIndent ($stmt->parentNode);
-        }
-      return 0;
-    }    
-
-
-  if (($n->nodeName eq '#text') && ($n->data =~ m/\n/o))
-    {    
-      (my $t = $n->data) =~ s/^.*\n//gsmo;
-      return length ($t);
-    }    
-
-  if (my $m = $n->lastChild)
-    {
-      if (($m->nodeName eq '#text') && ($m->data =~ m/\n/o))
-        {    
-          (my $t = $m->data) =~ s/^.*\n//gsmo;
-          return length ($t);
-        }    
-      return &getIndent ($m);
-    }
-  elsif (($n->nodeName eq '#text') && ($n->data =~ m/^\s*$/o) && $n->parentNode)
-    {
-      return length ($n->data) + &getIndent ($n->parentNode);
-    }
-
-  return 0;
-}
-
-sub reIndent
-{
-  my ($node, $ns) = @_;
-
-  my $sp = ' ' x $ns; 
-
-  my @cr = &f ('.//text ()[contains (.,"' . "\n" . '")]', $node);
-
-  for my $cr (@cr)
-    {    
-      (my $t = $cr->data) =~ s/\n/\n$sp/g;
-      $cr->setData ($t);
-    }
-}
-
 sub expand
 {
   my $stmt = shift;

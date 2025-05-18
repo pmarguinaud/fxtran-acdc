@@ -43,8 +43,6 @@ sub makeParallel
   my ($do) = &F ('./do-construct', $par1);
   my $do_jblk = $do->firstChild;
 
-  my $indent = &Fxtran::getIndent ($do_jblk);
-
   my %update;
 
   my %nonblocked = map { ($_, 1) } @{ $opts{'types-fieldapi-non-blocked'} };
@@ -77,18 +75,15 @@ sub makeParallel
 
   for my $N (sort keys (%update))
     {
-      $do->insertAfter ($_, $do_jblk) for (&s ("CALL $N%UPDATE_VIEW (JBLK)"), 
-                                           &t ("\n" . (' ' x ($indent + 2))));
+      $do->insertAfter ($_, $do_jblk) for (&s ("CALL $N%UPDATE_VIEW (JBLK)"), &t ("\n"));
       
       if ($opts{'type-bound-methods'})
         {
-          $prep->insertAfter ($_, $first) for (&s ("CALL $N%HOST ()"), 
-                                               &t ("\n" . (' ' x $indent)));
+          $prep->insertAfter ($_, $first) for (&s ("CALL $N%HOST ()"), &t ("\n"));
         }
       else
         {
-          $prep->insertAfter ($_, $first) for (&s ("CALL HOST ($N)"), 
-                                               &t ("\n" . (' ' x $indent)));
+          $prep->insertAfter ($_, $first) for (&s ("CALL HOST ($N)"), &t ("\n"));
         }
       
     }
