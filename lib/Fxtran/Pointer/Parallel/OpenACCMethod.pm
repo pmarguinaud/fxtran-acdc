@@ -42,7 +42,6 @@ sub makeParallel
 
   my ($do) = &F ('./do-construct', $par1);
   my $do_jblk = $do->firstChild;
-  my $indent = &Fxtran::getIndent ($do_jblk);
 
   my @stmt = &F ('./ANY-stmt', $do);
   shift (@stmt) for (1 .. 2);
@@ -65,7 +64,7 @@ sub makeParallel
   for my $stmt (@stmt)
     {
       $do->parentNode->insertBefore ($stmt, $do);
-      $do->parentNode->insertBefore (&s ((' ' x $indent) . "\n"), $do);
+      $do->parentNode->insertBefore (&s ("\n"), $do);
 
       if ($stmt->nodeName eq 'call-stmt')
         {

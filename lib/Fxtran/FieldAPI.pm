@@ -455,7 +455,6 @@ sub changeFieldAPIAccessToSimpleStatements
 
   for my $stmt (&F ('.//a-stmt', $s))
     {
-      my $indent = ' ' x &Fxtran::getIndent ($stmt);
       my $n = 0;
       for my $expr (&F ('./E-1//named-E', $stmt))
         {
@@ -473,7 +472,7 @@ sub changeFieldAPIAccessToSimpleStatements
             }
           my $dum = &s ($expr->textContent . " = ZDUM");
           $stmt->parentNode->insertBefore ($dum, $stmt);
-          $stmt->parentNode->insertBefore (&t ("\n$indent"), $stmt);
+          $stmt->parentNode->insertBefore (&t ("\n"), $stmt);
 
           $n++;
         }
@@ -494,7 +493,7 @@ sub changeFieldAPIAccessToSimpleStatements
 
           my $dum = &s ("ZDUM = " . $expr->textContent);
           $stmt->parentNode->insertBefore ($dum, $stmt);
-          $stmt->parentNode->insertBefore (&t ("\n$indent"), $stmt);
+          $stmt->parentNode->insertBefore (&t ("\n"), $stmt);
 
           $n++;
         }
@@ -539,9 +538,8 @@ sub useFieldAPIObjects
               $YLFLDPTR{$basic}++;
               $expr->replaceNode (&e ($basic));
               my $assoc = &s ("$basic => " . $target->textContent);
-              my $indent = "\n" . (' ' x &Fxtran::getIndent ($stmt));
               $stmt->parentNode->insertBefore ($assoc, $stmt);
-              $stmt->parentNode->insertBefore (&t ($indent), $stmt);
+              $stmt->parentNode->insertBefore (&t ("\n"), $stmt);
             }
           
         }

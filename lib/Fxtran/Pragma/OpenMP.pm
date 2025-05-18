@@ -16,8 +16,6 @@ sub parallelDo
 {
   my ($p, %c)  = @_;
 
-  my $indent = ' ' x &Fxtran::getIndent ($p);
-
   my $P = $p->parentNode;
 
   my @d = (' PARALLEL DO ');
@@ -71,7 +69,7 @@ sub parallelDo
     }
 
 
-  $P->insertBefore (&t ("\n$indent"), $p);
+  $P->insertBefore (&t ("\n"), $p);
       
 }
 
