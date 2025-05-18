@@ -9,10 +9,6 @@ package Fxtran;
 
 use XML::LibXML;
 use Data::Dumper;
-use List::Util qw (max);
-use FileHandle;
-use File::Basename;
-use Storable;
 use Carp qw (croak);
 
 use fxtran;
@@ -153,107 +149,6 @@ sub reIndent
     }
 }
 
-sub xpath_by_type
-{
-  my $type = shift;
-  my $size = length ($type);
-  return '*[substring(name(),string-length(name())-'.$size.')="-'.$type.'"]';
-}
-
-sub _offset
-{
-  my ($node, $pfound) = @_;
-
-  my $offset = 0;
-  for (my $c = $node->previousSibling; $c; $c = $c->previousSibling)
-    {
-      last if ($c->nodeName eq 'xml-stylesheet');
-      my $text = $c->textContent;
-      my @text = reverse split (m/(\n)/o, $text);
-      for (@text)
-        {
-          if (m/\n/o)
-            {
-              $pfound = 1;
-              goto FOUND;
-            }
-
-          $offset += length ($_);
-        }
-    }
-
-  if ((! $$pfound) && $node->parentNode)
-    {
-      $offset += &offset ($node->parentNode, $pfound);
-    }
-
-FOUND:
-
-  return $offset;
-}
-
-sub offset
-{
-  my $node = shift;
-  return &_offset ($node, \0);
-}
-
-# Fold statement workhorse
-
-sub _fold
-{
-  my ($node, $plen, $indent, $cnt, $len) = @_;
-  
-  my $shift = 0;
-
-  my @n = &f ('.//text ()', $node);
-  if ((scalar (@n) == 1) || ($node->nodeName eq '#text'))
-    {
-      
-      my $lenc = $$plen;
-
-      $$plen += length ($node->textContent);
-
-      my ($lit) = &f ('./ancestor::f:literal-E', $node);
-      my ($nam) = &f ('./ancestor::f:named-E', $node);
-      my ($ass) = &f ('./ancestor::f:associate', $node);
-      my ($arg) = &f ('./ancestor::f:arg', $node);
-
-      if (($$plen > 100) && (! $lit) && (! $nam) && (! $ass) && (! $arg))
-        {
-          if ($node->textContent =~ m/^\s*,\s*$/o)
-            { 
-              $lenc = $$plen;
-              $node = $node->nextSibling;
-              $shift = 1;
-            }
-
-          my $c = &n ("<cnt>&amp;</cnt>");
-
-          $node->parentNode->insertBefore ($c, $node);
-          $node->parentNode->insertBefore (&t ("\n" . (' ' x $indent)), $node);
-          $node->parentNode->insertBefore (&n ("<cnt>&amp;</cnt>"), $node);
-          $node->parentNode->insertBefore (&t (" "), $node);
-          $$plen = $indent + 2 + length ($node->textContent);
-
-          $lenc++;
-          push @$len, $lenc;
-          push @$cnt, $c;
-        }
-    }
-  else
-    {
-      my @c = $node->childNodes;
-      while (my $c = shift (@c))
-        {
-          &_fold ($c, $plen, $indent, $cnt, $len) && shift (@c);
-        }
-    }
-
-  return $shift;
-}
-
-
 sub expand
 {
   my $stmt = shift;
@@ -270,31 +165,6 @@ sub expand
           $data =~ s/\s+/ /go;
           $_->setData ($data);
         }
-    }
-
-  $stmt->normalize ();
-}
-
-# Fold a statement
-
-sub fold
-{
-  my $stmt = shift;
-
-  &expand ($stmt);
-
-  my $indent = &offset ($stmt);
-
-  my $len = $indent;
-  my @len;
-  my @cnt;
-  &_fold ($stmt, \$len, $indent, \@cnt, \@len);
-
-  my ($lenmax) = sort { $b <=> $a } @len;
-
-  for my $i (0 .. $#cnt)
-    {
-      $cnt[$i]->parentNode->insertBefore (&t (' ' x ($lenmax - $len[$i])), $cnt[$i]);
     }
 
   $stmt->normalize ();
@@ -326,46 +196,6 @@ sub TRUE
 sub FALSE
 {
   &n ('<literal-E>.FALSE.</literal-E>');
-}
-
-sub level
-{
-  my $stmt = shift;
-
-  my @construct = grep { $_->nodeName =~ m/-construct$/o } &f ('.//ancestor::f:*', $stmt);
-  my $level = scalar (@construct);
-
-  if (($stmt->parentNode->nodeName =~ m/-(block|construct)$/o) && 
-      ((! $stmt->nextSibling) || (! $stmt->previousSibling)))
-    {
-      $level--;
-    }
-
-  return $level;
-}
-    
-sub decl_last
-{
-  my $doc = shift;
-
-  my @arg = &f ('.//f:dummy-arg-LT/f:arg-N/f:N/f:n/text ()', $doc, 1);
-  my @decl = &f ('//f:T-decl-stmt', $doc);  
-
-  my $decl_last;
-  for my $d (@decl)
-    {   
-      my @n = &f ('.//f:EN-decl//f:EN-N//f:n/text ()', $d, 1); 
-      my %n = map { ($_, 1) } @n; 
-      for (@arg)
-        {
-          if ($n{$_})
-            {
-              $decl_last = $d;
-            }
-        }
-    }   
-
-  return $decl_last;
 }
 
 sub stmt_is_executable
