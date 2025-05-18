@@ -26,13 +26,6 @@ use Fxtran::F90Compiler;
 use Fxtran::Util;
 use Fxtran::PATH;
 
-sub getMethodOptions
-{
-  my ($opts, $method) = @_;
-
-  return 'click'->hashToCommandLine (package => $opts->{package}, method => $method, opts => $opts);
-}
-
 sub runACDCMethod
 {
   my %args = @_;
@@ -44,21 +37,11 @@ sub runACDCMethod
   $ACDC =~ s/^(\w+)\s*//o;
   my $method = $1;
 
-  my @optsACDC = map { m/^(--[\w-]+)=(.*)$/o ? ($1, $2) : ($_) } split (m/\s+/o, $ACDC);
-
-my $dbg = 0;
-
-print &Dumper (\@optsACDC) if ($dbg);
-
-  my @optsfile;
-
-  my $ok = 0;
-
   my $hopts = 'click'->getOptionList (package => $opts->{package}, method => $method);
 
-print &Dumper ($hopts) if ($dbg);
+  my ($ok, @optsfile);
 
-  for my $opt (@optsACDC)
+  for my $opt (map { m/^(--[\w-]+)=(.*)$/o ? ($1, $2) : ($_) } split (m/\s+/o, $ACDC))
     {
       if ($opt =~ m/^--([\w-]+)$/o)
         {
@@ -71,16 +54,11 @@ print &Dumper ($hopts) if ($dbg);
       push @optsfile, $opt if ($ok);
     }
 
-print &Dumper (\@optsfile) if ($dbg);
-
   my $tmp =  'File::Temp'->newdir (CLEANUP => ! $opts->{debug});
-  my @cmd = ("fxtran-gen1", $opts->{package}, $method, 
-             &getMethodOptions ($opts, $method), 
-             '--tmp' => "$tmp",
-             @optsfile,
-             $F90);
 
-print &Dumper (\@cmd) if ($dbg);
+  my @cmd = ("fxtran-gen1", $opts->{package}, $method, 
+             'click'->hashToCommandLine (package => $opts->{package}, method => $method, opts => $opts),
+             '--tmp' => "$tmp", @optsfile, $F90);
 
   &Fxtran::Util::runCommand (cmd => \@cmd, %$opts);
 
