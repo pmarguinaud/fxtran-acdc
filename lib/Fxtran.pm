@@ -11,7 +11,6 @@ use XML::LibXML;
 use Data::Dumper;
 use List::Util qw (max);
 use FileHandle;
-use Storable;
 use File::Basename;
 use Storable;
 use Carp qw (croak);
@@ -319,37 +318,6 @@ sub expr
   return $expr;
 }
 
-sub is_INTEGER
-{
-  my $e = shift;
-  return (($e->nodeName eq 'literal-E') && ($e->textContent =~ m/^\d+$/o));
-}
-
-sub val_INTEGER
-{
-  my $e = shift;
-  die unless (&is_INTEGER ($e));
-  return $e->textContent;
-}
-
-sub is_TRUE
-{
-  my $e = shift;
-  if ($e->nodeName eq 'literal-E')
-    {
-      return $e->textContent eq '.TRUE.' ? 1 : 0;
-    }
-}
-
-sub is_FALSE
-{
-  my $e = shift;
-  if ($e->nodeName eq 'literal-E')
-    {
-      return $e->textContent eq '.FALSE.' ? 1 : 0;
-    }
-}
-
 sub TRUE
 {
   &n ('<literal-E>.TRUE.</literal-E>');
@@ -376,53 +344,6 @@ sub level
   return $level;
 }
     
-# Indent node using the number of spaces provided as the second argument
-
-sub prev_space
-{
-  my $node = shift;
-
-  return unless ($node);
-
-  my $sp = $node->previousSibling; 
-
-  if ($sp && ($sp->nodeName eq '#text'))
-    {
-      return $sp;
-    } 
-  elsif ($sp && ($sp->nodeName ne '#text'))
-    {
-      &prev_space ($sp->previousSibling);
-    }
-  else 
-    {
-      &prev_space ($node->parentNode);
-    }
-}
-
-sub indent
-{
-  my ($node, $indent) = @_;
-  my @cr = &f ('.//text ()[contains (., "' . "\n" . '")]', $node);
-
-  my $sp = &prev_space ($node);
-  if ($sp)
-    {
-      unshift (@cr, $sp);
-    }
-
-  for my $cr (@cr)
-    {
-      if ($cr->textContent =~ m/^(\s*)\n(\s*?)$/o)
-        {
-          my ($speol, $spbeol) = ($1, $2);
-          my $ind = $indent =~ m/^[+-]/o ? length ($spbeol) + $indent : $indent;
-          $cr->replaceNode (&t ($speol . "\n" . (' ' x $ind)));
-        }
-    }
-  
-}
-
 sub decl_last
 {
   my $doc = shift;
