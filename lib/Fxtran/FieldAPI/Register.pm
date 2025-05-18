@@ -37,6 +37,9 @@ sub registerFieldAPI1
     {
       my ($name) = &F ('.//EN-N/N/n/text()', $en_decl, 1);
       my ($stmt) = &Fxtran::stmt ($en_decl);
+
+      next if ($stmt->nodeName eq 'final-stmt');
+
       my %attr = map { ($_, 1) } &F ('.//attribute/attribute-N/text()', $stmt);
 
       my ($tspec) = &F ('./_T-spec_', $stmt);

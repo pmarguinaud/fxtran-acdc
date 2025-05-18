@@ -46,9 +46,8 @@ sub simplify
     {
       my %set;
 
-      for my $kv (@$set)
+      while (my ($k, $v) = each (%$set))
         {
-          my ($k, $v) = split (m/=/o, $kv);
           $k = '//named-E[string(.)="' . $k . '"]';
           $v = $v eq '0' ? $zero : &e ($v);
           $set{$k} = $v;

@@ -107,7 +107,7 @@ my %options= do
   stack84                   -- Use separate stacks for data types of sizes 4 and 8
   style=s                   -- Source code style (default: guess from file contents)
   redim-arguments           -- Transform 1D array arguments to scalars
-  set-variables=s@          -- Apply variables values and simplify the code
+  set-variables=s%          -- Apply variables values and simplify the code
   stdout                    -- Dump generated code to stdout
   suffix-singlecolumn=s     -- Suffix for generated routines                                                                                -- _OPENACC
   tmp=s                     -- Temporary directory for processing                                                                           -- .
@@ -176,7 +176,7 @@ sub singlecolumn
   &Fxtran::Canonic::makeCanonic ($d, %$opts);
   
   $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
-  
+
   $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
   
   my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base});
@@ -479,7 +479,7 @@ sub interface
   my $ext = '.intfb.h';
 
   my @D = @{ $opts->{D} };
-  my $doc = &Fxtran::parse (location => $F90, fopts => [@D, '-construct-tag', '-no-include', '-line-length' => 500]);
+  my $doc = &Fxtran::parse (location => $F90, fopts => [@D, '-construct-tag', '-no-include', '-line-length' => 500], dir => $opts->{tmp});
 
   my @text = split (m/\n/o, $doc->textContent);
   

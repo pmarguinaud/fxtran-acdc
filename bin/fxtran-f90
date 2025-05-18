@@ -44,10 +44,43 @@ sub runACDCMethod
   $ACDC =~ s/^(\w+)\s*//o;
   my $method = $1;
 
+  my @optsACDC = map { m/^(--[\w-]+)=(.*)$/o ? ($1, $2) : ($_) } split (m/\s+/o, $ACDC);
+
+my $dbg = 0;
+
+print &Dumper (\@optsACDC) if ($dbg);
+
+  my @optsfile;
+
+  my $ok = 0;
+
+  my $hopts = 'click'->getOptionList (package => $opts->{package}, method => $method);
+
+print &Dumper ($hopts) if ($dbg);
+
+  for my $opt (@optsACDC)
+    {
+      if ($opt =~ m/^--([\w-]+)$/o)
+        {
+          my $k = $1;
+          $ok = exists ($hopts->{"$k=s"}) 
+             || exists ($hopts->{"$k!"}) 
+             || (($k =~ s/^no//o) && exists ($hopts->{"$k!"})) 
+             || 0;
+        }
+      push @optsfile, $opt if ($ok);
+    }
+
+print &Dumper (\@optsfile) if ($dbg);
+
+  my $tmp =  'File::Temp'->newdir (CLEANUP => ! $opts->{debug});
   my @cmd = ("fxtran-gen1", $opts->{package}, $method, 
              &getMethodOptions ($opts, $method), 
-             '--tmp' => 'File::Temp'->newdir (CLEANUP => ! $opts->{debug}),
-             split (m/\s+/o, $ACDC), $F90);
+             '--tmp' => "$tmp",
+             @optsfile,
+             $F90);
+
+print &Dumper (\@cmd) if ($dbg);
 
   &Fxtran::Util::runCommand (cmd => \@cmd, %$opts);
 

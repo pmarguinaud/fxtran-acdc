@@ -7,6 +7,7 @@ package Fxtran::Style::MESONH;
 #
 
 use List::MoreUtils qw (uniq);
+use Data::Dumper;
 
 use strict;
 
@@ -187,7 +188,9 @@ sub matchDocument
     {
       if ($pu->firstChild->nodeName eq 'module-stmt')
         {
-          push @pu, &F ('./program-unit', $pu);
+          push @pu, 
+           &F ('./program-unit', $pu),
+           &F ('./specification-part/declaration-part/interface-construct/program-unit', $pu);
         }
       else
         {
@@ -197,7 +200,15 @@ sub matchDocument
 
   for my $pu (@pu)
     {
+
       next unless (&F ('./subroutine-stmt/dummy-arg-LT/arg-N[string(.)="D"]', $pu));
+
+      if (my ($decl) = &F ('./specification-part/declaration-part/T-decl-stmt'
+                         . '[_T-spec_/derived-T-spec[string(T-N)="DIMPHYEX_T"]]'
+                         . '[./EN-decl-LT/EN-decl[string(EN-N)="D"]]', $pu))
+        {
+          return 1;
+        }
 
       return 1 unless (&F ('./execution-part//do-construct', $pu));
 

@@ -415,19 +415,31 @@ sub hashToCommandLine
           $type = 's'; # Value
         }
 
-      if (defined ($opts->{$key})) # Option is set
+      if (defined (my $val = $opts->{$key})) # Option is set
         {
-          if (($type eq 'f') && ($opts->{$key}))
+          if (($type eq 'f') && $val)
             {
               push @v, "--$key" 
             }
-          elsif (($type eq 'f') && (! $opts->{$key}))
+          elsif (($type eq 'f') && (! $val))
             {
               push @v, "--no$key" 
             }
           elsif ($type eq 's')
             {
-              push @v, "--$key", $opts->{$key};
+              push @v, "--$key";
+              if (ref ($val) eq 'ARRAY')
+                {
+                  push @v, join (',', @$val);
+                }
+              elsif (ref ($val) eq 'HASH')
+                {
+                  push @v, join (',', map { "$_=$val->{$_}" } sort keys (%$val));
+                }
+              elsif (ref ($val) eq '')
+                {
+                  push @v, $val;
+                }
             }
           else 
             {

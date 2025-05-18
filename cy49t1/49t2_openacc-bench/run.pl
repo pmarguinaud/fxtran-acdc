@@ -12,6 +12,7 @@ use File::Path;
 use File::Copy;
 use File::Spec;
 use File::Basename;
+use File::Temp;
 use FindBin qw ($Bin);
 use Getopt::Long;
 
@@ -72,7 +73,9 @@ sub processIntf
   
   &mkpath ($dir) unless (-d $dir);
 
-  my @cmd = ($FXTRAN_GEN, 'interface', '--dir', $dir, $file);
+  my $tmp = 'File::Temp'->newdir (CLEANUP => 0);
+
+  my @cmd = ($FXTRAN_GEN, 'interface', '--dir', $dir, '--tmp', $tmp, $file);
 
   print "@cmd\n";
 
@@ -173,7 +176,7 @@ for my $type (qw (typebound util))
       }
 
     &processList ({%opts, config => $config, proc => \&processIntf},  @int);
-    &processList ({%opts, config => $config, proc => \&processFile},  @mod);
+    &processList ({%opts, config => $config, proc => \&processFile},  @mod);   
     &processList ({%opts, config => $config, proc => \&processFile},  @src);
 
     &rmtree ("run/$type");
