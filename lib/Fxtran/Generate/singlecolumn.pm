@@ -26,30 +26,32 @@ use Fxtran::Interface;
 
 sub interface
 {
-  my ($doc, $text, $opts, $intfb) = @_;
+  my ($doc, $text, $opts, $intfb, $method) = @_;
 
-  $intfb->{singlecolumn} = '';
+  $method = 'singlecolumn';
 
-  my ($singlecolumn) = map { m/^!\$ACDC\s+(singlecolumn.*)/o ? ($1) : ()  } @$text;
+  $intfb->{$method} = '';
 
-  if ($singlecolumn && $opts->{'merge-interfaces'})
+  my ($directive) = map { m/^!\$ACDC\s+($method.*)/ ? ($1) : ()  } @$text;
+
+  if ($directive && $opts->{'merge-interfaces'})
     {
       use File::Temp;
 
-      my @singlecolumn = split (m/\s+/o, $singlecolumn);
+      my @directive = split (m/\s+/o, $directive);
 
       my $tmp = 'File::Temp'->new (SUFFIX => '.F90', TEMPLATE => 'fxtranXXXXX');
 
-      $tmp->print ("!\$ACDC @singlecolumn\n", $doc->textContent);
+      $tmp->print ("!\$ACDC @directive\n", $doc->textContent);
 
-      my @opts = 'click'->hashToCommandLine (method => 'singlecolumn', package => __PACKAGE__, opts => $opts);
+      my @opts = 'click'->hashToCommandLine (method => $method, package => __PACKAGE__, opts => $opts);
 
       &Fxtran::Util::runCommand (cmd => ['fxtran-f90', @opts, '--dryrun', '--dir', '.', '--', 'f90', '-c', $tmp]);
 
-      my $suffix = lc ($opts->{'suffix-singlecolumn'});
-      (my $tmp_singlecolumn = $tmp) =~ s/\.F90$/$suffix.F90/;
+      my $suffix = lc ($opts->{"suffix-$method"});
+      (my $tmp_directive = $tmp) =~ s/\.F90$/$suffix.F90/;
 
-      my $doc = &Fxtran::parse (location => $tmp_singlecolumn, fopts => ['-construct-tag', '-no-include', '-line-length' => 500]);
+      my $doc = &Fxtran::parse (location => $tmp_directive, fopts => ['-construct-tag', '-no-include', '-line-length' => 500]);
 
       &Fxtran::Canonic::makeCanonic ($doc, %$opts);
 
@@ -57,10 +59,10 @@ sub interface
 
       $_->unbindNode () for (&F ('.//a-stmt', $doc));
 
-      $intfb->{singlecolumn} = $doc->textContent ();
-      $intfb->{singlecolumn} =~ s/^\s*\n$//goms;
+      $intfb->{$method} = $doc->textContent ();
+      $intfb->{$method} =~ s/^\s*\n$//goms;
 
-      unlink ($_) for ($tmp_singlecolumn, "$tmp_singlecolumn.xml");
+      unlink ($_) for ($tmp_directive, "$tmp_directive.xml");
     }
 }
 
