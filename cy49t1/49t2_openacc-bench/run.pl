@@ -17,7 +17,6 @@ use FindBin qw ($Bin);
 use Getopt::Long;
 
 my $FXTRAN_F90 = &Cwd::realpath ("$Bin/../../bin/fxtran-f90");
-my $FXTRAN_GEN = &Cwd::realpath ("$Bin/../../bin/fxtran-gen");
 
 sub runCommand
 {
@@ -75,7 +74,7 @@ sub processIntf
 
   my $tmp = 'File::Temp'->newdir (CLEANUP => 0);
 
-  my @cmd = ($FXTRAN_GEN, 'interface', '--dir', $dir, '--tmp', $tmp, $file);
+  my @cmd = ($FXTRAN_F90, '--method', 'interface', '--config', $config, '--dir', $dir, '--dryrun', '--', 'f90', '-c', $file);
 
   print "@cmd\n";
 

@@ -37,6 +37,8 @@ sub runACDCMethod
   $ACDC =~ s/^(\w+)\s*//o;
   my $method = $1;
 
+  $method = $opts->{method} if ($opts->{method});
+
   my $hopts = 'click'->getOptionList (package => $opts->{package}, method => $method);
 
   my ($ok, @optsfile);
@@ -120,7 +122,7 @@ my %opts = (package => $package, config => $config);
 my $hopts = 'click'->getOptionList (package => $package);
 
 my @opts_f = qw (dryrun debug);
-my @opts_s = qw (package config);
+my @opts_s = qw (package method config);
 
 &GetOptions
 (
