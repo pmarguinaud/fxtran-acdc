@@ -13,13 +13,15 @@ use Getopt::Long;
 use FileHandle;
 use List::MoreUtils qw (uniq);
 use Data::Dumper;
+use Cwd;
+
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
 
 use Fxtran::Common;
-
 use Fxtran;
 use Fxtran::Interface;
+use Fxtran::PATH;
 
 my %opts = qw (out Makefile include Makefile.inc);
 my @opts_f = qw ();
@@ -50,7 +52,7 @@ sub slurp
   my $f = shift;
   unless ($slurp{$f})
     {
-      $slurp{$f} = do { local $/ = undef; my $fh = 'FileHandle'->new ("<$f"); <$fh> };
+      $slurp{$f} = do { local $/ = undef; my $fh = 'FileHandle'->new ("<$f"); $fh or die ("Cannot open `$f' for reading\n"); <$fh> };
     }
 
   return $slurp{$f};
@@ -181,7 +183,18 @@ for my $F90 (@F90)
       {
         my $opts = -f 'fxtran.conf' ? do ("./fxtran.conf") : [];
         $opts = {'merge-interfaces' => (grep ({ '--merge-interfaces' eq  $_ } @$opts) ? 1 : 0)};
-        my $intfb = &Fxtran::Interface::intfb ($F90, '.', '.intfb.h', %$opts);
+
+        my @cmd = ('fxtran-f90', '--method', 'interface', 
+                   (-f 'fxtran.conf' ?  ('--config', 'fxtran.conf') : ()),
+                   '--dir', '.', '--dryrun', '--', 'f90', '-c', $F90);
+
+print "@cmd\n";
+
+        system (@cmd)
+          and die ("Command `@cmd' failed");
+
+        (my $intfb = $F90) =~ s/\.F90$/.intfb.h/o;
+
         (my $ok = $intfb) =~ s/\.h$/.ok/o;
         my @deps = &deps ($intfb);
         $fh->print (<< "EOF");

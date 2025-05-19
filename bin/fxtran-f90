@@ -190,7 +190,7 @@ my @F90 = grep { m/\.(?:F90|F)$/io } @ARGV;
 my @f90flags = grep { ! m/\.(?:F90|F)$/io } @ARGV;
 
 my $cwd = &cwd ();
-my $dir = (delete $opts{dir}) || '.';
+my $dir = (delete $opts{dir}) || '.'; 
 my $tmp = delete $opts{tmp}; $tmp = undef if ($tmp && ($tmp eq '.'));
 
 FILE: for my $F90 (@F90)
@@ -211,7 +211,14 @@ FILE: for my $F90 (@F90)
 
     my @text = do { my $fh = 'FileHandle'->new ("<$F90"); <$fh> };
 
-    if (my ($ACDC) = map { m/^\!\$ACDC (\S.*)$/o ? ($1) : () } @text)
+    my ($ACDC) = map { m/^\!\$ACDC (\S.*)$/o ? ($1) : () } @text;
+ 
+    unless ($ACDC)
+      {
+        $ACDC = $opts{method};
+      }
+
+    if ($ACDC)
       {
         goto NORMAL if ($ACDC =~ m/\{\s*$/o);
 

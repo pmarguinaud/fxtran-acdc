@@ -88,7 +88,7 @@ sub changeKidiaToYDCPG_OPTS
 
   $declKIDIA->replaceNode (&s ("TYPE (CPG_OPTS_TYPE), INTENT (IN) :: YDCPG_OPTS"));
   $declKFDIA->replaceNode (&s ("TYPE (CPG_BNDS_TYPE), INTENT (IN) :: YDCPG_BNDS"));
-  $declJLON->replaceNode (&s ("INTEGER (KIND=JPIM) :: JLON"));
+  $declJLON->replaceNode (&s ("INTEGER (KIND=JPIM) :: JLON")) if ($declJLON);
 
   for (&F ('.//named-E[string(.)="?"]/N/n/text()', $jlon, $d))
     {
@@ -112,7 +112,6 @@ my %options= do
   style=s                   -- Source code style (default: guess from file contents)
   redim-arguments           -- Transform 1D array arguments to scalars
   set-variables=s%          -- Apply variables values and simplify the code
-  stdout                    -- Dump generated code to stdout
   suffix-singlecolumn=s     -- Suffix for generated routines                                                                                -- _OPENACC
   tmp=s                     -- Temporary directory for processing                                                                           -- .
   value-attribute           -- Add VALUE attribute to scalar intrinsic arguments
@@ -138,7 +137,7 @@ EOF
 
 &click (<< "EOF");
 @options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 style redim-arguments set-variables 
-             stdout suffix-singlecolumn tmp value-attribute version inline-contained)}
+             suffix-singlecolumn tmp value-attribute version inline-contained)}
   keep-drhook               -- Keep DrHook
   dummy                     -- Generate a dummy routine (strip all executable code)
   inlined=s@                -- List of routines to inline
@@ -164,7 +163,8 @@ sub singlecolumn
   my $suffix = lc ($opts->{'suffix-singlecolumn'});
   (my $F90out = $F90) =~ s/\.F90/$suffix.F90/;
   $F90out = $opts->{dir} . '/' . &basename ($F90out);
-  
+  $F90out = 'File::Spec'->rel2abs ($F90out);
+
   if ($opts->{'only-if-newer'})
     {
       my $st = stat ($F90);
@@ -210,31 +210,22 @@ sub singlecolumn
         }
     }
   
-  
   &Fxtran::Util::addVersion ($d)
     if ($opts->{version});
   
-  if ($opts->{stdout})
+  &mkpath (&dirname ($F90out));
+  'FileHandle'->new (">$F90out.xml")->print ($d->toString);
+  &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
+
+  if ($opts->{'create-interface'} && $singleRoutine)
     {
-      print &Fxtran::Canonic::indent ($d);
-    }
-  else
-    {
-      &mkpath (&dirname ($F90out));
-      'FileHandle'->new (">$F90out.xml")->print ($d->toString);
-      &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
-  
-  
-      if ($opts->{'create-interface'} && $singleRoutine)
-        {
-          $opts->{style}->generateInterface ($F90out, %$opts);
-        }
+      $opts->{style}->generateInterface ($F90out, %$opts);
     }
 }
 
 
 &click (<< "EOF");
-@options{qw (cycle dir tmp only-if-newer merge-interfaces pragma stack84 stdout style redim-arguments ydcpg_opts
+@options{qw (cycle dir tmp only-if-newer merge-interfaces pragma stack84 style redim-arguments ydcpg_opts
              suffix-singlecolumn suffix-pointerparallel version type-bound-methods types-constant-dir types-fieldapi-dir)}
   base                            -- Base directory for file lookup
   contiguous-pointers             -- Add CONTIGUOUS attribute to pointer accessors
@@ -246,6 +237,7 @@ sub singlecolumn
   types-fieldapi-non-blocked=s@   -- Non-blocked data types (without NPROMA)                                                               --  CPG_SL1F_TYPE,CPG_SL_MASK_TYPE
   use-acpy                        -- Avoid pointer aliasing using ACPY
   use-bcpy                        -- Avoid pointer aliasing using BCPY
+  generate-parallelmethod         -- Embed parallelmethod information in binary
 EOF
 sub pointerparallel
 {
@@ -257,11 +249,14 @@ sub pointerparallel
   my ($F90) = @args;
 
   $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
+
+  $opts->{dir} = 'File::Spec'->rel2abs ($opts->{dir});
   
-  if ('File::Spec'->rel2abs ($opts->{dir}) ne 'File::Spec'->rel2abs (&dirname ($F90)))
+  if ($opts->{dir} ne 'File::Spec'->rel2abs (&dirname ($F90)))
     {
       &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
     }
+
   (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{'suffix-pointerparallel'}) . '.F90'}eo;
   
   $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
@@ -313,15 +308,21 @@ sub pointerparallel
   &Fxtran::Util::addVersion ($d)
     if ($opts->{version});
   
-  if ($opts->{stdout})
+  &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
+
+
+  if ($ENV{USERDIR} && (-f (my $f = "$ENV{USERDIR}/" . &basename ($F90out))))
     {
-      print &Fxtran::Canonic::indent ($d);
-    }
-  else
-    {
-      &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
+      use File::Copy;
+      print "COPY $f -> $F90out\n";
+      &copy ($f, $F90out) or die ("Failed to copy $f -> $F90out");
     }
 
+  if ($opts->{'generate-parallelmethod'})
+    {
+      &Fxtran::Util::loadModule ('Fxtran::Generate::ParallelMethod');
+      &Fxtran::Generate::ParallelMethod::generateCCode ($d, $opts);
+    }
 }
 
 
@@ -496,7 +497,7 @@ sub interface
   $intfb{regular} = $doc->textContent ();
   $intfb{regular} =~ s/^\s*\n$//goms;
 
-  use Fxtran::Generate::Interface;
+  &Fxtran::Util::loadModule ('Fxtran::Generate::Interface');
 
   for my $method (qw (singlecolumn pointerparallel))
     {

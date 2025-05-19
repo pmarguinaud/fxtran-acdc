@@ -38,18 +38,21 @@ sub interface
 
       my @directive = split (m/\s+/o, $directive);
 
-      my $tmp = 'File::Temp'->new (SUFFIX => '.F90', TEMPLATE => 'fxtranXXXXX');
+      my $tmp = 'File::Temp'->new (SUFFIX => '.F90', TEMPLATE => 'fxtranXXXXX', CLEANUP => 0);
 
       $tmp->print ("!\$ACDC @directive\n", $doc->textContent);
 
-      my @opts = 'click'->hashToCommandLine (method => $method, package => __PACKAGE__, opts => $opts);
+      $tmp->close ();
 
-      &Fxtran::Util::runCommand (cmd => ['fxtran-f90', @opts, '--dryrun', '--dir', '.', '--', 'f90', '-c', $tmp]);
+      my @opts = 'click'->hashToCommandLine (method => $method, package => 'Fxtran::Generate', opts => $opts);
+
+      my @cmd = ('fxtran-f90', @opts, '--dryrun', '--dir', '.', '--tmp', '.', '--', 'f90', '-c', $tmp);
+      &Fxtran::Util::runCommand (cmd => \@cmd);
 
       my $suffix = lc ($opts->{"suffix-$method"});
       (my $tmp_directive = $tmp) =~ s/\.F90$/$suffix.F90/;
 
-      my $doc = &Fxtran::parse (location => $tmp_directive, fopts => ['-construct-tag', '-no-include', '-line-length' => 500]);
+      my $doc = &Fxtran::parse (location => $tmp_directive, fopts => ['-construct-tag', '-no-include', '-line-length' => 500], dir => $opts->{tmp});
 
       &Fxtran::Canonic::makeCanonic ($doc, %$opts);
 

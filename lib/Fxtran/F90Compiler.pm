@@ -51,8 +51,8 @@ sub study
 
 sub obj
 {
-  my $F90 = shift;
-  (my $obj = &basename ($F90)) =~ s/\.F90$/.o/o;
+  my $src = shift;
+  (my $obj = &basename ($src)) =~ s/\.(?:F90|c)$/.o/o;
   return "O_$obj";
 }
 
@@ -62,7 +62,10 @@ sub make
 
   my $obj = $args{obj};
   my @F90 = @{ $args{F90} };
+  my @C   = @{ $args{C} };
+
   my $f90compiler = $args{f90compiler};
+  my $CCompiler = 'gcc';
   my @f90flags = grep { $_ ne '-c' } @{ $args{f90flags} };
 
   my %mod2obj;
@@ -85,12 +88,19 @@ sub make
 
   @obj = reverse (sort (@obj));
   
+  for my $C (@C)
+    {
+      push @obj, &obj ($C);
+    }
+
   my $fh = 'FileHandle'->new ('>Makefile');
   
   $fh->print (<< "EOF");
 
 FC=$f90compiler 
+CC=$CCompiler
 FCFLAGS=@f90flags
+CFLAGS=-fPIC
 LD=ld
 
 $obj: @obj
@@ -111,6 +121,17 @@ EOF
 $obj: $F90 @dep
 	\@echo "\$(FC) -c $F90"
 	@\$(FC) \$(FCFLAGS) -o $obj -c $F90
+  
+EOF
+    }
+
+  for my $C (@C)
+    {
+      my $obj = &obj ($C);
+      $fh->print (<<"EOF");
+$obj: $C 
+	\@echo "\$(CC) -c $C"
+	@\$(CC) \$(CFLAGS) -o $obj -c $C
   
 EOF
     }
@@ -182,6 +203,7 @@ sub compile
   return if ($opts->{dryrun});
 
   my @F90 = <*.F90>;
+  my @C = <*.c>;
 
   &Fxtran::F90Compiler::run 
   (
@@ -189,6 +211,7 @@ sub compile
     f90flags    => \@f90flags, 
     obj         => $obj, 
     F90         => \@F90, 
+    C           => \@C,
     %$opts 
   );
 }

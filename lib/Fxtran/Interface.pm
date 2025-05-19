@@ -2,6 +2,7 @@ package Fxtran::Interface;
 
 use File::Basename;
 use FileHandle;
+use Data::Dumper;
 
 use strict;
 
@@ -243,7 +244,7 @@ sub intfbBody
 sub intfb
 {
   my ($F90, $dir, $ext, %opts) = @_;
-  
+
   $dir ||= '.';
   $ext ||= '.intfb.h';
 

@@ -81,4 +81,10 @@ sub loadModule
   die ($c) if ($c);
 }
 
+sub slurp
+{
+  my $f = shift;
+  return do { local $/ = undef; my $fh = 'FileHandle'->new ("<$f"); <$fh> };
+} 
+
 1;
