@@ -6,6 +6,7 @@ use FileHandle;
 use strict;
 
 use Fxtran;
+use Fxtran::Util;
 
 sub intfbBody
 {

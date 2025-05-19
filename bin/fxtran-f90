@@ -34,6 +34,8 @@ sub runACDCMethod
 
   my @f90flags = @{ $args{f90flags} };
 
+  my @I = grep { m/^-I/o } @f90flags;
+
   $ACDC =~ s/^(\w+)\s*//o;
   my $method = $1;
 
@@ -60,7 +62,7 @@ sub runACDCMethod
 
   my @cmd = ("fxtran-gen1", $opts->{package}, $method, 
              'click'->hashToCommandLine (package => $opts->{package}, method => $method, opts => $opts),
-             '--tmp' => "$tmp", @optsfile, $F90);
+             '--tmp' => "$tmp", @optsfile, @I, $F90);
 
   &Fxtran::Util::runCommand (cmd => \@cmd, %$opts);
 

@@ -6,7 +6,10 @@ package Fxtran::Finder;
 # philippe.marguinaud@meteo.fr
 #
 
+use Data::Dumper;
+
 use strict;
+
 use Fxtran::Finder::Pack;
 use Fxtran::Finder::Pack::Build;
 use Fxtran::Finder::Include;
@@ -31,7 +34,7 @@ sub new
     { 
       return 'Fxtran::Finder::Pack'->new (@_);
     }
-  elsif ($args{files})
+  elsif ($args{files} && @{ $args{files} })
     {
       return 'Fxtran::Finder::Files'->new (@_);
     }

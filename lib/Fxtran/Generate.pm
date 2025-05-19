@@ -30,6 +30,8 @@ sub changeKidiaToYDCPG_OPTS
 {
   my ($d, $opts) = @_;
 
+  my ($pu) = &F ('./object/file/program-unit', $d);
+
   my $style = $opts->{style};
 
   my $kidia = $style->kidia ();
@@ -51,12 +53,12 @@ sub changeKidiaToYDCPG_OPTS
       my $par = 0;
 
       my $stmt = &Fxtran::stmt ($expr);
-      if (($stmt->nodeName eq 'call-stmt') && (&F ('ancestor::parallel-section', $stmt)))
+      if (($stmt->nodeName eq 'call-stmt') && (! &F ('ancestor::parallel-section', $stmt)))
         {
           $par = 1;
         }
 
-      $expr->replaceNode ($par ?  &e ("YDCPG_BNDS%KIDIA") : &e ("YDCPG_OPTS"));
+      $expr->replaceNode ($par ? &e ("YDCPG_OPTS") :  &e ("YDCPG_BNDS%KIDIA"));
     }
 
   for my $expr (&F ('.//named-E[string(N)="?"]', $kfdia, $d))
@@ -64,12 +66,12 @@ sub changeKidiaToYDCPG_OPTS
       my $par = 0;
 
       my $stmt = &Fxtran::stmt ($expr);
-      if (($stmt->nodeName eq 'call-stmt') && (&F ('ancestor::parallel-section', $stmt)))
+      if (($stmt->nodeName eq 'call-stmt') && (! &F ('ancestor::parallel-section', $stmt)))
         {
           $par = 1;
         }
 
-      $expr->replaceNode ($par ? &e ("YDCPG_BNDS%KFDIA") : &e ("YDCPG_BNDS"));
+      $expr->replaceNode ($par ? &e ("YDCPG_BNDS") : &e ("YDCPG_BNDS%KFDIA"));
     }
 
   for my $nproma ($style->nproma ())
@@ -94,6 +96,8 @@ sub changeKidiaToYDCPG_OPTS
     }
 
   $opts->{style} = 'Fxtran::Style'->new (document => $d);
+
+  &Fxtran::Decl::use ($pu, 'USE CPG_OPTS_TYPE_MOD, ONLY : CPG_OPTS_TYPE, CPG_BNDS_TYPE');
 }
 
 my %options= do
@@ -230,7 +234,7 @@ sub singlecolumn
 
 
 &click (<< "EOF");
-@options{qw (cycle dir tmp only-if-newer merge-interfaces pragma stack84 stdout style redim-arguments 
+@options{qw (cycle dir tmp only-if-newer merge-interfaces pragma stack84 stdout style redim-arguments ydcpg_opts
              suffix-singlecolumn suffix-pointerparallel version type-bound-methods types-constant-dir types-fieldapi-dir)}
   base                            -- Base directory for file lookup
   contiguous-pointers             -- Add CONTIGUOUS attribute to pointer accessors
