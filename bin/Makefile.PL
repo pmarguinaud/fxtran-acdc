@@ -11,6 +11,7 @@ use strict;
 
 use Getopt::Long;
 use FileHandle;
+use File::stat;
 use List::MoreUtils qw (uniq);
 use Data::Dumper;
 use Cwd;
@@ -182,17 +183,16 @@ for my $F90 (@F90)
 
     if ($kind eq 'SUBROUTINE')
       {
-        my $opts = -f 'fxtran.conf' ? do ("./fxtran.conf") : [];
-        $opts = {'merge-interfaces' => (grep ({ '--merge-interfaces' eq  $_ } @$opts) ? 1 : 0)};
-
-        my @cmd = ('fxtran-f90', '--method', 'interface', 
-                   (-f 'fxtran.conf' ?  ('--config', 'fxtran.conf') : ()),
-                   '--dir', '.', '--dryrun', '--tmp', '.', '--', 'f90', '-c', $F90);
-
-        system (@cmd)
-          and die ("Command `@cmd' failed");
-
         (my $intfb = $F90) =~ s/\.F90$/.intfb.h/o;
+
+        if ((! -f $intfb) || (stat ($intfb)->mtime < stat ($F90)->mtime))
+          {
+            my @cmd = ('fxtran-f90', '--method', 'interface', 
+                       (-f 'fxtran.conf' ?  ('--config', 'fxtran.conf') : ()),
+                       '--dir', '.', '--dryrun', '--tmp', '.', '--', 'f90', '-c', $F90);
+            system (@cmd)
+              and die ("Command `@cmd' failed");
+          }
 
         (my $ok = $intfb) =~ s/\.h$/.ok/o;
         my @deps = &deps ($intfb);
