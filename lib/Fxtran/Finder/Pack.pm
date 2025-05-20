@@ -25,25 +25,16 @@ sub scanView
 
   my ($scan, $view) = @_;
 
-  my $cwd = &cwd ();
-  
-  eval 
+  my $wanted = sub
     {
-      chdir ("$pack/src/$view");
-      my $wanted = sub
-        {
-          my $f = $File::Find::name;
-          return unless (-f $f);
-          return unless (($f =~ m/\.F90$/o) || (($f =~ m/\.h/o)));
-          $f =~ s,\.\/,,o;
-          $scan->{&basename ($f)} = "$pack/src/$view/$f";
-        };
-      &find ({no_chdir => 1, wanted => $wanted}, '.');
+      my $f = $File::Find::name;
+      return unless (-f $f);
+      return unless (($f =~ m/\.F90$/o) || (($f =~ m/\.h/o)));
+      $f =~ s,\.\/,,o;
+      $scan->{&basename ($f)} = $f;
     };
-  my $c = $@;
-  
-  chdir ($cwd);
-  $c && die ($c);
+
+  &find ({no_chdir => 1, wanted => $wanted}, "$pack/src/$view/");
 }
 
 # Index files in pack

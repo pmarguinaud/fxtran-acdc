@@ -20,6 +20,7 @@ use base qw (Exporter);
 our @EXPORT = qw (s e F f n t TRUE FALSE);
 
 {
+
 my $version;
 sub getVersion
 {
@@ -38,12 +39,7 @@ Date:   Sun Feb 5 16:09:41 2023 +0000
 
   unless ($version)
     {
-      my $cwd = &cwd ();
-     
-      chdir ($Bin);
-      my @log = split (m/\n/o, `git log -n1`);
-      chdir ($cwd);
-     
+      my @log = split (m/\n/o, `git -C $Bin log -n1`);
       ($version) = ($log[0] =~ m/commit\s+(\w+)/o);
     }
 

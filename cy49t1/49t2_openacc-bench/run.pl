@@ -116,7 +116,12 @@ sub processList
 
              $fh->close ();
 
-             $c && return 0;
+             if ($c)
+               {
+                 print "$c\n";
+                 $q->insert (0, 0) for (1 .. $opts->{threads});
+                 return 0;
+               }
 
              return 1;
            });
@@ -127,10 +132,13 @@ sub processList
            $q->enqueue ($f);
          }
       
-       for (@t)
+       my $c = 1;
+       for my $t (@t)
          {
-           $_->join () or die;
+           $c = $t->join () && $c;
          }
+
+       $c or die;
     }
   else
     { 

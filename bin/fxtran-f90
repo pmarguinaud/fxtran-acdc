@@ -92,6 +92,9 @@ if ($config)
       {
         die ($c);
       }
+
+# Insert config arguments in place of config options
+
     @ARGV = (@ARGV[0..$iconfig-1], @$config, @ARGV[$iconfig+2..$#ARGV]);
   }
 
