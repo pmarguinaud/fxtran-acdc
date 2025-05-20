@@ -9,6 +9,8 @@ package Fxtran::F90Compiler;
 use FileHandle;
 use Data::Dumper;
 use File::Basename;
+use File::Path;
+use File::Copy;
 
 use strict;
 
@@ -144,6 +146,28 @@ EOF
 sub run
 {
   my %args = @_;
+
+  if (my $dir = $args{'user-directory-in'})
+    {
+      for my $f (<*.F90>, <*.h>)
+        {
+          if (-f "$dir/$f")
+            {
+              unlink ($f);
+              print "Take $dir/$f\n";
+              &copy ("$dir/$f", $f);
+            }
+        }
+    }
+
+  if (my $dir = $args{'user-directory-out'})
+    { 
+      (-d $dir) or &mkpath ($dir);
+      for my $f (<*.F90>, <*.h>)
+        {
+          &copy ($f, "$dir/$f");
+        }
+    }
 
   return if ($args{dryrun});
 

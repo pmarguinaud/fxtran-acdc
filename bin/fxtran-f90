@@ -118,7 +118,7 @@ my %opts = (package => $package, config => $config);
 my $hopts = 'click'->getOptionList (package => $package);
 
 my @opts_f = qw (dryrun debug);
-my @opts_s = qw (package method config);
+my @opts_s = qw (package method config user-directory-in user-directory-out);
 
 &GetOptions
 (
@@ -133,6 +133,12 @@ my @opts_s = qw (package method config);
   (map { ($_, \$opts{$_}) } @opts_f),
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
+
+for (qw (user-directory-in user-directory-out))
+  {
+    $opts{$_} = 'File::Spec'->rel2abs ($opts{$_})
+     if ($opts{$_});
+  }
 
 $opts{package} = 'Fxtran::' . ucfirst ($opts{package}) 
   unless ($opts{package} =~ m/::/o);

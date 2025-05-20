@@ -37,7 +37,8 @@ my @opts_s = qw (out include);
 $opts{include} = [split (m/,/o, $opts{include})];
 
 my @sys = qw (NVTX OMP_LIB CUDAFOR IEEE_ARITHMETIC ISO_C_BINDING OPENACC ECCODES CUBLAS ISO_FORTRAN_ENV);
-my @extern_mod = qw (YOMHOOK MPL_MODULE PARKIND1 OML_MOD EC_LUN MPL_MPIF MPL_MODULE MPL_BARRIER_MOD FIELD_MODULE FIELD_FACTORY_MODULE FIELD_ACCESS_MODULE);
+my @extern_mod = qw (YOMHOOK MPL_MODULE PARKIND1 OML_MOD EC_LUN MPL_MPIF MPL_MODULE MPL_BARRIER_MOD FIELD_MODULE 
+                     FIELD_FACTORY_MODULE FIELD_ACCESS_MODULE);
 my @extern_inc = qw (setup_trans.h setup_trans0.h inv_trans.h gath_grid.h gath_spec.h dist_spec.h);
 
 for my $mod (@extern_mod)
@@ -160,6 +161,16 @@ my $fh = 'FileHandle'->new (">$opts{out}");
 
 $fh->print (join ("\n", map ({ "include $_"  } @{ $opts{include} }), '', ''));
 
+$fh->print (<< 'EOF');
+
+ifeq ($(SRC), )
+SRC=.
+endif
+
+all: exe
+
+EOF
+
 my (@obj, @prg);
 
 for my $F90 (@F90)
@@ -253,6 +264,7 @@ $o: $c
 EOF
   }
 
+my @exe;
 
 for my $prg (@prg)
   {
@@ -263,10 +275,13 @@ $exe: $obj @obj
 	\$(FC) -o $exe $obj @obj \$(LIBS)
 
 EOF
+    push @exe, $exe;
   }
 
 
 $fh->print (<< "EOF");
+
+exe: @exe
 
 subclean:
 	\\rm -f @subobj
