@@ -237,7 +237,7 @@ sub singlecolumn
   types-fieldapi-non-blocked=s@   -- Non-blocked data types (without NPROMA)                                                               --  CPG_SL1F_TYPE,CPG_SL_MASK_TYPE
   use-acpy                        -- Avoid pointer aliasing using ACPY
   use-bcpy                        -- Avoid pointer aliasing using BCPY
-  generate-parallelmethod         -- Embed parallelmethod information in binary
+  parallelmethod-section          -- Embed parallelmethod information in binary
 EOF
 sub pointerparallel
 {
@@ -318,7 +318,7 @@ sub pointerparallel
       &copy ($f, $F90out) or die ("Failed to copy $f -> $F90out");
     }
 
-  if ($opts->{'generate-parallelmethod'})
+  if ($opts->{'parallelmethod-section'})
     {
       &Fxtran::Util::loadModule ('Fxtran::Generate::ParallelMethod');
       &Fxtran::Generate::ParallelMethod::generateCCode ($d, $opts);

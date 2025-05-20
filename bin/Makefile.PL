@@ -177,6 +177,7 @@ for my $F90 (@F90)
 
 for my $F90 (@F90)
   {
+
     my $kind = &kind ($F90);
 
     if ($kind eq 'SUBROUTINE')
@@ -186,9 +187,7 @@ for my $F90 (@F90)
 
         my @cmd = ('fxtran-f90', '--method', 'interface', 
                    (-f 'fxtran.conf' ?  ('--config', 'fxtran.conf') : ()),
-                   '--dir', '.', '--dryrun', '--', 'f90', '-c', $F90);
-
-print "@cmd\n";
+                   '--dir', '.', '--dryrun', '--tmp', '.', '--', 'f90', '-c', $F90);
 
         system (@cmd)
           and die ("Command `@cmd' failed");
@@ -273,7 +272,7 @@ subclean:
 	\\rm -f @subobj
 
 clean: 
-	\\rm -f *.o *.xml *.a *.x *.mod *.optrpt *.smod
+	\\rm -f *.o *.xml *.a *.x *.mod *.optrpt *.smod 
 
 tidy:
 	\\rm -f *.xml *.optrpt

@@ -69,21 +69,17 @@ sub runACDCMethod
   &Fxtran::F90Compiler::compile (%args);
 }
 
-my ($package, $config, $ilast) = ('generate');
+my ($package, $config, $iconfig) = ('generate');
 
 # Look for config
 
 for (my $i = 0; $i < $#ARGV; $i++)
   {
-    if ($ARGV[$i] eq '--')
-      {
-        $ilast = $i;
-        last;
-      }
-    elsif ($ARGV[$i] eq '--config')
-      {
-        $config = $ARGV[$i+1];
-      }
+    last if ($ARGV[$i] eq '--');
+    next unless ($ARGV[$i] eq '--config');
+    $iconfig = $i;
+    $config = $ARGV[$i+1];
+    last;
   }
 
 if ($config)
@@ -96,22 +92,17 @@ if ($config)
       {
         die ($c);
       }
-    @ARGV = (@ARGV[0..$ilast-1], @$config, @ARGV[$ilast..$#ARGV]);
+    @ARGV = (@ARGV[0..$iconfig-1], @$config, @ARGV[$iconfig+2..$#ARGV]);
   }
 
 # Look for package
 
 for (my $i = 0; $i < $#ARGV; $i++)
   {
-    if ($ARGV[$i] eq '--')
-      {
-        $ilast = $i;
-        last;
-      }
-    elsif ($ARGV[$i] eq '--package')
-      {
-        $package = $ARGV[$i+1];
-      }
+    last if ($ARGV[$i] eq '--');
+    next unless ($ARGV[$i] eq '--package');
+    $package = $ARGV[$i+1];
+    last;
   }
 
 $package = 'Fxtran::' . ucfirst ($package) 
