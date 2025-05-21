@@ -143,20 +143,28 @@ EOF
 
 sub processSingleRoutine
 {
-  my ($d, $NAME, $find, $types, %opts) = @_;
+  my ($pu, $NAME, $find, $types, %opts) = @_;
 
-  for my $unseen (&F ('.//unseen', $d))
+  for my $unseen (&F ('.//unseen', $pu))
     {
-      $d->unbindNode ();
+      $pu->unbindNode ();
     }
   
-  &Fxtran::Subroutine::rename ($d, sub { return $_[0] . uc ($opts{'suffix-pointerparallel'}) });
+  &Fxtran::Subroutine::rename ($pu, sub { return $_[0] . uc ($opts{'suffix-pointerparallel'}) });
   
   # Prepare the code
   
+  for my $in (@{ $opts{inlined} })
+    {
+      my $f90in = $find->resolve (file => $in);
+      my $di = &Fxtran::parse (location => $f90in, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)], dir => $opts{tmp});
+      &Fxtran::Canonic::makeCanonic ($di, %opts);
+      &Fxtran::Inline::inlineExternalSubroutine ($pu, $di, %opts);
+    }
+      
   if ($opts{'inline-contained'})
     {
-      &Fxtran::Inline::inlineContainedSubroutines ($d, skipDimensionCheck => 1);
+      &Fxtran::Inline::inlineContainedSubroutines ($pu, skipDimensionCheck => 1);
     }
 
   # Add modules
@@ -168,12 +176,12 @@ sub processSingleRoutine
       push @use, 'ACPY_MOD';
     }
   
-  &Fxtran::Decl::use ($d, map { "USE $_" } @use);
+  &Fxtran::Decl::use ($pu, map { "USE $_" } @use);
   
   # Add local variables
   
   &Fxtran::Decl::declare 
-  ($d,  
+  ($pu,  
     $opts{style}->declareJlon (),
     'INTEGER(KIND=JPIM) :: JBLK',
     'TYPE(CPG_BNDS_TYPE) :: YLCPG_BNDS', 
@@ -184,7 +192,7 @@ sub processSingleRoutine
   );
   
   my $t = &Fxtran::Pointer::SymbolTable::getSymbolTable 
-    ($d, skip => $opts{'skip-arrays'}, nproma => $opts{nproma}, 
+    ($pu, skip => $opts{'skip-arrays'}, nproma => $opts{nproma}, 
      'types-fieldapi-dir' => $opts{'types-fieldapi-dir'},
      'types-constant-dir' => $opts{'types-constant-dir'},
      'types-fieldapi-non-blocked' => $opts{'types-fieldapi-non-blocked'},
@@ -193,7 +201,7 @@ sub processSingleRoutine
   
   # Remove SKIP sections
   
-  for (&F ('.//skip-section', $d))
+  for (&F ('.//skip-section', $pu))
     {
       $_->unbindNode ();
     }
@@ -202,14 +210,14 @@ sub processSingleRoutine
   
   &Fxtran::Pointer::Parallel::fieldifyDecl 
      (
-       'program-unit' => $d, 
+       'program-unit' => $pu, 
        'symbol-table' => $t,
        'contiguous-pointers' => $opts{'contiguous-pointers'},
      );
 
   # Process ABORT sections
 
-  my @abort = &F ('.//abort-section', $d);
+  my @abort = &F ('.//abort-section', $pu);
 
   for my $abort (@abort)
     {
@@ -221,7 +229,7 @@ sub processSingleRoutine
   
   # Process PARALLEL sections
   
-  my @parallel = &F ('.//parallel-section', $d);
+  my @parallel = &F ('.//parallel-section', $pu);
   
   my ($FILTER);
 
@@ -249,13 +257,13 @@ sub processSingleRoutine
   
   for (values (%customIterator))
     {
-      &Fxtran::Decl::declare ($d, $_);
+      &Fxtran::Decl::declare ($pu, $_);
     }
   
   if ($FILTER)
     {
-      &Fxtran::Decl::use ($d, "USE FIELD_GATHSCAT_MODULE");
-      &Fxtran::Decl::declare ($d, 'TYPE(FIELD_GATHSCAT) :: YL_FGS');
+      &Fxtran::Decl::use ($pu, "USE FIELD_GATHSCAT_MODULE");
+      &Fxtran::Decl::declare ($pu, 'TYPE(FIELD_GATHSCAT) :: YL_FGS');
     }
   
   # Process call to parallel routines
@@ -266,7 +274,7 @@ sub processSingleRoutine
               . '[not(string(procedure-designator)="ABORT")]'    # Skip ABORT calls
               . '[not(string(procedure-designator)="GETENV")]'   # Skip ABORT calls
               . '[not(procedure-designator/named-E/R-LT)]'       # Skip objects calling methods
-              . '[not(ancestor::serial-section)]', $d);          # Skip calls in serial sections
+              . '[not(ancestor::serial-section)]', $pu);          # Skip calls in serial sections
   
   my %seen;
   
@@ -278,7 +286,7 @@ sub processSingleRoutine
           my ($name) = &F ('./procedure-designator/named-E/N/n/text()', $call);
           unless ($seen{$name->textContent}++)
             {
-              my ($include) = &F ('.//include[./filename[string(.)="?" or string(.)="?"]', lc ($name) . '.intfb.h', lc ($name) . '.h', $d);
+              my ($include) = &F ('.//include[./filename[string(.)="?" or string(.)="?"]', lc ($name) . '.intfb.h', lc ($name) . '.h', $pu);
               $include or die $call->textContent;
               unless ($opts{'merge-interfaces'})
                 {
@@ -292,11 +300,11 @@ sub processSingleRoutine
   
   # Create/delete fields for local arrays
   
-  &Fxtran::Pointer::Parallel::setupLocalFields ($d, $t, '', $opts{gpumemstat});
+  &Fxtran::Pointer::Parallel::setupLocalFields ($pu, $t, '', $opts{gpumemstat});
   
   unless ($opts{'merge-interfaces'})
     {
-      &Fxtran::Include::removeUnusedIncludes ($d);
+      &Fxtran::Include::removeUnusedIncludes ($pu);
     }
   
   my $useUtilMod = 0;
@@ -338,27 +346,27 @@ sub processSingleRoutine
   @use_util = &uniq (@use_util);
   
   
-  &Fxtran::Decl::declare ($d, @decl);
-  &Fxtran::Decl::use ($d, @use_util) if ($useUtilMod);
+  &Fxtran::Decl::declare ($pu, @decl);
+  &Fxtran::Decl::use ($pu, @use_util) if ($useUtilMod);
   
   for my $style (qw (Fxtran::Style::IAL Fxtran::Style::MESONH))
     {
-      $style->setOpenACCInterfaces ($d, %opts, suffix => $opts{'suffix-singlecolumn'});
+      $style->setOpenACCInterfaces ($pu, %opts, suffix => $opts{'suffix-singlecolumn'});
     }
   
   if (@parallel)
     {
       # Add abor1.intfb.h
   
-      unless (&F ('.//include[string(filename)="abor1.intfb.h"]', $d))
+      unless (&F ('.//include[string(filename)="abor1.intfb.h"]', $pu))
         {
-          &Fxtran::Include::addInclude ($d, 'abor1.intfb.h');
+          &Fxtran::Include::addInclude ($pu, 'abor1.intfb.h');
         }
     }
   
   # include stack.h
   
-  my ($implicit) = &F ('.//implicit-none-stmt', $d);
+  my ($implicit) = &F ('.//implicit-none-stmt', $pu);
   
   $implicit->parentNode->insertBefore (&n ('<include>#include "<filename>stack.h</filename>"</include>'), $implicit);
   $implicit->parentNode->insertBefore (&t ("\n"), $implicit);

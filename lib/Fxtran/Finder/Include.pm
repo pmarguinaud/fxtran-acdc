@@ -18,6 +18,7 @@ sub new
     {
       s/^-I//o;
     }
+  unshift (@{ $self->{I} }, '.');
   return $self;
 }
 

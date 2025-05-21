@@ -2,22 +2,25 @@
 
 use threads;
 use Thread::Queue;
+
 use Cwd;
 use FileHandle;
 use Data::Dumper;
 use File::Path;
 use File::Copy;
+use File::Spec;
 use File::Basename;
+use File::Temp;
+use FindBin qw ($Bin);
 use Getopt::Long;
 
 use strict;
 
 use FindBin qw ($Bin);
-use lib "$Bin/../../lib";
+use lib "$Bin/../lib";
 
 use Fxtran::Bt;
-
-my $FXTRAN_F90 = &Cwd::realpath ("$Bin/../../bin/fxtran-f90");
+use Fxtran::PATH;
 
 sub runCommand
 {
@@ -30,8 +33,12 @@ sub runCommand
 sub getLines
 {
   my $f = shift;
-  my @lst = do { my $fh = 'FileHandle'->new ("<$f"); <$fh> }; 
-  chomp for (@lst);
+  my @lst;
+  if (my $fh = 'FileHandle'->new ("<$f"))
+    {
+      @lst = <$fh>; 
+      chomp for (@lst);
+    }
   return @lst;
 }
 
@@ -48,7 +55,35 @@ sub processFile
   
   &mkpath ($dir) unless (-d $dir);
 
-  my @cmd = ($FXTRAN_F90, '--config', $config, '--dir', $dir, '--dryrun', '--', 'f90', '-c', $file);
+  my @cmd = ('fxtran-f90', '--config', $config, '--dir', $dir, '--dryrun', '--', 'f90', '-c', $file);
+
+  print "@cmd\n";
+
+  $log->print ("@cmd\n");
+  
+  if (system (@cmd))
+    {
+      $log->print ("Command `@cmd' failed");
+      die ("Command `@cmd' failed");
+    }
+}
+
+sub processIntf
+{
+  my %args = @_;
+  my ($file, $log, $config) = @args{qw (file log config)};
+
+  my $cwd = &cwd ();
+
+  my ($dir, $view, $F90) = ($file =~ m{^(\w+)/(\w+)/(.*)$}o);
+  
+  $dir = join ('/', $dir, 'local', '.intfb');
+  
+  &mkpath ($dir) unless (-d $dir);
+
+  my $tmp = 'File::Temp'->newdir (CLEANUP => 0);
+
+  my @cmd = ('fxtran-f90', '--method', 'interface', '--config', $config, '--dir', $dir, '--dryrun', '--', 'f90', '-c', $file);
 
   print "@cmd\n";
 
@@ -83,14 +118,19 @@ sub processList
                {
                  while (my $f = $q->dequeue ()) 
                    { 
-                     &processFile (tid => $tid, file => $f, log => $fh, config => $opts->{config}); 
+                     $opts->{proc}->(tid => $tid, file => $f, log => $fh, config => $opts->{config}); 
                    } 
                };
              my $c = $@;
 
              $fh->close ();
 
-             $c && return 0;
+             if ($c)
+               {
+                 print "$c\n";
+                 $q->insert (0, 0) for (1 .. $opts->{threads});
+                 return 0;
+               }
 
              return 1;
            });
@@ -101,10 +141,13 @@ sub processList
            $q->enqueue ($f);
          }
       
-       for (@t)
+       my $c = 1;
+       for my $t (@t)
          {
-           $_->join () or die;
+           $c = $t->join () && $c;
          }
+
+       $c or die;
     }
   else
     { 
@@ -120,6 +163,8 @@ sub processList
 unlink ($_) for (<run.*.log>);
 
 
+my $cwd = &cwd ();
+
 my %opts = (threads => 4);
 my @opts_f = qw (help);
 my @opts_s = qw (threads);
@@ -130,13 +175,12 @@ my @opts_s = qw (threads);
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
 
-my $cwd = &cwd ();
-
 $ENV{TMPDIR}      = "$cwd/tmp";
 $ENV{TARGET_PACK} = $cwd;
 
 my @mod = &getLines ("list.mod");
 my @src = &getLines ("list.src");
+my @int = &getLines ("list.int");
 
 my @type = map { m/^fxtran-(\w+)\.conf$/o; $1 } <fxtran-*.conf>;
 
@@ -149,8 +193,9 @@ for my $type (@type)
         &rmtree ($d) if (-d $d);
       }
 
-    &processList ({%opts, config => $config},  @mod);
-    &processList ({%opts, config => $config},  @src);
+    &processList ({%opts, config => $config, proc => \&processIntf},  @int);
+    &processList ({%opts, config => $config, proc => \&processFile},  @mod);   
+    &processList ({%opts, config => $config, proc => \&processFile},  @src);
 
     &rmtree ("run/$type");
     &mkpath ("run/$type") or die;
@@ -164,7 +209,6 @@ for my $type (@type)
             &move ("$dir/local", "run/$type/$dir/local") 
               or die ("Cannot move `$dir/local' into `run/$type/$dir/local'");
           }
-
         if ((-d "ref/$type/$dir/local") && (-d "run/$type/$dir/local"))
           {
             &runCommand (qw (diff -B -w -x *.F90.xml -r), "ref/$type/$dir/local", "run/$type/$dir/local");

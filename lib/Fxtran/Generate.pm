@@ -183,7 +183,7 @@ sub singlecolumn
 
   $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
   
-  my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base});
+  my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
   
   $opts->{style}->preProcessForOpenACC ($d, %$opts, find => $find);
   
@@ -231,6 +231,7 @@ sub singlecolumn
   contiguous-pointers             -- Add CONTIGUOUS attribute to pointer accessors
   files=s@                        -- List of files to be looked at for inlining
   gpumemstat                      -- Add calls to GPUMEMSTAT
+  inlined=s@                      -- List of routines to inline
   inline-contained                -- Inline CONTAINed routines
   post-parallel=s@                -- Generate code after parallel section                                                                  --  nullify
   skip-arrays=s@                  -- Arrays not to be processed                                                                            --  PGFL,PGFLT1,PGMVT1,PGPSDT2D
@@ -310,13 +311,6 @@ sub pointerparallel
   
   &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
 
-
-  if ($ENV{USERDIR} && (-f (my $f = "$ENV{USERDIR}/" . &basename ($F90out))))
-    {
-      use File::Copy;
-      print "COPY $f -> $F90out\n";
-      &copy ($f, $F90out) or die ("Failed to copy $f -> $F90out");
-    }
 
   if ($opts->{'parallelmethod-section'})
     {
