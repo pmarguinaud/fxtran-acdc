@@ -165,13 +165,13 @@ sub newer
   return $st1->mtime > $st2->mtime;
 }
 
-for my $fypp (<*.fypp>)
+for my $fypp (<$opts{SRC}/*.fypp>)
   {
     my $code = &slurp ($fypp);
     my @field_config = ($code =~ m/field_config/goms ? qw (-m -field_config) : ());
-    (my $F90 = $fypp) =~ s/\.fypp/.F90/o;
+    (my $F90 = &basename ($fypp)) =~ s/\.fypp/.F90/o;
     next if (&newer ($F90, $fypp));
-    system (qw (/opt/softs/anaconda3/bin/fypp -m os -M . -m yaml), @field_config, "./$fypp", $F90) and die ($fypp);
+    system (qw (fypp -m os -M . -m yaml), @field_config, "./$fypp", $F90) and die ($fypp);
   }
 
 my @F90 = map { 'File::Spec'->rel2abs ($_) } <$opts{SRC}/*.F90>;
@@ -245,9 +245,10 @@ EOF
 for my $H (grep { ! m/\.intfb\.h$/o } <$opts{SRC}/*.h>)
   {
     my $ok = &ok ($H);
+    my @deps = &deps ($H);
     my $h = &basename ($H);
     $fh->print (<< "EOF");
-$ok: \$(SRC)/$h
+$ok: \$(SRC)/$h @deps
 	touch $ok
 
 EOF
