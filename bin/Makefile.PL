@@ -12,6 +12,8 @@ use strict;
 use Getopt::Long;
 use FileHandle;
 use File::stat;
+use File::Spec;
+use File::Basename;
 use List::MoreUtils qw (uniq);
 use Data::Dumper;
 use Cwd;
@@ -24,9 +26,9 @@ use Fxtran;
 use Fxtran::Interface;
 use Fxtran::PATH;
 
-my %opts = qw (out Makefile include Makefile.inc);
+my %opts = qw (out Makefile include Makefile.inc SRC .);
 my @opts_f = qw ();
-my @opts_s = qw (out include);
+my @opts_s = qw (out include SRC);
 
 &GetOptions
 (
@@ -113,19 +115,19 @@ sub mods
 
 sub obj
 {
-  (my $f = shift) =~ s/\.(?:F90|F|c)$//o;
+  (my $f = &basename ($_[0])) =~ s/\.(?:F90|F|c)$//o;
   return "\$(BUILD)/$f.o";
 }
 
 sub exe
 {
-  (my $f = shift) =~ s/\.(?:F90|F|c)$//o;
+  (my $f = &basename ($_[0])) =~ s/\.(?:F90|F|c)$//o;
   return "\$(BUILD)/$f.x";
 }
 
 sub ok
 {
-  (my $f = shift) =~ s/\.(?:h)$//o;
+  (my $f = &basename ($_[0])) =~ s/\.(?:h)$//o;
   return "\$(BUILD)/$f.ok";
 }
 
@@ -172,26 +174,25 @@ for my $fypp (<*.fypp>)
     system (qw (/opt/softs/anaconda3/bin/fypp -m os -M . -m yaml), @field_config, "./$fypp", $F90) and die ($fypp);
   }
 
-my @F90 = <*.F90>;
+my @F90 = map { 'File::Spec'->rel2abs ($_) } <$opts{SRC}/*.F90>;
 
 my $fh = 'FileHandle'->new (">$opts{out}");
 
+$fh->print (<< "EOF");
 
-$fh->print (join ("\n", map ({ "include $_"  } @{ $opts{include} }), '', ''));
-
-$fh->print (<< 'EOF');
-
-ifeq ($(SRC), )
-SRC=.
+ifeq (\$(SRC), )
+SRC=$opts{SRC}
 endif
 
-ifeq ($(BUILD), )
+ifeq (\$(BUILD), )
 BUILD=.
 endif
 
 all: exe
 
 EOF
+
+$fh->print (join ("\n", map ({ "include $_"  } @{ $opts{include} }), '', ''));
 
 my (@obj, @prg);
 
@@ -211,17 +212,16 @@ for my $F90 (@F90)
 
 for my $F90 (@F90)
   {
-
     my $kind = &kind ($F90);
 
     if ($kind eq 'SUBROUTINE')
       {
-        (my $intfb = $F90) =~ s/\.F90$/.intfb.h/o;
+        (my $intfb = &basename ($F90)) =~ s/\.F90$/.intfb.h/o;
 
-        if ((! -f $intfb) || (stat ($intfb)->mtime < stat ($F90)->mtime))
+        if ((! -f $intfb) || &newer ($F90, $intfb))
           {
             my @cmd = ('fxtran-f90', '--method', 'interface', 
-                       (-f 'fxtran.conf' ?  ('--config', 'fxtran.conf') : ()),
+                       (-f "$opts{SRC}/fxtran.conf" ?  ('--config', "$opts{SRC}/fxtran.conf") : ()),
                        '--dir', '.', '--dryrun', '--tmp', '.', '--', 'f90', '-c', $F90);
             system (@cmd)
               and die ("Command `@cmd' failed");
@@ -230,7 +230,7 @@ for my $F90 (@F90)
         my $ok = &ok ($intfb);
         my @deps = &deps ($intfb);
         $fh->print (<< "EOF");
-$ok: \$(SRC)/$intfb @deps
+$ok: \$(BUILD)/$intfb @deps
 	touch $ok
 
 EOF
@@ -242,12 +242,14 @@ EOF
   }
 
 
-for my $h (grep { ! m/\.intfb\.h$/o } <*.h>)
+for my $H (grep { ! m/\.intfb\.h$/o } <$opts{SRC}/*.h>)
   {
-    my $ok = &ok ($h);
+    my $ok = &ok ($H);
+    my $h = &basename ($H);
     $fh->print (<< "EOF");
 $ok: \$(SRC)/$h
 	touch $ok
+
 EOF
   }
 
@@ -259,6 +261,7 @@ for my $F90 (@F90)
     my @mods = &mods ($F90);
     my $kind = &kind ($F90);
     my $obj = &obj ($F90);
+    my $f90 = &basename ($F90);
 
     if ($kind eq 'MODULE')
       {
@@ -266,8 +269,8 @@ for my $F90 (@F90)
       }
 
     $fh->print (<< "EOF");
-$obj: \$(SRC)/$F90 @deps
-	\$(FC) -o $obj -c \$(SRC)/$F90
+$obj: \$(SRC)/$f90 @deps
+	\$(FC) -o $obj -c \$(SRC)/$f90
 
 EOF
 
@@ -276,9 +279,10 @@ EOF
     push @subobj, $obj if ($kind ne 'MODULE');
   }
 
-for my $c (<*.c>)
+for my $C (<$opts{SRC}/*.c>)
   {
-    my $obj = &obj ($c);
+    my $obj = &obj ($C);
+    my $c = &basename ($C);
     $fh->print (<< "EOF");
 $obj: \$(SRC)/$c
 	\$(CC) -o $obj -c \$(SRC)/$c
@@ -310,7 +314,7 @@ subclean:
 	\\rm -f @subobj
 
 clean: 
-	\\rm -f \$(BUILD)/*.o \$(BUILD)/*.xml \$(BUILD)/*.a \$(BUILD)/*.x \$(BUILD)/*.mod \$(BUILD)/*.optrpt \$(BUILD)/*.smod 
+	\\rm -f \$(BUILD)/*.o \$(BUILD)/*.xml \$(BUILD)/*.a \$(BUILD)/*.x \$(BUILD)/*.mod \$(BUILD)/*.optrpt \$(BUILD)/*.smod \$(BUILD)/*.ok
 
 tidy:
 	\\rm -f \$(BUILD)/*.xml \$(BUILD)/*.optrpt
