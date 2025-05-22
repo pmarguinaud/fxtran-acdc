@@ -165,11 +165,16 @@ unless ($c)
 
 # Absolute path for includes
 
-my @argv;
+my (@argv, $output);
 
 for (my $i = 0; $i < scalar (@ARGV); $i++)
   {
-    if ($ARGV[$i] eq '-I')
+    if ($ARGV[$i] eq '-o')
+      {
+        $output = 'File::Spec'->rel2abs ($ARGV[$i+1]);
+        $i++;
+      }
+    elsif ($ARGV[$i] eq '-I')
       {
         push @argv, '-I' . 'File::Spec'->rel2abs ($ARGV[$i+1]);
         $i++;
@@ -189,7 +194,15 @@ for (my $i = 0; $i < scalar (@ARGV); $i++)
 my @F90 = grep { m/\.(?:F90|F)$/io } @ARGV;
 my @f90flags = grep { ! m/\.(?:F90|F)$/io } @ARGV;
 
+if ((scalar (@F90) > 1) && ($output))
+  {
+    die ("Cannot specify -o with -c and multiple files");
+  }
+
 my $cwd = &cwd ();
+
+unshift (@f90flags, "-I$cwd");
+
 my $dir = (delete $opts{dir}) || '.'; 
 my $tmp = delete $opts{tmp}; $tmp = undef if ($tmp && ($tmp eq '.'));
 
@@ -205,9 +218,13 @@ FILE: for my $F90 (@F90)
 
     $F90 = 'File::Spec'->rel2abs ($F90, $cwd);
 
-    (my $obj = $F90) =~ s/\.(?:F90|F)$/.o/io;
+    my $obj = $output;
 
-    push @f90flags, "-I$cwd";
+    unless ($obj)
+      {
+        ($obj = &basename ($F90)) =~ s/\.(?:F90|F)$/.o/io;
+        $obj = 'File::Spec'->rel2abs ($obj, $cwd);
+      }
 
     my @text = do { my $fh = 'FileHandle'->new ("<$F90"); <$fh> };
 
@@ -224,8 +241,13 @@ FILE: for my $F90 (@F90)
 
         &runACDCMethod
         (
-          obj => $obj, f90compiler => $f90compiler, F90 => $F90, opts => \%opts,
-          f90flags => \@f90flags, cwd => $cwd, ACDC => $ACDC,
+          f90compiler => $f90compiler, 
+          f90flags => ['-I' . &dirname ($F90), @f90flags],  # Look for includes near current file
+          obj => $obj, 
+          F90 => $F90, 
+          opts => \%opts,
+          cwd => $cwd, 
+          ACDC => $ACDC,
         );
 
         next FILE;
@@ -238,7 +260,7 @@ NORMAL:
     (
       f90compiler => $f90compiler, 
       f90flags    => \@f90flags, 
-      obj         => $obj, 
+      obj         => $output, 
       F90         => [$F90], 
       %opts
     );

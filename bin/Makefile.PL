@@ -39,7 +39,7 @@ $opts{include} = [split (m/,/o, $opts{include})];
 my @sys = qw (NVTX OMP_LIB CUDAFOR IEEE_ARITHMETIC ISO_C_BINDING OPENACC ECCODES CUBLAS ISO_FORTRAN_ENV);
 my @extern_mod = qw (YOMHOOK MPL_MODULE PARKIND1 OML_MOD EC_LUN MPL_MPIF MPL_MODULE MPL_BARRIER_MOD FIELD_MODULE 
                      FIELD_FACTORY_MODULE FIELD_ACCESS_MODULE);
-my @extern_inc = qw (setup_trans.h setup_trans0.h inv_trans.h gath_grid.h gath_spec.h dist_spec.h);
+my @extern_inc = qw (setup_trans.h setup_trans0.h inv_trans.h gath_grid.h gath_spec.h dist_spec.h abor1.intfb.h);
 
 for my $mod (@extern_mod)
   {
@@ -111,6 +111,24 @@ sub mods
   return @mods;
 }
 
+sub obj
+{
+  (my $f = shift) =~ s/\.(?:F90|F|c)$//o;
+  return "\$(BUILD)/$f.o";
+}
+
+sub exe
+{
+  (my $f = shift) =~ s/\.(?:F90|F|c)$//o;
+  return "\$(BUILD)/$f.x";
+}
+
+sub ok
+{
+  (my $f = shift) =~ s/\.(?:h)$//o;
+  return "\$(BUILD)/$f.ok";
+}
+
 my %kind;
 
 sub kind
@@ -167,6 +185,10 @@ ifeq ($(SRC), )
 SRC=.
 endif
 
+ifeq ($(BUILD), )
+BUILD=.
+endif
+
 all: exe
 
 EOF
@@ -175,7 +197,7 @@ my (@obj, @prg);
 
 for my $F90 (@F90)
   {
-    (my $obj = $F90) =~ s/\.F90$/.o/o;
+    my $obj = &obj ($F90);
     my $kind = &kind ($F90);
     if ($kind eq 'MODULE')
       {
@@ -205,7 +227,7 @@ for my $F90 (@F90)
               and die ("Command `@cmd' failed");
           }
 
-        (my $ok = $intfb) =~ s/\.h$/.ok/o;
+        my $ok = &ok ($intfb);
         my @deps = &deps ($intfb);
         $fh->print (<< "EOF");
 $ok: \$(SRC)/$intfb @deps
@@ -222,7 +244,7 @@ EOF
 
 for my $h (grep { ! m/\.intfb\.h$/o } <*.h>)
   {
-    (my $ok = $h) =~ s/\.h$/.ok/o;
+    my $ok = &ok ($h);
     $fh->print (<< "EOF");
 $ok: \$(SRC)/$h
 	touch $ok
@@ -236,7 +258,7 @@ for my $F90 (@F90)
     my @deps = &deps ($F90);
     my @mods = &mods ($F90);
     my $kind = &kind ($F90);
-    (my $obj = $F90) =~ s/\.F90$/.o/o;
+    my $obj = &obj ($F90);
 
     if ($kind eq 'MODULE')
       {
@@ -245,7 +267,7 @@ for my $F90 (@F90)
 
     $fh->print (<< "EOF");
 $obj: \$(SRC)/$F90 @deps
-	\$(FC) -c \$(SRC)/$F90
+	\$(FC) -o $obj -c \$(SRC)/$F90
 
 EOF
 
@@ -256,20 +278,21 @@ EOF
 
 for my $c (<*.c>)
   {
-    (my $o = $c) =~ s/\.c$/.o/o;
-    push @obj, $o;
+    my $obj = &obj ($c);
     $fh->print (<< "EOF");
-$o: $c
-	\$(CC) -c \$(SRC)/$c
+$obj: \$(SRC)/$c
+	\$(CC) -o $obj -c \$(SRC)/$c
 EOF
+    push @obj, $obj;
+    push @subobj, $obj;
   }
 
 my @exe;
 
 for my $prg (@prg)
   {
-    (my $exe = $prg) =~ s/\.F90$/.x/o;
-    (my $obj = $prg) =~ s/\.F90$/.o/o;
+    my $exe = &exe ($prg);
+    my $obj = &obj ($prg);
     $fh->print (<< "EOF");
 $exe: $obj @obj
 	\$(FC) -o $exe $obj @obj \$(LIBS)
@@ -287,9 +310,9 @@ subclean:
 	\\rm -f @subobj
 
 clean: 
-	\\rm -f *.o *.xml *.a *.x *.mod *.optrpt *.smod 
+	\\rm -f \$(BUILD)/*.o \$(BUILD)/*.xml \$(BUILD)/*.a \$(BUILD)/*.x \$(BUILD)/*.mod \$(BUILD)/*.optrpt \$(BUILD)/*.smod 
 
 tidy:
-	\\rm -f *.xml *.optrpt
+	\\rm -f \$(BUILD)/*.xml \$(BUILD)/*.optrpt
 EOF
 
