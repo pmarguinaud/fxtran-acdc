@@ -749,7 +749,6 @@ EOF
       # Object wrapping fields : replace by a pointer to data with all blocks
       if ($s->{object} && (! $onlysimplefields))
         {
-          my @r = &F ('./R-LT/component-R', $expr);
           my @ctl = &F ('./R-LT/component-R/ct', $expr, 1);
           my $ptr = join ('_', 'Z', $N, @ctl);
 
