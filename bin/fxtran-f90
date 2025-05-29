@@ -208,7 +208,6 @@ my $tmp = delete $opts{tmp}; $tmp = undef if ($tmp && ($tmp eq '.'));
 
 FILE: for my $F90 (@F90)
   {
-
     if ($tmp)
       {
         $dir = 'File::Temp'->newdir (CLEANUP => ! $opts{debug}, DIR => $opts{tmp});
@@ -260,7 +259,7 @@ NORMAL:
     (
       f90compiler => $f90compiler, 
       f90flags    => \@f90flags, 
-      obj         => $output, 
+      obj         => $obj, 
       F90         => [$F90], 
       %opts
     );
