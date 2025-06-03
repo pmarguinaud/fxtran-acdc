@@ -33,9 +33,6 @@ use Fxtran::Loop;
 use Fxtran::Stack;
 use Fxtran::Subroutine;
 
-my $linkTypes = &Fxtran::IO::Link::link ('types-fieldapi-dir' => 'types-fieldapi');
-my $types = $linkTypes->{decls};
-
 &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 5000));
 &fxtran::setOptions (qw (Statement -line-length 5000));
 

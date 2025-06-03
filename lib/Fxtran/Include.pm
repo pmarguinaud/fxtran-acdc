@@ -41,9 +41,9 @@ sub removeUnusedIncludes
 
 sub addInclude
 {
-  my $d = shift;
+  my $pu = shift;
 
-  my ($dp) = &F ('./specification-part/declaration-part', $d);
+  my ($dp) = &F ('./specification-part/declaration-part', $pu);
 
   my $X = &n ('<C/>');
 

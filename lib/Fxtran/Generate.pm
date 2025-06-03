@@ -121,6 +121,7 @@ my %options= do
   types-constant-dir=s      -- Directory with constant type information                                                                     --  types-constant
   types-fieldapi-dir=s      -- Directory with Field API type information                                                                    --  types-fieldapi
   suffix-pointerparallel=s  -- Suffix for parallel routines                                                                                 --  _PARALLEL
+  suffix-singleblock=s      -- Suffix for single block routines                                                                             --  _SINGLEBLOCK
   ydcpg_opts                -- Change KIDIA, KFDIA -> YDCPG_OPTS, YDCPG_BNDS
 EOF
 
@@ -467,7 +468,7 @@ sub methods
 }
 
 &click (<< "EOF");
-@options{qw (dir pragma tmp merge-interfaces suffix-singlecolumn suffix-pointerparallel ydcpg_opts)}
+@options{qw (dir pragma tmp merge-interfaces suffix-singlecolumn suffix-singleblock suffix-pointerparallel ydcpg_opts)}
 EOF
 sub interface
 {
@@ -493,20 +494,84 @@ sub interface
 
   &Fxtran::Util::loadModule ('Fxtran::Generate::Interface');
 
-  for my $method (qw (singlecolumn pointerparallel))
+  my @method = qw (singlecolumn singleblock pointerparallel);
+
+  for my $method (@method)
     {
       &Fxtran::Generate::Interface::interface ($doc, \@text, $opts, \%intfb, $method);
     }
 
   my $sub = &basename ($F90, qw (.F90));
   
-  &Fxtran::Util::updateFile ("$opts->{dir}/$sub$ext", << "EOF");
-INTERFACE
-$intfb{regular}
-$intfb{singlecolumn}
-$intfb{pointerparallel}
-END INTERFACE
+  &Fxtran::Util::updateFile 
+  (
+    "$opts->{dir}/$sub$ext", 
+    join ("\n", 'INTERFACE', map ({ $intfb{$_} } ('regular', @method)), 'END INTERFACE', '')
+  );
+
+}
+
+&click (<< "EOF");
+@options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 style 
+             suffix-singlecolumn suffix-singleblock version)}
 EOF
+sub singleblock
+{
+  my ($opts, @args) = @_;
+
+  &Fxtran::Util::loadModule ('Fxtran::SingleBlock');
+
+  my ($F90) = @args;
+
+  $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
+
+  $opts->{dir} = 'File::Spec'->rel2abs ($opts->{dir});
+  
+  if ($opts->{dir} ne 'File::Spec'->rel2abs (&dirname ($F90)))
+    {
+      &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
+    }
+
+  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{'suffix-singleblock'}) . '.F90'}eo;
+  
+  $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
+  
+  if ($opts->{'only-if-newer'})
+    {
+      my $st = stat ($F90);
+      my $stout = stat ($F90out);
+      if ($st && $stout)
+        {
+          exit (0) unless ($st->mtime > $stout->mtime);
+        }
+    }
+  
+  my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
+  
+  &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
+  
+  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -directive ACDC -canonic)], dir => $opts->{tmp});
+  
+  &Fxtran::Canonic::makeCanonic ($d, %$opts);
+  
+  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
+  
+  $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
+
+  my @pu = &F ('./object/file/program-unit', $d);
+  
+  my $NAME = uc (&basename ($F90out, qw (.F90)));
+  
+  for my $pu (@pu)
+    {
+      &Fxtran::SingleBlock::processSingleRoutine ($pu, $find, %$opts);
+    }
+  
+  &Fxtran::Util::addVersion ($d)
+    if ($opts->{version});
+  
+  &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
+
 
 }
 

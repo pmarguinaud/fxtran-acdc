@@ -85,11 +85,19 @@ sub insertParallelLoopGang
   &insertDirective ($p, 'PARALLEL LOOP GANG', %c);
 }
 
+sub insertParallelLoopGangVector
+{
+  shift;
+  my ($p, %c) = @_;
+  &insertDirective ($p, 'PARALLEL LOOP GANG VECTOR', %c);
+}
+
 sub insertData
 {
   shift;
   my ($p, %c) = @_;
   &insertDirective ($p, 'DATA', %c);
+  $p->parentNode->insertAfter (&t ("\n"), $p);
   $p->parentNode->insertAfter (&n ("<C>!\$ACC END DATA</C>"), $p);
   $p->parentNode->insertAfter (&t ("\n"), $p);
 }
