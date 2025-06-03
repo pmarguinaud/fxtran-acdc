@@ -133,7 +133,7 @@ EOF
           $do->insertBefore (&t ("\n"), $do_jlon);
           $do->insertBefore (&t ("\n"), $do_jlon);
 
-          &Fxtran::Stack::iniStack ($do_jlon, 0, $opts{stack84}, $JBLKMIN, $KGPBLKS)
+          &Fxtran::Stack::iniStack ($do_jlon, $opts{stack84}, $JBLKMIN, $KGPBLKS)
             if ($stackRequired);
           
           if ($style->customIterator ())

@@ -90,6 +90,8 @@ sub insertData
   shift;
   my ($p, %c) = @_;
   &insertDirective ($p, 'DATA', %c);
+  $p->parentNode->insertAfter (&n ("<C>!\$ACC END DATA</C>"), $p);
+  $p->parentNode->insertAfter (&t ("\n"), $p);
 }
 
 sub insertLoopVector

@@ -13,6 +13,7 @@ use Data::Dumper;
 
 use FindBin qw ($Bin);
 use lib $Bin;
+use Fxtran::Common;
 use Fxtran;
 use Fxtran::FieldAPI;
 use Fxtran::Ref;
@@ -44,13 +45,11 @@ sub removeNpromaConstructs
 
 sub fixCOUNTIdiom
 {
-  my $d = shift;
-
-  my ($ep) = &F ('./execution-part', $d);
+  my $s = shift;
 
   # MesoNH only (hopefully)
  
-  my @E2 = &F ('.//a-stmt/E-2/named-E[string(N)="COUNT"]', $ep);
+  my @E2 = &F ('.//a-stmt/E-2/named-E[string(N)="COUNT"]', $s);
 
   for my $E2 (@E2)
     {
@@ -64,10 +63,7 @@ sub fixCOUNTIdiom
 
 sub fixSUMIdiom
 {
-  my ($d, %opts) = @_;
-
-  my ($ep) = &F ('./execution-part', $d);
-
+  my ($s, %opts) = @_;
 
   my $kidia = $opts{style}->kidia ();
   my $kfdia = $opts{style}->kfdia ();
@@ -99,7 +95,7 @@ sub fixSUMIdiom
        . "[./R-LT/$R-R/element-LT/element/named-E/R-LT/array-R/section-subscript-LT"
        . "/section-subscript[string(.)=\"$kidia:$kfdia\"]]";
 
-      my @sum = &F ($xpath, $ep);
+      my @sum = &F ($xpath, $s);
 
 # So we need to replace the SUM by a scalar expression
 
@@ -113,39 +109,42 @@ sub fixSUMIdiom
 }
 
 
-sub removeNpromaLoops
+sub removeNpromaLoopsInSection
 {
-  my $d = shift;
+  my $s = shift;
   my %opts = @_;
-  
-  my $style = $opts{style};
 
-  my @klon  = $style->nproma ();
-  my $kidia = $style->kidia ();
-  my $kfdia = $style->kfdia ();
-  my $jlon  = $style->jlon ();
+  my $var2dim = $opts{var2dim};
 
-  my @pointer = @{ $opts{pointer} || [] };
-
-  my ($dp) = &F ('./specification-part/declaration-part', $d);
-  my ($ep) = &F ('./execution-part', $d);
-
-  &fixSUMIdiom ($d, %opts);
-  &fixCOUNTIdiom ($d, %opts);
+  &fixSUMIdiom ($s, %opts);
+  &fixCOUNTIdiom ($s, %opts);
  
-  unless (&F ('.//T-decl-stmt[.//EN-decl[string(EN-N)="?"]]', $jlon, $d))
+  &removeNpromaConstructs ($s, %opts);
+  
+  for my $var (sort keys (%$var2dim))
     {
-      my $decl = $opts{style}->declareJlon ();
-      $ep->appendChild ($_) for (&t ("\n", $decl));
+      my $nd = $var2dim->{$var};
+      my @expr = &F ('.//named-E[string(N)="?"][not(ancestor::call-stmt)]', $var, $s);
+      for my $expr (@expr)
+        {
+          &setJlon ($expr, $nd, %opts);
+        }
     }
 
 
-  &Fxtran::Decl::declare ($d, $style->declareJlon ());
+}
 
-  $ep->insertBefore ($_, $ep->firstChild) for (&t ("\n"), &t ("\n"), &s ("$jlon = $kidia"), &t ("\n"));
-  
-  &removeNpromaConstructs ($d, %opts);
-  
+sub getVarToDim
+{
+  my $pu = shift;
+  my %opts = @_;
+
+  my ($dp) = &F ('./specification-part/declaration-part', $pu);
+
+  my $style = $opts{style};
+
+  my @klon  = $style->nproma ();
+
   # NPROMA variables
 
   my @en_decl;
@@ -155,30 +154,47 @@ sub removeNpromaLoops
       push @en_decl, &F ('.//EN-decl[./array-spec/shape-spec-LT/shape-spec[string(upper-bound)="?"]]', $klon, $dp);
     }
 
-  my %NPROMA;
+  my %var2dim;
 
   for my $en_decl (@en_decl)
     {
       my @ss = &F ('./array-spec/shape-spec-LT/shape-spec', $en_decl);
       my ($N) = &F ('./EN-N', $en_decl, 1);
-      $NPROMA{$N} = scalar (@ss);
+      $var2dim{$N} = scalar (@ss);
     }
 
-  if ($opts{fieldAPI})
+  return \%var2dim;
+}
+
+sub removeNpromaLoops
+{
+  my $pu = shift;
+  my %opts = @_;
+  
+  my $style = $opts{style};
+
+  my $kidia = $style->kidia ();
+  my $jlon  = $style->jlon ();
+
+  my ($dp) = &F ('./specification-part/declaration-part', $pu);
+  my ($ep) = &F ('./execution-part', $pu);
+
+  unless (&F ('./T-decl-stmt[.//EN-decl[string(EN-N)="?"]]', $jlon, $dp))
     {
-      &removeNpromaLoopsFieldAPI ($d, $d, %opts);
+      my $decl = $opts{style}->declareJlon ();
+      $ep->appendChild ($_) for (&t ("\n", $decl));
     }
 
-  for my $NPROMA (sort keys (%NPROMA))
-    {
-      my $nd = $NPROMA{$NPROMA};
-      my @expr = &F ('.//named-E[string(N)="?"][not(ancestor::call-stmt)]', $NPROMA, $ep);
-      for my $expr (@expr)
-        {
-          &setJlon ($expr, $nd, %opts);
-        }
-    }
+  &Fxtran::Decl::declare ($pu, $style->declareJlon ());
 
+  $ep->insertBefore ($_, $ep->firstChild) for (&t ("\n"), &t ("\n"), &s ("$jlon = $kidia"), &t ("\n"));
+
+  &removeNpromaLoopsInSection
+  (
+    $ep,
+    var2dim => &getVarToDim ($pu, %opts),
+    %opts,
+  );
 }
 
 sub removeNpromaLoopsFieldAPI
@@ -216,7 +232,7 @@ sub removeNpromaLoopsFieldAPI
     }
 
 }
-
+ 
 sub setJlon
 {
   my ($expr, $nd) = @_;

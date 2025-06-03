@@ -6,54 +6,73 @@ package Fxtran::Stack;
 # philippe.marguinaud@meteo.fr
 #
 
-
-use Fxtran;
-use strict;
 use Data::Dumper;
+
+use strict;
+
+use Fxtran::Common;
 use Fxtran::Scope;
+use Fxtran;
+
+sub iniStackSingleBlock
+{
+  my ($do_jlon, $stack84) = @_;
+
+  if ($stack84)
+    {
+      for my $size (4, 8)
+        {
+          $do_jlon->insertAfter (&s ("YLSTACK%U${size} = stack_u${size} (YSTACK, 1, 1)"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&s ("YLSTACK%L${size} = stack_l${size} (YSTACK, 1, 1)"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
+        }
+    }
+  else
+    {
+      $do_jlon->insertAfter (&s ("YLSTACK%U = stack_u (YSTACK, 1, 1)"), $do_jlon->firstChild);
+      $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
+      $do_jlon->insertAfter (&s ("YLSTACK%L = stack_l (YSTACK, 1, 1)"), $do_jlon->firstChild);
+      $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
+    }
+
+
+}
 
 sub iniStack
 {
-  my ($do_jlon, $indent, $stack84, $JBLKMIN, $KGPBLKS) = @_;
+  my ($do_jlon, $stack84, $JBLKMIN, $KGPBLKS) = @_;
 
   if ($stack84)
     {
       for my $size (4, 8)
         {
           $do_jlon->insertAfter (&s ("YLSTACK%U${size} = stack_u${size} (YSTACK, JBLK-$JBLKMIN+1, $KGPBLKS)"), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&s ("YLSTACK%L${size} = stack_l${size} (YSTACK, JBLK-$JBLKMIN+1, $KGPBLKS)"), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
         }
     }
   else
     {
       $do_jlon->insertAfter (&s ("YLSTACK%U = stack_u (YSTACK, JBLK-$JBLKMIN+1, $KGPBLKS)"), $do_jlon->firstChild);
-      $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+      $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
       $do_jlon->insertAfter (&s ("YLSTACK%L = stack_l (YSTACK, JBLK-$JBLKMIN+1, $KGPBLKS)"), $do_jlon->firstChild);
-      $do_jlon->insertAfter (&t ("\n" . (' ' x $indent)), $do_jlon->firstChild);
+      $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
     }
 
 
 }
 
-sub addStack
+sub addStackInSection
 {
-  my ($d, %opts) = @_;
-
-  my @klon = $opts{style}->nproma ();
-
-  my @pointer = @{ $opts{pointer} || [] };
+  my ($s, %opts) = @_;
 
   my $skip = $opts{skip};
 
-  my ($up) = &F ('./specification-part/use-part', $d);
-  my ($dp) = &F ('./specification-part/declaration-part', $d);
-  my ($ep) = &F ('./execution-part', $d);
+  my @call = $s ? &F ('.//call-stmt', $s) : ();
 
-  my @call = $ep ? &F ('.//call-stmt', $ep) : ();
-
-  my $needYLSTACK = 0;
+  my $count = 0;
 
   for my $call (@call)
     {
@@ -74,10 +93,27 @@ sub addStack
 
       $argspec->appendChild ($arg);
 
-      $needYLSTACK++;
+      $count++;
     }
 
-  my ($dummy_arg_lt) = &F ('./subroutine-stmt/dummy-arg-LT', $d);
+  return $count;
+}
+
+sub addStack
+{
+  my ($pu, %opts) = @_;
+
+  my @klon = $opts{style}->nproma ();
+
+  my @pointer = @{ $opts{pointer} || [] };
+
+  my ($up) = &F ('./specification-part/use-part', $pu);
+  my ($dp) = &F ('./specification-part/declaration-part', $pu);
+  my ($ep) = &F ('./execution-part', $pu);
+
+  my $needYLSTACK = &addStackInSection ($ep, %opts);
+
+  my ($dummy_arg_lt) = &F ('./subroutine-stmt/dummy-arg-LT', $pu);
 
   my @args = &F ('./arg-N', $dummy_arg_lt, 1);
 
