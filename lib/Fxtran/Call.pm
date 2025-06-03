@@ -14,17 +14,17 @@ use Data::Dumper;
 
 sub addSuffix
 {
-  my ($d, %opts) = @_;
+  my ($pu, %opts) = @_;
 
   my ($suffix, $match, $section) = @opts{qw (suffix match section)};
 
-  my ($ep) = &F ('./execution-part', $d);
-  my ($dp) = &F ('./specification-part/declaration-part', $d);
-  my ($up) = &F ('./specification-part/use-part', $d);
+  my ($ep) = &F ('./execution-part', $pu);
+  my ($dp) = &F ('./specification-part/declaration-part', $pu);
+  my ($up) = &F ('./specification-part/use-part', $pu);
 
-  $section ||= $d;
+  $section ||= $pu;
 
-  my %contained = map { ($_, 1) } &F ('//subroutine-stmt[count(ancestor::program-unit)>1]/subroutine-N/N/n/text()', $d, 1);
+  my %contained = map { ($_, 1) } &F ('//subroutine-stmt[count(ancestor::program-unit)>1]/subroutine-N/N/n/text()', $pu, 1);
 
   my %proc;
   for my $proc (&F ('.//call-stmt/procedure-designator', $section))
@@ -40,7 +40,6 @@ sub addSuffix
       $proc{$proc->textContent} = 1;
       $proc->setData ($proc->textContent . $suffix);
     }
-
 
   PROC: for my $proc (keys (%proc))
     {   

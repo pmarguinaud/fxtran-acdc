@@ -14,16 +14,16 @@ use Data::Dumper;
   
 sub addSuffix
 {
-  my ($d, $suffix) = @_;
+  my ($pu, $suffix) = @_;
 
-  my @sn = &F ('./subroutine-stmt/subroutine-N/N/n/text()|./end-subroutine-stmt/subroutine-N/N/n/text()', $d);
+  my @sn = &F ('./subroutine-stmt/subroutine-N/N/n/text()|./end-subroutine-stmt/subroutine-N/N/n/text()', $pu);
 
   for my $sn (@sn) 
     {
       $sn->setData ($sn->data . $suffix);
     }
 
-  return unless (my ($ep) = &F ('./execution-part', $d));
+  return unless (my ($ep) = &F ('./execution-part', $pu));
 
   my @drhook_name = &F ('.//call-stmt[string(procedure-designator)="DR_HOOK"]/arg-spec/arg/string-E/S/text()', $ep);
 

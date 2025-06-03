@@ -39,7 +39,7 @@ sub iniStackSingleBlock
 
 }
 
-sub iniStack
+sub iniStackMultipleBlocks
 {
   my ($do_jlon, $stack84, $JBLKMIN, $KGPBLKS) = @_;
 
