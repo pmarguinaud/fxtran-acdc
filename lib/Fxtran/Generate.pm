@@ -516,6 +516,7 @@ sub interface
 @options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 style 
              suffix-singlecolumn suffix-singleblock version)}
   drhooktonvtx                    -- Change DrHook calls into NVTX calls
+  inlined=s@                      -- List of routines to inline
 EOF
 sub singleblock
 {
