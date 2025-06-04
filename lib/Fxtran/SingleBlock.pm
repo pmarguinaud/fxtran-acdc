@@ -122,7 +122,7 @@ EOF
 
       # Add OpenACC directive  
 
-      $pragma->insertParallelLoopGangVector ($do, PRIVATE => [sort (keys (%priv))], COLLAPSE => [2]);
+      $pragma->insertParallelLoopGangVector ($do, PRIVATE => [sort (keys (%priv))]);
   
     }
   
