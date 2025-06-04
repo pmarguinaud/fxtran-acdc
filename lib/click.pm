@@ -447,7 +447,7 @@ sub hashToCommandLine
             }
         }
       @v
-    } keys ($hopts);
+    } keys (%$hopts);
 
   return @opts;
 }

@@ -23,6 +23,7 @@ use Fxtran::Util;
 use Fxtran::Directive;
 use Fxtran::PATH;
 use Fxtran::Interface;
+use Fxtran::NVTX;
 
 use click;
 
@@ -514,6 +515,7 @@ sub interface
 &click (<< "EOF");
 @options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 style 
              suffix-singlecolumn suffix-singleblock version)}
+  drhooktonvtx                    -- Change DrHook calls into NVTX calls
 EOF
 sub singleblock
 {
@@ -559,12 +561,22 @@ sub singleblock
   $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
 
   my @pu = &F ('./object/file/program-unit', $d);
-  
+
   my $NAME = uc (&basename ($F90out, qw (.F90)));
   
   for my $pu (@pu)
     {
       &Fxtran::SingleBlock::processSingleRoutine ($pu, $find, %$opts);
+    }
+  
+  @pu = &F ('./object/file/program-unit', $d);
+
+  if ($opts->{'drhooktonvtx'})
+    {
+      for my $pu (@pu)
+        {
+          &Fxtran::NVTX::drHookToNVTX ($pu);
+        }
     }
   
   &Fxtran::Util::addVersion ($d)
