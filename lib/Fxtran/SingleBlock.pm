@@ -1,5 +1,7 @@
 package Fxtran::SingleBlock;
 
+use Data::Dumper;
+
 use strict;
 
 use Fxtran::Common;
@@ -29,9 +31,12 @@ sub processSingleRoutine
   my $kidia = $style->kidia ();
   my $kfdia = $style->kfdia ();
   
+  # Arrays dimensioned with KLON and their dimensions
+
   my $var2dim = &Fxtran::Loop::getVarToDim ($pu, style => $style);
   
   {
+  # Derived types, assume they are present on the device
   my @type = &F ('./T-decl-stmt[./_T-spec_/derived-T-spec]/EN-decl-LT/EN-decl/EN-N', $dp, 1);
   my %type = map { ($_, 1) } @type;
   
@@ -41,13 +46,19 @@ sub processSingleRoutine
   my @present = grep { $var2dim->{$_} || $type{$_} } @arg;
   my @create = grep { ! $arg{$_} } sort (keys (%$var2dim));
   
+  # Create local arrays, assume argument arrays are on the device
   $pragma->insertData ($ep, PRESENT => \@present, CREATE => \@create);
   }
   
+  # Parallel sections
+
   my @par = &F ('.//parallel-section', $pu);
   
   for my $par (@par)
     {
+
+      # Make the section single column
+
       &Fxtran::Loop::removeNpromaLoopsInSection
       (
         $par, 
@@ -55,6 +66,8 @@ sub processSingleRoutine
         var2dim => $var2dim,
       );
      
+      # Move section contents into a DO loop over KLON
+
       my ($do) = &fxtran::parse (fragment => << "EOF");
 DO $jlon = $kidia, $kfdia
 ENDDO
@@ -67,20 +80,28 @@ EOF
   
       $par->replaceNode ($do);    
   
+      # Use a stack
+
       if (&Fxtran::Stack::addStackInSection ($do))
         {
           &Fxtran::Stack::iniStackSingleBlock ($do, stack84 => 1);
         }
-  
-      my %priv;
-      for my $expr (&F ('.//named-E', $do))
+
+      # Replace KIDIA/KFDIA by JLON in call statements
+
+      for my $call (&F ('.//call-stmt', $do))
         {
-          my ($n) = &F ('./N', $expr, 1);
-          next if ($var2dim->{$n});
-          my $p = $expr->parentNode;
-          $priv{$n}++ if (($p->nodeName eq 'E-1') || ($p->nodeName eq 'do-V'));
+          for my $var ($kidia,, $kfdia)
+            {
+              for my $expr (&F ('.//named-E[string(.)="?"]', $var, $call))
+                {
+                  $expr->replaceNode (&e ($jlon));
+                }
+            }
         }
-  
+
+      # Add single column suffix to routines called in this section
+
       &Fxtran::Call::addSuffix 
       (
         $pu,
@@ -89,10 +110,24 @@ EOF
         'merge-interfaces' => $opts{'merge-interfaces'},
       );
   
+      # Find private variables
+      my %priv;
+      for my $expr (&F ('.//named-E', $do))
+        {
+          my ($n) = &F ('./N', $expr, 1);
+          next if ($var2dim->{$n});
+          my $p = $expr->parentNode;
+          $priv{$n}++ if (($p->nodeName eq 'E-1') || ($p->nodeName eq 'do-V'));
+        }
+
+      # Add OpenACC directive  
+
       $pragma->insertParallelLoopGangVector ($do, PRIVATE => [sort (keys (%priv))], COLLAPSE => [2]);
   
     }
   
+  # Add single block suffix to routines not called from within parallel sections
+
   &Fxtran::Call::addSuffix 
   (
     $pu,
