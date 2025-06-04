@@ -45,7 +45,7 @@ my @extern_inc = qw (setup_trans.h setup_trans0.h inv_trans.h gath_grid.h gath_s
 
 for my $mod (@extern_mod)
   {
-    next if (-f lc ($mod) . '.F90');
+    next if (-f $opts{SRC} . '/' . lc ($mod) . '.F90');
     push @sys, $mod;
   }
 

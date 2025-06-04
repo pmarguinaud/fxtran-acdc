@@ -12,7 +12,7 @@ sub ifdef
 
   my $p = $stmt->parentNode ();
 
-  $p->insertBefore ($_, $stmt) for (&n ('<cpp>#ifdef PGI</cpp>'), &t ("\n"));
+  $p->insertBefore ($_, $stmt) for (&n ("<cpp>#ifdef $macro</cpp>"), &t ("\n"));
   $p->insertAfter ($_, $stmt) for (&n ('<cpp>#endif</cpp>'), &t ("\n"));
 }
 
@@ -29,7 +29,7 @@ sub drHookToNVTX
 
   $use->replaceNode (my $use_nvtx = &s ('USE NVTX, ONLY : NVTXSTARTRANGE, NVTXENDRANGE'));
 
-  &ifdef (PGI => $use_nvtx) if ($cpp);
+  &ifdef (__PGI => $use_nvtx) if ($cpp);
 
   if (my ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="ZHOOK_HANDLE"]]', $dp))
     {
@@ -50,7 +50,7 @@ sub drHookToNVTX
         
       $call->replaceNode ($call_nvtx);
 
-      &ifdef (PGI => $call_nvtx) if ($cpp);
+      &ifdef (__PGI => $call_nvtx) if ($cpp);
     }
 
 
