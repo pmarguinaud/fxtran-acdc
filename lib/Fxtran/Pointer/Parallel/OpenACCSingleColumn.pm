@@ -117,7 +117,7 @@ EOF
           $do->insertBefore (&t ("\n"), $do_jlon);
           $do->insertBefore (&t ("\n"), $do_jlon);
 
-          &Fxtran::Stack::iniStackMultipleBlocks ($do_jlon, $opts{stack84}, $JBLKMIN, $KGPBLKS)
+          &Fxtran::Stack::iniStackManyBlocks ($do_jlon, stack84 => $opts{stack84}, JBLKMIN => $JBLKMIN, KGPBLKS => $KGPBLKS)
              if ($stackRequired);
 
           if ($style->customIterator ())

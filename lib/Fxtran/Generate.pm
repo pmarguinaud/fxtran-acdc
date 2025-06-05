@@ -123,6 +123,7 @@ my %options= do
   types-fieldapi-dir=s      -- Directory with Field API type information                                                                    --  types-fieldapi
   suffix-pointerparallel=s  -- Suffix for parallel routines                                                                                 --  _PARALLEL
   suffix-singleblock=s      -- Suffix for single block routines                                                                             --  _SINGLEBLOCK
+  suffix-manyblocks=s       -- Suffix for many blocks routines                                                                              --  _MANYBLOCKS
   ydcpg_opts                -- Change KIDIA, KFDIA -> YDCPG_OPTS, YDCPG_BNDS
 EOF
 
@@ -568,6 +569,82 @@ sub singleblock
   for my $pu (@pu)
     {
       &Fxtran::SingleBlock::processSingleRoutine ($pu, $find, %$opts);
+    }
+  
+  @pu = &F ('./object/file/program-unit', $d);
+
+  if ($opts->{'drhooktonvtx'})
+    {
+      for my $pu (@pu)
+        {
+          &Fxtran::NVTX::drHookToNVTX ($pu);
+        }
+    }
+  
+  &Fxtran::Util::addVersion ($d)
+    if ($opts->{version});
+  
+  &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
+
+
+}
+
+&click (<< "EOF");
+@options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 style 
+             suffix-singlecolumn suffix-manyblocks version)}
+  drhooktonvtx                    -- Change DrHook calls into NVTX calls
+  inlined=s@                      -- List of routines to inline
+EOF
+sub manyblocks
+{
+  my ($opts, @args) = @_;
+
+  &Fxtran::Util::loadModule ('Fxtran::ManyBlocks');
+
+  my ($F90) = @args;
+
+  $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
+
+  $opts->{dir} = 'File::Spec'->rel2abs ($opts->{dir});
+  
+  if ($opts->{dir} ne 'File::Spec'->rel2abs (&dirname ($F90)))
+    {
+      &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
+    }
+
+  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{'suffix-manyblocks'}) . '.F90'}eo;
+  
+  $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
+  
+  if ($opts->{'only-if-newer'})
+    {
+      my $st = stat ($F90);
+      my $stout = stat ($F90out);
+      if ($st && $stout)
+        {
+          exit (0) unless ($st->mtime > $stout->mtime);
+        }
+    }
+  
+  my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
+  
+  &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
+  
+  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -directive ACDC -canonic)], dir => $opts->{tmp});
+  
+  &Fxtran::Canonic::makeCanonic ($d, %$opts);
+  
+  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
+  
+  $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
+
+  my @pu = &F ('./object/file/program-unit', $d);
+
+  my $NAME = uc (&basename ($F90out, qw (.F90)));
+  
+  for my $pu (@pu)
+    {
+      &Fxtran::ManyBlocks::processSingleRoutine ($pu, $find, %$opts);
     }
   
   @pu = &F ('./object/file/program-unit', $d);

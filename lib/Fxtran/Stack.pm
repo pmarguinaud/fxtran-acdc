@@ -16,9 +16,9 @@ use Fxtran;
 
 sub iniStackSingleBlock
 {
-  my ($do_jlon, $stack84) = @_;
+  my ($do_jlon, %opts) = @_;
 
-  if ($stack84)
+  if ($opts{stack84})
     {
       for my $size (4, 8)
         {
@@ -39,11 +39,13 @@ sub iniStackSingleBlock
 
 }
 
-sub iniStackMultipleBlocks
+sub iniStackManyBlocks
 {
-  my ($do_jlon, $stack84, $JBLKMIN, $KGPBLKS) = @_;
+  my ($do_jlon, %opts) = @_;
 
-  if ($stack84)
+  my ($JBLKMIN, $KGPBLKS) = @opts{qw (JBLKMIN KGPBLKS)};
+
+  if ($opts{stack84})
     {
       for my $size (4, 8)
         {

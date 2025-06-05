@@ -35,6 +35,8 @@ sub newFromDocument
 
   &find ({wanted => sub { my $f = $File::Find::name; push @pm, $f if ($f =~ m/\.pm$/o) }, no_chdir => 1}, $dir);
 
+  @pm = sort @pm;
+
   for my $pm (@pm)
     {
       $pm = 'File::Spec'->abs2rel ($pm, $dir);
@@ -64,7 +66,7 @@ sub newFromDocument
 
   my %rank = map { ($_, $rank->($_)) } @pm;
 
-  @pm = sort { $rank{$b} <=> $rank{$a} } @pm;
+  @pm = sort { ($rank{$b} <=> $rank{$a}) || ($a cmp $b) } @pm;
 
   for my $pm (@pm)
     {

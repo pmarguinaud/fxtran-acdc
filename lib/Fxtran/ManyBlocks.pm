@@ -1,4 +1,4 @@
-package Fxtran::SingleBlock;
+package Fxtran::ManyBlocks;
 
 use Data::Dumper;
 
@@ -74,31 +74,38 @@ sub processSingleRoutine
         style => $style, 
         var2dim => $var2dim,
       );
-     
+
+      # Get JLON indexed expressions and add JBLK as last index
+
+      for my $sslt (&F ('.//array-R/section-subscript-LT[./section-subscript[string(.)="?"]]', $jlon, $par))
+        {
+          $sslt->appendChild ($_) for (&t (", "), &n ('<section-subscript><lower-bound>' . &e ('JBLK') . '</lower-bound></section-subscript>'));
+        }
+
       # Move section contents into a DO loop over KLON
 
-      my ($do) = &fxtran::parse (fragment => << "EOF");
+      my ($do_jlon) = &fxtran::parse (fragment => << "EOF");
 DO $jlon = $kidia, $kfdia
 ENDDO
 EOF
   
       for my $x ($par->childNodes ())
         {
-          $do->insertBefore ($x, $do->lastChild);
+          $do_jlon->insertBefore ($x, $do_jlon->lastChild);
         }
   
-      $par->replaceNode ($do);    
+      $par->replaceNode ($do_jlon);    
   
       # Use a stack
 
-      if (&Fxtran::Stack::addStackInSection ($do))
+      if (&Fxtran::Stack::addStackInSection ($do_jlon))
         {
-          &Fxtran::Stack::iniStackSingleBlock ($do, stack84 => 1);
+          &Fxtran::Stack::iniStackManyBlocks ($do_jlon, stack84 => 1, JBLKMIN => 1, KGPBLKS => 'KGPBLKS');
         }
 
       # Replace KIDIA/KFDIA by JLON in call statements
 
-      for my $call (&F ('.//call-stmt', $do))
+      for my $call (&F ('.//call-stmt', $do_jlon))
         {
           for my $var ($kidia,, $kfdia)
             {
@@ -114,14 +121,29 @@ EOF
       &Fxtran::Call::addSuffix 
       (
         $pu,
-        section => $do,
+        section => $do_jlon,
         suffix => $opts{'suffix-singlecolumn'},
         'merge-interfaces' => $opts{'merge-interfaces'},
       );
   
+      # Move loop over NPROMA into a loop over the blocks
+  
+      my ($do_jblk) = &fxtran::parse (fragment => << "EOF");
+DO JBLK = 1, KGPBLKS
+ENDDO
+EOF
+
+      my $do_jlon1 = $do_jlon->cloneNode (); $do_jlon1->appendChild ($_) for ($do_jlon->childNodes ());
+
+      $do_jblk->insertBefore ($_, $do_jblk->lastChild) 
+        for ($do_jlon1, &t ("\n"));
+
+      $do_jlon->replaceNode ($do_jblk); $do_jlon = $do_jlon1;
+
       # Find private variables
+
       my %priv;
-      for my $expr (&F ('.//named-E', $do))
+      for my $expr (&F ('.//named-E', $do_jlon))
         {
           my ($n) = &F ('./N', $expr, 1);
           next if ($var2dim->{$n});
@@ -131,7 +153,9 @@ EOF
 
       # Add OpenACC directive  
 
-      $pragma->insertParallelLoopGangVector ($do, PRIVATE => [sort (keys (%priv))]);
+      $pragma->insertLoopVector ($do_jlon, PRIVATE => [sort (keys (%priv))]);
+
+      $pragma->insertParallelLoopGang ($do_jblk, PRIVATE => ['JBLK']);
     }
   
   # Add single block suffix to routines not called from within parallel sections
@@ -139,12 +163,46 @@ EOF
   &Fxtran::Call::addSuffix 
   (
     $pu,
-    suffix => $opts{'suffix-singleblock'},
+    suffix => $opts{'suffix-manyblocks'},
     'merge-interfaces' => 1,
     match => sub { my $proc = shift; ! ($proc =~ m/$opts{'suffix-singlecolumn'}$/i) },
   );
+
+  # Add KGPLKS argument to manyblock routines
   
-  &Fxtran::Subroutine::addSuffix ($pu, $opts{'suffix-singleblock'});
+  for my $call (&F ('.//call-stmt[contains(string(procedure-designator),"?")]', $opts{'suffix-manyblocks'}, $ep))
+    {
+      for my $nproma (@nproma)
+        {
+          next unless (my ($arg) = &F ('./arg-spec/arg[string(.)="?"]', $nproma, $call));
+          $arg->parentNode->insertAfter ($_, $arg) for (&n ('<arg>' . &e ('KGPBLKS') . '</arg>'), &t (", "));
+          last;
+        }
+    }
+  
+  &Fxtran::Subroutine::addSuffix ($pu, $opts{'suffix-manyblocks'});
+
+
+  for my $nproma (@nproma)
+    {
+      next unless (my ($arg) = &F ('./subroutine-stmt/dummy-arg-LT/arg-N[string(.)="?"]', $nproma, $pu));
+      $arg->parentNode->insertAfter ($_, $arg) for (&n ('<arg-N><N><n>KGPBLKS</n></N></arg-N>'), &t (", "));      
+
+      my ($decl_nproma) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $nproma, $dp);
+
+      my $decl_kgpblks = $decl_nproma->cloneNode (1);
+
+      my ($n) = &F ('./EN-decl-LT/EN-decl/EN-N/N/n/text()', $decl_kgpblks);
+
+      $n->setData ('KGPBLKS');
+
+      $dp->insertAfter ($_, $decl_nproma) for ($decl_kgpblks, &t ("\n"));
+
+      last;
+    }
+
+
+  # Stack definition & declaration
   
   my ($implicit) = &F ('.//implicit-none-stmt', $pu);
   
@@ -154,6 +212,34 @@ EOF
 
   &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLSTACK');
   &Fxtran::Decl::use ($pu, 'USE STACK_MOD');
+
+  # Add extra dimensions to all nproma arrays + make all array spec implicit
+
+
+  for my $sslt (&F ('./T-decl-stmt/EN-decl-LT/EN-decl/array-spec/shape-spec-LT', $dp))
+    {
+      my @ss = &F ('./shape-spec', $sslt);
+
+      for my $nproma (@nproma)
+        {
+          goto NPROMA if ($ss[0]->textContent eq $nproma);
+        }
+
+      next;
+
+NPROMA:
+
+     my $iss = &n ('<shape-spec>:</shape-spec>');
+
+     for (@ss)
+       {
+         $_->replaceNode ($iss->cloneNode (1));
+       }
+
+     $sslt->appendChild ($_) for (&t (", "), $iss);
+
+    }
+
 }
 
 1;
