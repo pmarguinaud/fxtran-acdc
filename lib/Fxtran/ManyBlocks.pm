@@ -20,6 +20,8 @@ sub processSingleRoutine
 {
   my ($pu, $find, %opts) = @_;
 
+  my $KGPBLKS = 'KGPBLKS';
+
   for my $in (@{ $opts{inlined} })
     {
       my $f90in = $find->resolve (file => $in);
@@ -100,7 +102,7 @@ EOF
 
       if (&Fxtran::Stack::addStackInSection ($do_jlon))
         {
-          &Fxtran::Stack::iniStackManyBlocks ($do_jlon, stack84 => 1, JBLKMIN => 1, KGPBLKS => 'KGPBLKS');
+          &Fxtran::Stack::iniStackManyBlocks ($do_jlon, stack84 => 1, JBLKMIN => 1, KGPBLKS => $KGPBLKS);
         }
 
       # Replace KIDIA/KFDIA by JLON in call statements
@@ -129,7 +131,7 @@ EOF
       # Move loop over NPROMA into a loop over the blocks
   
       my ($do_jblk) = &fxtran::parse (fragment => << "EOF");
-DO JBLK = 1, KGPBLKS
+DO JBLK = 1, $KGPBLKS
 ENDDO
 EOF
 
@@ -156,6 +158,7 @@ EOF
       $pragma->insertLoopVector ($do_jlon, PRIVATE => [sort (keys (%priv))]);
 
       $pragma->insertParallelLoopGang ($do_jblk, PRIVATE => ['JBLK']);
+
     }
   
   # Add single block suffix to routines not called from within parallel sections
@@ -175,18 +178,17 @@ EOF
       for my $nproma (@nproma)
         {
           next unless (my ($arg) = &F ('./arg-spec/arg[string(.)="?"]', $nproma, $call));
-          $arg->parentNode->insertAfter ($_, $arg) for (&n ('<arg>' . &e ('KGPBLKS') . '</arg>'), &t (", "));
+          $arg->parentNode->insertAfter ($_, $arg) for (&n ('<arg>' . &e ($KGPBLKS) . '</arg>'), &t (", "));
           last;
         }
     }
   
-  &Fxtran::Subroutine::addSuffix ($pu, $opts{'suffix-manyblocks'});
-
+  # Add KGPBLKS dummy argument
 
   for my $nproma (@nproma)
     {
       next unless (my ($arg) = &F ('./subroutine-stmt/dummy-arg-LT/arg-N[string(.)="?"]', $nproma, $pu));
-      $arg->parentNode->insertAfter ($_, $arg) for (&n ('<arg-N><N><n>KGPBLKS</n></N></arg-N>'), &t (", "));      
+      $arg->parentNode->insertAfter ($_, $arg) for (&n ("<arg-N><N><n>$KGPBLKS</n></N></arg-N>"), &t (", "));      
 
       my ($decl_nproma) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $nproma, $dp);
 
@@ -194,7 +196,7 @@ EOF
 
       my ($n) = &F ('./EN-decl-LT/EN-decl/EN-N/N/n/text()', $decl_kgpblks);
 
-      $n->setData ('KGPBLKS');
+      $n->setData ($KGPBLKS);
 
       $dp->insertAfter ($_, $decl_nproma) for ($decl_kgpblks, &t ("\n"));
 
@@ -216,8 +218,10 @@ EOF
   # Add extra dimensions to all nproma arrays + make all array spec implicit
 
 
-  for my $sslt (&F ('./T-decl-stmt/EN-decl-LT/EN-decl/array-spec/shape-spec-LT', $dp))
+  for my $stmt (&F ('./T-decl-stmt', $dp))
     {
+      next unless (my ($sslt) = &F ('./EN-decl-LT/EN-decl/array-spec/shape-spec-LT', $stmt));
+
       my @ss = &F ('./shape-spec', $sslt);
 
       for my $nproma (@nproma)
@@ -229,16 +233,39 @@ EOF
 
 NPROMA:
 
-     my $iss = &n ('<shape-spec>:</shape-spec>');
-
-     for (@ss)
+     if (&F ('./attribute[string(attribute-N)="INTENT"]', $stmt))
        {
-         $_->replaceNode ($iss->cloneNode (1));
-       }
+         # Dummy argument : use implicit shape
 
-     $sslt->appendChild ($_) for (&t (", "), $iss);
+         my $iss = &n ('<shape-spec>:</shape-spec>');
+
+         for my $ss (@ss)
+           {
+             next unless (my ($ub) = &F ('./upper-bound', $ss));  # Only for dimensions with upper-bound : (N1:N2) or (N)
+             if (my ($lb) = &F ('./lower-bound', $ss))
+               {
+                 $ub->unbindNode ();                              # (N1:N2) -> (N1:)
+               }
+             else
+               {
+                 $ub->replaceNode ($iss->cloneNode (1));          # (N) -> (:)
+               }
+           }
+
+         $sslt->appendChild ($_) for (&t (", "), $iss);
+       }   
+     else
+       {
+         # Local variable : add KGPBLKS dimension
+         $sslt->appendChild ($_) for (&t (", "), &n ('<shape-spec>' . &e ($KGPBLKS) . '</shape-spec>'));
+       }
+    
 
     }
+
+  &Fxtran::Decl::declare ($pu, 'INTEGER :: JBLK');
+
+  &Fxtran::Subroutine::addSuffix ($pu, $opts{'suffix-manyblocks'});
 
 }
 

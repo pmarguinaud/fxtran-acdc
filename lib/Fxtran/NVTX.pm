@@ -53,7 +53,6 @@ sub drHookToNVTX
       &ifdef (__PGI => $call_nvtx) if ($cpp);
     }
 
-
 }
 
 1;

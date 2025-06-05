@@ -847,11 +847,15 @@ sub processTypes
           for my $methodName (sort keys (%$methods))
             {
               my $method = $methods->{$methodName};
-              my $sub = $mod . '_' . $type->{name} . '_' . $methodName . '_smod'; my $SUB = uc ($sub);
+
+#             my $sub = $mod . '_' . $type->{name} . '_' . $methodName . '_smod'; 
+              my $sub = $mod . '_' . $count . '_smod'; 
+
+              my $SUB = uc ($sub);
 
               my $file = "$sub.F90";
      
-              $file = sprintf ('%4.4d.', $count++) . $file if ($opts->{sorted});
+              $file = sprintf ('%4.4d.', $count) . $file if ($opts->{sorted});
 
               $file = "$opts->{dir}/$file";
      
@@ -871,6 +875,7 @@ EOF
 
               $tconst->insertBefore (&t ('PROCEDURE :: ' . uc ($methodName) . ' => ' . uc ($methodName) . '_' . uc ($type->{name}) . "\n"), $end);
 
+              $count++;
             }
      
         }

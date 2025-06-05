@@ -470,7 +470,7 @@ sub methods
 }
 
 &click (<< "EOF");
-@options{qw (dir pragma tmp merge-interfaces suffix-singlecolumn suffix-singleblock suffix-pointerparallel ydcpg_opts)}
+@options{qw (dir pragma tmp merge-interfaces suffix-singlecolumn suffix-singleblock suffix-pointerparallel suffix-manyblocks ydcpg_opts)}
 EOF
 sub interface
 {
@@ -496,7 +496,7 @@ sub interface
 
   &Fxtran::Util::loadModule ('Fxtran::Generate::Interface');
 
-  my @method = qw (singlecolumn singleblock pointerparallel);
+  my @method = qw (singlecolumn singleblock pointerparallel manyblocks);
 
   for my $method (@method)
     {
@@ -660,6 +660,8 @@ sub manyblocks
   &Fxtran::Util::addVersion ($d)
     if ($opts->{version});
   
+
+
   &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
 
 

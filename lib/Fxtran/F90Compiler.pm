@@ -121,8 +121,7 @@ EOF
                 @{ $obj2use{$obj} };
       $fh->print (<<"EOF");
 $obj: $F90 @dep
-	\@echo "\$(FC) -c $F90"
-	@\$(FC) \$(FCFLAGS) -o $obj -c $F90
+	\$(FC) \$(FCFLAGS) -o $obj -c $F90
   
 EOF
     }
