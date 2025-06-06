@@ -296,7 +296,7 @@ ENDIF
 
 
 IF (KSPLTHOI==1)  THEN
-    ZKHTURB (JROF, 1:KFLEV, KDIMK)=1._JPRB
+  ZKHTURB (JROF, 1:KFLEV, KDIMK)=1._JPRB
 ENDIF
 
 IFLVM2=KFLEV-2
@@ -364,7 +364,7 @@ IF (101<=KWIS.AND.KWIS<=106) THEN
     ELSE
 
       IF (KHOR==0)  THEN
-          IOFF=YDSL%NASLB1*JLEV
+        IOFF=YDSL%NASLB1*JLEV
       ENDIF
 
       
@@ -538,7 +538,7 @@ IF (102<=KWIS.AND.KWIS<=106) THEN
 
 
   IF (KWIS==102)  THEN
-      LLT_SLHD (2)=YDDYNA%HOISLTV/=0._JPRB
+    LLT_SLHD (2)=YDDYNA%HOISLTV/=0._JPRB
   ENDIF
 
 
@@ -587,7 +587,7 @@ IF (102<=KWIS.AND.KWIS<=106) THEN
 
 
     IF (ANY (ABS (KNOWENO (JROF, 1:KFLEV))>1+IBCLIM))  THEN
-        CALL ABOR1_ACC (' LASCAW: Something strange is happening about level shifts.')
+      CALL ABOR1_ACC (' LASCAW: Something strange is happening about level shifts.')
     ENDIF
 
 
@@ -692,14 +692,14 @@ ENDIF
 IF (KWIS==201) THEN
 
   IF (KHOR==1)  THEN
-      IOFF=0
+    IOFF=0
   ENDIF
 
 
   DO JLEV=1, KFLEV
 
     IF (KHOR==0)  THEN
-        IOFF=YDSL%NASLB1*JLEV
+      IOFF=YDSL%NASLB1*JLEV
     ENDIF
 
     
@@ -741,14 +741,14 @@ ENDIF
 IF (KWIS==202.OR.KWIS==203) THEN
 
   IF (KHOR==1)  THEN
-      IOFF=0
+    IOFF=0
   ENDIF
 
 
   DO JLEV=1, KFLEV
 
     IF (KHOR==0)  THEN
-        IOFF=YDSL%NASLB1*JLEV
+      IOFF=YDSL%NASLB1*JLEV
     ENDIF
 
     

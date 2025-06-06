@@ -177,7 +177,7 @@ ELSE
     IF (LDGWF) THEN
 
       IF (LDGDWI)  THEN
-          CALL ABOR1_ACC (' GPGW: compute "Gw" at full levels: case not coded')
+        CALL ABOR1_ACC (' GPGW: compute "Gw" at full levels: case not coded')
       ENDIF
 
 
@@ -206,7 +206,7 @@ ELSE
     IF (LDGWF) THEN
 
       IF (LDGDWI)  THEN
-          CALL ABOR1_ACC (' GPGW: compute "Gw" at full levels: case not coded')
+        CALL ABOR1_ACC (' GPGW: compute "Gw" at full levels: case not coded')
       ENDIF
 
 

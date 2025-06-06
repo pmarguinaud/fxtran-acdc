@@ -338,7 +338,7 @@ ZWORK5 =1.
 
 
 IF (.NOT.OTRIG1 (JI))  THEN
-    ZWORK5=0
+  ZWORK5=0
 ENDIF
 
 
@@ -397,7 +397,7 @@ DO JITER=1, 4
     
 
     IF (GWORK4 (JI, JK))  THEN
-        PWSUB (JI, JK)=0.
+      PWSUB (JI, JK)=0.
     ENDIF
 
   

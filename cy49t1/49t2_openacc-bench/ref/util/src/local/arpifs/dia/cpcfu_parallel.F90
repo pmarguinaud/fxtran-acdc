@@ -259,166 +259,166 @@ IF (YDCFU%YFDUTP%LACTIVE) THEN
     !$OMP PARALLEL DO PRIVATE (JBLK, JLEV, JLON) FIRSTPRIVATE (YLCPG_BNDS)
 
     DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-        CALL YLCPG_BNDS%UPDATE (JBLK)
-        
-        ZFPREC9 (:, JBLK)=0.0_JPRB  
-        ZFPREC0 (:, JBLK)=0.0_JPRB  
-        ZSQPRE (:, JBLK)=0.0_JPRB  
+      CALL YLCPG_BNDS%UPDATE (JBLK)
+      
+      ZFPREC9 (:, JBLK)=0.0_JPRB
+      ZFPREC0 (:, JBLK)=0.0_JPRB
+      ZSQPRE (:, JBLK)=0.0_JPRB
 
-        
+      
 
-        IF (YDCFU%YFPLCL%LACTIVE) THEN
-          JLEV=YDCFU%YFPLCL%ILEV
+      IF (YDCFU%YFPLCL%LACTIVE) THEN
+        JLEV=YDCFU%YFPLCL%ILEV
 
-          IF (.NOT.LLRESET) THEN
-            ZFPREC9 (:, JBLK)=ZFPREC9 (:, JBLK)+Z_YDCFU_FPLCL (:, JLEV, JBLK)
-          ENDIF
-
-          ZFPREC0 (:, JBLK)=ZFPREC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FPLCL (:, YDCFU%YFPLCL%INUMLEV (JLEV), JBLK)
+        IF (.NOT.LLRESET) THEN
+          ZFPREC9 (:, JBLK)=ZFPREC9 (:, JBLK)+Z_YDCFU_FPLCL (:, JLEV, JBLK)
         ENDIF
-  
 
-        
+        ZFPREC0 (:, JBLK)=ZFPREC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FPLCL (:, YDCFU%YFPLCL%INUMLEV (JLEV), JBLK)
+      ENDIF
 
-        
 
-        
+      
 
-        IF (YDCFU%YFPLCN%LACTIVE) THEN
-          JLEV=YDCFU%YFPLCN%ILEV
+      
 
-          IF (.NOT.LLRESET) THEN
-            ZFPREC9 (:, JBLK)=ZFPREC9 (:, JBLK)+Z_YDCFU_FPLCN (:, JLEV, JBLK)
-          ENDIF
+      
 
-          ZFPREC0 (:, JBLK)=ZFPREC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FPLCN (:, YDCFU%YFPLCN%INUMLEV (JLEV), JBLK)
+      IF (YDCFU%YFPLCN%LACTIVE) THEN
+        JLEV=YDCFU%YFPLCN%ILEV
+
+        IF (.NOT.LLRESET) THEN
+          ZFPREC9 (:, JBLK)=ZFPREC9 (:, JBLK)+Z_YDCFU_FPLCN (:, JLEV, JBLK)
         ENDIF
-  
 
-        
+        ZFPREC0 (:, JBLK)=ZFPREC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FPLCN (:, YDCFU%YFPLCN%INUMLEV (JLEV), JBLK)
+      ENDIF
 
-        
 
-        
+      
 
-        IF (YDCFU%YFPLCG%LACTIVE) THEN
-          JLEV=YDCFU%YFPLCG%ILEV
+      
 
-          IF (.NOT.LLRESET) THEN
-            ZFPREC9 (:, JBLK)=ZFPREC9 (:, JBLK)+Z_YDCFU_FPLCG (:, JLEV, JBLK)
-          ENDIF
+      
 
-          ZFPREC0 (:, JBLK)=ZFPREC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FPLCG (:, YDCFU%YFPLCG%INUMLEV (JLEV), JBLK)
+      IF (YDCFU%YFPLCG%LACTIVE) THEN
+        JLEV=YDCFU%YFPLCG%ILEV
+
+        IF (.NOT.LLRESET) THEN
+          ZFPREC9 (:, JBLK)=ZFPREC9 (:, JBLK)+Z_YDCFU_FPLCG (:, JLEV, JBLK)
         ENDIF
-  
 
-        
+        ZFPREC0 (:, JBLK)=ZFPREC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FPLCG (:, YDCFU%YFPLCG%INUMLEV (JLEV), JBLK)
+      ENDIF
 
-        
 
-        
+      
 
-        IF (YDCFU%YFPLCH%LACTIVE) THEN
-          JLEV=YDCFU%YFPLCH%ILEV
+      
 
-          IF (.NOT.LLRESET) THEN
-            ZFPREC9 (:, JBLK)=ZFPREC9 (:, JBLK)+Z_YDCFU_FPLCH (:, JLEV, JBLK)
-          ENDIF
+      
 
-          ZFPREC0 (:, JBLK)=ZFPREC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FPLCH (:, YDCFU%YFPLCH%INUMLEV (JLEV), JBLK)
+      IF (YDCFU%YFPLCH%LACTIVE) THEN
+        JLEV=YDCFU%YFPLCH%ILEV
+
+        IF (.NOT.LLRESET) THEN
+          ZFPREC9 (:, JBLK)=ZFPREC9 (:, JBLK)+Z_YDCFU_FPLCH (:, JLEV, JBLK)
         ENDIF
-  
 
-        
+        ZFPREC0 (:, JBLK)=ZFPREC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FPLCH (:, YDCFU%YFPLCH%INUMLEV (JLEV), JBLK)
+      ENDIF
 
-        
 
-        
+      
 
-        IF (YDCFU%YFPLSL%LACTIVE) THEN
-          JLEV=YDCFU%YFPLSL%ILEV
+      
 
-          IF (.NOT.LLRESET) THEN
-            ZFPREC9 (:, JBLK)=ZFPREC9 (:, JBLK)+Z_YDCFU_FPLSL (:, JLEV, JBLK)
-          ENDIF
+      
 
-          ZFPREC0 (:, JBLK)=ZFPREC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FPLSL (:, YDCFU%YFPLSL%INUMLEV (JLEV), JBLK)
+      IF (YDCFU%YFPLSL%LACTIVE) THEN
+        JLEV=YDCFU%YFPLSL%ILEV
+
+        IF (.NOT.LLRESET) THEN
+          ZFPREC9 (:, JBLK)=ZFPREC9 (:, JBLK)+Z_YDCFU_FPLSL (:, JLEV, JBLK)
         ENDIF
-  
 
-        
+        ZFPREC0 (:, JBLK)=ZFPREC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FPLSL (:, YDCFU%YFPLSL%INUMLEV (JLEV), JBLK)
+      ENDIF
 
-        
 
-        
+      
 
-        IF (YDCFU%YFPLSN%LACTIVE) THEN
-          JLEV=YDCFU%YFPLSN%ILEV
+      
 
-          IF (.NOT.LLRESET) THEN
-            ZFPREC9 (:, JBLK)=ZFPREC9 (:, JBLK)+Z_YDCFU_FPLSN (:, JLEV, JBLK)
-          ENDIF
+      
 
-          ZFPREC0 (:, JBLK)=ZFPREC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FPLSN (:, YDCFU%YFPLSN%INUMLEV (JLEV), JBLK)
+      IF (YDCFU%YFPLSN%LACTIVE) THEN
+        JLEV=YDCFU%YFPLSN%ILEV
+
+        IF (.NOT.LLRESET) THEN
+          ZFPREC9 (:, JBLK)=ZFPREC9 (:, JBLK)+Z_YDCFU_FPLSN (:, JLEV, JBLK)
         ENDIF
-  
 
-        
+        ZFPREC0 (:, JBLK)=ZFPREC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FPLSN (:, YDCFU%YFPLSN%INUMLEV (JLEV), JBLK)
+      ENDIF
 
-        
 
-        
+      
 
-        IF (YDCFU%YFPLSG%LACTIVE) THEN
-          JLEV=YDCFU%YFPLSG%ILEV
+      
 
-          IF (.NOT.LLRESET) THEN
-            ZFPREC9 (:, JBLK)=ZFPREC9 (:, JBLK)+Z_YDCFU_FPLSG (:, JLEV, JBLK)
-          ENDIF
+      
 
-          ZFPREC0 (:, JBLK)=ZFPREC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FPLSG (:, YDCFU%YFPLSG%INUMLEV (JLEV), JBLK)
+      IF (YDCFU%YFPLSG%LACTIVE) THEN
+        JLEV=YDCFU%YFPLSG%ILEV
+
+        IF (.NOT.LLRESET) THEN
+          ZFPREC9 (:, JBLK)=ZFPREC9 (:, JBLK)+Z_YDCFU_FPLSG (:, JLEV, JBLK)
         ENDIF
-  
 
-        
+        ZFPREC0 (:, JBLK)=ZFPREC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FPLSG (:, YDCFU%YFPLSG%INUMLEV (JLEV), JBLK)
+      ENDIF
 
-        
 
-        
+      
 
-        IF (YDCFU%YFPLSH%LACTIVE) THEN
-          JLEV=YDCFU%YFPLSH%ILEV
+      
 
-          IF (.NOT.LLRESET) THEN
-            ZFPREC9 (:, JBLK)=ZFPREC9 (:, JBLK)+Z_YDCFU_FPLSH (:, JLEV, JBLK)
-          ENDIF
+      
 
-          ZFPREC0 (:, JBLK)=ZFPREC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FPLSH (:, YDCFU%YFPLSH%INUMLEV (JLEV), JBLK)
+      IF (YDCFU%YFPLSH%LACTIVE) THEN
+        JLEV=YDCFU%YFPLSH%ILEV
+
+        IF (.NOT.LLRESET) THEN
+          ZFPREC9 (:, JBLK)=ZFPREC9 (:, JBLK)+Z_YDCFU_FPLSH (:, JLEV, JBLK)
         ENDIF
-  
-        
-        
-        ZSQPRE (:, JBLK)=(ZFPREC0 (:, JBLK)**2)*YDRIP%TSTEP  
-        ZFPREC0 (:, JBLK)=ZFPREC0 (:, JBLK)*YDRIP%TSTEP  
 
-        IF (LLRESET)  THEN
-            Z_YDCFU_FDUTP (:, JBLK)=0._JPRB
-        ENDIF
-  
+        ZFPREC0 (:, JBLK)=ZFPREC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FPLSH (:, YDCFU%YFPLSH%INUMLEV (JLEV), JBLK)
+      ENDIF
 
-        DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+      
+      
+      ZSQPRE (:, JBLK)=(ZFPREC0 (:, JBLK)**2)*YDRIP%TSTEP
+      ZFPREC0 (:, JBLK)=ZFPREC0 (:, JBLK)*YDRIP%TSTEP
 
-          IF (ZFPREC9 (JLON, JBLK)>ZEPS) THEN
-            Z_YDCFU_FDUTP (JLON, JBLK)=Z_YDCFU_FDUTP (JLON, JBLK)*((ZFPREC9 (JLON, JBLK)+ZFPREC0 (JLON,&
+      IF (LLRESET)  THEN
+        Z_YDCFU_FDUTP (:, JBLK)=0._JPRB
+      ENDIF
+
+
+      DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+
+        IF (ZFPREC9 (JLON, JBLK)>ZEPS) THEN
+          Z_YDCFU_FDUTP (JLON, JBLK)=Z_YDCFU_FDUTP (JLON, JBLK)*((ZFPREC9 (JLON, JBLK)+ZFPREC0 (JLON,&
           & JBLK))**2)/((ZFPREC9 (JLON, JBLK)**2)+(Z_YDCFU_FDUTP (JLON, JBLK)*ZSQPRE (JLON, JBLK)))
-          ELSEIF (ZFPREC0 (JLON, JBLK)>ZEPS) THEN
-            Z_YDCFU_FDUTP (JLON, JBLK)=YDRIP%TSTEP
-          ELSE
-            Z_YDCFU_FDUTP (JLON, JBLK)=0.0_JPRB
-          ENDIF
+        ELSEIF (ZFPREC0 (JLON, JBLK)>ZEPS) THEN
+          Z_YDCFU_FDUTP (JLON, JBLK)=YDRIP%TSTEP
+        ELSE
+          Z_YDCFU_FDUTP (JLON, JBLK)=0.0_JPRB
+        ENDIF
 
-        ENDDO
-  
+      ENDDO
+
     ENDDO
 
     IF (LHOOK) CALL DR_HOOK ('CPCFU_PARALLEL:0:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -504,179 +504,179 @@ IF (YDCFU%YFDUTP%LACTIVE) THEN
 
     DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-        
+      
 
       
 
       DO JLON = 1, MIN (YDCPG_OPTS%KLON, YDCPG_OPTS%KGPCOMP - (JBLK - 1) * YDCPG_OPTS%KLON)
         YLCPG_BNDS%KIDIA = JLON
         YLCPG_BNDS%KFDIA = JLON
-          
-          ZFPREC9 (JLON, JBLK)=0.0_JPRB  
-          ZFPREC0 (JLON, JBLK)=0.0_JPRB  
-          ZSQPRE (JLON, JBLK)=0.0_JPRB  
+        
+        ZFPREC9 (JLON, JBLK)=0.0_JPRB
+        ZFPREC0 (JLON, JBLK)=0.0_JPRB
+        ZSQPRE (JLON, JBLK)=0.0_JPRB
 
-          
+        
 
-          IF (YDCFU%YFPLCL%LACTIVE) THEN
-            JLEV=YDCFU%YFPLCL%ILEV
+        IF (YDCFU%YFPLCL%LACTIVE) THEN
+          JLEV=YDCFU%YFPLCL%ILEV
 
-            IF (.NOT.LLRESET) THEN
-              ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLCL (JLON, JLEV, JBLK)
-            ENDIF
+          IF (.NOT.LLRESET) THEN
+            ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLCL (JLON, JLEV, JBLK)
+          ENDIF
 
-            ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLCL&
+          ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLCL&
           & (JLON, YDCFU%YFPLCL%INUMLEV (JLEV), JBLK)
+        ENDIF
+
+
+        
+
+        
+
+        
+
+        IF (YDCFU%YFPLCN%LACTIVE) THEN
+          JLEV=YDCFU%YFPLCN%ILEV
+
+          IF (.NOT.LLRESET) THEN
+            ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLCN (JLON, JLEV, JBLK)
           ENDIF
-  
 
-          
-
-          
-
-          
-
-          IF (YDCFU%YFPLCN%LACTIVE) THEN
-            JLEV=YDCFU%YFPLCN%ILEV
-
-            IF (.NOT.LLRESET) THEN
-              ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLCN (JLON, JLEV, JBLK)
-            ENDIF
-
-            ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLCN&
+          ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLCN&
           & (JLON, YDCFU%YFPLCN%INUMLEV (JLEV), JBLK)
+        ENDIF
+
+
+        
+
+        
+
+        
+
+        IF (YDCFU%YFPLCG%LACTIVE) THEN
+          JLEV=YDCFU%YFPLCG%ILEV
+
+          IF (.NOT.LLRESET) THEN
+            ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLCG (JLON, JLEV, JBLK)
           ENDIF
-  
 
-          
-
-          
-
-          
-
-          IF (YDCFU%YFPLCG%LACTIVE) THEN
-            JLEV=YDCFU%YFPLCG%ILEV
-
-            IF (.NOT.LLRESET) THEN
-              ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLCG (JLON, JLEV, JBLK)
-            ENDIF
-
-            ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLCG&
+          ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLCG&
           & (JLON, YDCFU%YFPLCG%INUMLEV (JLEV), JBLK)
+        ENDIF
+
+
+        
+
+        
+
+        
+
+        IF (YDCFU%YFPLCH%LACTIVE) THEN
+          JLEV=YDCFU%YFPLCH%ILEV
+
+          IF (.NOT.LLRESET) THEN
+            ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLCH (JLON, JLEV, JBLK)
           ENDIF
-  
 
-          
-
-          
-
-          
-
-          IF (YDCFU%YFPLCH%LACTIVE) THEN
-            JLEV=YDCFU%YFPLCH%ILEV
-
-            IF (.NOT.LLRESET) THEN
-              ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLCH (JLON, JLEV, JBLK)
-            ENDIF
-
-            ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLCH&
+          ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLCH&
           & (JLON, YDCFU%YFPLCH%INUMLEV (JLEV), JBLK)
+        ENDIF
+
+
+        
+
+        
+
+        
+
+        IF (YDCFU%YFPLSL%LACTIVE) THEN
+          JLEV=YDCFU%YFPLSL%ILEV
+
+          IF (.NOT.LLRESET) THEN
+            ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLSL (JLON, JLEV, JBLK)
           ENDIF
-  
 
-          
-
-          
-
-          
-
-          IF (YDCFU%YFPLSL%LACTIVE) THEN
-            JLEV=YDCFU%YFPLSL%ILEV
-
-            IF (.NOT.LLRESET) THEN
-              ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLSL (JLON, JLEV, JBLK)
-            ENDIF
-
-            ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLSL&
+          ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLSL&
           & (JLON, YDCFU%YFPLSL%INUMLEV (JLEV), JBLK)
+        ENDIF
+
+
+        
+
+        
+
+        
+
+        IF (YDCFU%YFPLSN%LACTIVE) THEN
+          JLEV=YDCFU%YFPLSN%ILEV
+
+          IF (.NOT.LLRESET) THEN
+            ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLSN (JLON, JLEV, JBLK)
           ENDIF
-  
 
-          
-
-          
-
-          
-
-          IF (YDCFU%YFPLSN%LACTIVE) THEN
-            JLEV=YDCFU%YFPLSN%ILEV
-
-            IF (.NOT.LLRESET) THEN
-              ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLSN (JLON, JLEV, JBLK)
-            ENDIF
-
-            ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLSN&
+          ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLSN&
           & (JLON, YDCFU%YFPLSN%INUMLEV (JLEV), JBLK)
+        ENDIF
+
+
+        
+
+        
+
+        
+
+        IF (YDCFU%YFPLSG%LACTIVE) THEN
+          JLEV=YDCFU%YFPLSG%ILEV
+
+          IF (.NOT.LLRESET) THEN
+            ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLSG (JLON, JLEV, JBLK)
           ENDIF
-  
 
-          
-
-          
-
-          
-
-          IF (YDCFU%YFPLSG%LACTIVE) THEN
-            JLEV=YDCFU%YFPLSG%ILEV
-
-            IF (.NOT.LLRESET) THEN
-              ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLSG (JLON, JLEV, JBLK)
-            ENDIF
-
-            ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLSG&
+          ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLSG&
           & (JLON, YDCFU%YFPLSG%INUMLEV (JLEV), JBLK)
+        ENDIF
+
+
+        
+
+        
+
+        
+
+        IF (YDCFU%YFPLSH%LACTIVE) THEN
+          JLEV=YDCFU%YFPLSH%ILEV
+
+          IF (.NOT.LLRESET) THEN
+            ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLSH (JLON, JLEV, JBLK)
           ENDIF
-  
 
-          
-
-          
-
-          
-
-          IF (YDCFU%YFPLSH%LACTIVE) THEN
-            JLEV=YDCFU%YFPLSH%ILEV
-
-            IF (.NOT.LLRESET) THEN
-              ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLSH (JLON, JLEV, JBLK)
-            ENDIF
-
-            ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLSH&
+          ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLSH&
           & (JLON, YDCFU%YFPLSH%INUMLEV (JLEV), JBLK)
-          ENDIF
-  
-          
-          
-          ZSQPRE (JLON, JBLK)=(ZFPREC0 (JLON, JBLK)**2)*YDRIP%TSTEP  
-          ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)*YDRIP%TSTEP  
+        ENDIF
 
-          IF (LLRESET)  THEN
-              Z_YDCFU_FDUTP (JLON, JBLK)=0._JPRB
-          ENDIF
-  
+        
+        
+        ZSQPRE (JLON, JBLK)=(ZFPREC0 (JLON, JBLK)**2)*YDRIP%TSTEP
+        ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)*YDRIP%TSTEP
 
-          
+        IF (LLRESET)  THEN
+          Z_YDCFU_FDUTP (JLON, JBLK)=0._JPRB
+        ENDIF
 
-          IF (ZFPREC9 (JLON, JBLK)>ZEPS) THEN
-            Z_YDCFU_FDUTP (JLON, JBLK)=Z_YDCFU_FDUTP (JLON, JBLK)*((ZFPREC9 (JLON, JBLK)+ZFPREC0 (JLON,&
+
+        
+
+        IF (ZFPREC9 (JLON, JBLK)>ZEPS) THEN
+          Z_YDCFU_FDUTP (JLON, JBLK)=Z_YDCFU_FDUTP (JLON, JBLK)*((ZFPREC9 (JLON, JBLK)+ZFPREC0 (JLON,&
           & JBLK))**2)/((ZFPREC9 (JLON, JBLK)**2)+(Z_YDCFU_FDUTP (JLON, JBLK)*ZSQPRE (JLON, JBLK)))
-          ELSEIF (ZFPREC0 (JLON, JBLK)>ZEPS) THEN
-            Z_YDCFU_FDUTP (JLON, JBLK)=YDRIP%TSTEP
-          ELSE
-            Z_YDCFU_FDUTP (JLON, JBLK)=0.0_JPRB
-          ENDIF
+        ELSEIF (ZFPREC0 (JLON, JBLK)>ZEPS) THEN
+          Z_YDCFU_FDUTP (JLON, JBLK)=YDRIP%TSTEP
+        ELSE
+          Z_YDCFU_FDUTP (JLON, JBLK)=0.0_JPRB
+        ENDIF
 
-          
+      
       ENDDO
 
     ENDDO
@@ -772,7 +772,7 @@ IF (YDCFU%YFDUTP%LACTIVE) THEN
       !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
       
       DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-        
+      
       
       
       !$ACC LOOP VECTOR &
@@ -783,172 +783,172 @@ IF (YDCFU%YFDUTP%LACTIVE) THEN
       DO JLON = 1, MIN (YDCPG_OPTS%KLON, YDCPG_OPTS%KGPCOMP - (JBLK - 1) * YDCPG_OPTS%KLON)
         YLCPG_BNDS%KIDIA = JLON
         YLCPG_BNDS%KFDIA = JLON
-          
-          ZFPREC9 (JLON, JBLK)=0.0_JPRB  
-          ZFPREC0 (JLON, JBLK)=0.0_JPRB  
-          ZSQPRE (JLON, JBLK)=0.0_JPRB  
+        
+        ZFPREC9 (JLON, JBLK)=0.0_JPRB
+        ZFPREC0 (JLON, JBLK)=0.0_JPRB
+        ZSQPRE (JLON, JBLK)=0.0_JPRB
 
-          
+        
 
-          IF (YDCFU%YFPLCL%LACTIVE) THEN
-            JLEV=YDCFU%YFPLCL%ILEV
+        IF (YDCFU%YFPLCL%LACTIVE) THEN
+          JLEV=YDCFU%YFPLCL%ILEV
 
-            IF (.NOT.LLRESET) THEN
-              ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLCL (JLON, JLEV, JBLK)
-            ENDIF
+          IF (.NOT.LLRESET) THEN
+            ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLCL (JLON, JLEV, JBLK)
+          ENDIF
 
-            ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLCL&
+          ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLCL&
           & (JLON, YDCFU%YFPLCL%INUMLEV (JLEV), JBLK)
+        ENDIF
+
+
+        
+
+        
+
+        
+
+        IF (YDCFU%YFPLCN%LACTIVE) THEN
+          JLEV=YDCFU%YFPLCN%ILEV
+
+          IF (.NOT.LLRESET) THEN
+            ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLCN (JLON, JLEV, JBLK)
           ENDIF
-  
 
-          
-
-          
-
-          
-
-          IF (YDCFU%YFPLCN%LACTIVE) THEN
-            JLEV=YDCFU%YFPLCN%ILEV
-
-            IF (.NOT.LLRESET) THEN
-              ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLCN (JLON, JLEV, JBLK)
-            ENDIF
-
-            ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLCN&
+          ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLCN&
           & (JLON, YDCFU%YFPLCN%INUMLEV (JLEV), JBLK)
+        ENDIF
+
+
+        
+
+        
+
+        
+
+        IF (YDCFU%YFPLCG%LACTIVE) THEN
+          JLEV=YDCFU%YFPLCG%ILEV
+
+          IF (.NOT.LLRESET) THEN
+            ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLCG (JLON, JLEV, JBLK)
           ENDIF
-  
 
-          
-
-          
-
-          
-
-          IF (YDCFU%YFPLCG%LACTIVE) THEN
-            JLEV=YDCFU%YFPLCG%ILEV
-
-            IF (.NOT.LLRESET) THEN
-              ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLCG (JLON, JLEV, JBLK)
-            ENDIF
-
-            ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLCG&
+          ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLCG&
           & (JLON, YDCFU%YFPLCG%INUMLEV (JLEV), JBLK)
+        ENDIF
+
+
+        
+
+        
+
+        
+
+        IF (YDCFU%YFPLCH%LACTIVE) THEN
+          JLEV=YDCFU%YFPLCH%ILEV
+
+          IF (.NOT.LLRESET) THEN
+            ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLCH (JLON, JLEV, JBLK)
           ENDIF
-  
 
-          
-
-          
-
-          
-
-          IF (YDCFU%YFPLCH%LACTIVE) THEN
-            JLEV=YDCFU%YFPLCH%ILEV
-
-            IF (.NOT.LLRESET) THEN
-              ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLCH (JLON, JLEV, JBLK)
-            ENDIF
-
-            ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLCH&
+          ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLCH&
           & (JLON, YDCFU%YFPLCH%INUMLEV (JLEV), JBLK)
+        ENDIF
+
+
+        
+
+        
+
+        
+
+        IF (YDCFU%YFPLSL%LACTIVE) THEN
+          JLEV=YDCFU%YFPLSL%ILEV
+
+          IF (.NOT.LLRESET) THEN
+            ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLSL (JLON, JLEV, JBLK)
           ENDIF
-  
 
-          
-
-          
-
-          
-
-          IF (YDCFU%YFPLSL%LACTIVE) THEN
-            JLEV=YDCFU%YFPLSL%ILEV
-
-            IF (.NOT.LLRESET) THEN
-              ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLSL (JLON, JLEV, JBLK)
-            ENDIF
-
-            ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLSL&
+          ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLSL&
           & (JLON, YDCFU%YFPLSL%INUMLEV (JLEV), JBLK)
+        ENDIF
+
+
+        
+
+        
+
+        
+
+        IF (YDCFU%YFPLSN%LACTIVE) THEN
+          JLEV=YDCFU%YFPLSN%ILEV
+
+          IF (.NOT.LLRESET) THEN
+            ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLSN (JLON, JLEV, JBLK)
           ENDIF
-  
 
-          
-
-          
-
-          
-
-          IF (YDCFU%YFPLSN%LACTIVE) THEN
-            JLEV=YDCFU%YFPLSN%ILEV
-
-            IF (.NOT.LLRESET) THEN
-              ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLSN (JLON, JLEV, JBLK)
-            ENDIF
-
-            ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLSN&
+          ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLSN&
           & (JLON, YDCFU%YFPLSN%INUMLEV (JLEV), JBLK)
+        ENDIF
+
+
+        
+
+        
+
+        
+
+        IF (YDCFU%YFPLSG%LACTIVE) THEN
+          JLEV=YDCFU%YFPLSG%ILEV
+
+          IF (.NOT.LLRESET) THEN
+            ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLSG (JLON, JLEV, JBLK)
           ENDIF
-  
 
-          
-
-          
-
-          
-
-          IF (YDCFU%YFPLSG%LACTIVE) THEN
-            JLEV=YDCFU%YFPLSG%ILEV
-
-            IF (.NOT.LLRESET) THEN
-              ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLSG (JLON, JLEV, JBLK)
-            ENDIF
-
-            ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLSG&
+          ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLSG&
           & (JLON, YDCFU%YFPLSG%INUMLEV (JLEV), JBLK)
+        ENDIF
+
+
+        
+
+        
+
+        
+
+        IF (YDCFU%YFPLSH%LACTIVE) THEN
+          JLEV=YDCFU%YFPLSH%ILEV
+
+          IF (.NOT.LLRESET) THEN
+            ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLSH (JLON, JLEV, JBLK)
           ENDIF
-  
 
-          
-
-          
-
-          
-
-          IF (YDCFU%YFPLSH%LACTIVE) THEN
-            JLEV=YDCFU%YFPLSH%ILEV
-
-            IF (.NOT.LLRESET) THEN
-              ZFPREC9 (JLON, JBLK)=ZFPREC9 (JLON, JBLK)+Z_YDCFU_FPLSH (JLON, JLEV, JBLK)
-            ENDIF
-
-            ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLSH&
+          ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FPLSH&
           & (JLON, YDCFU%YFPLSH%INUMLEV (JLEV), JBLK)
-          ENDIF
-  
-          
-          
-          ZSQPRE (JLON, JBLK)=(ZFPREC0 (JLON, JBLK)**2)*YDRIP%TSTEP  
-          ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)*YDRIP%TSTEP  
+        ENDIF
 
-          IF (LLRESET)  THEN
-              Z_YDCFU_FDUTP (JLON, JBLK)=0._JPRB
-          ENDIF
-  
+        
+        
+        ZSQPRE (JLON, JBLK)=(ZFPREC0 (JLON, JBLK)**2)*YDRIP%TSTEP
+        ZFPREC0 (JLON, JBLK)=ZFPREC0 (JLON, JBLK)*YDRIP%TSTEP
 
-          
+        IF (LLRESET)  THEN
+          Z_YDCFU_FDUTP (JLON, JBLK)=0._JPRB
+        ENDIF
 
-          IF (ZFPREC9 (JLON, JBLK)>ZEPS) THEN
-            Z_YDCFU_FDUTP (JLON, JBLK)=Z_YDCFU_FDUTP (JLON, JBLK)*((ZFPREC9 (JLON, JBLK)+ZFPREC0 (JLON,&
+
+        
+
+        IF (ZFPREC9 (JLON, JBLK)>ZEPS) THEN
+          Z_YDCFU_FDUTP (JLON, JBLK)=Z_YDCFU_FDUTP (JLON, JBLK)*((ZFPREC9 (JLON, JBLK)+ZFPREC0 (JLON,&
           & JBLK))**2)/((ZFPREC9 (JLON, JBLK)**2)+(Z_YDCFU_FDUTP (JLON, JBLK)*ZSQPRE (JLON, JBLK)))
-          ELSEIF (ZFPREC0 (JLON, JBLK)>ZEPS) THEN
-            Z_YDCFU_FDUTP (JLON, JBLK)=YDRIP%TSTEP
-          ELSE
-            Z_YDCFU_FDUTP (JLON, JBLK)=0.0_JPRB
-          ENDIF
+        ELSEIF (ZFPREC0 (JLON, JBLK)>ZEPS) THEN
+          Z_YDCFU_FDUTP (JLON, JBLK)=YDRIP%TSTEP
+        ELSE
+          Z_YDCFU_FDUTP (JLON, JBLK)=0.0_JPRB
+        ENDIF
 
-          
+      
       ENDDO
 
     ENDDO
@@ -1075,484 +1075,484 @@ IF (LPARALLELMETHOD ('OPENMP','CPCFU_PARALLEL:1')) THEN
   !$OMP PARALLEL DO PRIVATE (JBLK, JLEV) FIRSTPRIVATE (YLCPG_BNDS)
 
   DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-      CALL YLCPG_BNDS%UPDATE (JBLK)
+    CALL YLCPG_BNDS%UPDATE (JBLK)
+
+    
+
+    IF (YDCFU%YSTRDU%LACTIVE)  THEN
 
       
 
-      IF (YDCFU%YSTRDU%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_STRDU (:,:, JBLK)=0._JPRB
-        ENDIF
+      IF (LLRESET) THEN
+        Z_YDCFU_STRDU (:,:, JBLK)=0._JPRB
+      ENDIF
 
 
-        DO JLEV=1, YDCFU%YSTRDU%ILEV
-          Z_YDCFU_STRDU (:, JLEV, JBLK)=Z_YDCFU_STRDU (:, JLEV, JBLK)+PSTRDU&
+      DO JLEV=1, YDCFU%YSTRDU%ILEV
+        Z_YDCFU_STRDU (:, JLEV, JBLK)=Z_YDCFU_STRDU (:, JLEV, JBLK)+PSTRDU&
         & (:, YDCFU%YSTRDU%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YSTRDV%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_STRDV (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YSTRDV%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_STRDV (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YSTRDV%ILEV
-          Z_YDCFU_STRDV (:, JLEV, JBLK)=Z_YDCFU_STRDV (:, JLEV, JBLK)+PSTRDV&
+      DO JLEV=1, YDCFU%YSTRDV%ILEV
+        Z_YDCFU_STRDV (:, JLEV, JBLK)=Z_YDCFU_STRDV (:, JLEV, JBLK)+PSTRDV&
         & (:, YDCFU%YSTRDV%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YSTRCU%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_STRCU (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YSTRCU%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_STRCU (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YSTRCU%ILEV
-          Z_YDCFU_STRCU (:, JLEV, JBLK)=Z_YDCFU_STRCU (:, JLEV, JBLK)+PSTRCU&
+      DO JLEV=1, YDCFU%YSTRCU%ILEV
+        Z_YDCFU_STRCU (:, JLEV, JBLK)=Z_YDCFU_STRCU (:, JLEV, JBLK)+PSTRCU&
         & (:, YDCFU%YSTRCU%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YSTRCV%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_STRCV (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YSTRCV%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_STRCV (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YSTRCV%ILEV
-          Z_YDCFU_STRCV (:, JLEV, JBLK)=Z_YDCFU_STRCV (:, JLEV, JBLK)+PSTRCV&
+      DO JLEV=1, YDCFU%YSTRCV%ILEV
+        Z_YDCFU_STRCV (:, JLEV, JBLK)=Z_YDCFU_STRCV (:, JLEV, JBLK)+PSTRCV&
         & (:, YDCFU%YSTRCV%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFDICQ%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FDICQ (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFDICQ%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FDICQ (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFDICQ%ILEV
-          Z_YDCFU_FDICQ (:, JLEV, JBLK)=Z_YDCFU_FDICQ (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFCQ&
+      DO JLEV=1, YDCFU%YFDICQ%ILEV
+        Z_YDCFU_FDICQ (:, JLEV, JBLK)=Z_YDCFU_FDICQ (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFCQ&
         & (:, YDCFU%YFDICQ%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFDICS%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FDICS (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFDICS%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FDICS (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFDICS%ILEV
-          Z_YDCFU_FDICS (:, JLEV, JBLK)=Z_YDCFU_FDICS (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFCS&
+      DO JLEV=1, YDCFU%YFDICS%ILEV
+        Z_YDCFU_FDICS (:, JLEV, JBLK)=Z_YDCFU_FDICS (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFCS&
         & (:, YDCFU%YFDICS%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YSTRTU%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_STRTU (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YSTRTU%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_STRTU (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YSTRTU%ILEV
-          Z_YDCFU_STRTU (:, JLEV, JBLK)=Z_YDCFU_STRTU (:, JLEV, JBLK)+PSTRTU&
+      DO JLEV=1, YDCFU%YSTRTU%ILEV
+        Z_YDCFU_STRTU (:, JLEV, JBLK)=Z_YDCFU_STRTU (:, JLEV, JBLK)+PSTRTU&
         & (:, YDCFU%YSTRTU%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YSTRTV%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_STRTV (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YSTRTV%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_STRTV (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YSTRTV%ILEV
-          Z_YDCFU_STRTV (:, JLEV, JBLK)=Z_YDCFU_STRTV (:, JLEV, JBLK)+PSTRTV&
+      DO JLEV=1, YDCFU%YSTRTV%ILEV
+        Z_YDCFU_STRTV (:, JLEV, JBLK)=Z_YDCFU_STRTV (:, JLEV, JBLK)+PSTRTV&
         & (:, YDCFU%YSTRTV%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFDITQ%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FDITQ (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFDITQ%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FDITQ (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFDITQ%ILEV
-          Z_YDCFU_FDITQ (:, JLEV, JBLK)=Z_YDCFU_FDITQ (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFTQ&
+      DO JLEV=1, YDCFU%YFDITQ%ILEV
+        Z_YDCFU_FDITQ (:, JLEV, JBLK)=Z_YDCFU_FDITQ (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFTQ&
         & (:, YDCFU%YFDITQ%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFDITS%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FDITS (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFDITS%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FDITS (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFDITS%ILEV
-          Z_YDCFU_FDITS (:, JLEV, JBLK)=Z_YDCFU_FDITS (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFTS&
+      DO JLEV=1, YDCFU%YFDITS%ILEV
+        Z_YDCFU_FDITS (:, JLEV, JBLK)=Z_YDCFU_FDITS (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFTS&
         & (:, YDCFU%YFDITS%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFPLCL%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FPLCL (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFPLCL%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FPLCL (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFPLCL%ILEV
-          Z_YDCFU_FPLCL (:, JLEV, JBLK)=Z_YDCFU_FPLCL (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCL&
+      DO JLEV=1, YDCFU%YFPLCL%ILEV
+        Z_YDCFU_FPLCL (:, JLEV, JBLK)=Z_YDCFU_FPLCL (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCL&
         & (:, YDCFU%YFPLCL%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFCCQL%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FCCQL (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFCCQL%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FCCQL (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFCCQL%ILEV
-          Z_YDCFU_FCCQL (:, JLEV, JBLK)=Z_YDCFU_FCCQL (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCCQL&
+      DO JLEV=1, YDCFU%YFCCQL%ILEV
+        Z_YDCFU_FCCQL (:, JLEV, JBLK)=Z_YDCFU_FCCQL (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCCQL&
         & (:, YDCFU%YFCCQL%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFPLCN%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FPLCN (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFPLCN%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FPLCN (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFPLCN%ILEV
-          Z_YDCFU_FPLCN (:, JLEV, JBLK)=Z_YDCFU_FPLCN (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCN&
+      DO JLEV=1, YDCFU%YFPLCN%ILEV
+        Z_YDCFU_FPLCN (:, JLEV, JBLK)=Z_YDCFU_FPLCN (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCN&
         & (:, YDCFU%YFPLCN%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFPLCG%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FPLCG (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFPLCG%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FPLCG (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFPLCG%ILEV
-          Z_YDCFU_FPLCG (:, JLEV, JBLK)=Z_YDCFU_FPLCG (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCG&
+      DO JLEV=1, YDCFU%YFPLCG%ILEV
+        Z_YDCFU_FPLCG (:, JLEV, JBLK)=Z_YDCFU_FPLCG (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCG&
         & (:, YDCFU%YFPLCG%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFPLCH%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FPLCH (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFPLCH%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FPLCH (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFPLCH%ILEV
-          Z_YDCFU_FPLCH (:, JLEV, JBLK)=Z_YDCFU_FPLCH (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCH&
+      DO JLEV=1, YDCFU%YFPLCH%ILEV
+        Z_YDCFU_FPLCH (:, JLEV, JBLK)=Z_YDCFU_FPLCH (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCH&
         & (:, YDCFU%YFPLCH%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFCCQN%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FCCQN (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFCCQN%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FCCQN (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFCCQN%ILEV
-          Z_YDCFU_FCCQN (:, JLEV, JBLK)=Z_YDCFU_FCCQN (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCCQN&
+      DO JLEV=1, YDCFU%YFCCQN%ILEV
+        Z_YDCFU_FCCQN (:, JLEV, JBLK)=Z_YDCFU_FCCQN (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCCQN&
         & (:, YDCFU%YFCCQN%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFPLSL%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FPLSL (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFPLSL%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FPLSL (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFPLSL%ILEV
-          Z_YDCFU_FPLSL (:, JLEV, JBLK)=Z_YDCFU_FPLSL (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSL&
+      DO JLEV=1, YDCFU%YFPLSL%ILEV
+        Z_YDCFU_FPLSL (:, JLEV, JBLK)=Z_YDCFU_FPLSL (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSL&
         & (:, YDCFU%YFPLSL%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFCSQL%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FCSQL (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFCSQL%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FCSQL (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFCSQL%ILEV
-          Z_YDCFU_FCSQL (:, JLEV, JBLK)=Z_YDCFU_FCSQL (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCSQL&
+      DO JLEV=1, YDCFU%YFCSQL%ILEV
+        Z_YDCFU_FCSQL (:, JLEV, JBLK)=Z_YDCFU_FCSQL (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCSQL&
         & (:, YDCFU%YFCSQL%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFPLSN%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FPLSN (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFPLSN%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FPLSN (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFPLSN%ILEV
-          Z_YDCFU_FPLSN (:, JLEV, JBLK)=Z_YDCFU_FPLSN (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSN&
+      DO JLEV=1, YDCFU%YFPLSN%ILEV
+        Z_YDCFU_FPLSN (:, JLEV, JBLK)=Z_YDCFU_FPLSN (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSN&
         & (:, YDCFU%YFPLSN%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFPLSG%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FPLSG (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFPLSG%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FPLSG (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFPLSG%ILEV
-          Z_YDCFU_FPLSG (:, JLEV, JBLK)=Z_YDCFU_FPLSG (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSG&
+      DO JLEV=1, YDCFU%YFPLSG%ILEV
+        Z_YDCFU_FPLSG (:, JLEV, JBLK)=Z_YDCFU_FPLSG (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSG&
         & (:, YDCFU%YFPLSG%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFPLSH%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FPLSH (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFPLSH%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FPLSH (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFPLSH%ILEV
-          Z_YDCFU_FPLSH (:, JLEV, JBLK)=Z_YDCFU_FPLSH (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSH&
+      DO JLEV=1, YDCFU%YFPLSH%ILEV
+        Z_YDCFU_FPLSH (:, JLEV, JBLK)=Z_YDCFU_FPLSH (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSH&
         & (:, YDCFU%YFPLSH%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFCSQN%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FCSQN (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFCSQN%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FCSQN (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFCSQN%ILEV
-          Z_YDCFU_FCSQN (:, JLEV, JBLK)=Z_YDCFU_FCSQN (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCSQN&
+      DO JLEV=1, YDCFU%YFCSQN%ILEV
+        Z_YDCFU_FCSQN (:, JLEV, JBLK)=Z_YDCFU_FCSQN (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCSQN&
         & (:, YDCFU%YFCSQN%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFRSO%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FRSO (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFRSO%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FRSO (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFRSO%ILEV
-          Z_YDCFU_FRSO (:, JLEV, JBLK)=Z_YDCFU_FRSO (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FRSO&
+      DO JLEV=1, YDCFU%YFRSO%ILEV
+        Z_YDCFU_FRSO (:, JLEV, JBLK)=Z_YDCFU_FRSO (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FRSO&
         & (:,YDCFU%YFRSO%INUMLEV (JLEV), 1, JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFRTH%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FRTH (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFRTH%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FRTH (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFRTH%ILEV
-          Z_YDCFU_FRTH (:, JLEV, JBLK)=Z_YDCFU_FRTH (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FRTH&
+      DO JLEV=1, YDCFU%YFRTH%ILEV
+        Z_YDCFU_FRTH (:, JLEV, JBLK)=Z_YDCFU_FRTH (:, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FRTH&
         & (:,YDCFU%YFRTH%INUMLEV (JLEV), 1, JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFNEB%LACTIVE)  THEN
 
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_FNEB (:,:, JBLK)=0._JPRB
       ENDIF
-  
-
-      IF (YDCFU%YFNEB%LACTIVE)  THEN
-
-          
-
-        IF (LLRESET) THEN
-          Z_YDCFU_FNEB (:,:, JBLK)=0._JPRB
-        ENDIF
 
 
-        DO JLEV=1, YDCFU%YFNEB%ILEV
-          Z_YDCFU_FNEB (:, JLEV, JBLK)=Z_YDCFU_FNEB (:, JLEV, JBLK)+Z_YDCPG_MISC_NEB&
+      DO JLEV=1, YDCFU%YFNEB%ILEV
+        Z_YDCFU_FNEB (:, JLEV, JBLK)=Z_YDCFU_FNEB (:, JLEV, JBLK)+Z_YDCPG_MISC_NEB&
         & (:, YDCFU%YFNEB%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-        ENDDO
+      ENDDO
 
-      
-      
-      ENDIF
-  
+    
+    
+    ENDIF
+
   ENDDO
 
   IF (LHOOK) CALL DR_HOOK ('CPCFU_PARALLEL:1:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -1728,7 +1728,7 @@ ELSEIF (LPARALLELMETHOD ('OPENMPSINGLECOLUMN','CPCFU_PARALLEL:1')) THEN
 
   DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-      
+    
 
     
 
@@ -1736,482 +1736,482 @@ ELSEIF (LPARALLELMETHOD ('OPENMPSINGLECOLUMN','CPCFU_PARALLEL:1')) THEN
       YLCPG_BNDS%KIDIA = JLON
       YLCPG_BNDS%KFDIA = JLON
 
+      
+
+      IF (YDCFU%YSTRDU%LACTIVE)  THEN
+
         
 
-        IF (YDCFU%YSTRDU%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_STRDU (JLON,:, JBLK)=0._JPRB
-          ENDIF
+        IF (LLRESET) THEN
+          Z_YDCFU_STRDU (JLON,:, JBLK)=0._JPRB
+        ENDIF
 
 
-          DO JLEV=1, YDCFU%YSTRDU%ILEV
-            Z_YDCFU_STRDU (JLON, JLEV, JBLK)=Z_YDCFU_STRDU (JLON, JLEV, JBLK)&
+        DO JLEV=1, YDCFU%YSTRDU%ILEV
+          Z_YDCFU_STRDU (JLON, JLEV, JBLK)=Z_YDCFU_STRDU (JLON, JLEV, JBLK)&
           &+PSTRDU (JLON, YDCFU%YSTRDU%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YSTRDV%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_STRDV (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YSTRDV%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_STRDV (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YSTRDV%ILEV
-            Z_YDCFU_STRDV (JLON, JLEV, JBLK)=Z_YDCFU_STRDV (JLON, JLEV, JBLK)&
+        DO JLEV=1, YDCFU%YSTRDV%ILEV
+          Z_YDCFU_STRDV (JLON, JLEV, JBLK)=Z_YDCFU_STRDV (JLON, JLEV, JBLK)&
           &+PSTRDV (JLON, YDCFU%YSTRDV%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YSTRCU%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_STRCU (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YSTRCU%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_STRCU (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YSTRCU%ILEV
-            Z_YDCFU_STRCU (JLON, JLEV, JBLK)=Z_YDCFU_STRCU (JLON, JLEV, JBLK)&
+        DO JLEV=1, YDCFU%YSTRCU%ILEV
+          Z_YDCFU_STRCU (JLON, JLEV, JBLK)=Z_YDCFU_STRCU (JLON, JLEV, JBLK)&
           &+PSTRCU (JLON, YDCFU%YSTRCU%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YSTRCV%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_STRCV (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YSTRCV%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_STRCV (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YSTRCV%ILEV
-            Z_YDCFU_STRCV (JLON, JLEV, JBLK)=Z_YDCFU_STRCV (JLON, JLEV, JBLK)&
+        DO JLEV=1, YDCFU%YSTRCV%ILEV
+          Z_YDCFU_STRCV (JLON, JLEV, JBLK)=Z_YDCFU_STRCV (JLON, JLEV, JBLK)&
           &+PSTRCV (JLON, YDCFU%YSTRCV%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFDICQ%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FDICQ (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFDICQ%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FDICQ (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFDICQ%ILEV
-            Z_YDCFU_FDICQ (JLON, JLEV, JBLK)=Z_YDCFU_FDICQ (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFCQ&
+        DO JLEV=1, YDCFU%YFDICQ%ILEV
+          Z_YDCFU_FDICQ (JLON, JLEV, JBLK)=Z_YDCFU_FDICQ (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFCQ&
           & (JLON, YDCFU%YFDICQ%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFDICS%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FDICS (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFDICS%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FDICS (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFDICS%ILEV
-            Z_YDCFU_FDICS (JLON, JLEV, JBLK)=Z_YDCFU_FDICS (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFCS&
+        DO JLEV=1, YDCFU%YFDICS%ILEV
+          Z_YDCFU_FDICS (JLON, JLEV, JBLK)=Z_YDCFU_FDICS (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFCS&
           & (JLON, YDCFU%YFDICS%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YSTRTU%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_STRTU (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YSTRTU%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_STRTU (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YSTRTU%ILEV
-            Z_YDCFU_STRTU (JLON, JLEV, JBLK)=Z_YDCFU_STRTU (JLON, JLEV, JBLK)&
+        DO JLEV=1, YDCFU%YSTRTU%ILEV
+          Z_YDCFU_STRTU (JLON, JLEV, JBLK)=Z_YDCFU_STRTU (JLON, JLEV, JBLK)&
           &+PSTRTU (JLON, YDCFU%YSTRTU%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YSTRTV%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_STRTV (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YSTRTV%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_STRTV (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YSTRTV%ILEV
-            Z_YDCFU_STRTV (JLON, JLEV, JBLK)=Z_YDCFU_STRTV (JLON, JLEV, JBLK)&
+        DO JLEV=1, YDCFU%YSTRTV%ILEV
+          Z_YDCFU_STRTV (JLON, JLEV, JBLK)=Z_YDCFU_STRTV (JLON, JLEV, JBLK)&
           &+PSTRTV (JLON, YDCFU%YSTRTV%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFDITQ%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FDITQ (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFDITQ%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FDITQ (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFDITQ%ILEV
-            Z_YDCFU_FDITQ (JLON, JLEV, JBLK)=Z_YDCFU_FDITQ (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFTQ&
+        DO JLEV=1, YDCFU%YFDITQ%ILEV
+          Z_YDCFU_FDITQ (JLON, JLEV, JBLK)=Z_YDCFU_FDITQ (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFTQ&
           & (JLON, YDCFU%YFDITQ%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFDITS%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FDITS (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFDITS%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FDITS (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFDITS%ILEV
-            Z_YDCFU_FDITS (JLON, JLEV, JBLK)=Z_YDCFU_FDITS (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFTS&
+        DO JLEV=1, YDCFU%YFDITS%ILEV
+          Z_YDCFU_FDITS (JLON, JLEV, JBLK)=Z_YDCFU_FDITS (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFTS&
           & (JLON, YDCFU%YFDITS%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFPLCL%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FPLCL (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFPLCL%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FPLCL (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFPLCL%ILEV
-            Z_YDCFU_FPLCL (JLON, JLEV, JBLK)=Z_YDCFU_FPLCL (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCL&
+        DO JLEV=1, YDCFU%YFPLCL%ILEV
+          Z_YDCFU_FPLCL (JLON, JLEV, JBLK)=Z_YDCFU_FPLCL (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCL&
           & (JLON, YDCFU%YFPLCL%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFCCQL%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FCCQL (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFCCQL%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FCCQL (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFCCQL%ILEV
-            Z_YDCFU_FCCQL (JLON, JLEV, JBLK)=Z_YDCFU_FCCQL (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCCQL&
+        DO JLEV=1, YDCFU%YFCCQL%ILEV
+          Z_YDCFU_FCCQL (JLON, JLEV, JBLK)=Z_YDCFU_FCCQL (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCCQL&
           & (JLON, YDCFU%YFCCQL%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFPLCN%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FPLCN (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFPLCN%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FPLCN (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFPLCN%ILEV
-            Z_YDCFU_FPLCN (JLON, JLEV, JBLK)=Z_YDCFU_FPLCN (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCN&
+        DO JLEV=1, YDCFU%YFPLCN%ILEV
+          Z_YDCFU_FPLCN (JLON, JLEV, JBLK)=Z_YDCFU_FPLCN (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCN&
           & (JLON, YDCFU%YFPLCN%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFPLCG%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FPLCG (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFPLCG%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FPLCG (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFPLCG%ILEV
-            Z_YDCFU_FPLCG (JLON, JLEV, JBLK)=Z_YDCFU_FPLCG (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCG&
+        DO JLEV=1, YDCFU%YFPLCG%ILEV
+          Z_YDCFU_FPLCG (JLON, JLEV, JBLK)=Z_YDCFU_FPLCG (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCG&
           & (JLON, YDCFU%YFPLCG%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFPLCH%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FPLCH (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFPLCH%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FPLCH (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFPLCH%ILEV
-            Z_YDCFU_FPLCH (JLON, JLEV, JBLK)=Z_YDCFU_FPLCH (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCH&
+        DO JLEV=1, YDCFU%YFPLCH%ILEV
+          Z_YDCFU_FPLCH (JLON, JLEV, JBLK)=Z_YDCFU_FPLCH (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCH&
           & (JLON, YDCFU%YFPLCH%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFCCQN%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FCCQN (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFCCQN%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FCCQN (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFCCQN%ILEV
-            Z_YDCFU_FCCQN (JLON, JLEV, JBLK)=Z_YDCFU_FCCQN (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCCQN&
+        DO JLEV=1, YDCFU%YFCCQN%ILEV
+          Z_YDCFU_FCCQN (JLON, JLEV, JBLK)=Z_YDCFU_FCCQN (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCCQN&
           & (JLON, YDCFU%YFCCQN%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFPLSL%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FPLSL (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFPLSL%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FPLSL (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFPLSL%ILEV
-            Z_YDCFU_FPLSL (JLON, JLEV, JBLK)=Z_YDCFU_FPLSL (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSL&
+        DO JLEV=1, YDCFU%YFPLSL%ILEV
+          Z_YDCFU_FPLSL (JLON, JLEV, JBLK)=Z_YDCFU_FPLSL (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSL&
           & (JLON, YDCFU%YFPLSL%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFCSQL%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FCSQL (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFCSQL%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FCSQL (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFCSQL%ILEV
-            Z_YDCFU_FCSQL (JLON, JLEV, JBLK)=Z_YDCFU_FCSQL (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCSQL&
+        DO JLEV=1, YDCFU%YFCSQL%ILEV
+          Z_YDCFU_FCSQL (JLON, JLEV, JBLK)=Z_YDCFU_FCSQL (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCSQL&
           & (JLON, YDCFU%YFCSQL%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFPLSN%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FPLSN (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFPLSN%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FPLSN (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFPLSN%ILEV
-            Z_YDCFU_FPLSN (JLON, JLEV, JBLK)=Z_YDCFU_FPLSN (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSN&
+        DO JLEV=1, YDCFU%YFPLSN%ILEV
+          Z_YDCFU_FPLSN (JLON, JLEV, JBLK)=Z_YDCFU_FPLSN (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSN&
           & (JLON, YDCFU%YFPLSN%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFPLSG%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FPLSG (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFPLSG%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FPLSG (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFPLSG%ILEV
-            Z_YDCFU_FPLSG (JLON, JLEV, JBLK)=Z_YDCFU_FPLSG (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSG&
+        DO JLEV=1, YDCFU%YFPLSG%ILEV
+          Z_YDCFU_FPLSG (JLON, JLEV, JBLK)=Z_YDCFU_FPLSG (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSG&
           & (JLON, YDCFU%YFPLSG%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFPLSH%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FPLSH (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFPLSH%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FPLSH (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFPLSH%ILEV
-            Z_YDCFU_FPLSH (JLON, JLEV, JBLK)=Z_YDCFU_FPLSH (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSH&
+        DO JLEV=1, YDCFU%YFPLSH%ILEV
+          Z_YDCFU_FPLSH (JLON, JLEV, JBLK)=Z_YDCFU_FPLSH (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSH&
           & (JLON, YDCFU%YFPLSH%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFCSQN%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FCSQN (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFCSQN%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FCSQN (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFCSQN%ILEV
-            Z_YDCFU_FCSQN (JLON, JLEV, JBLK)=Z_YDCFU_FCSQN (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCSQN&
+        DO JLEV=1, YDCFU%YFCSQN%ILEV
+          Z_YDCFU_FCSQN (JLON, JLEV, JBLK)=Z_YDCFU_FCSQN (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCSQN&
           & (JLON, YDCFU%YFCSQN%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRSO%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FRSO (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFRSO%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FRSO (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFRSO%ILEV
-            Z_YDCFU_FRSO (JLON, JLEV, JBLK)=Z_YDCFU_FRSO (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FRSO&
+        DO JLEV=1, YDCFU%YFRSO%ILEV
+          Z_YDCFU_FRSO (JLON, JLEV, JBLK)=Z_YDCFU_FRSO (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FRSO&
           & (JLON,YDCFU%YFRSO%INUMLEV (JLEV), 1, JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRTH%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FRTH (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFRTH%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FRTH (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFRTH%ILEV
-            Z_YDCFU_FRTH (JLON, JLEV, JBLK)=Z_YDCFU_FRTH (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FRTH&
+        DO JLEV=1, YDCFU%YFRTH%ILEV
+          Z_YDCFU_FRTH (JLON, JLEV, JBLK)=Z_YDCFU_FRTH (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FRTH&
           & (JLON,YDCFU%YFRTH%INUMLEV (JLEV), 1, JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFNEB%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FNEB (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFNEB%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FNEB (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFNEB%ILEV
-            Z_YDCFU_FNEB (JLON, JLEV, JBLK)=Z_YDCFU_FNEB (JLON, JLEV, JBLK)+Z_YDCPG_MISC_NEB&
+        DO JLEV=1, YDCFU%YFNEB%ILEV
+          Z_YDCFU_FNEB (JLON, JLEV, JBLK)=Z_YDCFU_FNEB (JLON, JLEV, JBLK)+Z_YDCPG_MISC_NEB&
           & (JLON, YDCFU%YFNEB%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
 
-        
-        
-        ENDIF
-  
+      
+      
+      ENDIF
+
     ENDDO
 
   ENDDO
@@ -2405,7 +2405,7 @@ ELSEIF (LPARALLELMETHOD ('OPENACCSINGLECOLUMN','CPCFU_PARALLEL:1')) THEN
     !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
     
     DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-      
+    
     
     
     !$ACC LOOP VECTOR &
@@ -2417,482 +2417,482 @@ ELSEIF (LPARALLELMETHOD ('OPENACCSINGLECOLUMN','CPCFU_PARALLEL:1')) THEN
       YLCPG_BNDS%KIDIA = JLON
       YLCPG_BNDS%KFDIA = JLON
 
+      
+
+      IF (YDCFU%YSTRDU%LACTIVE)  THEN
+
         
 
-        IF (YDCFU%YSTRDU%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_STRDU (JLON,:, JBLK)=0._JPRB
-          ENDIF
+        IF (LLRESET) THEN
+          Z_YDCFU_STRDU (JLON,:, JBLK)=0._JPRB
+        ENDIF
 
 
-          DO JLEV=1, YDCFU%YSTRDU%ILEV
-            Z_YDCFU_STRDU (JLON, JLEV, JBLK)=Z_YDCFU_STRDU (JLON, JLEV, JBLK)&
+        DO JLEV=1, YDCFU%YSTRDU%ILEV
+          Z_YDCFU_STRDU (JLON, JLEV, JBLK)=Z_YDCFU_STRDU (JLON, JLEV, JBLK)&
           &+PSTRDU (JLON, YDCFU%YSTRDU%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YSTRDV%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_STRDV (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YSTRDV%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_STRDV (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YSTRDV%ILEV
-            Z_YDCFU_STRDV (JLON, JLEV, JBLK)=Z_YDCFU_STRDV (JLON, JLEV, JBLK)&
+        DO JLEV=1, YDCFU%YSTRDV%ILEV
+          Z_YDCFU_STRDV (JLON, JLEV, JBLK)=Z_YDCFU_STRDV (JLON, JLEV, JBLK)&
           &+PSTRDV (JLON, YDCFU%YSTRDV%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YSTRCU%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_STRCU (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YSTRCU%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_STRCU (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YSTRCU%ILEV
-            Z_YDCFU_STRCU (JLON, JLEV, JBLK)=Z_YDCFU_STRCU (JLON, JLEV, JBLK)&
+        DO JLEV=1, YDCFU%YSTRCU%ILEV
+          Z_YDCFU_STRCU (JLON, JLEV, JBLK)=Z_YDCFU_STRCU (JLON, JLEV, JBLK)&
           &+PSTRCU (JLON, YDCFU%YSTRCU%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YSTRCV%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_STRCV (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YSTRCV%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_STRCV (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YSTRCV%ILEV
-            Z_YDCFU_STRCV (JLON, JLEV, JBLK)=Z_YDCFU_STRCV (JLON, JLEV, JBLK)&
+        DO JLEV=1, YDCFU%YSTRCV%ILEV
+          Z_YDCFU_STRCV (JLON, JLEV, JBLK)=Z_YDCFU_STRCV (JLON, JLEV, JBLK)&
           &+PSTRCV (JLON, YDCFU%YSTRCV%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFDICQ%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FDICQ (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFDICQ%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FDICQ (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFDICQ%ILEV
-            Z_YDCFU_FDICQ (JLON, JLEV, JBLK)=Z_YDCFU_FDICQ (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFCQ&
+        DO JLEV=1, YDCFU%YFDICQ%ILEV
+          Z_YDCFU_FDICQ (JLON, JLEV, JBLK)=Z_YDCFU_FDICQ (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFCQ&
           & (JLON, YDCFU%YFDICQ%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFDICS%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FDICS (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFDICS%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FDICS (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFDICS%ILEV
-            Z_YDCFU_FDICS (JLON, JLEV, JBLK)=Z_YDCFU_FDICS (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFCS&
+        DO JLEV=1, YDCFU%YFDICS%ILEV
+          Z_YDCFU_FDICS (JLON, JLEV, JBLK)=Z_YDCFU_FDICS (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFCS&
           & (JLON, YDCFU%YFDICS%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YSTRTU%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_STRTU (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YSTRTU%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_STRTU (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YSTRTU%ILEV
-            Z_YDCFU_STRTU (JLON, JLEV, JBLK)=Z_YDCFU_STRTU (JLON, JLEV, JBLK)&
+        DO JLEV=1, YDCFU%YSTRTU%ILEV
+          Z_YDCFU_STRTU (JLON, JLEV, JBLK)=Z_YDCFU_STRTU (JLON, JLEV, JBLK)&
           &+PSTRTU (JLON, YDCFU%YSTRTU%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YSTRTV%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_STRTV (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YSTRTV%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_STRTV (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YSTRTV%ILEV
-            Z_YDCFU_STRTV (JLON, JLEV, JBLK)=Z_YDCFU_STRTV (JLON, JLEV, JBLK)&
+        DO JLEV=1, YDCFU%YSTRTV%ILEV
+          Z_YDCFU_STRTV (JLON, JLEV, JBLK)=Z_YDCFU_STRTV (JLON, JLEV, JBLK)&
           &+PSTRTV (JLON, YDCFU%YSTRTV%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFDITQ%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FDITQ (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFDITQ%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FDITQ (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFDITQ%ILEV
-            Z_YDCFU_FDITQ (JLON, JLEV, JBLK)=Z_YDCFU_FDITQ (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFTQ&
+        DO JLEV=1, YDCFU%YFDITQ%ILEV
+          Z_YDCFU_FDITQ (JLON, JLEV, JBLK)=Z_YDCFU_FDITQ (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFTQ&
           & (JLON, YDCFU%YFDITQ%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFDITS%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FDITS (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFDITS%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FDITS (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFDITS%ILEV
-            Z_YDCFU_FDITS (JLON, JLEV, JBLK)=Z_YDCFU_FDITS (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFTS&
+        DO JLEV=1, YDCFU%YFDITS%ILEV
+          Z_YDCFU_FDITS (JLON, JLEV, JBLK)=Z_YDCFU_FDITS (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_DIFTS&
           & (JLON, YDCFU%YFDITS%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFPLCL%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FPLCL (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFPLCL%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FPLCL (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFPLCL%ILEV
-            Z_YDCFU_FPLCL (JLON, JLEV, JBLK)=Z_YDCFU_FPLCL (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCL&
+        DO JLEV=1, YDCFU%YFPLCL%ILEV
+          Z_YDCFU_FPLCL (JLON, JLEV, JBLK)=Z_YDCFU_FPLCL (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCL&
           & (JLON, YDCFU%YFPLCL%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFCCQL%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FCCQL (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFCCQL%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FCCQL (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFCCQL%ILEV
-            Z_YDCFU_FCCQL (JLON, JLEV, JBLK)=Z_YDCFU_FCCQL (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCCQL&
+        DO JLEV=1, YDCFU%YFCCQL%ILEV
+          Z_YDCFU_FCCQL (JLON, JLEV, JBLK)=Z_YDCFU_FCCQL (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCCQL&
           & (JLON, YDCFU%YFCCQL%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFPLCN%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FPLCN (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFPLCN%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FPLCN (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFPLCN%ILEV
-            Z_YDCFU_FPLCN (JLON, JLEV, JBLK)=Z_YDCFU_FPLCN (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCN&
+        DO JLEV=1, YDCFU%YFPLCN%ILEV
+          Z_YDCFU_FPLCN (JLON, JLEV, JBLK)=Z_YDCFU_FPLCN (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCN&
           & (JLON, YDCFU%YFPLCN%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFPLCG%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FPLCG (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFPLCG%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FPLCG (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFPLCG%ILEV
-            Z_YDCFU_FPLCG (JLON, JLEV, JBLK)=Z_YDCFU_FPLCG (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCG&
+        DO JLEV=1, YDCFU%YFPLCG%ILEV
+          Z_YDCFU_FPLCG (JLON, JLEV, JBLK)=Z_YDCFU_FPLCG (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCG&
           & (JLON, YDCFU%YFPLCG%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFPLCH%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FPLCH (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFPLCH%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FPLCH (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFPLCH%ILEV
-            Z_YDCFU_FPLCH (JLON, JLEV, JBLK)=Z_YDCFU_FPLCH (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCH&
+        DO JLEV=1, YDCFU%YFPLCH%ILEV
+          Z_YDCFU_FPLCH (JLON, JLEV, JBLK)=Z_YDCFU_FPLCH (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLCH&
           & (JLON, YDCFU%YFPLCH%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFCCQN%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FCCQN (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFCCQN%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FCCQN (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFCCQN%ILEV
-            Z_YDCFU_FCCQN (JLON, JLEV, JBLK)=Z_YDCFU_FCCQN (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCCQN&
+        DO JLEV=1, YDCFU%YFCCQN%ILEV
+          Z_YDCFU_FCCQN (JLON, JLEV, JBLK)=Z_YDCFU_FCCQN (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCCQN&
           & (JLON, YDCFU%YFCCQN%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFPLSL%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FPLSL (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFPLSL%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FPLSL (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFPLSL%ILEV
-            Z_YDCFU_FPLSL (JLON, JLEV, JBLK)=Z_YDCFU_FPLSL (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSL&
+        DO JLEV=1, YDCFU%YFPLSL%ILEV
+          Z_YDCFU_FPLSL (JLON, JLEV, JBLK)=Z_YDCFU_FPLSL (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSL&
           & (JLON, YDCFU%YFPLSL%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFCSQL%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FCSQL (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFCSQL%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FCSQL (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFCSQL%ILEV
-            Z_YDCFU_FCSQL (JLON, JLEV, JBLK)=Z_YDCFU_FCSQL (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCSQL&
+        DO JLEV=1, YDCFU%YFCSQL%ILEV
+          Z_YDCFU_FCSQL (JLON, JLEV, JBLK)=Z_YDCFU_FCSQL (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCSQL&
           & (JLON, YDCFU%YFCSQL%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFPLSN%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FPLSN (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFPLSN%LACTIVE.AND..NOT.YDCPG_OPTS%LCORWAT)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FPLSN (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFPLSN%ILEV
-            Z_YDCFU_FPLSN (JLON, JLEV, JBLK)=Z_YDCFU_FPLSN (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSN&
+        DO JLEV=1, YDCFU%YFPLSN%ILEV
+          Z_YDCFU_FPLSN (JLON, JLEV, JBLK)=Z_YDCFU_FPLSN (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSN&
           & (JLON, YDCFU%YFPLSN%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFPLSG%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FPLSG (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFPLSG%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FPLSG (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFPLSG%ILEV
-            Z_YDCFU_FPLSG (JLON, JLEV, JBLK)=Z_YDCFU_FPLSG (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSG&
+        DO JLEV=1, YDCFU%YFPLSG%ILEV
+          Z_YDCFU_FPLSG (JLON, JLEV, JBLK)=Z_YDCFU_FPLSG (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSG&
           & (JLON, YDCFU%YFPLSG%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFPLSH%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FPLSH (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFPLSH%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FPLSH (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFPLSH%ILEV
-            Z_YDCFU_FPLSH (JLON, JLEV, JBLK)=Z_YDCFU_FPLSH (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSH&
+        DO JLEV=1, YDCFU%YFPLSH%ILEV
+          Z_YDCFU_FPLSH (JLON, JLEV, JBLK)=Z_YDCFU_FPLSH (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FPLSH&
           & (JLON, YDCFU%YFPLSH%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFCSQN%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FCSQN (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFCSQN%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FCSQN (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFCSQN%ILEV
-            Z_YDCFU_FCSQN (JLON, JLEV, JBLK)=Z_YDCFU_FCSQN (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCSQN&
+        DO JLEV=1, YDCFU%YFCSQN%ILEV
+          Z_YDCFU_FCSQN (JLON, JLEV, JBLK)=Z_YDCFU_FCSQN (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FCSQN&
           & (JLON, YDCFU%YFCSQN%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRSO%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FRSO (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFRSO%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FRSO (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFRSO%ILEV
-            Z_YDCFU_FRSO (JLON, JLEV, JBLK)=Z_YDCFU_FRSO (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FRSO&
+        DO JLEV=1, YDCFU%YFRSO%ILEV
+          Z_YDCFU_FRSO (JLON, JLEV, JBLK)=Z_YDCFU_FRSO (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FRSO&
           & (JLON,YDCFU%YFRSO%INUMLEV (JLEV), 1, JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRTH%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FRTH (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFRTH%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FRTH (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFRTH%ILEV
-            Z_YDCFU_FRTH (JLON, JLEV, JBLK)=Z_YDCFU_FRTH (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FRTH&
+        DO JLEV=1, YDCFU%YFRTH%ILEV
+          Z_YDCFU_FRTH (JLON, JLEV, JBLK)=Z_YDCFU_FRTH (JLON, JLEV, JBLK)+Z_YDMF_PHYS_OUT_FRTH&
           & (JLON,YDCFU%YFRTH%INUMLEV (JLEV), 1, JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFNEB%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_FNEB (JLON,:, JBLK)=0._JPRB
         ENDIF
-  
-
-        IF (YDCFU%YFNEB%LACTIVE)  THEN
-
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_FNEB (JLON,:, JBLK)=0._JPRB
-          ENDIF
 
 
-          DO JLEV=1, YDCFU%YFNEB%ILEV
-            Z_YDCFU_FNEB (JLON, JLEV, JBLK)=Z_YDCFU_FNEB (JLON, JLEV, JBLK)+Z_YDCPG_MISC_NEB&
+        DO JLEV=1, YDCFU%YFNEB%ILEV
+          Z_YDCFU_FNEB (JLON, JLEV, JBLK)=Z_YDCFU_FNEB (JLON, JLEV, JBLK)+Z_YDCPG_MISC_NEB&
           & (JLON, YDCFU%YFNEB%INUMLEV (JLEV), JBLK)*YDRIP%TSTEP
-          ENDDO
+        ENDDO
 
-        
-        
-        ENDIF
-  
+      
+      
+      ENDIF
+
     ENDDO
 
   ENDDO
@@ -3069,408 +3069,408 @@ IF (LPARALLELMETHOD ('OPENMP','CPCFU_PARALLEL:2')) THEN
   !$OMP PARALLEL DO PRIVATE (ITIME, JBLK, LLNORESET) FIRSTPRIVATE (YLCPG_BNDS)
 
   DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-      CALL YLCPG_BNDS%UPDATE (JBLK)
+    CALL YLCPG_BNDS%UPDATE (JBLK)
+
+    
+
+    IF (YDCFU%YFNEBT%LACTIVE)  THEN
+      
+      LLNORESET=.FALSE.
 
       
 
-      IF (YDCFU%YFNEBT%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FNEBT (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FNEBT (:, JBLK)=Z_YDCFU_FNEBT (:, JBLK)+Z_YDCPG_MISC_CLCT&
-      & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
-      
-      
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FNEBT (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFCLL%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
+      ITIME=1
+      
+      Z_YDCFU_FNEBT (:, JBLK)=Z_YDCFU_FNEBT (:, JBLK)+Z_YDCPG_MISC_CLCT&
+      & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
 
-        
 
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FCLL (:, JBLK)=0._JPRB
-        ENDIF
+    IF (YDCFU%YFCLL%LACTIVE)  THEN
+      
+      LLNORESET=.FALSE.
 
-        ITIME=1
-        
-        Z_YDCFU_FCLL (:, JBLK)=Z_YDCFU_FCLL (:, JBLK)+Z_YDMF_PHYS_OUT_FCLL&
+      
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FCLL (:, JBLK)=0._JPRB
+      ENDIF
+
+      ITIME=1
+      
+      Z_YDCFU_FCLL (:, JBLK)=Z_YDCFU_FCLL (:, JBLK)+Z_YDMF_PHYS_OUT_FCLL&
       & (:, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFCLN%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FCLN (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFCLN%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FCLN (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FCLN (:, JBLK)=Z_YDCFU_FCLN (:, JBLK)+Z_YDMF_PHYS_OUT_FCLN&
+      ITIME=1
+      
+      Z_YDCFU_FCLN (:, JBLK)=Z_YDCFU_FCLN (:, JBLK)+Z_YDMF_PHYS_OUT_FCLN&
       & (:, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFEVL%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FEVL (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFEVL%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FEVL (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FEVL (:, JBLK)=Z_YDCFU_FEVL (:, JBLK)+Z_YDMF_PHYS_OUT_FEVL&
+      ITIME=1
+      
+      Z_YDCFU_FEVL (:, JBLK)=Z_YDCFU_FEVL (:, JBLK)+Z_YDMF_PHYS_OUT_FEVL&
       & (:, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFEVN%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FEVN (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFEVN%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FEVN (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FEVN (:, JBLK)=Z_YDCFU_FEVN (:, JBLK)+Z_YDMF_PHYS_OUT_FEVN&
+      ITIME=1
+      
+      Z_YDCFU_FEVN (:, JBLK)=Z_YDCFU_FEVN (:, JBLK)+Z_YDMF_PHYS_OUT_FEVN&
       & (:, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFONTE%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FONTE (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFONTE%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FONTE (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FONTE (:, JBLK)=Z_YDCFU_FONTE (:, JBLK)+Z_YDMF_PHYS_OUT_FONTE&
+      ITIME=1
+      
+      Z_YDCFU_FONTE (:, JBLK)=Z_YDCFU_FONTE (:, JBLK)+Z_YDMF_PHYS_OUT_FONTE&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFCHSP%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FCHSP (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFCHSP%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FCHSP (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FCHSP (:, JBLK)=Z_YDCFU_FCHSP (:, JBLK)+Z_YDMF_PHYS_OUT_FCHSP&
+      ITIME=1
+      
+      Z_YDCFU_FCHSP (:, JBLK)=Z_YDCFU_FCHSP (:, JBLK)+Z_YDMF_PHYS_OUT_FCHSP&
       & (:, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFLWSP%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FLWSP (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFLWSP%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FLWSP (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FLWSP (:, JBLK)=Z_YDCFU_FLWSP (:, JBLK)+Z_YDMF_PHYS_OUT_FLWSP&
+      ITIME=1
+      
+      Z_YDCFU_FLWSP (:, JBLK)=Z_YDCFU_FLWSP (:, JBLK)+Z_YDMF_PHYS_OUT_FLWSP&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YRUISS%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_RUISS (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YRUISS%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_RUISS (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_RUISS (:, JBLK)=Z_YDCFU_RUISS (:, JBLK)+Z_YDMF_PHYS_OUT_RUISS&
+      ITIME=1
+      
+      Z_YDCFU_RUISS (:, JBLK)=Z_YDCFU_RUISS (:, JBLK)+Z_YDMF_PHYS_OUT_RUISS&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YRUISP%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_RUISP (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YRUISP%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_RUISP (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_RUISP (:, JBLK)=Z_YDCFU_RUISP (:, JBLK)+Z_YDMF_PHYS_OUT_RUISP&
+      ITIME=1
+      
+      Z_YDCFU_RUISP (:, JBLK)=Z_YDCFU_RUISP (:, JBLK)+Z_YDMF_PHYS_OUT_RUISP&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFEVV%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FEVV (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFEVV%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FEVV (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FEVV (:, JBLK)=Z_YDCFU_FEVV (:, JBLK)+Z_YDMF_PHYS_OUT_FEVV&
+      ITIME=1
+      
+      Z_YDCFU_FEVV (:, JBLK)=Z_YDCFU_FEVV (:, JBLK)+Z_YDMF_PHYS_OUT_FEVV&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFTR%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FTR (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFTR%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FTR (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FTR (:, JBLK)=Z_YDCFU_FTR (:, JBLK)+Z_YDMF_PHYS_OUT_FTR&
+      ITIME=1
+      
+      Z_YDCFU_FTR (:, JBLK)=Z_YDCFU_FTR (:, JBLK)+Z_YDMF_PHYS_OUT_FTR&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YRUISL%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_RUISL (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YRUISL%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_RUISL (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_RUISL (:, JBLK)=Z_YDCFU_RUISL (:, JBLK)+Z_YDMF_PHYS_OUT_RUISL&
+      ITIME=1
+      
+      Z_YDCFU_RUISL (:, JBLK)=Z_YDCFU_RUISL (:, JBLK)+Z_YDMF_PHYS_OUT_RUISL&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFGEL%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FGEL (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFGEL%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FGEL (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FGEL (:, JBLK)=Z_YDCFU_FGEL (:, JBLK)+Z_YDMF_PHYS_OUT_FGEL&
+      ITIME=1
+      
+      Z_YDCFU_FGEL (:, JBLK)=Z_YDCFU_FGEL (:, JBLK)+Z_YDMF_PHYS_OUT_FGEL&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFGELS%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FGELS (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFGELS%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FGELS (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FGELS (:, JBLK)=Z_YDCFU_FGELS (:, JBLK)+Z_YDMF_PHYS_OUT_FGELS&
+      ITIME=1
+      
+      Z_YDCFU_FGELS (:, JBLK)=Z_YDCFU_FGELS (:, JBLK)+Z_YDMF_PHYS_OUT_FGELS&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFCS%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FCS (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFCS%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FCS (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FCS (:, JBLK)=Z_YDCFU_FCS (:, JBLK)+Z_YDMF_PHYS_OUT_FCS&
+      ITIME=1
+      
+      Z_YDCFU_FCS (:, JBLK)=Z_YDCFU_FCS (:, JBLK)+Z_YDMF_PHYS_OUT_FCS&
       & (:, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YWS%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_WS (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YWS%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_WS (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_WS (:, JBLK)=Z_YDCFU_WS (:, JBLK)+Z_YDMF_PHYS_SURF_GSP_RR_PW_T0&
+      ITIME=1
+      
+      Z_YDCFU_WS (:, JBLK)=Z_YDCFU_WS (:, JBLK)+Z_YDMF_PHYS_SURF_GSP_RR_PW_T0&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YSNS%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_SNS (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YSNS%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_SNS (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_SNS (:, JBLK)=Z_YDCFU_SNS (:, JBLK)+Z_YDMF_PHYS_SURF_GSP_SG_PF_T0&
+      ITIME=1
+      
+      Z_YDCFU_SNS (:, JBLK)=Z_YDCFU_SNS (:, JBLK)+Z_YDMF_PHYS_SURF_GSP_SG_PF_T0&
       & (:, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YSPRES%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_SPRES (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YSPRES%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_SPRES (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_SPRES (:, JBLK)=Z_YDCFU_SPRES (:, JBLK)+Z_YDCPG_DYN0_PRE&
+      ITIME=1
+      
+      Z_YDCFU_SPRES (:, JBLK)=Z_YDCFU_SPRES (:, JBLK)+Z_YDCPG_DYN0_PRE&
       & (:, YDCPG_OPTS%KFLEVG, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFDISH%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FDISH (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFDISH%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FDISH (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FDISH (:, JBLK)=Z_YDCFU_FDISH (:, JBLK)+Z_YDMF_PHYS_OUT_FDIS&
+      ITIME=1
+      
+      Z_YDCFU_FDISH (:, JBLK)=Z_YDCFU_FDISH (:, JBLK)+Z_YDMF_PHYS_OUT_FDIS&
       & (:, YDCPG_OPTS%KFLEVG, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFTOPH%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FTOPH (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFTOPH%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FTOPH (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FTOPH (:, JBLK)=Z_YDCFU_FTOPH (:, JBLK)+Z_YDMF_PHYS_OUT_FRMH&
+      ITIME=1
+      
+      Z_YDCFU_FTOPH (:, JBLK)=Z_YDCFU_FTOPH (:, JBLK)+Z_YDMF_PHYS_OUT_FRMH&
       & (:, 0, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
-      
-      
-      ENDIF
-  
+    
+    
+    ENDIF
+
   ENDDO
 
   IF (LHOOK) CALL DR_HOOK ('CPCFU_PARALLEL:2:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -3622,7 +3622,7 @@ ELSEIF (LPARALLELMETHOD ('OPENMPSINGLECOLUMN','CPCFU_PARALLEL:2')) THEN
 
   DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-      
+    
 
     
 
@@ -3630,406 +3630,406 @@ ELSEIF (LPARALLELMETHOD ('OPENMPSINGLECOLUMN','CPCFU_PARALLEL:2')) THEN
       YLCPG_BNDS%KIDIA = JLON
       YLCPG_BNDS%KFDIA = JLON
 
+      
+
+      IF (YDCFU%YFNEBT%LACTIVE)  THEN
+        
+        LLNORESET=.FALSE.
+
         
 
-        IF (YDCFU%YFNEBT%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FNEBT (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FNEBT (JLON, JBLK)=Z_YDCFU_FNEBT (JLON, JBLK)+Z_YDCPG_MISC_CLCT&
-        & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
-        
-        
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FNEBT (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFCLL%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
+        ITIME=1
+        
+        Z_YDCFU_FNEBT (JLON, JBLK)=Z_YDCFU_FNEBT (JLON, JBLK)+Z_YDCPG_MISC_CLCT&
+        & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
 
-          
 
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FCLL (JLON, JBLK)=0._JPRB
-          ENDIF
+      IF (YDCFU%YFCLL%LACTIVE)  THEN
+        
+        LLNORESET=.FALSE.
 
-          ITIME=1
-          
-          Z_YDCFU_FCLL (JLON, JBLK)=Z_YDCFU_FCLL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCLL&
+        
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FCLL (JLON, JBLK)=0._JPRB
+        ENDIF
+
+        ITIME=1
+        
+        Z_YDCFU_FCLL (JLON, JBLK)=Z_YDCFU_FCLL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCLL&
         & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFCLN%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FCLN (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFCLN%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FCLN (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FCLN (JLON, JBLK)=Z_YDCFU_FCLN (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCLN&
+        ITIME=1
+        
+        Z_YDCFU_FCLN (JLON, JBLK)=Z_YDCFU_FCLN (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCLN&
         & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFEVL%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FEVL (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFEVL%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FEVL (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FEVL (JLON, JBLK)=Z_YDCFU_FEVL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FEVL&
+        ITIME=1
+        
+        Z_YDCFU_FEVL (JLON, JBLK)=Z_YDCFU_FEVL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FEVL&
         & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFEVN%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FEVN (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFEVN%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FEVN (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FEVN (JLON, JBLK)=Z_YDCFU_FEVN (JLON, JBLK)+Z_YDMF_PHYS_OUT_FEVN&
+        ITIME=1
+        
+        Z_YDCFU_FEVN (JLON, JBLK)=Z_YDCFU_FEVN (JLON, JBLK)+Z_YDMF_PHYS_OUT_FEVN&
         & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFONTE%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FONTE (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFONTE%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FONTE (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FONTE (JLON, JBLK)=Z_YDCFU_FONTE (JLON, JBLK)+Z_YDMF_PHYS_OUT_FONTE&
+        ITIME=1
+        
+        Z_YDCFU_FONTE (JLON, JBLK)=Z_YDCFU_FONTE (JLON, JBLK)+Z_YDMF_PHYS_OUT_FONTE&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFCHSP%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FCHSP (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFCHSP%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FCHSP (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FCHSP (JLON, JBLK)=Z_YDCFU_FCHSP (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCHSP&
+        ITIME=1
+        
+        Z_YDCFU_FCHSP (JLON, JBLK)=Z_YDCFU_FCHSP (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCHSP&
         & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFLWSP%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FLWSP (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFLWSP%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FLWSP (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FLWSP (JLON, JBLK)=Z_YDCFU_FLWSP (JLON, JBLK)+Z_YDMF_PHYS_OUT_FLWSP&
+        ITIME=1
+        
+        Z_YDCFU_FLWSP (JLON, JBLK)=Z_YDCFU_FLWSP (JLON, JBLK)+Z_YDMF_PHYS_OUT_FLWSP&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YRUISS%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_RUISS (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YRUISS%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_RUISS (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_RUISS (JLON, JBLK)=Z_YDCFU_RUISS (JLON, JBLK)+Z_YDMF_PHYS_OUT_RUISS&
+        ITIME=1
+        
+        Z_YDCFU_RUISS (JLON, JBLK)=Z_YDCFU_RUISS (JLON, JBLK)+Z_YDMF_PHYS_OUT_RUISS&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YRUISP%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_RUISP (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YRUISP%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_RUISP (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_RUISP (JLON, JBLK)=Z_YDCFU_RUISP (JLON, JBLK)+Z_YDMF_PHYS_OUT_RUISP&
+        ITIME=1
+        
+        Z_YDCFU_RUISP (JLON, JBLK)=Z_YDCFU_RUISP (JLON, JBLK)+Z_YDMF_PHYS_OUT_RUISP&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFEVV%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FEVV (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFEVV%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FEVV (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FEVV (JLON, JBLK)=Z_YDCFU_FEVV (JLON, JBLK)+Z_YDMF_PHYS_OUT_FEVV&
+        ITIME=1
+        
+        Z_YDCFU_FEVV (JLON, JBLK)=Z_YDCFU_FEVV (JLON, JBLK)+Z_YDMF_PHYS_OUT_FEVV&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFTR%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FTR (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFTR%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FTR (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FTR (JLON, JBLK)=Z_YDCFU_FTR (JLON, JBLK)+Z_YDMF_PHYS_OUT_FTR&
+        ITIME=1
+        
+        Z_YDCFU_FTR (JLON, JBLK)=Z_YDCFU_FTR (JLON, JBLK)+Z_YDMF_PHYS_OUT_FTR&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YRUISL%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_RUISL (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YRUISL%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_RUISL (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_RUISL (JLON, JBLK)=Z_YDCFU_RUISL (JLON, JBLK)+Z_YDMF_PHYS_OUT_RUISL&
+        ITIME=1
+        
+        Z_YDCFU_RUISL (JLON, JBLK)=Z_YDCFU_RUISL (JLON, JBLK)+Z_YDMF_PHYS_OUT_RUISL&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFGEL%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FGEL (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFGEL%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FGEL (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FGEL (JLON, JBLK)=Z_YDCFU_FGEL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FGEL&
+        ITIME=1
+        
+        Z_YDCFU_FGEL (JLON, JBLK)=Z_YDCFU_FGEL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FGEL&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFGELS%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FGELS (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFGELS%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FGELS (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FGELS (JLON, JBLK)=Z_YDCFU_FGELS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FGELS&
+        ITIME=1
+        
+        Z_YDCFU_FGELS (JLON, JBLK)=Z_YDCFU_FGELS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FGELS&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFCS%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FCS (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFCS%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FCS (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FCS (JLON, JBLK)=Z_YDCFU_FCS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCS&
+        ITIME=1
+        
+        Z_YDCFU_FCS (JLON, JBLK)=Z_YDCFU_FCS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCS&
         & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YWS%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_WS (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YWS%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_WS (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_WS (JLON, JBLK)=Z_YDCFU_WS (JLON, JBLK)+Z_YDMF_PHYS_SURF_GSP_RR_PW_T0&
+        ITIME=1
+        
+        Z_YDCFU_WS (JLON, JBLK)=Z_YDCFU_WS (JLON, JBLK)+Z_YDMF_PHYS_SURF_GSP_RR_PW_T0&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YSNS%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_SNS (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YSNS%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_SNS (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_SNS (JLON, JBLK)=Z_YDCFU_SNS (JLON, JBLK)+Z_YDMF_PHYS_SURF_GSP_SG_PF_T0&
+        ITIME=1
+        
+        Z_YDCFU_SNS (JLON, JBLK)=Z_YDCFU_SNS (JLON, JBLK)+Z_YDMF_PHYS_SURF_GSP_SG_PF_T0&
         & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YSPRES%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_SPRES (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YSPRES%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_SPRES (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_SPRES (JLON, JBLK)=Z_YDCFU_SPRES (JLON, JBLK)+Z_YDCPG_DYN0_PRE&
+        ITIME=1
+        
+        Z_YDCFU_SPRES (JLON, JBLK)=Z_YDCFU_SPRES (JLON, JBLK)+Z_YDCPG_DYN0_PRE&
         & (JLON, YDCPG_OPTS%KFLEVG, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFDISH%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FDISH (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFDISH%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FDISH (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FDISH (JLON, JBLK)=Z_YDCFU_FDISH (JLON, JBLK)+Z_YDMF_PHYS_OUT_FDIS&
+        ITIME=1
+        
+        Z_YDCFU_FDISH (JLON, JBLK)=Z_YDCFU_FDISH (JLON, JBLK)+Z_YDMF_PHYS_OUT_FDIS&
         & (JLON, YDCPG_OPTS%KFLEVG, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFTOPH%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FTOPH (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFTOPH%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FTOPH (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FTOPH (JLON, JBLK)=Z_YDCFU_FTOPH (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRMH&
+        ITIME=1
+        
+        Z_YDCFU_FTOPH (JLON, JBLK)=Z_YDCFU_FTOPH (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRMH&
         & (JLON, 0, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
-        
-        
-        ENDIF
-  
+      
+      
+      ENDIF
+
     ENDDO
 
   ENDDO
@@ -4197,7 +4197,7 @@ ELSEIF (LPARALLELMETHOD ('OPENACCSINGLECOLUMN','CPCFU_PARALLEL:2')) THEN
     !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
     
     DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-      
+    
     
     
     !$ACC LOOP VECTOR &
@@ -4209,406 +4209,406 @@ ELSEIF (LPARALLELMETHOD ('OPENACCSINGLECOLUMN','CPCFU_PARALLEL:2')) THEN
       YLCPG_BNDS%KIDIA = JLON
       YLCPG_BNDS%KFDIA = JLON
 
+      
+
+      IF (YDCFU%YFNEBT%LACTIVE)  THEN
+        
+        LLNORESET=.FALSE.
+
         
 
-        IF (YDCFU%YFNEBT%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FNEBT (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FNEBT (JLON, JBLK)=Z_YDCFU_FNEBT (JLON, JBLK)+Z_YDCPG_MISC_CLCT&
-        & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
-        
-        
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FNEBT (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFCLL%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
+        ITIME=1
+        
+        Z_YDCFU_FNEBT (JLON, JBLK)=Z_YDCFU_FNEBT (JLON, JBLK)+Z_YDCPG_MISC_CLCT&
+        & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
 
-          
 
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FCLL (JLON, JBLK)=0._JPRB
-          ENDIF
+      IF (YDCFU%YFCLL%LACTIVE)  THEN
+        
+        LLNORESET=.FALSE.
 
-          ITIME=1
-          
-          Z_YDCFU_FCLL (JLON, JBLK)=Z_YDCFU_FCLL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCLL&
+        
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FCLL (JLON, JBLK)=0._JPRB
+        ENDIF
+
+        ITIME=1
+        
+        Z_YDCFU_FCLL (JLON, JBLK)=Z_YDCFU_FCLL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCLL&
         & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFCLN%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FCLN (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFCLN%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FCLN (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FCLN (JLON, JBLK)=Z_YDCFU_FCLN (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCLN&
+        ITIME=1
+        
+        Z_YDCFU_FCLN (JLON, JBLK)=Z_YDCFU_FCLN (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCLN&
         & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFEVL%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FEVL (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFEVL%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FEVL (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FEVL (JLON, JBLK)=Z_YDCFU_FEVL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FEVL&
+        ITIME=1
+        
+        Z_YDCFU_FEVL (JLON, JBLK)=Z_YDCFU_FEVL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FEVL&
         & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFEVN%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FEVN (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFEVN%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FEVN (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FEVN (JLON, JBLK)=Z_YDCFU_FEVN (JLON, JBLK)+Z_YDMF_PHYS_OUT_FEVN&
+        ITIME=1
+        
+        Z_YDCFU_FEVN (JLON, JBLK)=Z_YDCFU_FEVN (JLON, JBLK)+Z_YDMF_PHYS_OUT_FEVN&
         & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFONTE%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FONTE (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFONTE%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FONTE (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FONTE (JLON, JBLK)=Z_YDCFU_FONTE (JLON, JBLK)+Z_YDMF_PHYS_OUT_FONTE&
+        ITIME=1
+        
+        Z_YDCFU_FONTE (JLON, JBLK)=Z_YDCFU_FONTE (JLON, JBLK)+Z_YDMF_PHYS_OUT_FONTE&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFCHSP%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FCHSP (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFCHSP%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FCHSP (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FCHSP (JLON, JBLK)=Z_YDCFU_FCHSP (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCHSP&
+        ITIME=1
+        
+        Z_YDCFU_FCHSP (JLON, JBLK)=Z_YDCFU_FCHSP (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCHSP&
         & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFLWSP%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FLWSP (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFLWSP%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FLWSP (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FLWSP (JLON, JBLK)=Z_YDCFU_FLWSP (JLON, JBLK)+Z_YDMF_PHYS_OUT_FLWSP&
+        ITIME=1
+        
+        Z_YDCFU_FLWSP (JLON, JBLK)=Z_YDCFU_FLWSP (JLON, JBLK)+Z_YDMF_PHYS_OUT_FLWSP&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YRUISS%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_RUISS (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YRUISS%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_RUISS (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_RUISS (JLON, JBLK)=Z_YDCFU_RUISS (JLON, JBLK)+Z_YDMF_PHYS_OUT_RUISS&
+        ITIME=1
+        
+        Z_YDCFU_RUISS (JLON, JBLK)=Z_YDCFU_RUISS (JLON, JBLK)+Z_YDMF_PHYS_OUT_RUISS&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YRUISP%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_RUISP (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YRUISP%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_RUISP (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_RUISP (JLON, JBLK)=Z_YDCFU_RUISP (JLON, JBLK)+Z_YDMF_PHYS_OUT_RUISP&
+        ITIME=1
+        
+        Z_YDCFU_RUISP (JLON, JBLK)=Z_YDCFU_RUISP (JLON, JBLK)+Z_YDMF_PHYS_OUT_RUISP&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFEVV%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FEVV (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFEVV%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FEVV (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FEVV (JLON, JBLK)=Z_YDCFU_FEVV (JLON, JBLK)+Z_YDMF_PHYS_OUT_FEVV&
+        ITIME=1
+        
+        Z_YDCFU_FEVV (JLON, JBLK)=Z_YDCFU_FEVV (JLON, JBLK)+Z_YDMF_PHYS_OUT_FEVV&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFTR%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FTR (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFTR%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FTR (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FTR (JLON, JBLK)=Z_YDCFU_FTR (JLON, JBLK)+Z_YDMF_PHYS_OUT_FTR&
+        ITIME=1
+        
+        Z_YDCFU_FTR (JLON, JBLK)=Z_YDCFU_FTR (JLON, JBLK)+Z_YDMF_PHYS_OUT_FTR&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YRUISL%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_RUISL (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YRUISL%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_RUISL (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_RUISL (JLON, JBLK)=Z_YDCFU_RUISL (JLON, JBLK)+Z_YDMF_PHYS_OUT_RUISL&
+        ITIME=1
+        
+        Z_YDCFU_RUISL (JLON, JBLK)=Z_YDCFU_RUISL (JLON, JBLK)+Z_YDMF_PHYS_OUT_RUISL&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFGEL%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FGEL (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFGEL%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FGEL (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FGEL (JLON, JBLK)=Z_YDCFU_FGEL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FGEL&
+        ITIME=1
+        
+        Z_YDCFU_FGEL (JLON, JBLK)=Z_YDCFU_FGEL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FGEL&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFGELS%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FGELS (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFGELS%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FGELS (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FGELS (JLON, JBLK)=Z_YDCFU_FGELS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FGELS&
+        ITIME=1
+        
+        Z_YDCFU_FGELS (JLON, JBLK)=Z_YDCFU_FGELS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FGELS&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFCS%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FCS (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFCS%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FCS (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FCS (JLON, JBLK)=Z_YDCFU_FCS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCS&
+        ITIME=1
+        
+        Z_YDCFU_FCS (JLON, JBLK)=Z_YDCFU_FCS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCS&
         & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YWS%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_WS (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YWS%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_WS (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_WS (JLON, JBLK)=Z_YDCFU_WS (JLON, JBLK)+Z_YDMF_PHYS_SURF_GSP_RR_PW_T0&
+        ITIME=1
+        
+        Z_YDCFU_WS (JLON, JBLK)=Z_YDCFU_WS (JLON, JBLK)+Z_YDMF_PHYS_SURF_GSP_RR_PW_T0&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YSNS%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_SNS (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YSNS%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_SNS (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_SNS (JLON, JBLK)=Z_YDCFU_SNS (JLON, JBLK)+Z_YDMF_PHYS_SURF_GSP_SG_PF_T0&
+        ITIME=1
+        
+        Z_YDCFU_SNS (JLON, JBLK)=Z_YDCFU_SNS (JLON, JBLK)+Z_YDMF_PHYS_SURF_GSP_SG_PF_T0&
         & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YSPRES%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_SPRES (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YSPRES%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_SPRES (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_SPRES (JLON, JBLK)=Z_YDCFU_SPRES (JLON, JBLK)+Z_YDCPG_DYN0_PRE&
+        ITIME=1
+        
+        Z_YDCFU_SPRES (JLON, JBLK)=Z_YDCFU_SPRES (JLON, JBLK)+Z_YDCPG_DYN0_PRE&
         & (JLON, YDCPG_OPTS%KFLEVG, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFDISH%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FDISH (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFDISH%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FDISH (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FDISH (JLON, JBLK)=Z_YDCFU_FDISH (JLON, JBLK)+Z_YDMF_PHYS_OUT_FDIS&
+        ITIME=1
+        
+        Z_YDCFU_FDISH (JLON, JBLK)=Z_YDCFU_FDISH (JLON, JBLK)+Z_YDMF_PHYS_OUT_FDIS&
         & (JLON, YDCPG_OPTS%KFLEVG, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFTOPH%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FTOPH (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFTOPH%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FTOPH (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FTOPH (JLON, JBLK)=Z_YDCFU_FTOPH (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRMH&
+        ITIME=1
+        
+        Z_YDCFU_FTOPH (JLON, JBLK)=Z_YDCFU_FTOPH (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRMH&
         & (JLON, 0, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
-        
-        
-        ENDIF
-  
+      
+      
+      ENDIF
+
     ENDDO
 
   ENDDO
@@ -4774,416 +4774,416 @@ IF (LPARALLELMETHOD ('OPENMP','CPCFU_PARALLEL:3')) THEN
   !$OMP PARALLEL DO PRIVATE (ITIME, JBLK, LLNORESET) FIRSTPRIVATE (YLCPG_BNDS)
 
   DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-      CALL YLCPG_BNDS%UPDATE (JBLK)
+    CALL YLCPG_BNDS%UPDATE (JBLK)
+
+    
+
+    IF (YDCFU%YFRSODS%LACTIVE)  THEN
+      
+      LLNORESET=.FALSE.
 
       
 
-      IF (YDCFU%YFRSODS%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FRSODS (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FRSODS (:, JBLK)=Z_YDCFU_FRSODS (:, JBLK)+Z_YDMF_PHYS_OUT_FRSODS&
-      & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
-      
-      
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FRSODS (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFRSDNI%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FRSDNI (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FRSDNI (:, JBLK)=Z_YDCFU_FRSDNI (:, JBLK)+Z_YDMF_PHYS_OUT_FRSDNI&
+      ITIME=1
+      
+      Z_YDCFU_FRSODS (:, JBLK)=Z_YDCFU_FRSODS (:, JBLK)+Z_YDMF_PHYS_OUT_FRSODS&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFRSDNI%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FRSDNI (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFRSGNI%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FRSGNI (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FRSGNI (:, JBLK)=Z_YDCFU_FRSGNI (:, JBLK)+Z_YDMF_PHYS_OUT_FRSGNI&
+      ITIME=1
+      
+      Z_YDCFU_FRSDNI (:, JBLK)=Z_YDCFU_FRSDNI (:, JBLK)+Z_YDMF_PHYS_OUT_FRSDNI&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFRSGNI%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FRSGNI (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFRSOPS%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FRSOPS (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FRSOPS (:, JBLK)=Z_YDCFU_FRSOPS (:, JBLK)+Z_YDMF_PHYS_OUT_FRSOPS&
+      ITIME=1
+      
+      Z_YDCFU_FRSGNI (:, JBLK)=Z_YDCFU_FRSGNI (:, JBLK)+Z_YDMF_PHYS_OUT_FRSGNI&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFRSOPS%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FRSOPS (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFRSOPT%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FRSOPT (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FRSOPT (:, JBLK)=Z_YDCFU_FRSOPT (:, JBLK)+Z_YDMF_PHYS_OUT_FRSOPT&
+      ITIME=1
+      
+      Z_YDCFU_FRSOPS (:, JBLK)=Z_YDCFU_FRSOPS (:, JBLK)+Z_YDMF_PHYS_OUT_FRSOPS&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFRSOPT%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FRSOPT (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFRTHDS%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FRTHDS (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FRTHDS (:, JBLK)=Z_YDCFU_FRTHDS (:, JBLK)+Z_YDMF_PHYS_OUT_FRTHDS&
+      ITIME=1
+      
+      Z_YDCFU_FRSOPT (:, JBLK)=Z_YDCFU_FRSOPT (:, JBLK)+Z_YDMF_PHYS_OUT_FRSOPT&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFRTHDS%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FRTHDS (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFRSOLU%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FRSOLU (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FRSOLU (:, JBLK)=Z_YDCFU_FRSOLU (:, JBLK)+Z_YDMF_PHYS_OUT_FRSOLU&
+      ITIME=1
+      
+      Z_YDCFU_FRTHDS (:, JBLK)=Z_YDCFU_FRTHDS (:, JBLK)+Z_YDMF_PHYS_OUT_FRTHDS&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFRSOLU%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FRSOLU (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YNEBCON%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_NEBCON (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_NEBCON (:, JBLK)=Z_YDCFU_NEBCON (:, JBLK)+Z_YDMF_PHYS_OUT_CLCC&
+      ITIME=1
+      
+      Z_YDCFU_FRSOLU (:, JBLK)=Z_YDCFU_FRSOLU (:, JBLK)+Z_YDMF_PHYS_OUT_FRSOLU&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YNEBCON%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_NEBCON (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YNEBHAU%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_NEBHAU (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_NEBHAU (:, JBLK)=Z_YDCFU_NEBHAU (:, JBLK)+Z_YDMF_PHYS_OUT_CLCH&
+      ITIME=1
+      
+      Z_YDCFU_NEBCON (:, JBLK)=Z_YDCFU_NEBCON (:, JBLK)+Z_YDMF_PHYS_OUT_CLCC&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YNEBHAU%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_NEBHAU (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YNEBMOY%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_NEBMOY (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_NEBMOY (:, JBLK)=Z_YDCFU_NEBMOY (:, JBLK)+Z_YDMF_PHYS_OUT_CLCM&
+      ITIME=1
+      
+      Z_YDCFU_NEBHAU (:, JBLK)=Z_YDCFU_NEBHAU (:, JBLK)+Z_YDMF_PHYS_OUT_CLCH&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YNEBMOY%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_NEBMOY (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YNEBBAS%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_NEBBAS (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_NEBBAS (:, JBLK)=Z_YDCFU_NEBBAS (:, JBLK)+Z_YDMF_PHYS_OUT_CLCL&
+      ITIME=1
+      
+      Z_YDCFU_NEBMOY (:, JBLK)=Z_YDCFU_NEBMOY (:, JBLK)+Z_YDMF_PHYS_OUT_CLCM&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YNEBBAS%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_NEBBAS (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFRSOC0%LACTIVE.AND.LLFRRC)  THEN
-          
-        LLNORESET=.FALSE.
+      ITIME=1
+      
+      Z_YDCFU_NEBBAS (:, JBLK)=Z_YDCFU_NEBBAS (:, JBLK)+Z_YDMF_PHYS_OUT_CLCL&
+      & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
 
-        
 
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FRSOC0 (:, JBLK)=0._JPRB
-        ENDIF
+    IF (YDCFU%YFRSOC0%LACTIVE.AND.LLFRRC)  THEN
+      
+      LLNORESET=.FALSE.
 
-        ITIME=1
-        
-          ITIME=YDCFU%NFRRC
-        
-        Z_YDCFU_FRSOC0 (:, JBLK)=Z_YDCFU_FRSOC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FRSOC&
+      
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FRSOC0 (:, JBLK)=0._JPRB
+      ENDIF
+
+      ITIME=1
+      
+      ITIME=YDCFU%NFRRC
+      
+      Z_YDCFU_FRSOC0 (:, JBLK)=Z_YDCFU_FRSOC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FRSOC&
       & (:, 0, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFRSOC1%LACTIVE.AND.LLFRRC)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FRSOC1 (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFRSOC1%LACTIVE.AND.LLFRRC)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FRSOC1 (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-          ITIME=YDCFU%NFRRC
-        
-        Z_YDCFU_FRSOC1 (:, JBLK)=Z_YDCFU_FRSOC1 (:, JBLK)+Z_YDMF_PHYS_OUT_FRSOC&
+      ITIME=1
+      
+      ITIME=YDCFU%NFRRC
+      
+      Z_YDCFU_FRSOC1 (:, JBLK)=Z_YDCFU_FRSOC1 (:, JBLK)+Z_YDMF_PHYS_OUT_FRSOC&
       & (:, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFRTHC0%LACTIVE.AND.LLFRRC)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FRTHC0 (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFRTHC0%LACTIVE.AND.LLFRRC)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FRTHC0 (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-          ITIME=YDCFU%NFRRC
-        
-        Z_YDCFU_FRTHC0 (:, JBLK)=Z_YDCFU_FRTHC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FRTHC&
+      ITIME=1
+      
+      ITIME=YDCFU%NFRRC
+      
+      Z_YDCFU_FRTHC0 (:, JBLK)=Z_YDCFU_FRTHC0 (:, JBLK)+Z_YDMF_PHYS_OUT_FRTHC&
       & (:, 0, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFRTHC1%LACTIVE.AND.LLFRRC)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FRTHC1 (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFRTHC1%LACTIVE.AND.LLFRRC)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FRTHC1 (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-          ITIME=YDCFU%NFRRC
-        
-        Z_YDCFU_FRTHC1 (:, JBLK)=Z_YDCFU_FRTHC1 (:, JBLK)+Z_YDMF_PHYS_OUT_FRTHC&
+      ITIME=1
+      
+      ITIME=YDCFU%NFRRC
+      
+      Z_YDCFU_FRTHC1 (:, JBLK)=Z_YDCFU_FRTHC1 (:, JBLK)+Z_YDMF_PHYS_OUT_FRTHC&
       & (:, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YFLASH%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FLASH (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YFLASH%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FLASH (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_FLASH (:, JBLK)=Z_YDCFU_FLASH (:, JBLK)+Z_YDMF_PHYS_OUT_FLASH&
+      ITIME=1
+      
+      Z_YDCFU_FLASH (:, JBLK)=Z_YDCFU_FLASH (:, JBLK)+Z_YDMF_PHYS_OUT_FLASH&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YLOADSNOW%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_LOADSNOW (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YLOADSNOW%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_LOADSNOW (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_LOADSNOW (:, JBLK)=Z_YDCFU_LOADSNOW (:, JBLK)+Z_YDMF_PHYS_OUT_LOADSNOW&
+      ITIME=1
+      
+      Z_YDCFU_LOADSNOW (:, JBLK)=Z_YDCFU_LOADSNOW (:, JBLK)+Z_YDMF_PHYS_OUT_LOADSNOW&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YLOADICE%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_LOADICE (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YLOADICE%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_LOADICE (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_LOADICE (:, JBLK)=Z_YDCFU_LOADICE (:, JBLK)+Z_YDMF_PHYS_OUT_LOADICE&
+      ITIME=1
+      
+      Z_YDCFU_LOADICE (:, JBLK)=Z_YDCFU_LOADICE (:, JBLK)+Z_YDMF_PHYS_OUT_LOADICE&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YDIAMACCR%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_DIAMACCR (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YDIAMACCR%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_DIAMACCR (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_DIAMACCR (:, JBLK)=Z_YDCFU_DIAMACCR (:, JBLK)+Z_YDMF_PHYS_OUT_DIAMACCR&
+      ITIME=1
+      
+      Z_YDCFU_DIAMACCR (:, JBLK)=Z_YDCFU_DIAMACCR (:, JBLK)+Z_YDMF_PHYS_OUT_DIAMACCR&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YPCPWSNOW%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_PCPWSNOW (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YPCPWSNOW%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_PCPWSNOW (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_PCPWSNOW (:, JBLK)=Z_YDCFU_PCPWSNOW (:, JBLK)+Z_YDMF_PHYS_OUT_PCPWSNOW&
+      ITIME=1
+      
+      Z_YDCFU_PCPWSNOW (:, JBLK)=Z_YDCFU_PCPWSNOW (:, JBLK)+Z_YDMF_PHYS_OUT_PCPWSNOW&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YPCPICE%LACTIVE)  THEN
       
+      LLNORESET=.FALSE.
+
       
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_PCPICE (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YPCPICE%LACTIVE)  THEN
-          
-        LLNORESET=.FALSE.
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_PCPICE (:, JBLK)=0._JPRB
-        ENDIF
-
-        ITIME=1
-        
-        Z_YDCFU_PCPICE (:, JBLK)=Z_YDCFU_PCPICE (:, JBLK)+Z_YDMF_PHYS_OUT_PCPICE&
+      ITIME=1
+      
+      Z_YDCFU_PCPICE (:, JBLK)=Z_YDCFU_PCPICE (:, JBLK)+Z_YDMF_PHYS_OUT_PCPICE&
       & (:, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
-      
-      
-      ENDIF
-  
+    
+    
+    ENDIF
+
   ENDDO
 
   IF (LHOOK) CALL DR_HOOK ('CPCFU_PARALLEL:3:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -5329,7 +5329,7 @@ ELSEIF (LPARALLELMETHOD ('OPENMPSINGLECOLUMN','CPCFU_PARALLEL:3')) THEN
 
   DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-      
+    
 
     
 
@@ -5337,414 +5337,414 @@ ELSEIF (LPARALLELMETHOD ('OPENMPSINGLECOLUMN','CPCFU_PARALLEL:3')) THEN
       YLCPG_BNDS%KIDIA = JLON
       YLCPG_BNDS%KFDIA = JLON
 
+      
+
+      IF (YDCFU%YFRSODS%LACTIVE)  THEN
+        
+        LLNORESET=.FALSE.
+
         
 
-        IF (YDCFU%YFRSODS%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRSODS (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FRSODS (JLON, JBLK)=Z_YDCFU_FRSODS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSODS&
-        & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
-        
-        
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRSODS (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRSDNI%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRSDNI (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FRSDNI (JLON, JBLK)=Z_YDCFU_FRSDNI (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSDNI&
+        ITIME=1
+        
+        Z_YDCFU_FRSODS (JLON, JBLK)=Z_YDCFU_FRSODS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSODS&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRSDNI%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRSDNI (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRSGNI%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRSGNI (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FRSGNI (JLON, JBLK)=Z_YDCFU_FRSGNI (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSGNI&
+        ITIME=1
+        
+        Z_YDCFU_FRSDNI (JLON, JBLK)=Z_YDCFU_FRSDNI (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSDNI&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRSGNI%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRSGNI (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRSOPS%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRSOPS (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FRSOPS (JLON, JBLK)=Z_YDCFU_FRSOPS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOPS&
+        ITIME=1
+        
+        Z_YDCFU_FRSGNI (JLON, JBLK)=Z_YDCFU_FRSGNI (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSGNI&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRSOPS%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRSOPS (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRSOPT%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRSOPT (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FRSOPT (JLON, JBLK)=Z_YDCFU_FRSOPT (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOPT&
+        ITIME=1
+        
+        Z_YDCFU_FRSOPS (JLON, JBLK)=Z_YDCFU_FRSOPS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOPS&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRSOPT%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRSOPT (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRTHDS%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRTHDS (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FRTHDS (JLON, JBLK)=Z_YDCFU_FRTHDS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRTHDS&
+        ITIME=1
+        
+        Z_YDCFU_FRSOPT (JLON, JBLK)=Z_YDCFU_FRSOPT (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOPT&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRTHDS%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRTHDS (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRSOLU%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRSOLU (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FRSOLU (JLON, JBLK)=Z_YDCFU_FRSOLU (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOLU&
+        ITIME=1
+        
+        Z_YDCFU_FRTHDS (JLON, JBLK)=Z_YDCFU_FRTHDS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRTHDS&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRSOLU%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRSOLU (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YNEBCON%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_NEBCON (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_NEBCON (JLON, JBLK)=Z_YDCFU_NEBCON (JLON, JBLK)+Z_YDMF_PHYS_OUT_CLCC&
+        ITIME=1
+        
+        Z_YDCFU_FRSOLU (JLON, JBLK)=Z_YDCFU_FRSOLU (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOLU&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YNEBCON%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_NEBCON (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YNEBHAU%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_NEBHAU (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_NEBHAU (JLON, JBLK)=Z_YDCFU_NEBHAU (JLON, JBLK)+Z_YDMF_PHYS_OUT_CLCH&
+        ITIME=1
+        
+        Z_YDCFU_NEBCON (JLON, JBLK)=Z_YDCFU_NEBCON (JLON, JBLK)+Z_YDMF_PHYS_OUT_CLCC&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YNEBHAU%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_NEBHAU (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YNEBMOY%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_NEBMOY (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_NEBMOY (JLON, JBLK)=Z_YDCFU_NEBMOY (JLON, JBLK)+Z_YDMF_PHYS_OUT_CLCM&
+        ITIME=1
+        
+        Z_YDCFU_NEBHAU (JLON, JBLK)=Z_YDCFU_NEBHAU (JLON, JBLK)+Z_YDMF_PHYS_OUT_CLCH&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YNEBMOY%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_NEBMOY (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YNEBBAS%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_NEBBAS (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_NEBBAS (JLON, JBLK)=Z_YDCFU_NEBBAS (JLON, JBLK)+Z_YDMF_PHYS_OUT_CLCL&
+        ITIME=1
+        
+        Z_YDCFU_NEBMOY (JLON, JBLK)=Z_YDCFU_NEBMOY (JLON, JBLK)+Z_YDMF_PHYS_OUT_CLCM&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YNEBBAS%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_NEBBAS (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRSOC0%LACTIVE.AND.LLFRRC)  THEN
-            
-          LLNORESET=.FALSE.
+        ITIME=1
+        
+        Z_YDCFU_NEBBAS (JLON, JBLK)=Z_YDCFU_NEBBAS (JLON, JBLK)+Z_YDMF_PHYS_OUT_CLCL&
+        & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
 
-          
 
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRSOC0 (JLON, JBLK)=0._JPRB
-          ENDIF
+      IF (YDCFU%YFRSOC0%LACTIVE.AND.LLFRRC)  THEN
+        
+        LLNORESET=.FALSE.
 
-          ITIME=1
-          
-            ITIME=YDCFU%NFRRC
-          
-          Z_YDCFU_FRSOC0 (JLON, JBLK)=Z_YDCFU_FRSOC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOC&
+        
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRSOC0 (JLON, JBLK)=0._JPRB
+        ENDIF
+
+        ITIME=1
+        
+        ITIME=YDCFU%NFRRC
+        
+        Z_YDCFU_FRSOC0 (JLON, JBLK)=Z_YDCFU_FRSOC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOC&
         & (JLON, 0, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRSOC1%LACTIVE.AND.LLFRRC)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRSOC1 (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRSOC1%LACTIVE.AND.LLFRRC)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRSOC1 (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-            ITIME=YDCFU%NFRRC
-          
-          Z_YDCFU_FRSOC1 (JLON, JBLK)=Z_YDCFU_FRSOC1 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOC&
+        ITIME=1
+        
+        ITIME=YDCFU%NFRRC
+        
+        Z_YDCFU_FRSOC1 (JLON, JBLK)=Z_YDCFU_FRSOC1 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOC&
         & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRTHC0%LACTIVE.AND.LLFRRC)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRTHC0 (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRTHC0%LACTIVE.AND.LLFRRC)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRTHC0 (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-            ITIME=YDCFU%NFRRC
-          
-          Z_YDCFU_FRTHC0 (JLON, JBLK)=Z_YDCFU_FRTHC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRTHC&
+        ITIME=1
+        
+        ITIME=YDCFU%NFRRC
+        
+        Z_YDCFU_FRTHC0 (JLON, JBLK)=Z_YDCFU_FRTHC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRTHC&
         & (JLON, 0, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRTHC1%LACTIVE.AND.LLFRRC)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRTHC1 (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRTHC1%LACTIVE.AND.LLFRRC)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRTHC1 (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-            ITIME=YDCFU%NFRRC
-          
-          Z_YDCFU_FRTHC1 (JLON, JBLK)=Z_YDCFU_FRTHC1 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRTHC&
+        ITIME=1
+        
+        ITIME=YDCFU%NFRRC
+        
+        Z_YDCFU_FRTHC1 (JLON, JBLK)=Z_YDCFU_FRTHC1 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRTHC&
         & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFLASH%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FLASH (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFLASH%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FLASH (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FLASH (JLON, JBLK)=Z_YDCFU_FLASH (JLON, JBLK)+Z_YDMF_PHYS_OUT_FLASH&
+        ITIME=1
+        
+        Z_YDCFU_FLASH (JLON, JBLK)=Z_YDCFU_FLASH (JLON, JBLK)+Z_YDMF_PHYS_OUT_FLASH&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YLOADSNOW%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_LOADSNOW (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YLOADSNOW%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_LOADSNOW (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_LOADSNOW (JLON, JBLK)=Z_YDCFU_LOADSNOW (JLON, JBLK)+Z_YDMF_PHYS_OUT_LOADSNOW&
+        ITIME=1
+        
+        Z_YDCFU_LOADSNOW (JLON, JBLK)=Z_YDCFU_LOADSNOW (JLON, JBLK)+Z_YDMF_PHYS_OUT_LOADSNOW&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YLOADICE%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_LOADICE (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YLOADICE%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_LOADICE (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_LOADICE (JLON, JBLK)=Z_YDCFU_LOADICE (JLON, JBLK)+Z_YDMF_PHYS_OUT_LOADICE&
+        ITIME=1
+        
+        Z_YDCFU_LOADICE (JLON, JBLK)=Z_YDCFU_LOADICE (JLON, JBLK)+Z_YDMF_PHYS_OUT_LOADICE&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YDIAMACCR%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_DIAMACCR (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YDIAMACCR%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_DIAMACCR (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_DIAMACCR (JLON, JBLK)=Z_YDCFU_DIAMACCR (JLON, JBLK)+Z_YDMF_PHYS_OUT_DIAMACCR&
+        ITIME=1
+        
+        Z_YDCFU_DIAMACCR (JLON, JBLK)=Z_YDCFU_DIAMACCR (JLON, JBLK)+Z_YDMF_PHYS_OUT_DIAMACCR&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YPCPWSNOW%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_PCPWSNOW (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YPCPWSNOW%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_PCPWSNOW (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_PCPWSNOW (JLON, JBLK)=Z_YDCFU_PCPWSNOW (JLON, JBLK)+Z_YDMF_PHYS_OUT_PCPWSNOW&
+        ITIME=1
+        
+        Z_YDCFU_PCPWSNOW (JLON, JBLK)=Z_YDCFU_PCPWSNOW (JLON, JBLK)+Z_YDMF_PHYS_OUT_PCPWSNOW&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YPCPICE%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_PCPICE (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YPCPICE%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_PCPICE (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_PCPICE (JLON, JBLK)=Z_YDCFU_PCPICE (JLON, JBLK)+Z_YDMF_PHYS_OUT_PCPICE&
+        ITIME=1
+        
+        Z_YDCFU_PCPICE (JLON, JBLK)=Z_YDCFU_PCPICE (JLON, JBLK)+Z_YDMF_PHYS_OUT_PCPICE&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
-        
-        
-        ENDIF
-  
+      
+      
+      ENDIF
+
     ENDDO
 
   ENDDO
@@ -5906,7 +5906,7 @@ ELSEIF (LPARALLELMETHOD ('OPENACCSINGLECOLUMN','CPCFU_PARALLEL:3')) THEN
     !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
     
     DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-      
+    
     
     
     !$ACC LOOP VECTOR &
@@ -5918,414 +5918,414 @@ ELSEIF (LPARALLELMETHOD ('OPENACCSINGLECOLUMN','CPCFU_PARALLEL:3')) THEN
       YLCPG_BNDS%KIDIA = JLON
       YLCPG_BNDS%KFDIA = JLON
 
+      
+
+      IF (YDCFU%YFRSODS%LACTIVE)  THEN
+        
+        LLNORESET=.FALSE.
+
         
 
-        IF (YDCFU%YFRSODS%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRSODS (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FRSODS (JLON, JBLK)=Z_YDCFU_FRSODS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSODS&
-        & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
-        
-        
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRSODS (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRSDNI%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRSDNI (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FRSDNI (JLON, JBLK)=Z_YDCFU_FRSDNI (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSDNI&
+        ITIME=1
+        
+        Z_YDCFU_FRSODS (JLON, JBLK)=Z_YDCFU_FRSODS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSODS&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRSDNI%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRSDNI (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRSGNI%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRSGNI (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FRSGNI (JLON, JBLK)=Z_YDCFU_FRSGNI (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSGNI&
+        ITIME=1
+        
+        Z_YDCFU_FRSDNI (JLON, JBLK)=Z_YDCFU_FRSDNI (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSDNI&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRSGNI%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRSGNI (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRSOPS%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRSOPS (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FRSOPS (JLON, JBLK)=Z_YDCFU_FRSOPS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOPS&
+        ITIME=1
+        
+        Z_YDCFU_FRSGNI (JLON, JBLK)=Z_YDCFU_FRSGNI (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSGNI&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRSOPS%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRSOPS (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRSOPT%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRSOPT (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FRSOPT (JLON, JBLK)=Z_YDCFU_FRSOPT (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOPT&
+        ITIME=1
+        
+        Z_YDCFU_FRSOPS (JLON, JBLK)=Z_YDCFU_FRSOPS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOPS&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRSOPT%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRSOPT (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRTHDS%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRTHDS (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FRTHDS (JLON, JBLK)=Z_YDCFU_FRTHDS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRTHDS&
+        ITIME=1
+        
+        Z_YDCFU_FRSOPT (JLON, JBLK)=Z_YDCFU_FRSOPT (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOPT&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRTHDS%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRTHDS (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRSOLU%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRSOLU (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FRSOLU (JLON, JBLK)=Z_YDCFU_FRSOLU (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOLU&
+        ITIME=1
+        
+        Z_YDCFU_FRTHDS (JLON, JBLK)=Z_YDCFU_FRTHDS (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRTHDS&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRSOLU%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRSOLU (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YNEBCON%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_NEBCON (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_NEBCON (JLON, JBLK)=Z_YDCFU_NEBCON (JLON, JBLK)+Z_YDMF_PHYS_OUT_CLCC&
+        ITIME=1
+        
+        Z_YDCFU_FRSOLU (JLON, JBLK)=Z_YDCFU_FRSOLU (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOLU&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YNEBCON%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_NEBCON (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YNEBHAU%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_NEBHAU (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_NEBHAU (JLON, JBLK)=Z_YDCFU_NEBHAU (JLON, JBLK)+Z_YDMF_PHYS_OUT_CLCH&
+        ITIME=1
+        
+        Z_YDCFU_NEBCON (JLON, JBLK)=Z_YDCFU_NEBCON (JLON, JBLK)+Z_YDMF_PHYS_OUT_CLCC&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YNEBHAU%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_NEBHAU (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YNEBMOY%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_NEBMOY (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_NEBMOY (JLON, JBLK)=Z_YDCFU_NEBMOY (JLON, JBLK)+Z_YDMF_PHYS_OUT_CLCM&
+        ITIME=1
+        
+        Z_YDCFU_NEBHAU (JLON, JBLK)=Z_YDCFU_NEBHAU (JLON, JBLK)+Z_YDMF_PHYS_OUT_CLCH&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YNEBMOY%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_NEBMOY (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YNEBBAS%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_NEBBAS (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_NEBBAS (JLON, JBLK)=Z_YDCFU_NEBBAS (JLON, JBLK)+Z_YDMF_PHYS_OUT_CLCL&
+        ITIME=1
+        
+        Z_YDCFU_NEBMOY (JLON, JBLK)=Z_YDCFU_NEBMOY (JLON, JBLK)+Z_YDMF_PHYS_OUT_CLCM&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YNEBBAS%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_NEBBAS (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRSOC0%LACTIVE.AND.LLFRRC)  THEN
-            
-          LLNORESET=.FALSE.
+        ITIME=1
+        
+        Z_YDCFU_NEBBAS (JLON, JBLK)=Z_YDCFU_NEBBAS (JLON, JBLK)+Z_YDMF_PHYS_OUT_CLCL&
+        & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
 
-          
 
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRSOC0 (JLON, JBLK)=0._JPRB
-          ENDIF
+      IF (YDCFU%YFRSOC0%LACTIVE.AND.LLFRRC)  THEN
+        
+        LLNORESET=.FALSE.
 
-          ITIME=1
-          
-            ITIME=YDCFU%NFRRC
-          
-          Z_YDCFU_FRSOC0 (JLON, JBLK)=Z_YDCFU_FRSOC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOC&
+        
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRSOC0 (JLON, JBLK)=0._JPRB
+        ENDIF
+
+        ITIME=1
+        
+        ITIME=YDCFU%NFRRC
+        
+        Z_YDCFU_FRSOC0 (JLON, JBLK)=Z_YDCFU_FRSOC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOC&
         & (JLON, 0, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRSOC1%LACTIVE.AND.LLFRRC)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRSOC1 (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRSOC1%LACTIVE.AND.LLFRRC)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRSOC1 (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-            ITIME=YDCFU%NFRRC
-          
-          Z_YDCFU_FRSOC1 (JLON, JBLK)=Z_YDCFU_FRSOC1 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOC&
+        ITIME=1
+        
+        ITIME=YDCFU%NFRRC
+        
+        Z_YDCFU_FRSOC1 (JLON, JBLK)=Z_YDCFU_FRSOC1 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRSOC&
         & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRTHC0%LACTIVE.AND.LLFRRC)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRTHC0 (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRTHC0%LACTIVE.AND.LLFRRC)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRTHC0 (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-            ITIME=YDCFU%NFRRC
-          
-          Z_YDCFU_FRTHC0 (JLON, JBLK)=Z_YDCFU_FRTHC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRTHC&
+        ITIME=1
+        
+        ITIME=YDCFU%NFRRC
+        
+        Z_YDCFU_FRTHC0 (JLON, JBLK)=Z_YDCFU_FRTHC0 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRTHC&
         & (JLON, 0, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFRTHC1%LACTIVE.AND.LLFRRC)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FRTHC1 (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFRTHC1%LACTIVE.AND.LLFRRC)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FRTHC1 (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-            ITIME=YDCFU%NFRRC
-          
-          Z_YDCFU_FRTHC1 (JLON, JBLK)=Z_YDCFU_FRTHC1 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRTHC&
+        ITIME=1
+        
+        ITIME=YDCFU%NFRRC
+        
+        Z_YDCFU_FRTHC1 (JLON, JBLK)=Z_YDCFU_FRTHC1 (JLON, JBLK)+Z_YDMF_PHYS_OUT_FRTHC&
         & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YFLASH%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FLASH (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YFLASH%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FLASH (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_FLASH (JLON, JBLK)=Z_YDCFU_FLASH (JLON, JBLK)+Z_YDMF_PHYS_OUT_FLASH&
+        ITIME=1
+        
+        Z_YDCFU_FLASH (JLON, JBLK)=Z_YDCFU_FLASH (JLON, JBLK)+Z_YDMF_PHYS_OUT_FLASH&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YLOADSNOW%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_LOADSNOW (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YLOADSNOW%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_LOADSNOW (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_LOADSNOW (JLON, JBLK)=Z_YDCFU_LOADSNOW (JLON, JBLK)+Z_YDMF_PHYS_OUT_LOADSNOW&
+        ITIME=1
+        
+        Z_YDCFU_LOADSNOW (JLON, JBLK)=Z_YDCFU_LOADSNOW (JLON, JBLK)+Z_YDMF_PHYS_OUT_LOADSNOW&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YLOADICE%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_LOADICE (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YLOADICE%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_LOADICE (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_LOADICE (JLON, JBLK)=Z_YDCFU_LOADICE (JLON, JBLK)+Z_YDMF_PHYS_OUT_LOADICE&
+        ITIME=1
+        
+        Z_YDCFU_LOADICE (JLON, JBLK)=Z_YDCFU_LOADICE (JLON, JBLK)+Z_YDMF_PHYS_OUT_LOADICE&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YDIAMACCR%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_DIAMACCR (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YDIAMACCR%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_DIAMACCR (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_DIAMACCR (JLON, JBLK)=Z_YDCFU_DIAMACCR (JLON, JBLK)+Z_YDMF_PHYS_OUT_DIAMACCR&
+        ITIME=1
+        
+        Z_YDCFU_DIAMACCR (JLON, JBLK)=Z_YDCFU_DIAMACCR (JLON, JBLK)+Z_YDMF_PHYS_OUT_DIAMACCR&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YPCPWSNOW%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_PCPWSNOW (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YPCPWSNOW%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_PCPWSNOW (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_PCPWSNOW (JLON, JBLK)=Z_YDCFU_PCPWSNOW (JLON, JBLK)+Z_YDMF_PHYS_OUT_PCPWSNOW&
+        ITIME=1
+        
+        Z_YDCFU_PCPWSNOW (JLON, JBLK)=Z_YDCFU_PCPWSNOW (JLON, JBLK)+Z_YDMF_PHYS_OUT_PCPWSNOW&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YPCPICE%LACTIVE)  THEN
         
+        LLNORESET=.FALSE.
+
         
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_PCPICE (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YPCPICE%LACTIVE)  THEN
-            
-          LLNORESET=.FALSE.
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_PCPICE (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ITIME=1
-          
-          Z_YDCFU_PCPICE (JLON, JBLK)=Z_YDCFU_PCPICE (JLON, JBLK)+Z_YDMF_PHYS_OUT_PCPICE&
+        ITIME=1
+        
+        Z_YDCFU_PCPICE (JLON, JBLK)=Z_YDCFU_PCPICE (JLON, JBLK)+Z_YDMF_PHYS_OUT_PCPICE&
         & (JLON, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
-        
-        
-        ENDIF
-  
+      
+      
+      ENDIF
+
     ENDDO
 
   ENDDO
@@ -6445,40 +6445,40 @@ IF (YDCFU%YFCL%LACTIVE) THEN
     !$OMP PARALLEL DO PRIVATE (ITIME, JBLK, LLNORESET) FIRSTPRIVATE (YLCPG_BNDS)
 
     DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-        CALL YLCPG_BNDS%UPDATE (JBLK)
-        
-        
-        LLNORESET=.FALSE.  
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FCL (:, JBLK)=0._JPRB
-        ENDIF
-  
-        ITIME=1  
-        
-        Z_YDCFU_FCL (:, JBLK)=Z_YDCFU_FCL (:, JBLK)+Z_YDMF_PHYS_OUT_FCLL&
-      & (:, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)  
-        
-        
-        
-        LLNORESET=.FALSE.  
-        
-          LLNORESET=.TRUE.  
-
-        
-
-        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-          Z_YDCFU_FCL (:, JBLK)=0._JPRB
-        ENDIF
-  
-        ITIME=1  
-        
-        Z_YDCFU_FCL (:, JBLK)=Z_YDCFU_FCL (:, JBLK)+Z_YDMF_PHYS_OUT_FCLN&
-      & (:, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)  
+      CALL YLCPG_BNDS%UPDATE (JBLK)
       
       
+      LLNORESET=.FALSE.
+
+      
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FCL (:, JBLK)=0._JPRB
+      ENDIF
+
+      ITIME=1
+      
+      Z_YDCFU_FCL (:, JBLK)=Z_YDCFU_FCL (:, JBLK)+Z_YDMF_PHYS_OUT_FCLL&
+      & (:, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
+      
+      LLNORESET=.FALSE.
+      
+      LLNORESET=.TRUE.
+
+      
+
+      IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+        Z_YDCFU_FCL (:, JBLK)=0._JPRB
+      ENDIF
+
+      ITIME=1
+      
+      Z_YDCFU_FCL (:, JBLK)=Z_YDCFU_FCL (:, JBLK)+Z_YDMF_PHYS_OUT_FCLN&
+      & (:, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+    
+    
     ENDDO
 
     IF (LHOOK) CALL DR_HOOK ('CPCFU_PARALLEL:4:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -6513,46 +6513,46 @@ IF (YDCFU%YFCL%LACTIVE) THEN
 
     DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-        
+      
 
       
 
       DO JLON = 1, MIN (YDCPG_OPTS%KLON, YDCPG_OPTS%KGPCOMP - (JBLK - 1) * YDCPG_OPTS%KLON)
         YLCPG_BNDS%KIDIA = JLON
         YLCPG_BNDS%KFDIA = JLON
-          
-          
-          LLNORESET=.FALSE.  
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FCL (JLON, JBLK)=0._JPRB
-          ENDIF
-  
-          ITIME=1  
-          
-          Z_YDCFU_FCL (JLON, JBLK)=Z_YDCFU_FCL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCLL&
-        & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)  
-          
-          
-          
-          LLNORESET=.FALSE.  
-          
-            LLNORESET=.TRUE.  
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FCL (JLON, JBLK)=0._JPRB
-          ENDIF
-  
-          ITIME=1  
-          
-          Z_YDCFU_FCL (JLON, JBLK)=Z_YDCFU_FCL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCLN&
-        & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)  
         
         
+        LLNORESET=.FALSE.
+
+        
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FCL (JLON, JBLK)=0._JPRB
+        ENDIF
+
+        ITIME=1
+        
+        Z_YDCFU_FCL (JLON, JBLK)=Z_YDCFU_FCL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCLL&
+        & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+        
+        
+        
+        LLNORESET=.FALSE.
+        
+        LLNORESET=.TRUE.
+
+        
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FCL (JLON, JBLK)=0._JPRB
+        ENDIF
+
+        ITIME=1
+        
+        Z_YDCFU_FCL (JLON, JBLK)=Z_YDCFU_FCL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCLN&
+        & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
       ENDDO
 
     ENDDO
@@ -6593,7 +6593,7 @@ IF (YDCFU%YFCL%LACTIVE) THEN
       !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
       
       DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-        
+      
       
       
       !$ACC LOOP VECTOR &
@@ -6604,39 +6604,39 @@ IF (YDCFU%YFCL%LACTIVE) THEN
       DO JLON = 1, MIN (YDCPG_OPTS%KLON, YDCPG_OPTS%KGPCOMP - (JBLK - 1) * YDCPG_OPTS%KLON)
         YLCPG_BNDS%KIDIA = JLON
         YLCPG_BNDS%KFDIA = JLON
-          
-          
-          LLNORESET=.FALSE.  
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FCL (JLON, JBLK)=0._JPRB
-          ENDIF
-  
-          ITIME=1  
-          
-          Z_YDCFU_FCL (JLON, JBLK)=Z_YDCFU_FCL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCLL&
-        & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)  
-          
-          
-          
-          LLNORESET=.FALSE.  
-          
-            LLNORESET=.TRUE.  
-
-          
-
-          IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
-            Z_YDCFU_FCL (JLON, JBLK)=0._JPRB
-          ENDIF
-  
-          ITIME=1  
-          
-          Z_YDCFU_FCL (JLON, JBLK)=Z_YDCFU_FCL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCLN&
-        & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)  
         
         
+        LLNORESET=.FALSE.
+
+        
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FCL (JLON, JBLK)=0._JPRB
+        ENDIF
+
+        ITIME=1
+        
+        Z_YDCFU_FCL (JLON, JBLK)=Z_YDCFU_FCL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCLL&
+        & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+        
+        
+        
+        LLNORESET=.FALSE.
+        
+        LLNORESET=.TRUE.
+
+        
+
+        IF (LLRESET.AND.(.NOT.LLNORESET)) THEN
+          Z_YDCFU_FCL (JLON, JBLK)=0._JPRB
+        ENDIF
+
+        ITIME=1
+        
+        Z_YDCFU_FCL (JLON, JBLK)=Z_YDCFU_FCL (JLON, JBLK)+Z_YDMF_PHYS_OUT_FCLN&
+        & (JLON, 1, JBLK)*YDRIP%TSTEP*REAL (ITIME, JPRB)
+      
+      
       ENDDO
 
     ENDDO
@@ -6688,105 +6688,105 @@ IF (LPARALLELMETHOD ('OPENMP','CPCFU_PARALLEL:5')) THEN
   !$OMP PARALLEL DO PRIVATE (JBLK, JLEV, JLON, ZMUL) FIRSTPRIVATE (YLCPG_BNDS)
 
   DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-      CALL YLCPG_BNDS%UPDATE (JBLK)
+    CALL YLCPG_BNDS%UPDATE (JBLK)
+
+    
+
+    IF (YDCFU%YQTOT%LACTIVE)  THEN
 
       
 
-      IF (YDCFU%YQTOT%LACTIVE)  THEN
+      IF (LLRESET) THEN
+        Z_YDCFU_QTOT (:, JBLK)=0._JPRB
+      ENDIF
 
-          
+      ZMUL=1._JPRB/YDCST%RG
 
-        IF (LLRESET) THEN
-          Z_YDCFU_QTOT (:, JBLK)=0._JPRB
-        ENDIF
+      DO JLEV=1, YDCPG_OPTS%KFLEVG
 
-        ZMUL=1._JPRB/YDCST%RG
-
-        DO JLEV=1, YDCPG_OPTS%KFLEVG
-
-          DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-            Z_YDCFU_QTOT (JLON, JBLK)=Z_YDCFU_QTOT (JLON, JBLK)+Z_YDVARS_Q_T0 (JLON, JLEV&
+        DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+          Z_YDCFU_QTOT (JLON, JBLK)=Z_YDCFU_QTOT (JLON, JBLK)+Z_YDVARS_Q_T0 (JLON, JLEV&
           &, JBLK)*Z_YDCPG_DYN0_XYB_DELP (JLON, JLEV, JBLK)*ZMUL*YDRIP%TSTEP
-          ENDDO
-
         ENDDO
 
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YQICE%LACTIVE)  THEN
+
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_QICE (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YQICE%LACTIVE)  THEN
+      ZMUL=1._JPRB/YDCST%RG
 
-          
+      DO JLEV=1, YDCPG_OPTS%KFLEVG
 
-        IF (LLRESET) THEN
-          Z_YDCFU_QICE (:, JBLK)=0._JPRB
-        ENDIF
-
-        ZMUL=1._JPRB/YDCST%RG
-
-        DO JLEV=1, YDCPG_OPTS%KFLEVG
-
-          DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-            Z_YDCFU_QICE (JLON, JBLK)=Z_YDCFU_QICE (JLON, JBLK)+Z_YDCPG_MISC_QICE (JLON&
+        DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+          Z_YDCFU_QICE (JLON, JBLK)=Z_YDCFU_QICE (JLON, JBLK)+Z_YDCPG_MISC_QICE (JLON&
           &, JLEV, JBLK)*Z_YDCPG_DYN0_XYB_DELP (JLON, JLEV, JBLK)*ZMUL*YDRIP%TSTEP
-          ENDDO
-
         ENDDO
 
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YQLI%LACTIVE)  THEN
+
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_QLI (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YQLI%LACTIVE)  THEN
+      ZMUL=1._JPRB/YDCST%RG
 
-          
+      DO JLEV=1, YDCPG_OPTS%KFLEVG
 
-        IF (LLRESET) THEN
-          Z_YDCFU_QLI (:, JBLK)=0._JPRB
-        ENDIF
-
-        ZMUL=1._JPRB/YDCST%RG
-
-        DO JLEV=1, YDCPG_OPTS%KFLEVG
-
-          DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-            Z_YDCFU_QLI (JLON, JBLK)=Z_YDCFU_QLI (JLON, JBLK)+Z_YDCPG_MISC_QLI (JLON,&
+        DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+          Z_YDCFU_QLI (JLON, JBLK)=Z_YDCFU_QLI (JLON, JBLK)+Z_YDCPG_MISC_QLI (JLON,&
           & JLEV, JBLK)*Z_YDCPG_DYN0_XYB_DELP (JLON, JLEV, JBLK)*ZMUL*YDRIP%TSTEP
-          ENDDO
-
         ENDDO
 
+      ENDDO
+
+    
+    
+    ENDIF
+
+
+    IF (YDCFU%YOZONT%LACTIVE)  THEN
+
       
-      
+
+      IF (LLRESET) THEN
+        Z_YDCFU_OZONT (:, JBLK)=0._JPRB
       ENDIF
-  
 
-      IF (YDCFU%YOZONT%LACTIVE)  THEN
+      ZMUL=1._JPRB/YDCST%RG
 
-          
+      DO JLEV=1, YDCPG_OPTS%KFLEVG
 
-        IF (LLRESET) THEN
-          Z_YDCFU_OZONT (:, JBLK)=0._JPRB
-        ENDIF
-
-        ZMUL=1._JPRB/YDCST%RG
-
-        DO JLEV=1, YDCPG_OPTS%KFLEVG
-
-          DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-            Z_YDCFU_OZONT (JLON, JBLK)=Z_YDCFU_OZONT (JLON, JBLK)+Z_YDVARS_O3_T0 (JLON&
+        DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+          Z_YDCFU_OZONT (JLON, JBLK)=Z_YDCFU_OZONT (JLON, JBLK)+Z_YDVARS_O3_T0 (JLON&
           &, JLEV, JBLK)*Z_YDCPG_DYN0_XYB_DELP (JLON, JLEV, JBLK)*ZMUL*YDRIP%TSTEP
-          ENDDO
-
         ENDDO
 
-      
-      
-      ENDIF
-  
+      ENDDO
+
+    
+    
+    ENDIF
+
   ENDDO
 
   IF (LHOOK) CALL DR_HOOK ('CPCFU_PARALLEL:5:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -6839,7 +6839,7 @@ ELSEIF (LPARALLELMETHOD ('OPENMPSINGLECOLUMN','CPCFU_PARALLEL:5')) THEN
 
   DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-      
+    
 
     
 
@@ -6847,95 +6847,95 @@ ELSEIF (LPARALLELMETHOD ('OPENMPSINGLECOLUMN','CPCFU_PARALLEL:5')) THEN
       YLCPG_BNDS%KIDIA = JLON
       YLCPG_BNDS%KFDIA = JLON
 
+      
+
+      IF (YDCFU%YQTOT%LACTIVE)  THEN
+
         
 
-        IF (YDCFU%YQTOT%LACTIVE)  THEN
+        IF (LLRESET) THEN
+          Z_YDCFU_QTOT (JLON, JBLK)=0._JPRB
+        ENDIF
 
-            
+        ZMUL=1._JPRB/YDCST%RG
 
-          IF (LLRESET) THEN
-            Z_YDCFU_QTOT (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ZMUL=1._JPRB/YDCST%RG
-
-          DO JLEV=1, YDCPG_OPTS%KFLEVG
-            
-            Z_YDCFU_QTOT (JLON, JBLK)=Z_YDCFU_QTOT (JLON, JBLK)+Z_YDVARS_Q_T0 (JLON, JLEV&
+        DO JLEV=1, YDCPG_OPTS%KFLEVG
+          
+          Z_YDCFU_QTOT (JLON, JBLK)=Z_YDCFU_QTOT (JLON, JBLK)+Z_YDVARS_Q_T0 (JLON, JLEV&
           &, JBLK)*Z_YDCPG_DYN0_XYB_DELP (JLON, JLEV, JBLK)*ZMUL*YDRIP%TSTEP
-          
-          ENDDO
+        
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YQICE%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_QICE (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YQICE%LACTIVE)  THEN
+        ZMUL=1._JPRB/YDCST%RG
 
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_QICE (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ZMUL=1._JPRB/YDCST%RG
-
-          DO JLEV=1, YDCPG_OPTS%KFLEVG
-            
-            Z_YDCFU_QICE (JLON, JBLK)=Z_YDCFU_QICE (JLON, JBLK)+Z_YDCPG_MISC_QICE (JLON&
+        DO JLEV=1, YDCPG_OPTS%KFLEVG
+          
+          Z_YDCFU_QICE (JLON, JBLK)=Z_YDCFU_QICE (JLON, JBLK)+Z_YDCPG_MISC_QICE (JLON&
           &, JLEV, JBLK)*Z_YDCPG_DYN0_XYB_DELP (JLON, JLEV, JBLK)*ZMUL*YDRIP%TSTEP
-          
-          ENDDO
+        
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YQLI%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_QLI (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YQLI%LACTIVE)  THEN
+        ZMUL=1._JPRB/YDCST%RG
 
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_QLI (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ZMUL=1._JPRB/YDCST%RG
-
-          DO JLEV=1, YDCPG_OPTS%KFLEVG
-            
-            Z_YDCFU_QLI (JLON, JBLK)=Z_YDCFU_QLI (JLON, JBLK)+Z_YDCPG_MISC_QLI (JLON,&
+        DO JLEV=1, YDCPG_OPTS%KFLEVG
+          
+          Z_YDCFU_QLI (JLON, JBLK)=Z_YDCFU_QLI (JLON, JBLK)+Z_YDCPG_MISC_QLI (JLON,&
           & JLEV, JBLK)*Z_YDCPG_DYN0_XYB_DELP (JLON, JLEV, JBLK)*ZMUL*YDRIP%TSTEP
-          
-          ENDDO
+        
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YOZONT%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_OZONT (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YOZONT%LACTIVE)  THEN
+        ZMUL=1._JPRB/YDCST%RG
 
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_OZONT (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ZMUL=1._JPRB/YDCST%RG
-
-          DO JLEV=1, YDCPG_OPTS%KFLEVG
-            
-            Z_YDCFU_OZONT (JLON, JBLK)=Z_YDCFU_OZONT (JLON, JBLK)+Z_YDVARS_O3_T0 (JLON&
+        DO JLEV=1, YDCPG_OPTS%KFLEVG
+          
+          Z_YDCFU_OZONT (JLON, JBLK)=Z_YDCFU_OZONT (JLON, JBLK)+Z_YDVARS_O3_T0 (JLON&
           &, JLEV, JBLK)*Z_YDCPG_DYN0_XYB_DELP (JLON, JLEV, JBLK)*ZMUL*YDRIP%TSTEP
-          
-          ENDDO
+        
+        ENDDO
 
-        
-        
-        ENDIF
-  
+      
+      
+      ENDIF
+
     ENDDO
 
   ENDDO
@@ -6995,7 +6995,7 @@ ELSEIF (LPARALLELMETHOD ('OPENACCSINGLECOLUMN','CPCFU_PARALLEL:5')) THEN
     !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
     
     DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-      
+    
     
     
     !$ACC LOOP VECTOR &
@@ -7007,95 +7007,95 @@ ELSEIF (LPARALLELMETHOD ('OPENACCSINGLECOLUMN','CPCFU_PARALLEL:5')) THEN
       YLCPG_BNDS%KIDIA = JLON
       YLCPG_BNDS%KFDIA = JLON
 
+      
+
+      IF (YDCFU%YQTOT%LACTIVE)  THEN
+
         
 
-        IF (YDCFU%YQTOT%LACTIVE)  THEN
+        IF (LLRESET) THEN
+          Z_YDCFU_QTOT (JLON, JBLK)=0._JPRB
+        ENDIF
 
-            
+        ZMUL=1._JPRB/YDCST%RG
 
-          IF (LLRESET) THEN
-            Z_YDCFU_QTOT (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ZMUL=1._JPRB/YDCST%RG
-
-          DO JLEV=1, YDCPG_OPTS%KFLEVG
-            
-            Z_YDCFU_QTOT (JLON, JBLK)=Z_YDCFU_QTOT (JLON, JBLK)+Z_YDVARS_Q_T0 (JLON, JLEV&
+        DO JLEV=1, YDCPG_OPTS%KFLEVG
+          
+          Z_YDCFU_QTOT (JLON, JBLK)=Z_YDCFU_QTOT (JLON, JBLK)+Z_YDVARS_Q_T0 (JLON, JLEV&
           &, JBLK)*Z_YDCPG_DYN0_XYB_DELP (JLON, JLEV, JBLK)*ZMUL*YDRIP%TSTEP
-          
-          ENDDO
+        
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YQICE%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_QICE (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YQICE%LACTIVE)  THEN
+        ZMUL=1._JPRB/YDCST%RG
 
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_QICE (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ZMUL=1._JPRB/YDCST%RG
-
-          DO JLEV=1, YDCPG_OPTS%KFLEVG
-            
-            Z_YDCFU_QICE (JLON, JBLK)=Z_YDCFU_QICE (JLON, JBLK)+Z_YDCPG_MISC_QICE (JLON&
+        DO JLEV=1, YDCPG_OPTS%KFLEVG
+          
+          Z_YDCFU_QICE (JLON, JBLK)=Z_YDCFU_QICE (JLON, JBLK)+Z_YDCPG_MISC_QICE (JLON&
           &, JLEV, JBLK)*Z_YDCPG_DYN0_XYB_DELP (JLON, JLEV, JBLK)*ZMUL*YDRIP%TSTEP
-          
-          ENDDO
+        
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YQLI%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_QLI (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YQLI%LACTIVE)  THEN
+        ZMUL=1._JPRB/YDCST%RG
 
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_QLI (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ZMUL=1._JPRB/YDCST%RG
-
-          DO JLEV=1, YDCPG_OPTS%KFLEVG
-            
-            Z_YDCFU_QLI (JLON, JBLK)=Z_YDCFU_QLI (JLON, JBLK)+Z_YDCPG_MISC_QLI (JLON,&
+        DO JLEV=1, YDCPG_OPTS%KFLEVG
+          
+          Z_YDCFU_QLI (JLON, JBLK)=Z_YDCFU_QLI (JLON, JBLK)+Z_YDCPG_MISC_QLI (JLON,&
           & JLEV, JBLK)*Z_YDCPG_DYN0_XYB_DELP (JLON, JLEV, JBLK)*ZMUL*YDRIP%TSTEP
-          
-          ENDDO
+        
+        ENDDO
+
+      
+      
+      ENDIF
+
+
+      IF (YDCFU%YOZONT%LACTIVE)  THEN
 
         
-        
+
+        IF (LLRESET) THEN
+          Z_YDCFU_OZONT (JLON, JBLK)=0._JPRB
         ENDIF
-  
 
-        IF (YDCFU%YOZONT%LACTIVE)  THEN
+        ZMUL=1._JPRB/YDCST%RG
 
-            
-
-          IF (LLRESET) THEN
-            Z_YDCFU_OZONT (JLON, JBLK)=0._JPRB
-          ENDIF
-
-          ZMUL=1._JPRB/YDCST%RG
-
-          DO JLEV=1, YDCPG_OPTS%KFLEVG
-            
-            Z_YDCFU_OZONT (JLON, JBLK)=Z_YDCFU_OZONT (JLON, JBLK)+Z_YDVARS_O3_T0 (JLON&
+        DO JLEV=1, YDCPG_OPTS%KFLEVG
+          
+          Z_YDCFU_OZONT (JLON, JBLK)=Z_YDCFU_OZONT (JLON, JBLK)+Z_YDVARS_O3_T0 (JLON&
           &, JLEV, JBLK)*Z_YDCPG_DYN0_XYB_DELP (JLON, JLEV, JBLK)*ZMUL*YDRIP%TSTEP
-          
-          ENDDO
+        
+        ENDDO
 
-        
-        
-        ENDIF
-  
+      
+      
+      ENDIF
+
     ENDDO
 
   ENDDO

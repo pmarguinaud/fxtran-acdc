@@ -277,7 +277,7 @@ DO JK=IKB+1, IKE-1
   
 
   IF (JK==KLCL (JI)-1)  THEN
-      ZWORK6 =0.
+    ZWORK6 =0.
   ENDIF
 
   
@@ -330,7 +330,7 @@ DO JK=IKB+1, IKE-1
   
 
   IF (GWORK1 )  THEN
-      ZWORK2 (JI)=1.
+    ZWORK2 (JI)=1.
   ENDIF
 
 
@@ -370,7 +370,7 @@ DO JK=IKB+1, IKE-1
   
 
   IF (GWORK2 )  THEN
-      KCTL (JI)=JKP
+    KCTL (JI)=JKP
   ENDIF
 
   
@@ -408,7 +408,7 @@ OTRIG (JI)=ZWORK1 (JI)>=CVP_SHAL%XCDEPTH.AND.ZWORK1 (JI)<CVP_SHAL%XCDEPTH_D.AND.
 
 
 IF (.NOT.OTRIG (JI))  THEN
-    KCTL (JI)=IKB
+  KCTL (JI)=IKB
 ENDIF
 
 
@@ -420,7 +420,7 @@ ZWORK1 (JI)=0.
 
 
 IF (KETL (JI)==KCTL (JI))  THEN
-    ZWORK1 (JI)=1.
+  ZWORK1 (JI)=1.
 ENDIF
 
 

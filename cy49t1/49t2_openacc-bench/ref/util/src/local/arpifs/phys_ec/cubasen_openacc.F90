@@ -447,7 +447,7 @@ DO JKK=KLEV, JKT1,-1
           ZEPS=ZXENTSTPC1/((PGEO (JL, JK)-PGEOH (JL, KLEV+1))*ZRG*PPLRG)+YDECUMF%ENTSTPC2
 
           IF (LDMIXS.AND.KINDEX==KLEV.AND.ZLU (JL, JK+1)>0.0_JPRB)  THEN
-              ZEPS=ZEPS*YDECUMF%ENTSTPC3
+            ZEPS=ZEPS*YDECUMF%ENTSTPC3
           ENDIF
 
         ENDIF
@@ -455,7 +455,7 @@ DO JKK=KLEV, JKT1,-1
         ZMIX =0.5_JPRB*ZDZ *PPLRG*ZEPS
 
         IF (.NOT.LDTDKMF)  THEN
-            ZMIX =MIN (1.0_JPRB, ZMIX )
+          ZMIX =MIN (1.0_JPRB, ZMIX )
         ENDIF
 
         ZQF=(PQENH (JL, JK+1)+PQENH (JL, JK))*0.5_JPRB
@@ -502,7 +502,7 @@ DO JKK=KLEV, JKT1,-1
 
 
     IF (IS==0)  THEN
-        EXIT
+      EXIT
     ENDIF
 
     IK=JK
@@ -545,7 +545,7 @@ DO JKK=KLEV, JKT1,-1
         ZCOND1=(ZQU (JL, IK)*ZCOR_CUADJTQ**2-ZQSAT*ZCOR_CUADJTQ)/(ZCOR_CUADJTQ**2+ZQSAT*ZF)
 
         IF (ZCOND==0.0_JPRB)  THEN
-            ZCOND1=0.0_JPRB
+          ZCOND1=0.0_JPRB
         ENDIF
 
         ZTU (JL, IK)=ZTU (JL, IK)+FOELDCPMCU (ZTU (JL, IK))*ZCOND1
@@ -720,14 +720,14 @@ DO JKK=KLEV, JKT1,-1
     LLDEEP =PAPH (JL, JKB)-PAPH (JL, JKT)>YDECUMF%RDEPTHS
 
     IF (LLDEEP .AND.KINDEX<KLEV-1)  THEN
-        LLDCUM =.FALSE.
+      LLDCUM =.FALSE.
     ENDIF
 
     LLDEEP =.FALSE.
     LLGO_ON =.NOT.LLDEEP 
 
     IF (KINDEX==KLEV-1)  THEN
-        LLGO_ON =.NOT.LLDCUM 
+      LLGO_ON =.NOT.LLDCUM 
     ENDIF
 
 
@@ -805,7 +805,7 @@ DO JKK=KLEV, JKT1,-1
 
 
           IF (JK<JKT)  THEN
-              KLAB (JL, JK)=0
+            KLAB (JL, JK)=0
           ENDIF
 
         ENDIF

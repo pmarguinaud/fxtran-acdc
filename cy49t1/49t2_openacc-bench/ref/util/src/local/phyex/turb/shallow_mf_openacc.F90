@@ -305,7 +305,7 @@ DO JK = 1, D%NKT
   
   
   
-    IERR (JI,JK)=0
+  IERR (JI,JK)=0
 
   
 
@@ -320,7 +320,7 @@ DO JK = 1, D%NKT
     ZFRAC_ICE (JI,JK)=MAX (0., MIN (1., ZFRAC_ICE (JI,JK)))
   CASE DEFAULT
     
-      IERR (JI,JK)=1
+    IERR (JI,JK)=1
   
   ENDSELECT
 

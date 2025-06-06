@@ -94,7 +94,7 @@ DO JK=1, IKT
   ZCP (JI, JK)=CST%XCPD
 
   IF (KRR>0)  THEN
-      ZCP (JI, JK)=ZCP (JI, JK)+CST%XCPV*PR (JI, JK, 1)
+    ZCP (JI, JK)=ZCP (JI, JK)+CST%XCPV*PR (JI, JK, 1)
   ENDIF
 
   

@@ -63,18 +63,18 @@ DO JFLD=1, SIZE (YDVARS%GFL_PTR)
         !$OMP PARALLEL DO PRIVATE (JBLK, JLEV, JROF) FIRSTPRIVATE (YLCPG_BNDS)
 
         DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-            CALL YLCPG_BNDS%UPDATE (JBLK)
+          CALL YLCPG_BNDS%UPDATE (JBLK)
 
-            
+          
 
-            DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
+          DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
 
-              DO JROF=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-                Z_YDVARS_GFL_PTR_T0  (JROF, JLEV, JBLK)=Z_YDVARS_GFL_PTR_T1  (JROF, JLEV, JBLK)
-              ENDDO
-
+            DO JROF=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+              Z_YDVARS_GFL_PTR_T0  (JROF, JLEV, JBLK)=Z_YDVARS_GFL_PTR_T1  (JROF, JLEV, JBLK)
             ENDDO
-  
+
+          ENDDO
+
         ENDDO
 
         IF (LHOOK) CALL DR_HOOK ('SCAN2M_TS_PARALLEL:0:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -106,7 +106,7 @@ DO JFLD=1, SIZE (YDVARS%GFL_PTR)
 
         DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-            
+          
 
           
 
@@ -114,14 +114,14 @@ DO JFLD=1, SIZE (YDVARS%GFL_PTR)
             YLCPG_BNDS%KIDIA = JROF
             YLCPG_BNDS%KFDIA = JROF
 
-              
+            
 
-              DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
-                
-                Z_YDVARS_GFL_PTR_T0  (JROF, JLEV, JBLK)=Z_YDVARS_GFL_PTR_T1  (JROF, JLEV, JBLK)
+            DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
               
-              ENDDO
-  
+              Z_YDVARS_GFL_PTR_T0  (JROF, JLEV, JBLK)=Z_YDVARS_GFL_PTR_T1  (JROF, JLEV, JBLK)
+            
+            ENDDO
+
           ENDDO
 
         ENDDO
@@ -158,7 +158,7 @@ DO JFLD=1, SIZE (YDVARS%GFL_PTR)
           !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
           
           DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-            
+          
           
           
           !$ACC LOOP VECTOR &
@@ -170,14 +170,14 @@ DO JFLD=1, SIZE (YDVARS%GFL_PTR)
             YLCPG_BNDS%KIDIA = JROF
             YLCPG_BNDS%KFDIA = JROF
 
-              
+            
 
-              DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
-                
-                Z_YDVARS_GFL_PTR_T0  (JROF, JLEV, JBLK)=Z_YDVARS_GFL_PTR_T1  (JROF, JLEV, JBLK)
+            DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
               
-              ENDDO
-  
+              Z_YDVARS_GFL_PTR_T0  (JROF, JLEV, JBLK)=Z_YDVARS_GFL_PTR_T1  (JROF, JLEV, JBLK)
+            
+            ENDDO
+
           ENDDO
 
         ENDDO

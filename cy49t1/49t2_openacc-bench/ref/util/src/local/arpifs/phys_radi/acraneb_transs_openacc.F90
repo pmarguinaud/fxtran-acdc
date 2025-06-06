@@ -289,7 +289,7 @@ ENDIF
 DO JG=1, 3
 
   IF (LL_OZONE.AND.JG==3)  THEN
-      CYCLE
+    CYCLE
   ENDIF
 
   
@@ -456,7 +456,7 @@ DO JLEV=KTDIA, KLEV
   DO JG=1, 3
 
     IF (LL_OZONE.AND.JG==3)  THEN
-        CYCLE
+      CYCLE
     ENDIF
 
     
@@ -624,7 +624,7 @@ DO JLEV=KLEV, KTDIA,-1
   DO JG=1, 3
 
     IF (LL_OZONE.AND.JG==3)  THEN
-        CYCLE
+      CYCLE
     ENDIF
 
     

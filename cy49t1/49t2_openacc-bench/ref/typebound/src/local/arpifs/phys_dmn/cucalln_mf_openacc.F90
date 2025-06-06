@@ -324,7 +324,7 @@ DO JK=1, KLEV
   ZQSAT (JL, JK)=ZQP1 (JL, JK)
 
   IF (ZQSAT (JL, JK)<=0.0_JPRB)  THEN
-      ZQSAT (JL, JK)=ZEPS
+    ZQSAT (JL, JK)=ZEPS
   ENDIF
 
   

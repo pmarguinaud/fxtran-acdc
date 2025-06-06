@@ -77,19 +77,19 @@ IF (LDCT.AND.(.NOT.LDCTC)) THEN
           !$OMP PARALLEL DO PRIVATE (JBLK, JLEV, JROF) FIRSTPRIVATE (YLCPG_BNDS)
 
           DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-              CALL YLCPG_BNDS%UPDATE (JBLK)
+            CALL YLCPG_BNDS%UPDATE (JBLK)
 
-              
+            
 
-              DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
+            DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
 
-                DO JROF=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-                  Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)+Z_YDCPG_SL1_GFL_P_F&
+              DO JROF=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+                Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)+Z_YDCPG_SL1_GFL_P_F&
                 &  (JROF, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T9  (JROF, JLEV, JBLK)
-                ENDDO
-
               ENDDO
-  
+
+            ENDDO
+
           ENDDO
 
           IF (LHOOK) CALL DR_HOOK ('LATTEX_EXPL_2TL_PARALLEL:0:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -124,7 +124,7 @@ IF (LDCT.AND.(.NOT.LDCTC)) THEN
 
           DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-              
+            
 
             
 
@@ -132,15 +132,15 @@ IF (LDCT.AND.(.NOT.LDCTC)) THEN
               YLCPG_BNDS%KIDIA = JROF
               YLCPG_BNDS%KFDIA = JROF
 
-                
+              
 
-                DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
-                  
-                  Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)+Z_YDCPG_SL1_GFL_P_F&
-                &  (JROF, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T9  (JROF, JLEV, JBLK)
+              DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
                 
-                ENDDO
-  
+                Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)+Z_YDCPG_SL1_GFL_P_F&
+                &  (JROF, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T9  (JROF, JLEV, JBLK)
+              
+              ENDDO
+
             ENDDO
 
           ENDDO
@@ -181,7 +181,7 @@ IF (LDCT.AND.(.NOT.LDCTC)) THEN
             !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
             
             DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-              
+            
             
             
             !$ACC LOOP VECTOR &
@@ -193,15 +193,15 @@ IF (LDCT.AND.(.NOT.LDCTC)) THEN
               YLCPG_BNDS%KIDIA = JROF
               YLCPG_BNDS%KFDIA = JROF
 
-                
+              
 
-                DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
-                  
-                  Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)+Z_YDCPG_SL1_GFL_P_F&
-                &  (JROF, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T9  (JROF, JLEV, JBLK)
+              DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
                 
-                ENDDO
-  
+                Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)+Z_YDCPG_SL1_GFL_P_F&
+                &  (JROF, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T9  (JROF, JLEV, JBLK)
+              
+              ENDDO
+
             ENDDO
 
           ENDDO
@@ -245,19 +245,19 @@ IF (LDCT.AND.(.NOT.LDCTC)) THEN
           !$OMP PARALLEL DO PRIVATE (JBLK, JLEV, JROF) FIRSTPRIVATE (YLCPG_BNDS)
 
           DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-              CALL YLCPG_BNDS%UPDATE (JBLK)
+            CALL YLCPG_BNDS%UPDATE (JBLK)
 
-              
+            
 
-              DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
+            DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
 
-                DO JROF=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-                  Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF&
+              DO JROF=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+                Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF&
                 &, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T9  (JROF, JLEV, JBLK)
-                ENDDO
-
               ENDDO
-  
+
+            ENDDO
+
           ENDDO
 
           IF (LHOOK) CALL DR_HOOK ('LATTEX_EXPL_2TL_PARALLEL:1:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -289,7 +289,7 @@ IF (LDCT.AND.(.NOT.LDCTC)) THEN
 
           DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-              
+            
 
             
 
@@ -297,15 +297,15 @@ IF (LDCT.AND.(.NOT.LDCTC)) THEN
               YLCPG_BNDS%KIDIA = JROF
               YLCPG_BNDS%KFDIA = JROF
 
-                
+              
 
-                DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
-                  
-                  Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF&
-                &, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T9  (JROF, JLEV, JBLK)
+              DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
                 
-                ENDDO
-  
+                Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF&
+                &, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T9  (JROF, JLEV, JBLK)
+              
+              ENDDO
+
             ENDDO
 
           ENDDO
@@ -342,7 +342,7 @@ IF (LDCT.AND.(.NOT.LDCTC)) THEN
             !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
             
             DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-              
+            
             
             
             !$ACC LOOP VECTOR &
@@ -354,15 +354,15 @@ IF (LDCT.AND.(.NOT.LDCTC)) THEN
               YLCPG_BNDS%KIDIA = JROF
               YLCPG_BNDS%KFDIA = JROF
 
-                
+              
 
-                DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
-                  
-                  Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF&
-                &, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T9  (JROF, JLEV, JBLK)
+              DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
                 
-                ENDDO
-  
+                Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF&
+                &, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T9  (JROF, JLEV, JBLK)
+              
+              ENDDO
+
             ENDDO
 
           ENDDO
@@ -418,19 +418,19 @@ ELSEIF (.NOT.LDCT) THEN
           !$OMP PARALLEL DO PRIVATE (JBLK, JLEV, JROF) FIRSTPRIVATE (YLCPG_BNDS)
 
           DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-              CALL YLCPG_BNDS%UPDATE (JBLK)
+            CALL YLCPG_BNDS%UPDATE (JBLK)
 
-              
+            
 
-              DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
+            DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
 
-                DO JROF=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-                  Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)+Z_YDCPG_SL1_GFL_P_F&
+              DO JROF=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+                Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)+Z_YDCPG_SL1_GFL_P_F&
                 &  (JROF, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T0  (JROF, JLEV, JBLK)
-                ENDDO
-
               ENDDO
-  
+
+            ENDDO
+
           ENDDO
 
           IF (LHOOK) CALL DR_HOOK ('LATTEX_EXPL_2TL_PARALLEL:2:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -465,7 +465,7 @@ ELSEIF (.NOT.LDCT) THEN
 
           DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-              
+            
 
             
 
@@ -473,15 +473,15 @@ ELSEIF (.NOT.LDCT) THEN
               YLCPG_BNDS%KIDIA = JROF
               YLCPG_BNDS%KFDIA = JROF
 
-                
+              
 
-                DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
-                  
-                  Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)+Z_YDCPG_SL1_GFL_P_F&
-                &  (JROF, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T0  (JROF, JLEV, JBLK)
+              DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
                 
-                ENDDO
-  
+                Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)+Z_YDCPG_SL1_GFL_P_F&
+                &  (JROF, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T0  (JROF, JLEV, JBLK)
+              
+              ENDDO
+
             ENDDO
 
           ENDDO
@@ -522,7 +522,7 @@ ELSEIF (.NOT.LDCT) THEN
             !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
             
             DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-              
+            
             
             
             !$ACC LOOP VECTOR &
@@ -534,15 +534,15 @@ ELSEIF (.NOT.LDCT) THEN
               YLCPG_BNDS%KIDIA = JROF
               YLCPG_BNDS%KFDIA = JROF
 
-                
+              
 
-                DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
-                  
-                  Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)+Z_YDCPG_SL1_GFL_P_F&
-                &  (JROF, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T0  (JROF, JLEV, JBLK)
+              DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
                 
-                ENDDO
-  
+                Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)+Z_YDCPG_SL1_GFL_P_F&
+                &  (JROF, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T0  (JROF, JLEV, JBLK)
+              
+              ENDDO
+
             ENDDO
 
           ENDDO
@@ -586,19 +586,19 @@ ELSEIF (.NOT.LDCT) THEN
           !$OMP PARALLEL DO PRIVATE (JBLK, JLEV, JROF) FIRSTPRIVATE (YLCPG_BNDS)
 
           DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-              CALL YLCPG_BNDS%UPDATE (JBLK)
+            CALL YLCPG_BNDS%UPDATE (JBLK)
 
-              
+            
 
-              DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
+            DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
 
-                DO JROF=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-                  Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF&
+              DO JROF=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+                Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF&
                 &, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T0  (JROF, JLEV, JBLK)
-                ENDDO
-
               ENDDO
-  
+
+            ENDDO
+
           ENDDO
 
           IF (LHOOK) CALL DR_HOOK ('LATTEX_EXPL_2TL_PARALLEL:3:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -630,7 +630,7 @@ ELSEIF (.NOT.LDCT) THEN
 
           DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-              
+            
 
             
 
@@ -638,15 +638,15 @@ ELSEIF (.NOT.LDCT) THEN
               YLCPG_BNDS%KIDIA = JROF
               YLCPG_BNDS%KFDIA = JROF
 
-                
+              
 
-                DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
-                  
-                  Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF&
-                &, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T0  (JROF, JLEV, JBLK)
+              DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
                 
-                ENDDO
-  
+                Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF&
+                &, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T0  (JROF, JLEV, JBLK)
+              
+              ENDDO
+
             ENDDO
 
           ENDDO
@@ -683,7 +683,7 @@ ELSEIF (.NOT.LDCT) THEN
             !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
             
             DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-              
+            
             
             
             !$ACC LOOP VECTOR &
@@ -695,15 +695,15 @@ ELSEIF (.NOT.LDCT) THEN
               YLCPG_BNDS%KIDIA = JROF
               YLCPG_BNDS%KFDIA = JROF
 
-                
+              
 
-                DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
-                  
-                  Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF&
-                &, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T0  (JROF, JLEV, JBLK)
+              DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
                 
-                ENDDO
-  
+                Z_YDCPG_SL1_GFL_P  (JROF, JLEV, JBLK)=Z_YDCPG_SL1_GFL_P  (JROF&
+                &, JLEV, JBLK)+Z_YDVARS_GFL_PTR_T0  (JROF, JLEV, JBLK)
+              
+              ENDDO
+
             ENDDO
 
           ENDDO
@@ -757,18 +757,18 @@ IF (YDVARS%CVGQ%YCOMP%LGP.AND.(.NOT.LDCTC)) THEN
       !$OMP PARALLEL DO PRIVATE (JBLK, JLEV, JROF) FIRSTPRIVATE (YLCPG_BNDS)
 
       DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-          CALL YLCPG_BNDS%UPDATE (JBLK)
+        CALL YLCPG_BNDS%UPDATE (JBLK)
 
-          
+        
 
-          DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
+        DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
 
-            DO JROF=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-              Z_YDCPG_SL1_CVGQ_P_F (JROF, JLEV, JBLK)=Z_YDCPG_SL1_Q_P_F (JROF, JLEV, JBLK)
-            ENDDO
-
+          DO JROF=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+            Z_YDCPG_SL1_CVGQ_P_F (JROF, JLEV, JBLK)=Z_YDCPG_SL1_Q_P_F (JROF, JLEV, JBLK)
           ENDDO
-  
+
+        ENDDO
+
       ENDDO
 
       IF (LHOOK) CALL DR_HOOK ('LATTEX_EXPL_2TL_PARALLEL:4:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -800,7 +800,7 @@ IF (YDVARS%CVGQ%YCOMP%LGP.AND.(.NOT.LDCTC)) THEN
 
       DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-          
+        
 
         
 
@@ -808,14 +808,14 @@ IF (YDVARS%CVGQ%YCOMP%LGP.AND.(.NOT.LDCTC)) THEN
           YLCPG_BNDS%KIDIA = JROF
           YLCPG_BNDS%KFDIA = JROF
 
-            
+          
 
-            DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
-              
-              Z_YDCPG_SL1_CVGQ_P_F (JROF, JLEV, JBLK)=Z_YDCPG_SL1_Q_P_F (JROF, JLEV, JBLK)
+          DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
             
-            ENDDO
-  
+            Z_YDCPG_SL1_CVGQ_P_F (JROF, JLEV, JBLK)=Z_YDCPG_SL1_Q_P_F (JROF, JLEV, JBLK)
+          
+          ENDDO
+
         ENDDO
 
       ENDDO
@@ -852,7 +852,7 @@ IF (YDVARS%CVGQ%YCOMP%LGP.AND.(.NOT.LDCTC)) THEN
         !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
         
         DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-          
+        
         
         
         !$ACC LOOP VECTOR &
@@ -864,14 +864,14 @@ IF (YDVARS%CVGQ%YCOMP%LGP.AND.(.NOT.LDCTC)) THEN
           YLCPG_BNDS%KIDIA = JROF
           YLCPG_BNDS%KFDIA = JROF
 
-            
+          
 
-            DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
-              
-              Z_YDCPG_SL1_CVGQ_P_F (JROF, JLEV, JBLK)=Z_YDCPG_SL1_Q_P_F (JROF, JLEV, JBLK)
+          DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
             
-            ENDDO
-  
+            Z_YDCPG_SL1_CVGQ_P_F (JROF, JLEV, JBLK)=Z_YDCPG_SL1_Q_P_F (JROF, JLEV, JBLK)
+          
+          ENDDO
+
         ENDDO
 
       ENDDO
@@ -914,18 +914,18 @@ IF (YDVARS%CVGQ%YCOMP%LGP.AND.(.NOT.LDCTC)) THEN
     !$OMP PARALLEL DO PRIVATE (JBLK, JLEV, JROF) FIRSTPRIVATE (YLCPG_BNDS)
 
     DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-        CALL YLCPG_BNDS%UPDATE (JBLK)
+      CALL YLCPG_BNDS%UPDATE (JBLK)
 
-        
+      
 
-        DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
+      DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
 
-          DO JROF=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-            Z_YDCPG_SL1_CVGQ_P (JROF, JLEV, JBLK)=Z_YDCPG_SL1_Q_P (JROF, JLEV, JBLK)
-          ENDDO
-
+        DO JROF=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+          Z_YDCPG_SL1_CVGQ_P (JROF, JLEV, JBLK)=Z_YDCPG_SL1_Q_P (JROF, JLEV, JBLK)
         ENDDO
-  
+
+      ENDDO
+
     ENDDO
 
     IF (LHOOK) CALL DR_HOOK ('LATTEX_EXPL_2TL_PARALLEL:5:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -957,7 +957,7 @@ IF (YDVARS%CVGQ%YCOMP%LGP.AND.(.NOT.LDCTC)) THEN
 
     DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-        
+      
 
       
 
@@ -965,14 +965,14 @@ IF (YDVARS%CVGQ%YCOMP%LGP.AND.(.NOT.LDCTC)) THEN
         YLCPG_BNDS%KIDIA = JROF
         YLCPG_BNDS%KFDIA = JROF
 
-          
+        
 
-          DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
-            
-            Z_YDCPG_SL1_CVGQ_P (JROF, JLEV, JBLK)=Z_YDCPG_SL1_Q_P (JROF, JLEV, JBLK)
+        DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
           
-          ENDDO
-  
+          Z_YDCPG_SL1_CVGQ_P (JROF, JLEV, JBLK)=Z_YDCPG_SL1_Q_P (JROF, JLEV, JBLK)
+        
+        ENDDO
+
       ENDDO
 
     ENDDO
@@ -1009,7 +1009,7 @@ IF (YDVARS%CVGQ%YCOMP%LGP.AND.(.NOT.LDCTC)) THEN
       !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
       
       DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-        
+      
       
       
       !$ACC LOOP VECTOR &
@@ -1021,14 +1021,14 @@ IF (YDVARS%CVGQ%YCOMP%LGP.AND.(.NOT.LDCTC)) THEN
         YLCPG_BNDS%KIDIA = JROF
         YLCPG_BNDS%KFDIA = JROF
 
-          
+        
 
-          DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
-            
-            Z_YDCPG_SL1_CVGQ_P (JROF, JLEV, JBLK)=Z_YDCPG_SL1_Q_P (JROF, JLEV, JBLK)
+        DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
           
-          ENDDO
-  
+          Z_YDCPG_SL1_CVGQ_P (JROF, JLEV, JBLK)=Z_YDCPG_SL1_Q_P (JROF, JLEV, JBLK)
+        
+        ENDDO
+
       ENDDO
 
     ENDDO
@@ -1072,19 +1072,19 @@ IF (YDVARS%CVGQ%YCOMP%LGP.AND.(.NOT.LDCTC)) THEN
       !$OMP PARALLEL DO PRIVATE (JBLK, JLEV, JROF) FIRSTPRIVATE (YLCPG_BNDS)
 
       DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-          CALL YLCPG_BNDS%UPDATE (JBLK)
+        CALL YLCPG_BNDS%UPDATE (JBLK)
 
-          
+        
 
-          DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
+        DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
 
-            DO JROF=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-              Z_YDCPG_SL1_CVGQ_P (JROF, JLEV, JBLK)=Z_YDCPG_SL1_CVGQ_P (JROF&
+          DO JROF=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+            Z_YDCPG_SL1_CVGQ_P (JROF, JLEV, JBLK)=Z_YDCPG_SL1_CVGQ_P (JROF&
             &, JLEV, JBLK)+Z_YDCPG_SL1_Q_P_F (JROF, JLEV, JBLK)
-            ENDDO
-
           ENDDO
-  
+
+        ENDDO
+
       ENDDO
 
       IF (LHOOK) CALL DR_HOOK ('LATTEX_EXPL_2TL_PARALLEL:6:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -1116,7 +1116,7 @@ IF (YDVARS%CVGQ%YCOMP%LGP.AND.(.NOT.LDCTC)) THEN
 
       DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-          
+        
 
         
 
@@ -1124,15 +1124,15 @@ IF (YDVARS%CVGQ%YCOMP%LGP.AND.(.NOT.LDCTC)) THEN
           YLCPG_BNDS%KIDIA = JROF
           YLCPG_BNDS%KFDIA = JROF
 
-            
+          
 
-            DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
-              
-              Z_YDCPG_SL1_CVGQ_P (JROF, JLEV, JBLK)=Z_YDCPG_SL1_CVGQ_P (JROF&
-            &, JLEV, JBLK)+Z_YDCPG_SL1_Q_P_F (JROF, JLEV, JBLK)
+          DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
             
-            ENDDO
-  
+            Z_YDCPG_SL1_CVGQ_P (JROF, JLEV, JBLK)=Z_YDCPG_SL1_CVGQ_P (JROF&
+            &, JLEV, JBLK)+Z_YDCPG_SL1_Q_P_F (JROF, JLEV, JBLK)
+          
+          ENDDO
+
         ENDDO
 
       ENDDO
@@ -1169,7 +1169,7 @@ IF (YDVARS%CVGQ%YCOMP%LGP.AND.(.NOT.LDCTC)) THEN
         !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
         
         DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-          
+        
         
         
         !$ACC LOOP VECTOR &
@@ -1181,15 +1181,15 @@ IF (YDVARS%CVGQ%YCOMP%LGP.AND.(.NOT.LDCTC)) THEN
           YLCPG_BNDS%KIDIA = JROF
           YLCPG_BNDS%KFDIA = JROF
 
-            
+          
 
-            DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
-              
-              Z_YDCPG_SL1_CVGQ_P (JROF, JLEV, JBLK)=Z_YDCPG_SL1_CVGQ_P (JROF&
-            &, JLEV, JBLK)+Z_YDCPG_SL1_Q_P_F (JROF, JLEV, JBLK)
+          DO JLEV=1, YDGEOMETRY%YRDIMV%NFLEVG
             
-            ENDDO
-  
+            Z_YDCPG_SL1_CVGQ_P (JROF, JLEV, JBLK)=Z_YDCPG_SL1_CVGQ_P (JROF&
+            &, JLEV, JBLK)+Z_YDCPG_SL1_Q_P_F (JROF, JLEV, JBLK)
+          
+          ENDDO
+
         ENDDO
 
       ENDDO

@@ -252,7 +252,7 @@ ZOENTR =0.0_JPRB
 LSCVFLAG (JL)=.FALSE.
 
 IF (KTYPE (JL)>1.AND.YDECUMF%LSCVLIQ)  THEN
-    LSCVFLAG (JL)=.TRUE.
+  LSCVFLAG (JL)=.TRUE.
 ENDIF
 
 
@@ -265,7 +265,7 @@ LLPERT_RPRCON=.FALSE.
 LLKLAB =.FALSE.
 
 IF (.NOT.LDCUM (JL).OR.KTYPE (JL)==3)  THEN
-    LLKLAB =.TRUE.
+  LLKLAB =.TRUE.
 ENDIF
 
 
@@ -299,12 +299,12 @@ DO JK=1, KLEV
   ZBUO (JL, JK)=0.0_JPRB
 
   IF (LLKLAB )  THEN
-      KLAB (JL, JK)=0
+    KLAB (JL, JK)=0
   ENDIF
 
 
   IF (.NOT.LDCUM (JL).AND.PAPH (JL, JK)<4.E4_JPRB)  THEN
-      KCTOP0 (JL)=JK
+    KCTOP0 (JL)=JK
   ENDIF
 
   PDMFEN (JL, JK)=0.0_JPRB
@@ -315,7 +315,7 @@ ENDDO
 
 
 IF (KTYPE (JL)==3)  THEN
-    LDCUM (JL)=.FALSE.
+  LDCUM (JL)=.FALSE.
 ENDIF
 
 
@@ -377,7 +377,7 @@ DO JK=KLEV-1, 3,-1
   IS=IS+KLAB (JL, JK+1)
 
   IF (KLAB (JL, JK+1)==0)  THEN
-      KLAB (JL, JK)=0
+    KLAB (JL, JK)=0
   ENDIF
 
 
@@ -413,7 +413,7 @@ DO JK=KLEV-1, 3,-1
   
 
   IF (IS>0)  THEN
-      LLO3=.TRUE.
+    LLO3=.TRUE.
   ENDIF
 
   IK=JK
@@ -593,7 +593,7 @@ DO JK=KLEV-1, 3,-1
             ZCOND1=(PQU (JL, IK)*ZCOR**2-ZQSAT*ZCOR)/(ZCOR**2+ZQSAT*ZF)
 
             IF (ZCOND==0.0_JPRB)  THEN
-                ZCOND1=0.0_JPRB
+              ZCOND1=0.0_JPRB
             ENDIF
 
             PTU (JL, IK)=PTU (JL, IK)+FOELDCPMCU (PTU (JL, IK))*ZCOND1
@@ -628,7 +628,7 @@ DO JK=KLEV-1, 3,-1
             ZCOND1=(PQU (JL, IK)*ZCOR**2-ZQSAT*ZCOR)/(ZCOR**2+ZQSAT*ZF)
 
             IF (ZCOND==0.0_JPRB)  THEN
-                ZCOND1=0.0_JPRB
+              ZCOND1=0.0_JPRB
             ENDIF
 
             PTU (JL, IK)=PTU (JL, IK)+YDTHF%RALVDCP*ZCOND1
@@ -693,7 +693,7 @@ DO JK=KLEV-1, 3,-1
             ZCOND1=(PQU (JL, IK)*ZCOR**2-ZQSAT*ZCOR)/(ZCOR**2+ZQSAT*ZF)
 
             IF (ZCOND==0.0_JPRB)  THEN
-                ZCOND1=0.0_JPRB
+              ZCOND1=0.0_JPRB
             ENDIF
 
             PTU (JL, IK)=PTU (JL, IK)+FOELDCPMCU (PTU (JL, IK))*ZCOND1
@@ -795,7 +795,7 @@ DO JK=KLEV-1, 3,-1
           & (JL, JK)))-(1.0_JPRB-FOEALFCU (PTU (JL, JK+1))))
 
           IF (LSCVFLAG (JL))  THEN
-              PLGLAC (JL, JK)=0.0_JPRB
+            PLGLAC (JL, JK)=0.0_JPRB
           ENDIF
 
           ZFAC=FOEALFCU (PTEN (JL, JK))
@@ -1013,7 +1013,7 @@ DO JK=KLEV-1, 3,-1
           ZALFAW=FOEALFCU (PTU (JL, JK))
 
           IF (LSCVFLAG (JL))  THEN
-              ZALFAW=1.0_JPRB
+            ZALFAW=1.0_JPRB
           ENDIF
 
           ZVV=ZALFAW*ZVW+(1.0_JPRB-ZALFAW)*ZVI
@@ -1041,7 +1041,7 @@ DO JK=KLEV-1, 3,-1
       ZALFAW=FOEALFCU (PTU (JL, JK))
 
       IF (LSCVFLAG (JL))  THEN
-          ZALFAW=1.0_JPRB
+        ZALFAW=1.0_JPRB
       ENDIF
 
       PLUDELI (JL, JK, 1)=ZALFAW*PLUDE (JL, JK)
@@ -1055,7 +1055,7 @@ ENDDO
 
 
 IF (KCTOP (JL)==-1)  THEN
-    LDCUM (JL)=.FALSE.
+  LDCUM (JL)=.FALSE.
 ENDIF
 
 KCBOT (JL)=MAX (KCBOT (JL), KCTOP (JL))

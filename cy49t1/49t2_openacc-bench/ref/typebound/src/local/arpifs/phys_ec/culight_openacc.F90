@@ -123,17 +123,17 @@ IF (LDCUM (JL).AND.KCTOP (JL)>=1.AND.KCTOP (JL)<=KLEV) THEN
     DO JK=KLEV, 1,-1
 
       IF (PT (JL, JK)<=YDCST%RTT.AND.IFREEZ==-1)  THEN
-          IFREEZ=JK
+        IFREEZ=JK
       ENDIF
 
 
       IF (PT (JL, JK)<=YDCST%RTT-25.0_JPRB.AND.IFREEZ25==-1)  THEN
-          IFREEZ25=JK
+        IFREEZ25=JK
       ENDIF
 
 
       IF (PT (JL, JK)<=YDCST%RTT-15.0_JPRB.AND.IFREEZ15==-1)  THEN
-          IFREEZ15=JK
+        IFREEZ15=JK
       ENDIF
 
     ENDDO

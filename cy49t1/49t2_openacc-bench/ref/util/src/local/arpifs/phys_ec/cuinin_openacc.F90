@@ -102,7 +102,7 @@ DO JK=2, KLEV
   
 
   IF (JK>=KLEV-1.OR.JK<YDECUMF%NJKT2)  THEN
-      CYCLE
+    CYCLE
   ENDIF
 
   IK=JK
@@ -227,7 +227,7 @@ DO JK=1, KLEV
   IK=JK-1
 
   IF (JK==1)  THEN
-      IK=1
+    IK=1
   ENDIF
 
   

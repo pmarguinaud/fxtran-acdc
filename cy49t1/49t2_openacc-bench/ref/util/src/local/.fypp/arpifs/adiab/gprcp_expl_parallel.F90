@@ -88,7 +88,7 @@ ENDIF
 IGFLTYP=0
 
 IF (PRESENT (KGFLTYP))  THEN
-    IGFLTYP=KGFLTYP
+  IGFLTYP=KGFLTYP
 ENDIF
 
 IFLD=SIZE (YDVARS%GFL_PTR)
@@ -106,14 +106,14 @@ IF (LPARALLELMETHOD ('OPENMP','GPRCP_EXPL_PARALLEL:0')) THEN
   !$OMP PARALLEL DO PRIVATE (JBLK) FIRSTPRIVATE (YLCPG_BNDS)
 
   DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-      CALL YLCPG_BNDS%UPDATE (JBLK)
-      
-      ZR (:,:, JBLK)=0._JPRB  
+    CALL YLCPG_BNDS%UPDATE (JBLK)
+    
+    ZR (:,:, JBLK)=0._JPRB
 
-      IF (LLCP) THEN
-        ZCP (:,:, JBLK)=0._JPRB
-      ENDIF
-  
+    IF (LLCP) THEN
+      ZCP (:,:, JBLK)=0._JPRB
+    ENDIF
+
   ENDDO
 
   IF (LHOOK) CALL DR_HOOK ('GPRCP_EXPL_PARALLEL:0:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -145,20 +145,20 @@ ELSEIF (LPARALLELMETHOD ('OPENMPSINGLECOLUMN','GPRCP_EXPL_PARALLEL:0')) THEN
 
   DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-      
+    
 
     
 
     DO JLON = 1, MIN (YDCPG_OPTS%KLON, YDCPG_OPTS%KGPCOMP - (JBLK - 1) * YDCPG_OPTS%KLON)
       YLCPG_BNDS%KIDIA = JLON
       YLCPG_BNDS%KFDIA = JLON
-        
-        ZR (JLON,:, JBLK)=0._JPRB  
+      
+      ZR (JLON,:, JBLK)=0._JPRB
 
-        IF (LLCP) THEN
-          ZCP (JLON,:, JBLK)=0._JPRB
-        ENDIF
-  
+      IF (LLCP) THEN
+        ZCP (JLON,:, JBLK)=0._JPRB
+      ENDIF
+
     ENDDO
 
   ENDDO
@@ -195,7 +195,7 @@ ELSEIF (LPARALLELMETHOD ('OPENACCSINGLECOLUMN','GPRCP_EXPL_PARALLEL:0')) THEN
     !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
     
     DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-      
+    
     
     
     !$ACC LOOP VECTOR &
@@ -206,13 +206,13 @@ ELSEIF (LPARALLELMETHOD ('OPENACCSINGLECOLUMN','GPRCP_EXPL_PARALLEL:0')) THEN
     DO JLON = 1, MIN (YDCPG_OPTS%KLON, YDCPG_OPTS%KGPCOMP - (JBLK - 1) * YDCPG_OPTS%KLON)
       YLCPG_BNDS%KIDIA = JLON
       YLCPG_BNDS%KFDIA = JLON
-        
-        ZR (JLON,:, JBLK)=0._JPRB  
+      
+      ZR (JLON,:, JBLK)=0._JPRB
 
-        IF (LLCP) THEN
-          ZCP (JLON,:, JBLK)=0._JPRB
-        ENDIF
-  
+      IF (LLCP) THEN
+        ZCP (JLON,:, JBLK)=0._JPRB
+      ENDIF
+
     ENDDO
 
   ENDDO
@@ -261,33 +261,33 @@ CASE (0)
         !$OMP PARALLEL DO PRIVATE (JBLK, JLEV, JLON) FIRSTPRIVATE (YLCPG_BNDS)
 
         DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-            CALL YLCPG_BNDS%UPDATE (JBLK)
+          CALL YLCPG_BNDS%UPDATE (JBLK)
 
-            
+          
+
+          DO JLEV=1, YDCPG_OPTS%KFLEVG
+
+            DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+              ZR (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
+              &)%YCOMP%R-YDCST%RD)*Z_YDVARS_GFL_PTR_T0  (JLON, JLEV, JBLK)
+            ENDDO
+
+          ENDDO
+
+
+          IF (LLCP) THEN
 
             DO JLEV=1, YDCPG_OPTS%KFLEVG
 
               DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-                ZR (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
-              &)%YCOMP%R-YDCST%RD)*Z_YDVARS_GFL_PTR_T0  (JLON, JLEV, JBLK)
+                ZCP (JLON, JLEV, JBLK)=ZCP (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
+                &)%YCOMP%RCP-YDCST%RCPD)*Z_YDVARS_GFL_PTR_T0  (JLON, JLEV, JBLK)
               ENDDO
 
             ENDDO
-  
 
-            IF (LLCP) THEN
+          ENDIF
 
-              DO JLEV=1, YDCPG_OPTS%KFLEVG
-
-                DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-                  ZCP (JLON, JLEV, JBLK)=ZCP (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
-                &)%YCOMP%RCP-YDCST%RCPD)*Z_YDVARS_GFL_PTR_T0  (JLON, JLEV, JBLK)
-                ENDDO
-
-              ENDDO
-
-            ENDIF
-  
         ENDDO
 
         IF (LHOOK) CALL DR_HOOK ('GPRCP_EXPL_PARALLEL:1:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -322,7 +322,7 @@ CASE (0)
 
         DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-            
+          
 
           
 
@@ -330,27 +330,27 @@ CASE (0)
             YLCPG_BNDS%KIDIA = JLON
             YLCPG_BNDS%KFDIA = JLON
 
+            
+
+            DO JLEV=1, YDCPG_OPTS%KFLEVG
               
+              ZR (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
+              &)%YCOMP%R-YDCST%RD)*Z_YDVARS_GFL_PTR_T0  (JLON, JLEV, JBLK)
+            
+            ENDDO
+
+
+            IF (LLCP) THEN
 
               DO JLEV=1, YDCPG_OPTS%KFLEVG
                 
-                ZR (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
-              &)%YCOMP%R-YDCST%RD)*Z_YDVARS_GFL_PTR_T0  (JLON, JLEV, JBLK)
+                ZCP (JLON, JLEV, JBLK)=ZCP (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
+                &)%YCOMP%RCP-YDCST%RCPD)*Z_YDVARS_GFL_PTR_T0  (JLON, JLEV, JBLK)
               
               ENDDO
-  
 
-              IF (LLCP) THEN
+            ENDIF
 
-                DO JLEV=1, YDCPG_OPTS%KFLEVG
-                  
-                  ZCP (JLON, JLEV, JBLK)=ZCP (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
-                &)%YCOMP%RCP-YDCST%RCPD)*Z_YDVARS_GFL_PTR_T0  (JLON, JLEV, JBLK)
-                
-                ENDDO
-
-              ENDIF
-  
           ENDDO
 
         ENDDO
@@ -390,7 +390,7 @@ CASE (0)
           !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
           
           DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-            
+          
           
           
           !$ACC LOOP VECTOR &
@@ -402,27 +402,27 @@ CASE (0)
             YLCPG_BNDS%KIDIA = JLON
             YLCPG_BNDS%KFDIA = JLON
 
+            
+
+            DO JLEV=1, YDCPG_OPTS%KFLEVG
               
+              ZR (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
+              &)%YCOMP%R-YDCST%RD)*Z_YDVARS_GFL_PTR_T0  (JLON, JLEV, JBLK)
+            
+            ENDDO
+
+
+            IF (LLCP) THEN
 
               DO JLEV=1, YDCPG_OPTS%KFLEVG
                 
-                ZR (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
-              &)%YCOMP%R-YDCST%RD)*Z_YDVARS_GFL_PTR_T0  (JLON, JLEV, JBLK)
+                ZCP (JLON, JLEV, JBLK)=ZCP (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
+                &)%YCOMP%RCP-YDCST%RCPD)*Z_YDVARS_GFL_PTR_T0  (JLON, JLEV, JBLK)
               
               ENDDO
-  
 
-              IF (LLCP) THEN
+            ENDIF
 
-                DO JLEV=1, YDCPG_OPTS%KFLEVG
-                  
-                  ZCP (JLON, JLEV, JBLK)=ZCP (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
-                &)%YCOMP%RCP-YDCST%RCPD)*Z_YDVARS_GFL_PTR_T0  (JLON, JLEV, JBLK)
-                
-                ENDDO
-
-              ENDIF
-  
           ENDDO
 
         ENDDO
@@ -475,33 +475,33 @@ CASE (1)
         !$OMP PARALLEL DO PRIVATE (JBLK, JLEV, JLON) FIRSTPRIVATE (YLCPG_BNDS)
 
         DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-            CALL YLCPG_BNDS%UPDATE (JBLK)
+          CALL YLCPG_BNDS%UPDATE (JBLK)
 
-            
+          
+
+          DO JLEV=1, YDCPG_OPTS%KFLEVG
+
+            DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+              ZR (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
+              &)%YCOMP%R-YDCST%RD)*Z_YDVARS_GFL_PTR_T1  (JLON, JLEV, JBLK)
+            ENDDO
+
+          ENDDO
+
+
+          IF (LLCP) THEN
 
             DO JLEV=1, YDCPG_OPTS%KFLEVG
 
               DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-                ZR (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
-              &)%YCOMP%R-YDCST%RD)*Z_YDVARS_GFL_PTR_T1  (JLON, JLEV, JBLK)
+                ZCP (JLON, JLEV, JBLK)=ZCP (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
+                &)%YCOMP%RCP-YDCST%RCPD)*Z_YDVARS_GFL_PTR_T1  (JLON, JLEV, JBLK)
               ENDDO
 
             ENDDO
-  
 
-            IF (LLCP) THEN
+          ENDIF
 
-              DO JLEV=1, YDCPG_OPTS%KFLEVG
-
-                DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-                  ZCP (JLON, JLEV, JBLK)=ZCP (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
-                &)%YCOMP%RCP-YDCST%RCPD)*Z_YDVARS_GFL_PTR_T1  (JLON, JLEV, JBLK)
-                ENDDO
-
-              ENDDO
-
-            ENDIF
-  
         ENDDO
 
         IF (LHOOK) CALL DR_HOOK ('GPRCP_EXPL_PARALLEL:2:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -536,7 +536,7 @@ CASE (1)
 
         DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-            
+          
 
           
 
@@ -544,27 +544,27 @@ CASE (1)
             YLCPG_BNDS%KIDIA = JLON
             YLCPG_BNDS%KFDIA = JLON
 
+            
+
+            DO JLEV=1, YDCPG_OPTS%KFLEVG
               
+              ZR (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
+              &)%YCOMP%R-YDCST%RD)*Z_YDVARS_GFL_PTR_T1  (JLON, JLEV, JBLK)
+            
+            ENDDO
+
+
+            IF (LLCP) THEN
 
               DO JLEV=1, YDCPG_OPTS%KFLEVG
                 
-                ZR (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
-              &)%YCOMP%R-YDCST%RD)*Z_YDVARS_GFL_PTR_T1  (JLON, JLEV, JBLK)
+                ZCP (JLON, JLEV, JBLK)=ZCP (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
+                &)%YCOMP%RCP-YDCST%RCPD)*Z_YDVARS_GFL_PTR_T1  (JLON, JLEV, JBLK)
               
               ENDDO
-  
 
-              IF (LLCP) THEN
+            ENDIF
 
-                DO JLEV=1, YDCPG_OPTS%KFLEVG
-                  
-                  ZCP (JLON, JLEV, JBLK)=ZCP (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
-                &)%YCOMP%RCP-YDCST%RCPD)*Z_YDVARS_GFL_PTR_T1  (JLON, JLEV, JBLK)
-                
-                ENDDO
-
-              ENDIF
-  
           ENDDO
 
         ENDDO
@@ -604,7 +604,7 @@ CASE (1)
           !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
           
           DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-            
+          
           
           
           !$ACC LOOP VECTOR &
@@ -616,27 +616,27 @@ CASE (1)
             YLCPG_BNDS%KIDIA = JLON
             YLCPG_BNDS%KFDIA = JLON
 
+            
+
+            DO JLEV=1, YDCPG_OPTS%KFLEVG
               
+              ZR (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
+              &)%YCOMP%R-YDCST%RD)*Z_YDVARS_GFL_PTR_T1  (JLON, JLEV, JBLK)
+            
+            ENDDO
+
+
+            IF (LLCP) THEN
 
               DO JLEV=1, YDCPG_OPTS%KFLEVG
                 
-                ZR (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
-              &)%YCOMP%R-YDCST%RD)*Z_YDVARS_GFL_PTR_T1  (JLON, JLEV, JBLK)
+                ZCP (JLON, JLEV, JBLK)=ZCP (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
+                &)%YCOMP%RCP-YDCST%RCPD)*Z_YDVARS_GFL_PTR_T1  (JLON, JLEV, JBLK)
               
               ENDDO
-  
 
-              IF (LLCP) THEN
+            ENDIF
 
-                DO JLEV=1, YDCPG_OPTS%KFLEVG
-                  
-                  ZCP (JLON, JLEV, JBLK)=ZCP (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
-                &)%YCOMP%RCP-YDCST%RCPD)*Z_YDVARS_GFL_PTR_T1  (JLON, JLEV, JBLK)
-                
-                ENDDO
-
-              ENDIF
-  
           ENDDO
 
         ENDDO
@@ -689,33 +689,33 @@ CASE (9)
         !$OMP PARALLEL DO PRIVATE (JBLK, JLEV, JLON) FIRSTPRIVATE (YLCPG_BNDS)
 
         DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-            CALL YLCPG_BNDS%UPDATE (JBLK)
+          CALL YLCPG_BNDS%UPDATE (JBLK)
 
-            
+          
+
+          DO JLEV=1, YDCPG_OPTS%KFLEVG
+
+            DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+              ZR (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
+              &)%YCOMP%R-YDCST%RD)*Z_YDVARS_GFL_PTR_T9  (JLON, JLEV, JBLK)
+            ENDDO
+
+          ENDDO
+
+
+          IF (LLCP) THEN
 
             DO JLEV=1, YDCPG_OPTS%KFLEVG
 
               DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-                ZR (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
-              &)%YCOMP%R-YDCST%RD)*Z_YDVARS_GFL_PTR_T9  (JLON, JLEV, JBLK)
+                ZCP (JLON, JLEV, JBLK)=ZCP (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
+                &)%YCOMP%RCP-YDCST%RCPD)*Z_YDVARS_GFL_PTR_T9  (JLON, JLEV, JBLK)
               ENDDO
 
             ENDDO
-  
 
-            IF (LLCP) THEN
+          ENDIF
 
-              DO JLEV=1, YDCPG_OPTS%KFLEVG
-
-                DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-                  ZCP (JLON, JLEV, JBLK)=ZCP (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
-                &)%YCOMP%RCP-YDCST%RCPD)*Z_YDVARS_GFL_PTR_T9  (JLON, JLEV, JBLK)
-                ENDDO
-
-              ENDDO
-
-            ENDIF
-  
         ENDDO
 
         IF (LHOOK) CALL DR_HOOK ('GPRCP_EXPL_PARALLEL:3:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -750,7 +750,7 @@ CASE (9)
 
         DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-            
+          
 
           
 
@@ -758,27 +758,27 @@ CASE (9)
             YLCPG_BNDS%KIDIA = JLON
             YLCPG_BNDS%KFDIA = JLON
 
+            
+
+            DO JLEV=1, YDCPG_OPTS%KFLEVG
               
+              ZR (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
+              &)%YCOMP%R-YDCST%RD)*Z_YDVARS_GFL_PTR_T9  (JLON, JLEV, JBLK)
+            
+            ENDDO
+
+
+            IF (LLCP) THEN
 
               DO JLEV=1, YDCPG_OPTS%KFLEVG
                 
-                ZR (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
-              &)%YCOMP%R-YDCST%RD)*Z_YDVARS_GFL_PTR_T9  (JLON, JLEV, JBLK)
+                ZCP (JLON, JLEV, JBLK)=ZCP (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
+                &)%YCOMP%RCP-YDCST%RCPD)*Z_YDVARS_GFL_PTR_T9  (JLON, JLEV, JBLK)
               
               ENDDO
-  
 
-              IF (LLCP) THEN
+            ENDIF
 
-                DO JLEV=1, YDCPG_OPTS%KFLEVG
-                  
-                  ZCP (JLON, JLEV, JBLK)=ZCP (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
-                &)%YCOMP%RCP-YDCST%RCPD)*Z_YDVARS_GFL_PTR_T9  (JLON, JLEV, JBLK)
-                
-                ENDDO
-
-              ENDIF
-  
           ENDDO
 
         ENDDO
@@ -818,7 +818,7 @@ CASE (9)
           !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
           
           DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-            
+          
           
           
           !$ACC LOOP VECTOR &
@@ -830,27 +830,27 @@ CASE (9)
             YLCPG_BNDS%KIDIA = JLON
             YLCPG_BNDS%KFDIA = JLON
 
+            
+
+            DO JLEV=1, YDCPG_OPTS%KFLEVG
               
+              ZR (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
+              &)%YCOMP%R-YDCST%RD)*Z_YDVARS_GFL_PTR_T9  (JLON, JLEV, JBLK)
+            
+            ENDDO
+
+
+            IF (LLCP) THEN
 
               DO JLEV=1, YDCPG_OPTS%KFLEVG
                 
-                ZR (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
-              &)%YCOMP%R-YDCST%RD)*Z_YDVARS_GFL_PTR_T9  (JLON, JLEV, JBLK)
+                ZCP (JLON, JLEV, JBLK)=ZCP (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
+                &)%YCOMP%RCP-YDCST%RCPD)*Z_YDVARS_GFL_PTR_T9  (JLON, JLEV, JBLK)
               
               ENDDO
-  
 
-              IF (LLCP) THEN
+            ENDIF
 
-                DO JLEV=1, YDCPG_OPTS%KFLEVG
-                  
-                  ZCP (JLON, JLEV, JBLK)=ZCP (JLON, JLEV, JBLK)+(YDVARS%GFL_PTR (JFLD&
-                &)%YCOMP%RCP-YDCST%RCPD)*Z_YDVARS_GFL_PTR_T9  (JLON, JLEV, JBLK)
-                
-                ENDDO
-
-              ENDIF
-  
           ENDDO
 
         ENDDO
@@ -901,31 +901,31 @@ IF (LPARALLELMETHOD ('OPENMP','GPRCP_EXPL_PARALLEL:4')) THEN
   !$OMP PARALLEL DO PRIVATE (JBLK, JLEV, JLON) FIRSTPRIVATE (YLCPG_BNDS)
 
   DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-      CALL YLCPG_BNDS%UPDATE (JBLK)
+    CALL YLCPG_BNDS%UPDATE (JBLK)
 
-      
+    
+
+    DO JLEV=1, YDCPG_OPTS%KFLEVG
+
+      DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+        ZR (JLON, JLEV, JBLK)=YDCST%RD+ZR (JLON, JLEV, JBLK)
+      ENDDO
+
+    ENDDO
+
+
+    IF (LLCP) THEN
 
       DO JLEV=1, YDCPG_OPTS%KFLEVG
 
         DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-          ZR (JLON, JLEV, JBLK)=YDCST%RD+ZR (JLON, JLEV, JBLK)
+          ZCP (JLON, JLEV, JBLK)=YDCST%RCPD+ZCP (JLON, JLEV, JBLK)
         ENDDO
 
       ENDDO
-  
 
-      IF (LLCP) THEN
+    ENDIF
 
-        DO JLEV=1, YDCPG_OPTS%KFLEVG
-
-          DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-            ZCP (JLON, JLEV, JBLK)=YDCST%RCPD+ZCP (JLON, JLEV, JBLK)
-          ENDDO
-
-        ENDDO
-
-      ENDIF
-  
   ENDDO
 
   IF (LHOOK) CALL DR_HOOK ('GPRCP_EXPL_PARALLEL:4:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -957,7 +957,7 @@ ELSEIF (LPARALLELMETHOD ('OPENMPSINGLECOLUMN','GPRCP_EXPL_PARALLEL:4')) THEN
 
   DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-      
+    
 
     
 
@@ -965,25 +965,25 @@ ELSEIF (LPARALLELMETHOD ('OPENMPSINGLECOLUMN','GPRCP_EXPL_PARALLEL:4')) THEN
       YLCPG_BNDS%KIDIA = JLON
       YLCPG_BNDS%KFDIA = JLON
 
+      
+
+      DO JLEV=1, YDCPG_OPTS%KFLEVG
         
+        ZR (JLON, JLEV, JBLK)=YDCST%RD+ZR (JLON, JLEV, JBLK)
+      
+      ENDDO
+
+
+      IF (LLCP) THEN
 
         DO JLEV=1, YDCPG_OPTS%KFLEVG
           
-          ZR (JLON, JLEV, JBLK)=YDCST%RD+ZR (JLON, JLEV, JBLK)
+          ZCP (JLON, JLEV, JBLK)=YDCST%RCPD+ZCP (JLON, JLEV, JBLK)
         
         ENDDO
-  
 
-        IF (LLCP) THEN
+      ENDIF
 
-          DO JLEV=1, YDCPG_OPTS%KFLEVG
-            
-            ZCP (JLON, JLEV, JBLK)=YDCST%RCPD+ZCP (JLON, JLEV, JBLK)
-          
-          ENDDO
-
-        ENDIF
-  
     ENDDO
 
   ENDDO
@@ -1020,7 +1020,7 @@ ELSEIF (LPARALLELMETHOD ('OPENACCSINGLECOLUMN','GPRCP_EXPL_PARALLEL:4')) THEN
     !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
     
     DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-      
+    
     
     
     !$ACC LOOP VECTOR &
@@ -1032,25 +1032,25 @@ ELSEIF (LPARALLELMETHOD ('OPENACCSINGLECOLUMN','GPRCP_EXPL_PARALLEL:4')) THEN
       YLCPG_BNDS%KIDIA = JLON
       YLCPG_BNDS%KFDIA = JLON
 
+      
+
+      DO JLEV=1, YDCPG_OPTS%KFLEVG
         
+        ZR (JLON, JLEV, JBLK)=YDCST%RD+ZR (JLON, JLEV, JBLK)
+      
+      ENDDO
+
+
+      IF (LLCP) THEN
 
         DO JLEV=1, YDCPG_OPTS%KFLEVG
           
-          ZR (JLON, JLEV, JBLK)=YDCST%RD+ZR (JLON, JLEV, JBLK)
+          ZCP (JLON, JLEV, JBLK)=YDCST%RCPD+ZCP (JLON, JLEV, JBLK)
         
         ENDDO
-  
 
-        IF (LLCP) THEN
+      ENDIF
 
-          DO JLEV=1, YDCPG_OPTS%KFLEVG
-            
-            ZCP (JLON, JLEV, JBLK)=YDCST%RCPD+ZCP (JLON, JLEV, JBLK)
-          
-          ENDDO
-
-        ENDIF
-  
     ENDDO
 
   ENDDO
@@ -1094,18 +1094,18 @@ IF (PRESENT(YD_PKAP)) THEN
     !$OMP PARALLEL DO PRIVATE (JBLK, JLEV, JLON) FIRSTPRIVATE (YLCPG_BNDS)
 
     DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-        CALL YLCPG_BNDS%UPDATE (JBLK)
+      CALL YLCPG_BNDS%UPDATE (JBLK)
 
-        
+      
 
-        DO JLEV=1, YDCPG_OPTS%KFLEVG
+      DO JLEV=1, YDCPG_OPTS%KFLEVG
 
-          DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
-            PKAP (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)/ZCP (JLON, JLEV, JBLK)
-          ENDDO
-
+        DO JLON=YLCPG_BNDS%KIDIA, YLCPG_BNDS%KFDIA
+          PKAP (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)/ZCP (JLON, JLEV, JBLK)
         ENDDO
-  
+
+      ENDDO
+
     ENDDO
 
     IF (LHOOK) CALL DR_HOOK ('GPRCP_EXPL_PARALLEL:5:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)
@@ -1140,7 +1140,7 @@ IF (PRESENT(YD_PKAP)) THEN
 
     DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
 
-        
+      
 
       
 
@@ -1148,14 +1148,14 @@ IF (PRESENT(YD_PKAP)) THEN
         YLCPG_BNDS%KIDIA = JLON
         YLCPG_BNDS%KFDIA = JLON
 
-          
+        
 
-          DO JLEV=1, YDCPG_OPTS%KFLEVG
-            
-            PKAP (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)/ZCP (JLON, JLEV, JBLK)
+        DO JLEV=1, YDCPG_OPTS%KFLEVG
           
-          ENDDO
-  
+          PKAP (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)/ZCP (JLON, JLEV, JBLK)
+        
+        ENDDO
+
       ENDDO
 
     ENDDO
@@ -1195,7 +1195,7 @@ IF (PRESENT(YD_PKAP)) THEN
       !$ACC&VECTOR_LENGTH (YDCPG_OPTS%KLON) 
       
       DO JBLK = YDCPG_OPTS%JBLKMIN, YDCPG_OPTS%JBLKMAX
-        
+      
       
       
       !$ACC LOOP VECTOR &
@@ -1207,14 +1207,14 @@ IF (PRESENT(YD_PKAP)) THEN
         YLCPG_BNDS%KIDIA = JLON
         YLCPG_BNDS%KFDIA = JLON
 
-          
+        
 
-          DO JLEV=1, YDCPG_OPTS%KFLEVG
-            
-            PKAP (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)/ZCP (JLON, JLEV, JBLK)
+        DO JLEV=1, YDCPG_OPTS%KFLEVG
           
-          ENDDO
-  
+          PKAP (JLON, JLEV, JBLK)=ZR (JLON, JLEV, JBLK)/ZCP (JLON, JLEV, JBLK)
+        
+        ENDDO
+
       ENDDO
 
     ENDDO

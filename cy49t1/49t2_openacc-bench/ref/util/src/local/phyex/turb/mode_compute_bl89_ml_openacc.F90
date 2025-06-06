@@ -173,7 +173,7 @@ ENDIF
 IF (OUPORDN.EQV..FALSE.) THEN
 
   IF (OFLUX)  THEN
-      CALL ABOR1_ACC ('OFLUX option not coded for downward mixing length')
+    CALL ABOR1_ACC ('OFLUX option not coded for downward mixing length')
   ENDIF
 
   

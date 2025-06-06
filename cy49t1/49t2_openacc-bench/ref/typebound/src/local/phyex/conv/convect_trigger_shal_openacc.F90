@@ -225,7 +225,7 @@ DO JKK=IKB+1, IKE-2
     
 
     IF (ZPLCL <=PPRES (JI, JK).AND.GWORK1 )  THEN
-        ILCL =JK+1
+      ILCL =JK+1
     ENDIF
 
   
@@ -266,7 +266,7 @@ DO JKK=IKB+1, IKE-2
     ZX1=(2.*ZTHEUL /(PTHES (JI, JK)+PTHES (JI, JL))-1.)*(PZ (JI, JK)-PZ (JI, JL))
 
     IF (JL<ILCL )  THEN
-        ZX1=0.
+      ZX1=0.
     ENDIF
 
     ZCAPE =ZCAPE +CST%XG*MAX (1., ZX1)

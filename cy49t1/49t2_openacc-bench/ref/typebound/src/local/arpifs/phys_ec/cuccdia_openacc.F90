@@ -56,7 +56,7 @@ IF (.NOT.YDEPHLI%LPHYLIN.AND.YDERAD%NRADFR/=1) THEN
       KTOPC (JL)=MIN (KTOPC (JL), KCTOP (JL))
 
       IF (KTOPC (JL)==1)  THEN
-          KTOPC (JL)=KCTOP (JL)
+        KTOPC (JL)=KCTOP (JL)
       ENDIF
 
       IKB=KCBOT (JL)
@@ -79,7 +79,7 @@ ELSE
       KTOPC (JL)=KCTOP (JL)
 
       IF (KTOPC (JL)==1)  THEN
-          KTOPC (JL)=KCTOP (JL)
+        KTOPC (JL)=KCTOP (JL)
       ENDIF
 
       IKB=KCBOT (JL)
