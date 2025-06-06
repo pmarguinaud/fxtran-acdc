@@ -84,6 +84,27 @@ sub processSingleRoutine
           $sslt->appendChild ($_) for (&t (", "), &n ('<section-subscript><lower-bound>' . &e ('JBLK') . '</lower-bound></section-subscript>'));
         }
 
+
+      # JBLK slice for array arguments
+
+      for my $expr (&F ('.//call-stmt/arg-spec/arg/named-E', $par))
+        {
+          my ($N) = &F ('./N', $expr, 1);
+          next unless (my $nd = $var2dim->{$N});
+
+          my ($rlt) = &F ('./R-LT', $expr);
+
+          unless ($rlt)
+            {
+              $rlt = &n ('<R-LT><array-R>(<section-subscript-LT>' . join (', ', ('<section-subscript>:</section-subscript>') x $nd) . '</section-subscript-LT>)</array-R></R-LT>');
+              $expr->appendChild ($rlt);
+            }
+
+          my ($sslt) = &F ('./array-R/section-subscript-LT', $rlt);
+          $sslt->appendChild ($_) for (&t (', '), &e ('JBLK'));
+
+        }
+
       # Move section contents into a DO loop over KLON
 
       my ($do_jlon) = &fxtran::parse (fragment => << "EOF");
