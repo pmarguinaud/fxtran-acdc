@@ -216,7 +216,11 @@ for my $F90 (@F90)
 
     if ($kind eq 'SUBROUTINE')
       {
-        (my $intfb = &basename ($F90)) =~ s/\.F90$/.intfb.h/o;
+        (my $base = &basename ($F90)) =~ s/\.F90$//io;
+
+        next if (-f "$opts{SRC}/$base.h");
+
+        my $intfb = "$base.intfb.h";
 
         if ((! -f $intfb) || &newer ($F90, $intfb))
           {
@@ -315,7 +319,7 @@ subclean:
 	\\rm -f @subobj
 
 clean: 
-	\\rm -f \$(BUILD)/*.o \$(BUILD)/*.xml \$(BUILD)/*.a \$(BUILD)/*.x \$(BUILD)/*.mod \$(BUILD)/*.optrpt \$(BUILD)/*.smod \$(BUILD)/*.ok
+	\\rm -f \$(BUILD)/*.o \$(BUILD)/*.xml \$(BUILD)/*.a \$(BUILD)/*.x \$(BUILD)/*.mod \$(BUILD)/*.optrpt \$(BUILD)/*.smod \$(BUILD)/*.ok \$(BUILD)/*.optrpt
 
 tidy:
 	\\rm -f \$(BUILD)/*.xml \$(BUILD)/*.optrpt

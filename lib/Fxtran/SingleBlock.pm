@@ -141,7 +141,11 @@ EOF
     $pu,
     suffix => $opts{'suffix-singleblock'},
     'merge-interfaces' => 1,
-    match => sub { my $proc = shift; ! ($proc =~ m/$opts{'suffix-singlecolumn'}$/i) },
+    match => sub 
+    { 
+      my $proc = shift; 
+      (! ($proc =~ m/$opts{'suffix-singlecolumn'}$/i)) && ($proc ne 'ABOR1')
+    },
   );
   
   &Fxtran::Subroutine::addSuffix ($pu, $opts{'suffix-singleblock'});
@@ -151,9 +155,51 @@ EOF
   $implicit->parentNode->insertBefore (&n ('<include>#include "<filename>stack.h</filename>"</include>'), $implicit);
   $implicit->parentNode->insertBefore (&t ("\n"), $implicit);
  
+  &Fxtran::Decl::declare ($pu, 
+                          'TYPE (STACK) :: YLSTACK',
+                          'INTEGER :: ' . $jlon);
 
-  &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLSTACK');
   &Fxtran::Decl::use ($pu, 'USE STACK_MOD');
+}
+
+sub openmpToACDC 
+{
+  my ($d, %opts) = @_;
+
+  for my $p (&F ('.//parallel-openmp|.//parallel-do-openmp|.//end-parallel-openmp|.//end-parallel-do-openmp', $d))
+    {
+      my $nn = $p->nodeName;
+
+      if (my $pp = $p->previousSibling)
+        {
+          $pp->unbindNode () if ($pp->nodeName eq '#text');
+        }
+
+      $p->replaceNode (my $acdc = &n ('<ACDC>!$ACDC</ACDC>'));
+
+      if (($nn eq 'parallel-openmp') || ($nn eq 'parallel-do-openmp'))
+        {
+          $acdc->parentNode->insertAfter ($_, $acdc) for (&n ('<ACDC-directive>PARALLEL{</ACDC-directive>', &t (' ')));
+        }
+      elsif (($nn eq 'end-parallel-openmp') || ($nn eq 'end-parallel-do-openmp'))
+        {
+          $acdc->parentNode->insertAfter ($_, $acdc) for (&n ('<ACDC-directive>}</ACDC-directive>', &t (' ')));
+        }
+      else
+        {
+          die $p;
+        }
+    }
+
+  for my $omp (&F ('.//omp|.//ANY-openmp', $d))
+    {
+      if (my $n = $omp->nextSibling ())
+        {
+          $n->unbindNode () if ($n->nodeName eq '#text');
+        }
+      $omp->unbindNode ();
+    }
+
 }
 
 1;

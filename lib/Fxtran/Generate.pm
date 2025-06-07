@@ -181,7 +181,7 @@ sub singlecolumn
   my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag -no-include -no-cpp -line-length 5000)], dir => $opts->{tmp});
   
   &Fxtran::Canonic::makeCanonic ($d, %$opts);
-  
+
   $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
 
   $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
@@ -519,6 +519,7 @@ sub interface
              suffix-singlecolumn suffix-singleblock version)}
   drhooktonvtx                    -- Change DrHook calls into NVTX calls
   inlined=s@                      -- List of routines to inline
+  openmptoparallel                -- Transform OpenMP parallel sections into ACDC parallel sections
 EOF
 sub singleblock
 {
@@ -555,9 +556,16 @@ sub singleblock
   
   &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
   
-  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -directive ACDC -canonic)], dir => $opts->{tmp});
+  my @openmp = $opts->{openmptoparallel} ? qw (-openmp) : ();
+
+  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -directive ACDC -canonic), @openmp], dir => $opts->{tmp});
   
   &Fxtran::Canonic::makeCanonic ($d, %$opts);
+  
+  if ($opts->{openmptoparallel})
+    {
+      &Fxtran::SingleBlock::openmpToACDC ($d, %$opts);
+    }
   
   &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
   

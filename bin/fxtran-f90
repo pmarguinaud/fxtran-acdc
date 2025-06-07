@@ -225,6 +225,8 @@ FILE: for my $F90 (@F90)
         $obj = 'File::Spec'->rel2abs ($obj, $cwd);
       }
 
+    (-f $F90) or die ("File `$F90' does not exist");
+
     my @text = do { my $fh = 'FileHandle'->new ("<$F90"); <$fh> };
 
     my ($ACDC) = map { m/^\!\$ACDC (\S.*)$/o ? ($1) : () } @text;
