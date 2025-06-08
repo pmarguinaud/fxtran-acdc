@@ -16,7 +16,7 @@ my $log;
 
 sub ll
 {
-  $log ||= 'FileHandle'->new (">>/tmp/kdiff3.txt");
+  $log ||= 'FileHandle'->new (">>kdiff3.txt");
 
   my @call = caller (0);
   $log->print ("$call[1]:$call[2]\n");
@@ -111,7 +111,7 @@ sub getDocument
 
 sub expandCallStatements
 {
-  my ($f, $g) = @_;
+  my ($f) = @_;
 
   my $d = &getDocument ($f);
 
@@ -130,10 +130,10 @@ sub expandCallStatements
       $call->replaceNode ($stmt);
     }
 
-  'FileHandle'->new (">$g")->print ($d->textContent);
+  'FileHandle'->new (">$f")->print ($d->textContent);
 }
 
-sub indent
+sub repackCallStatement
 {
   my ($code, $indent) = @_; 
 
@@ -144,17 +144,13 @@ sub indent
       s/\s*$//o;
     }   
 
-  my $len = -1; 
+  my $len = 0; 
   my $max = 120;
   my $ind = $indent;
   my $str = '';
 
   my $pp = sub 
   {
-    if ($len < 0)
-      {   
-        $len = 0;
-      }   
     if ($len + length ($_[0]) > $max)
       {   
         $str .= "&\n$ind  & ";
@@ -196,7 +192,7 @@ sub repackCallStatements
         {
           my $indent = ' ' x &getIndent ($call);
      
-          my $code = &indent ($call->textContent, $indent);
+          my $code = &repackCallStatement ($call->textContent, $indent);
 
           my $stmt = &s ($code);
      
@@ -227,13 +223,9 @@ for my $i (0 .. $#ARGV)
       }
   }
 
-my ($base, $mine, $your) = @ARGV[-3,-2,-1];
+&expandCallStatements ($_) for (@ARGV[-3,-2,-1]);
 
-&expandCallStatements ($base, "$base.expand.F90");
-&expandCallStatements ($mine, "$mine.expand.F90");
-&expandCallStatements ($your, "$your.expand.F90");
-
-&runCommand (cmd => ['kdiff3.x', @ARGV[0..$#ARGV-3], "$base.expand.F90", "$mine.expand.F90", "$your.expand.F90"]);
+&runCommand (cmd => ['kdiff3.x', @ARGV], debug => 0);
 
 &repackCallStatements ($o);
 
