@@ -1,0 +1,241 @@
+#!/usr/bin/perl -w
+
+use Data::Dumper;
+use FileHandle;
+
+use lib '/home/marguina/perl5/lib/perl5';
+use lib '/home/marguina/perl5/lib/perl5/x86_64-linux-gnu-thread-multi';
+
+use fxtran;
+use fxtran::parser;
+use fxtran::xpath;
+
+use strict;
+
+my $log;
+
+sub ll
+{
+  $log ||= 'FileHandle'->new (">>/tmp/kdiff3.txt");
+
+  my @call = caller (0);
+  $log->print ("$call[1]:$call[2]\n");
+  $log->print (@_);
+  $log->print ("\n" x 2);
+}
+
+sub debugCommand
+{
+  my @cmd = @_;
+
+  'FileHandle'->new ('>cmd.sh')->print (<< "EOF");
+#!/bin/bash
+
+set -x
+
+exec @cmd
+
+EOF
+  chmod (0755, 'cmd.sh');
+  system ('xterm');
+}
+
+sub runCommand
+{
+  my %args = @_;
+
+  my @cmd = @{ $args{cmd} };
+
+  if (system (@cmd))
+    {
+      die unless ($args{debug});
+
+      &debugCommand (@cmd);
+
+      system (@cmd)
+        and die;
+    }
+}
+
+sub getIndent
+{
+  my $stmt = shift;
+
+  $stmt or die;
+
+  my $n = $stmt->previousSibling;
+
+  unless ($n) 
+    {    
+      if ($stmt->parentNode)
+        {
+          return &getIndent ($stmt->parentNode);
+        }
+      return 0;
+    }    
+
+
+  if (($n->nodeName eq '#text') && ($n->data =~ m/\n/o))
+    {    
+      (my $t = $n->data) =~ s/^.*\n//gsmo;
+      return length ($t);
+    }    
+
+  if (my $m = $n->lastChild)
+    {
+      if (($m->nodeName eq '#text') && ($m->data =~ m/\n/o))
+        {    
+          (my $t = $m->data) =~ s/^.*\n//gsmo;
+          return length ($t);
+        }    
+      return &getIndent ($m);
+    }
+  elsif (($n->nodeName eq '#text') && ($n->data =~ m/^\s*$/o) && $n->parentNode)
+    {
+      return length ($n->data) + &getIndent ($n->parentNode);
+    }
+
+  return 0;
+}
+
+sub getDocument
+{
+  my $f = shift;
+
+  my @fopts = qw (-line-length 1000 -no-cpp -no-include);
+
+  &runCommand (cmd => ['fxtran', @fopts, $f], debug => 1);
+
+  return 'XML::LibXML'->load_xml (location => "$f.xml");
+}
+
+sub expandCallStatements
+{
+  my ($f, $g) = @_;
+
+  my $d = &getDocument ($f);
+
+  for my $call (&F ('.//call-stmt', $d))
+    {
+
+      my $indent = ' ' x &getIndent ($call);
+
+      my @arg = &F ('./arg-spec/arg', $call, 1);
+      my ($proc) = &F ('./procedure-designator', $call, 1);
+
+      my $stmt = "CALL $proc (& \n  " . join (", ", map { "$indent $_ &\n" } @arg) . "$indent)";
+
+      $stmt = &s ($stmt);
+
+      $call->replaceNode ($stmt);
+    }
+
+  'FileHandle'->new (">$g")->print ($d->textContent);
+}
+
+sub indent
+{
+  my ($code, $indent) = @_; 
+
+  for ($code)
+    {   
+      s/\n//goms;
+      s/^\s*//o;
+      s/\s*$//o;
+    }   
+
+  my $len = -1; 
+  my $max = 120;
+  my $ind = $indent;
+  my $str = '';
+
+  my $pp = sub 
+  {
+    if ($len < 0)
+      {   
+        $len = 0;
+      }   
+    if ($len + length ($_[0]) > $max)
+      {   
+        $str .= "&\n$ind  & ";
+        $len = 0;
+      }   
+
+    $str .= $_[0];
+    $len += length ($_[0]);
+  };  
+
+  my $stmt = &parse (statement => $code, fopts => [qw (-line-length 10000 -canonic)]);
+
+  my ($proc) = &F ('.//procedure-designator', $stmt);
+  my @arg = &F ('.//arg', $stmt);
+
+  $pp->("CALL " . $proc->textContent . " (");
+ 
+  for my $i (0 .. $#arg)
+    {   
+      my $arg = $arg[$i]->textContent;
+      $arg = "$arg, " unless ($i == $#arg);
+      $pp->($arg);
+    }   
+
+  $pp->(")");
+
+  return $str;
+}
+
+sub repackCallStatements
+{
+  my $f = shift;
+
+  my $d = &getDocument ($f);
+
+  eval 
+    {
+      for my $call (&F ('.//call-stmt', $d))
+        {
+          my $indent = ' ' x &getIndent ($call);
+     
+          my $code = &indent ($call->textContent, $indent);
+
+          my $stmt = &s ($code);
+     
+          $call->replaceNode ($stmt);
+        }
+    };
+
+  if (my $c = $@)
+    {
+      &ll ($c);
+      die ($c);
+    }
+
+  'FileHandle'->new (">$f")->print ($d->textContent);
+
+}
+
+@ARGV = grep { $_ ne '--auto' } @ARGV;
+
+my $o;
+
+for my $i (0 .. $#ARGV)
+  {
+    if ($ARGV[$i] eq '-o')
+      {
+        $o = $ARGV[$i+1];
+        last;
+      }
+  }
+
+my ($base, $mine, $your) = @ARGV[-3,-2,-1];
+
+&expandCallStatements ($base, "$base.expand.F90");
+&expandCallStatements ($mine, "$mine.expand.F90");
+&expandCallStatements ($your, "$your.expand.F90");
+
+&runCommand (cmd => ['kdiff3.x', @ARGV[0..$#ARGV-3], "$base.expand.F90", "$mine.expand.F90", "$your.expand.F90"]);
+
+&repackCallStatements ($o);
+
+exit (0);
+
