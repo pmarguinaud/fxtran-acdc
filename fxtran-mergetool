@@ -240,24 +240,13 @@ sub repackCallStatements
 
 }
 
-@ARGV = grep { $_ ne '--auto' } @ARGV;
+my ($base, $local, $remote, $merged) = @ARGV;
 
-my $o;
+&expandCallStatements ($_) for ($base, $local, $remote);
 
-for my $i (0 .. $#ARGV)
-  {
-    if ($ARGV[$i] eq '-o')
-      {
-        $o = $ARGV[$i+1];
-        last;
-      }
-  }
+&runCommand (cmd => ['kdiff3', -o => $merged, $base, $local, $remote], debug => 0);
 
-&expandCallStatements ($_) for (@ARGV[-3,-2,-1]);
-
-&runCommand (cmd => ['kdiff3.x', @ARGV], debug => 0);
-
-&repackCallStatements ($o);
+&repackCallStatements ($merged);
 
 exit (0);
 
