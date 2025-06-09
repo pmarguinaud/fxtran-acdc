@@ -167,13 +167,10 @@ sub simplifyAssociateBlocks
 
 my %class;
 
-sub class
+sub loadClass
 {
-  my $stmt = shift;
+  my $class = shift;
 
-  (my $class = $stmt->nodeName) =~ s/-stmt$//o; 
-
-  $class = join ('::', 'Fxtran', 'Beautifier', map { ucfirst ($_) } split (m/-/o, $class));
 
   unless (exists $class{$class})
     {
@@ -200,8 +197,20 @@ sub class
   return $class{$class};
 }
 
+sub class
+{
+  my $stmt = shift;
+
+  (my $class = $stmt->nodeName) =~ s/-stmt$//o; 
+
+  $class = join ('::', 'Fxtran', 'Beautifier', map { ucfirst ($_) } split (m/-/o, $class));
+
+  return &loadClass ($class);
+}
+
 sub prepareFileForMerging
 {
+  shift;
   my ($f, %opts) = @_;
 
   my $d = &getDocument ($f);
@@ -225,7 +234,8 @@ sub prepareFileForMerging
 
 sub repackStatementsAfterMerge
 {
-  my ($f) = @_;
+  shift;
+  my ($f, %opts) = @_;
 
   my $d = &getDocument ($f);
 

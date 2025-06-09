@@ -17,10 +17,11 @@ use fxtran::xpath;
 use strict;
 
 use Fxtran::Beautifier;
+use Fxtran::MergeTool;
 
-my %opts = qw ();
+my %opts = qw (mergetool kdiff3);
 my @opts_f = qw (simplify-associate-blocks);
-my @opts_s = qw ();
+my @opts_s = qw (mergetool);
 
 &GetOptions
 (
@@ -30,12 +31,12 @@ my @opts_s = qw ();
 
 my ($base, $local, $remote, $merged) = @ARGV;
 
-&Fxtran::Beautifier::prepareFileForMerging ($_, %opts) 
+'Fxtran::Beautifier'->prepareFileForMerging ($_, %opts) 
   for ($base, $local, $remote);
 
-&Fxtran::Beautifier::runCommand (cmd => ['kdiff3', -o => $merged, $base, $local, $remote], debug => 0);
+'Fxtran::MergeTool'->merge ($base, $local, $remote, $merged, %opts);
 
-&Fxtran::Beautifier::repackStatementsAfterMerge ($merged, %opts);
+'Fxtran::Beautifier'->repackStatementsAfterMerge ($merged, %opts);
 
 exit (0);
 
