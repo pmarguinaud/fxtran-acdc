@@ -2,6 +2,9 @@
 
 use Data::Dumper;
 use FileHandle;
+use FindBin qw ($Bin);
+
+use lib "$Bin/fxtran-merge";
 
 use lib '/home/marguina/perl5/lib/perl5';
 use lib '/home/marguina/perl5/lib/perl5/x86_64-linux-gnu-thread-multi';
@@ -12,156 +15,7 @@ use fxtran::xpath;
 
 use strict;
 
-my $log;
-
-sub ll
-{
-  $log ||= 'FileHandle'->new (">>kdiff3.txt");
-
-  my @call = caller (0);
-  $log->print ("$call[1]:$call[2]\n");
-  $log->print (@_);
-  $log->print ("\n" x 2);
-}
-
-sub debugCommand
-{
-  my @cmd = @_;
-
-  'FileHandle'->new ('>cmd.sh')->print (<< "EOF");
-#!/bin/bash
-
-set -x
-
-exec @cmd
-
-EOF
-  chmod (0755, 'cmd.sh');
-  system ('xterm');
-}
-
-sub runCommand
-{
-  my %args = @_;
-
-  my @cmd = @{ $args{cmd} };
-
-  if (system (@cmd))
-    {
-      die unless ($args{debug});
-
-      &debugCommand (@cmd);
-
-      system (@cmd)
-        and die;
-    }
-}
-
-sub getIndent
-{
-  my $stmt = shift;
-
-  $stmt or die;
-
-  my $n = $stmt->previousSibling;
-
-  unless ($n) 
-    {    
-      if ($stmt->parentNode)
-        {
-          return &getIndent ($stmt->parentNode);
-        }
-      return 0;
-    }    
-
-
-  if (($n->nodeName eq '#text') && ($n->data =~ m/\n/o))
-    {    
-      (my $t = $n->data) =~ s/^.*\n//gsmo;
-      return length ($t);
-    }    
-
-  if (my $m = $n->lastChild)
-    {
-      if (($m->nodeName eq '#text') && ($m->data =~ m/\n/o))
-        {    
-          (my $t = $m->data) =~ s/^.*\n//gsmo;
-          return length ($t);
-        }    
-      return &getIndent ($m);
-    }
-  elsif (($n->nodeName eq '#text') && ($n->data =~ m/^\s*$/o) && $n->parentNode)
-    {
-      return length ($n->data) + &getIndent ($n->parentNode);
-    }
-
-  return 0;
-}
-
-sub getDocument
-{
-  my $f = shift;
-
-  my @fopts = qw (-line-length 1000 -no-cpp -no-include);
-
-  &runCommand (cmd => ['fxtran', @fopts, $f], debug => 1);
-
-  return 'XML::LibXML'->load_xml (location => "$f.xml");
-}
-
-sub expandCallStatements
-{
-  my ($f) = @_;
-
-  my $d = &getDocument ($f);
-
-  for my $call (&F ('.//call-stmt', $d))
-    {
-      my $indent = ' ' x &getIndent ($call);
-
-      my @arg = &F ('./arg-spec/arg', $call, 1);
-      my ($proc) = &F ('./procedure-designator', $call, 1);
-
-      my $stmt = "CALL $proc (& \n  " . join (", ", map { "$indent $_ &\n" } @arg) . "$indent)";
-
-      $stmt = &s ($stmt);
-
-      $call->replaceNode ($stmt);
-    }
-
-  for my $assoc (&F ('.//associate-stmt', $d))
-    {
-      my ($stmt) = &parse (fragment => $assoc->textContent . "\nEND ASSOCIATE\n", fopts => [qw (-line-length 10000 -canonic)]);
-
-      $assoc->replaceNode ($stmt);
-
-      $assoc = $stmt;
-
-      my $indent = ' ' x &getIndent ($assoc);
-
-      my @t = &F ('./associate-LT/associate', $assoc);
-
-      @t = grep { $_->nodeName ne '#text' } @t;
-      
-      my %n2t;
-
-      for my $t (@t)
-        {
-          my ($n) = &F ('./associate-N', $t, 1);
-          $n2t{$n} = $t;
-        }
-    
-      @t = @n2t{sort keys (%n2t)};
-
-      $stmt = "ASSOCIATE ( &\n$indent  " .  join ("\n$indent, ", map { $_->textContent . " & " } @t) . "\n$indent)";
-
-      ($stmt) = &parse (fragment => $stmt . "\nEND ASSOCIATE\n", fopts => [qw (-line-length 10000)]);
-
-      $assoc->replaceNode ($stmt);
-    }
-
-  'FileHandle'->new (">$f")->print ($d->textContent);
-}
+use Fxtran::Beautifier;
 
 sub repackCallStatement
 {
@@ -214,13 +68,13 @@ sub repackCallStatements
 {
   my $f = shift;
 
-  my $d = &getDocument ($f);
+  my $d = &Fxtran::Beautifier::getDocument ($f);
 
   eval 
     {
       for my $call (&F ('.//call-stmt', $d))
         {
-          my $indent = ' ' x &getIndent ($call);
+          my $indent = ' ' x &Fxtran::Beautifier::getIndent ($call);
      
           my $code = &repackCallStatement ($call->textContent, $indent);
 
@@ -232,7 +86,7 @@ sub repackCallStatements
 
   if (my $c = $@)
     {
-      &ll ($c);
+      &Fxtran::Beautifier::ll ($c);
       die ($c);
     }
 
@@ -242,9 +96,9 @@ sub repackCallStatements
 
 my ($base, $local, $remote, $merged) = @ARGV;
 
-&expandCallStatements ($_) for ($base, $local, $remote);
+&Fxtran::Beautifier::expand ($_) for ($base, $local, $remote);
 
-&runCommand (cmd => ['kdiff3', -o => $merged, $base, $local, $remote], debug => 0);
+&Fxtran::Beautifier::runCommand (cmd => ['kdiff3', -o => $merged, $base, $local, $remote], debug => 0);
 
 &repackCallStatements ($merged);
 
