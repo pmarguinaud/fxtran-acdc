@@ -33,5 +33,32 @@ sub expand
   return $stmt;
 }
 
+sub repack
+{
+  my ($stmt, $indent) = @_;
+  my @associate = &F ('./associate-LT/associate', $stmt, 1);
+  &Fxtran::Beautifier::repackCallLikeStatement (\&reparse, "ASSOCIATE (", @associate, ")", $indent);
+}
+
+sub reparse
+{
+  my $stmt = shift;
+  ($stmt) = &parse (fragment => << "EOF", fopts => [qw (-line-length 10000)]);
+$stmt
+END ASSOCIATE
+EOF
+  return $stmt;
+}
+
+sub canonic
+{
+  my $stmt = shift;
+  $stmt = $stmt->textContent if (ref ($stmt));
+  ($stmt) = &parse (fragment => << "EOF", fopts => [qw (-line-length 10000 -canonic)]);
+$stmt
+END ASSOCIATE
+EOF
+  return $stmt;
+}
 
 1;

@@ -17,90 +17,13 @@ use strict;
 
 use Fxtran::Beautifier;
 
-sub repackCallStatement
-{
-  my ($code, $indent) = @_; 
-
-  for ($code)
-    {   
-      s/\n//goms;
-      s/^\s*//o;
-      s/\s*$//o;
-    }   
-
-  my $len = 0; 
-  my $max = 120;
-  my $ind = $indent;
-  my $str = '';
-
-  my $pp = sub 
-  {
-    if ($len + length ($_[0]) > $max)
-      {   
-        $str .= "&\n$ind  & ";
-        $len = 0;
-      }   
-
-    $str .= $_[0];
-    $len += length ($_[0]);
-  };  
-
-  my $stmt = &parse (statement => $code, fopts => [qw (-line-length 10000 -canonic)]);
-
-  my ($proc) = &F ('.//procedure-designator', $stmt);
-  my @arg = &F ('.//arg', $stmt);
-
-  $pp->("CALL " . $proc->textContent . " (");
- 
-  for my $i (0 .. $#arg)
-    {   
-      my $arg = $arg[$i]->textContent;
-      $arg = "$arg, " unless ($i == $#arg);
-      $pp->($arg);
-    }   
-
-  $pp->(")");
-
-  return $str;
-}
-
-sub repackCallStatements
-{
-  my $f = shift;
-
-  my $d = &Fxtran::Beautifier::getDocument ($f);
-
-  eval 
-    {
-      for my $call (&F ('.//call-stmt', $d))
-        {
-          my $indent = ' ' x &Fxtran::Beautifier::getIndent ($call);
-     
-          my $code = &repackCallStatement ($call->textContent, $indent);
-
-          my $stmt = &s ($code);
-     
-          $call->replaceNode ($stmt);
-        }
-    };
-
-  if (my $c = $@)
-    {
-      &Fxtran::Beautifier::ll ($c);
-      die ($c);
-    }
-
-  'FileHandle'->new (">$f")->print ($d->textContent);
-
-}
-
 my ($base, $local, $remote, $merged) = @ARGV;
 
 &Fxtran::Beautifier::expand ($_) for ($base, $local, $remote);
 
 &Fxtran::Beautifier::runCommand (cmd => ['kdiff3', -o => $merged, $base, $local, $remote], debug => 0);
 
-&repackCallStatements ($merged);
+&Fxtran::Beautifier::repack ($merged);
 
 exit (0);
 

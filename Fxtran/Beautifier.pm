@@ -140,16 +140,46 @@ sub expand
   'FileHandle'->new (">$f")->print ($d->textContent);
 }
 
-sub repackCallStatement
+sub repack
 {
-  my ($code, $indent) = @_; 
+  my ($f) = @_;
 
-  for ($code)
-    {   
-      s/\n//goms;
-      s/^\s*//o;
-      s/\s*$//o;
-    }   
+  my $d = &getDocument ($f);
+
+  for my $stmt (&F ('.//ANY-stmt', $d))
+    {
+      my $indent = ' ' x &getIndent ($stmt);
+
+      my $repackStmt;
+
+      if ($stmt->nodeName eq 'call-stmt')
+        {
+          my $canonicStmt = &Fxtran::Beautifier::Call::canonic ($stmt);
+          $repackStmt = &Fxtran::Beautifier::Call::repack ($canonicStmt, $indent);
+        }
+      elsif ($stmt->nodeName eq 'associate-stmt')
+        {
+          my $canonicStmt = &Fxtran::Beautifier::Associate::canonic ($stmt);
+          $repackStmt = &Fxtran::Beautifier::Associate::repack ($canonicStmt, $indent);
+        }
+      else
+        {
+          next;
+        }
+
+      $stmt->replaceNode ($repackStmt);
+    }
+
+  'FileHandle'->new (">$f")->print ($d->textContent);
+}
+
+sub repackCallLikeStatement
+{
+  my $reparse = shift (@_);
+  my $prefix = shift (@_);
+  my $indent = pop (@_);
+  my $suffix = pop (@_);
+  my @arg = @_;
 
   my $len = 0; 
   my $max = 120;
@@ -168,54 +198,18 @@ sub repackCallStatement
     $len += length ($_[0]);
   };  
 
-  my $stmt = &parse (statement => $code, fopts => [qw (-line-length 10000 -canonic)]);
-
-  my ($proc) = &F ('.//procedure-designator', $stmt);
-  my @arg = &F ('.//arg', $stmt);
-
-  $pp->("CALL " . $proc->textContent . " (");
+  $pp->($prefix);
  
   for my $i (0 .. $#arg)
     {   
-      my $arg = $arg[$i]->textContent;
+      my $arg = $arg[$i];
       $arg = "$arg, " unless ($i == $#arg);
       $pp->($arg);
     }   
 
-  $pp->(")");
+  $pp->($suffix);
 
-  return $str;
+  return $reparse->($str);
 }
-
-sub repackCallStatements
-{
-  my $f = shift;
-
-  my $d = &getDocument ($f);
-
-  eval 
-    {
-      for my $call (&F ('.//call-stmt', $d))
-        {
-          my $indent = ' ' x &getIndent ($call);
-     
-          my $code = &repackCallStatement ($call->textContent, $indent);
-
-          my $stmt = &s ($code);
-     
-          $call->replaceNode ($stmt);
-        }
-    };
-
-  if (my $c = $@)
-    {
-      &ll ($c);
-      die ($c);
-    }
-
-  'FileHandle'->new (">$f")->print ($d->textContent);
-
-}
-
 
 1;
