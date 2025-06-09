@@ -9,9 +9,6 @@ use fxtran::xpath;
 
 use strict;
 
-use Fxtran::Beautifier::Call;
-use Fxtran::Beautifier::Associate;
-
 my $log;
 
 sub ll
@@ -74,7 +71,6 @@ sub getIndent
       return 0;
     }    
 
-
   if (($n->nodeName eq '#text') && ($n->data =~ m/\n/o))
     {    
       (my $t = $n->data) =~ s/^.*\n//gsmo;
@@ -109,7 +105,44 @@ sub getDocument
   return 'XML::LibXML'->load_xml (location => "$f.xml");
 }
 
-sub expand
+my %class;
+
+sub class
+{
+  my $stmt = shift;
+
+  (my $class = $stmt->nodeName) =~ s/-stmt$//o; 
+
+  $class = join ('::', 'Fxtran', 'Beautifier', map { ucfirst ($_) } split (m/-/o, $class));
+
+  unless (exists $class{$class})
+    {
+      (my $pm = $class) =~ s,::,/,go; $pm .= '.pm';
+      eval "use $class;";
+
+      &ll (&Dumper ([$class, $pm]));
+
+      if (my $c = $@)
+        {
+          if (index ($c, "Can't locate $pm ") == 0)
+            {
+              $class{$class} = undef;
+            }
+          else
+            {
+              die $c;
+            }
+        }
+      else
+        {
+          $class{$class} = $class;
+        }
+    }
+
+  return $class{$class};
+}
+
+sub expandFile
 {
   my ($f) = @_;
 
@@ -117,22 +150,11 @@ sub expand
 
   for my $stmt (&F ('.//ANY-stmt', $d))
     {
+      next unless (my $class = &class ($stmt));
+    
       my $indent = ' ' x &getIndent ($stmt);
 
-      my $expandStmt;
-
-      if ($stmt->nodeName eq 'call-stmt')
-        {
-          $expandStmt = &Fxtran::Beautifier::Call::expand ($stmt, $indent);
-        }
-      elsif ($stmt->nodeName eq 'associate-stmt')
-        {
-          $expandStmt = &Fxtran::Beautifier::Associate::expand ($stmt, $indent);
-        }
-      else
-        {
-          next;
-        }
+      my $expandStmt = $class->expand ($stmt, $indent);
 
       $stmt->replaceNode ($expandStmt);
     }
@@ -140,7 +162,7 @@ sub expand
   'FileHandle'->new (">$f")->print ($d->textContent);
 }
 
-sub repack
+sub repackFile
 {
   my ($f) = @_;
 
@@ -148,24 +170,12 @@ sub repack
 
   for my $stmt (&F ('.//ANY-stmt', $d))
     {
+      next unless (my $class = &class ($stmt));
+    
       my $indent = ' ' x &getIndent ($stmt);
 
-      my $repackStmt;
-
-      if ($stmt->nodeName eq 'call-stmt')
-        {
-          my $canonicStmt = &Fxtran::Beautifier::Call::canonic ($stmt);
-          $repackStmt = &Fxtran::Beautifier::Call::repack ($canonicStmt, $indent);
-        }
-      elsif ($stmt->nodeName eq 'associate-stmt')
-        {
-          my $canonicStmt = &Fxtran::Beautifier::Associate::canonic ($stmt);
-          $repackStmt = &Fxtran::Beautifier::Associate::repack ($canonicStmt, $indent);
-        }
-      else
-        {
-          next;
-        }
+      my $canonicStmt = $class->canonic ($stmt);
+      my $repackStmt = $class->repack ($canonicStmt, $indent);
 
       $stmt->replaceNode ($repackStmt);
     }
@@ -175,7 +185,8 @@ sub repack
 
 sub repackCallLikeStatement
 {
-  my $reparse = shift (@_);
+  my $class = shift;
+
   my $prefix = shift (@_);
   my $indent = pop (@_);
   my $suffix = pop (@_);
@@ -209,7 +220,7 @@ sub repackCallLikeStatement
 
   $pp->($suffix);
 
-  return $reparse->($str);
+  return $class->reparse ($str);
 }
 
 1;

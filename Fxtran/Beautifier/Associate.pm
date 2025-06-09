@@ -1,5 +1,7 @@
 package Fxtran::Beautifier::Associate;
 
+use base qw (Fxtran::Beautifier);
+
 use strict;
 
 use fxtran;
@@ -8,6 +10,7 @@ use fxtran::xpath;
 
 sub expand
 {
+  shift;
   my ($stmt, $indent) = @_;
 
   ($stmt) = &parse (fragment => $stmt->textContent . "\nEND ASSOCIATE\n", fopts => [qw (-line-length 10000 -canonic)]);
@@ -35,13 +38,15 @@ sub expand
 
 sub repack
 {
+  my $class = shift;
   my ($stmt, $indent) = @_;
   my @associate = &F ('./associate-LT/associate', $stmt, 1);
-  &Fxtran::Beautifier::repackCallLikeStatement (\&reparse, "ASSOCIATE (", @associate, ")", $indent);
+  $class->repackCallLikeStatement ("ASSOCIATE (", @associate, ")", $indent);
 }
 
 sub reparse
 {
+  shift;
   my $stmt = shift;
   ($stmt) = &parse (fragment => << "EOF", fopts => [qw (-line-length 10000)]);
 $stmt
@@ -52,6 +57,7 @@ EOF
 
 sub canonic
 {
+  shift;
   my $stmt = shift;
   $stmt = $stmt->textContent if (ref ($stmt));
   ($stmt) = &parse (fragment => << "EOF", fopts => [qw (-line-length 10000 -canonic)]);

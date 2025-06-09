@@ -19,11 +19,11 @@ use Fxtran::Beautifier;
 
 my ($base, $local, $remote, $merged) = @ARGV;
 
-&Fxtran::Beautifier::expand ($_) for ($base, $local, $remote);
+&Fxtran::Beautifier::expandFile ($_) for ($base, $local, $remote);
 
 &Fxtran::Beautifier::runCommand (cmd => ['kdiff3', -o => $merged, $base, $local, $remote], debug => 0);
 
-&Fxtran::Beautifier::repack ($merged);
+&Fxtran::Beautifier::repackFile ($merged);
 
 exit (0);
 
