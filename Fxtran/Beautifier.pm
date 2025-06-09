@@ -157,7 +157,19 @@ sub simplifyAssociateBlocks
   
       if ($count)
         {   
-          $stmt->replaceNode ($stmt1);
+          if (&F ('./associate-LT/associate', $stmt1))
+            {
+              $stmt->replaceNode ($stmt1);
+            }
+          else
+            {
+              my @n = &F ('./node()', $block); shift (@n); pop (@n);
+              for my $n (@n)
+                {
+                  $block->parentNode->insertBefore ($n, $block);
+                }
+              $block->unbindNode ();
+            }
         }   
   
     }
