@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
 use Data::Dumper;
+use Getopt::Long;
 use FileHandle;
 use FindBin qw ($Bin);
 
@@ -17,13 +18,24 @@ use strict;
 
 use Fxtran::Beautifier;
 
+my %opts = qw ();
+my @opts_f = qw (simplify-associate-blocks);
+my @opts_s = qw ();
+
+&GetOptions
+(
+  (map { ("$_!", \$opts{$_}) } @opts_f),
+  (map { ("$_=s", \$opts{$_}) } @opts_s),
+);
+
 my ($base, $local, $remote, $merged) = @ARGV;
 
-&Fxtran::Beautifier::expandFile ($_) for ($base, $local, $remote);
+&Fxtran::Beautifier::prepareFileForMerging ($_, %opts) 
+  for ($base, $local, $remote);
 
 &Fxtran::Beautifier::runCommand (cmd => ['kdiff3', -o => $merged, $base, $local, $remote], debug => 0);
 
-&Fxtran::Beautifier::repackFile ($merged);
+&Fxtran::Beautifier::repackStatementsAfterMerge ($merged, %opts);
 
 exit (0);
 

@@ -98,12 +98,72 @@ sub getDocument
 {
   my $f = shift;
 
-  my @fopts = qw (-line-length 1000 -no-cpp -no-include);
+  my @fopts = qw (-construct-tag -line-length 1000 -no-cpp -no-include);
 
   &runCommand (cmd => ['fxtran', @fopts, $f], debug => 1);
 
   return 'XML::LibXML'->load_xml (location => "$f.xml");
 }
+
+sub simplifyAssociateBlocks
+{
+  my $d = shift;
+
+  for my $block (reverse (&F ('.//associate-construct', $d)))
+    {
+      my @N = &F ('.//named-E/N', $block, 1);  # Identifiers in block
+      my %N = map { ($_, 1) } @N; 
+  
+      my $stmt = $block->firstChild;
+      my ($stmt1) = &parse (fragment => $stmt->textContent . "\nEND ASSOCIATE\n", fopts => [qw (-line-length 1000 -canonic)]);
+
+      my $count = 0; # Number of removed associates
+  
+      for my $assoc (&F ('./associate-LT/associate', $stmt1))
+        {   
+          my ($N) = &F ('./associate-N', $assoc, 1); 
+          next if ($N{$N});
+  
+          $count++;
+  
+          my ($p, $n) =  ($assoc->previousSibling, $assoc->nextSibling);
+  
+          if ($p)
+            {
+              $p->unbindNode;
+              $assoc->unbindNode;
+            }
+          elsif ($n)
+            {
+              $n->unbindNode;
+              $assoc->unbindNode;
+            }
+          else
+            {
+              # Remove ASSOCIATE block
+              $block->firstChild->unbindNode;
+              $block->lastChild->unbindNode;
+              $count = 0;
+              my @n = $block->childNodes;
+              my $p = $block->parentNode;
+              for my $n (@n)
+                {
+                  $p->insertBefore ($n, $block);
+                }
+              $block->unbindNode;
+              last;
+            }
+        }   
+  
+      if ($count)
+        {   
+          $stmt->replaceNode ($stmt1);
+        }   
+  
+    }
+
+}
+
 
 my %class;
 
@@ -119,8 +179,6 @@ sub class
     {
       (my $pm = $class) =~ s,::,/,go; $pm .= '.pm';
       eval "use $class;";
-
-      &ll (&Dumper ([$class, $pm]));
 
       if (my $c = $@)
         {
@@ -142,16 +200,19 @@ sub class
   return $class{$class};
 }
 
-sub expandFile
+sub prepareFileForMerging
 {
-  my ($f) = @_;
+  my ($f, %opts) = @_;
 
   my $d = &getDocument ($f);
+
+  &simplifyAssociateBlocks ($d)
+    if ($opts{'simplify-associate-blocks'});
 
   for my $stmt (&F ('.//ANY-stmt', $d))
     {
       next unless (my $class = &class ($stmt));
-    
+
       my $indent = ' ' x &getIndent ($stmt);
 
       my $expandStmt = $class->expand ($stmt, $indent);
@@ -162,7 +223,7 @@ sub expandFile
   'FileHandle'->new (">$f")->print ($d->textContent);
 }
 
-sub repackFile
+sub repackStatementsAfterMerge
 {
   my ($f) = @_;
 
