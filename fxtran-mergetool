@@ -19,7 +19,7 @@ use strict;
 use Fxtran::Beautifier;
 use Fxtran::MergeTool;
 
-my %opts = qw (mergetool kdiff3);
+my %opts = qw (mergetool kdiff3 simplify-associate-blocks 1);
 my @opts_f = qw (simplify-associate-blocks);
 my @opts_s = qw (mergetool);
 
