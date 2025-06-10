@@ -76,11 +76,17 @@ sub runCommand
 
   if (system (@cmd))
     {
-      &debugCommand (%args) if ($args{debug});
+      goto FAILED unless ($args{debug});
+
+      &debugCommand (%args);
 
       system (@cmd)
-        and die ("Command `@cmd' failed");
+        and goto FAILED;
     }
+
+  return;
+FAILED:
+  die ("Command `@cmd' failed");
 }
 
 my %opts = qw (mergetool kdiff3 simplify-associate-blocks 1);
