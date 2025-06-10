@@ -1,0 +1,115 @@
+#!/usr/bin/perl -w
+
+use Data::Dumper;
+use Getopt::Long;
+use FileHandle;
+use FindBin qw ($Bin);
+
+use lib "$Bin/fxtran-merge";
+
+use lib '/home/marguina/perl5/lib/perl5';
+use lib '/home/marguina/perl5/lib/perl5/x86_64-linux-gnu-thread-multi';
+
+use fxtran;
+use fxtran::parser;
+use fxtran::xpath;
+
+use strict;
+
+use Fxtran::Formatter;
+use Fxtran::MergeTool;
+
+my $log;
+
+sub ll
+{
+  $log ||= 'FileHandle'->new (">>fxtran-mergetool.txt");
+
+  my @call = caller (0);
+  $log->print ("$call[1]:$call[2]\n");
+  $log->print (@_);
+  $log->print ("\n" x 2);
+}
+
+sub debugCommand
+{
+  use File::Temp;
+  my %args = @_;
+
+  my @cmd = @{ $args{cmd} };
+  my $file = $args{file} || '';
+
+  my $bashrc = 'File::Temp'->new (UNLINK => 1, SUFFIX => '.sh');
+
+  $bashrc->print (<< "EOF");
+
+alias r="echo \\"@cmd\\";  @cmd"
+
+alias e="vi $file"
+
+echo "Command \'@cmd\' fails:"
+echo
+@cmd
+echo
+echo "Type r for running command '@cmd'"
+echo
+if [ "x$file" != "x" ]
+then
+echo "Type e for editing '$file'"
+fi
+echo
+
+export PS1='debug> '
+
+EOF
+
+  $bashrc->flush ();
+
+  system (qw (xterm -e bash --init-file), $bashrc, '-i');
+}
+
+sub runCommand
+{
+  my %args = @_;
+
+  my @cmd = @{ $args{cmd} };
+
+  if (system (@cmd))
+    {
+      goto FAILED unless ($args{debug});
+
+      &debugCommand (%args);
+
+      system (@cmd)
+        and goto FAILED;
+    }
+
+  return;
+FAILED:
+  die ("Command `@cmd' failed");
+}
+
+my %opts = qw (mergetool kdiff3 simplify-associate-blocks 1);
+my @opts_f = qw (simplify-associate-blocks);
+my @opts_s = qw (mergetool);
+
+&GetOptions
+(
+  (map { ("$_!", \$opts{$_}) } @opts_f),
+  (map { ("$_=s", \$opts{$_}) } @opts_s),
+);
+
+$opts{log} = \&ll;
+$opts{runcommand} = \&runCommand;
+
+my ($base, $local, $remote, $merged) = @ARGV;
+
+'Fxtran::Formatter'->prepareFileForMerging ($_, %opts) 
+  for ($base, $local, $remote);
+
+'Fxtran::MergeTool'->merge ($base, $local, $remote, $merged, %opts);
+
+'Fxtran::Formatter'->repackStatementsAfterMerge ($merged, %opts);
+
+exit (0);
+
