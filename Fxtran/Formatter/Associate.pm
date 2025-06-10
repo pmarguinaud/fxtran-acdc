@@ -1,6 +1,6 @@
-package Fxtran::Beautifier::Associate;
+package Fxtran::Formatter::Associate;
 
-use base qw (Fxtran::Beautifier);
+use base qw (Fxtran::Formatter);
 
 use strict;
 

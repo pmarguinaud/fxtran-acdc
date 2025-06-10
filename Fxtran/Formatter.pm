@@ -1,4 +1,4 @@
-package Fxtran::Beautifier;
+package Fxtran::Formatter;
 
 use Data::Dumper;
 use FileHandle;
@@ -215,7 +215,7 @@ sub class
 
   (my $class = $stmt->nodeName) =~ s/-stmt$//o; 
 
-  $class = join ('::', 'Fxtran', 'Beautifier', map { ucfirst ($_) } split (m/-/o, $class));
+  $class = join ('::', 'Fxtran', 'Formatter', map { ucfirst ($_) } split (m/-/o, $class));
 
   return &loadClass ($class);
 }

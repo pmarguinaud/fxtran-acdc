@@ -16,7 +16,7 @@ use fxtran::xpath;
 
 use strict;
 
-use Fxtran::Beautifier;
+use Fxtran::Formatter;
 use Fxtran::MergeTool;
 
 my %opts = qw (mergetool kdiff3 simplify-associate-blocks 1);
@@ -31,12 +31,12 @@ my @opts_s = qw (mergetool);
 
 my ($base, $local, $remote, $merged) = @ARGV;
 
-'Fxtran::Beautifier'->prepareFileForMerging ($_, %opts) 
+'Fxtran::Formatter'->prepareFileForMerging ($_, %opts) 
   for ($base, $local, $remote);
 
 'Fxtran::MergeTool'->merge ($base, $local, $remote, $merged, %opts);
 
-'Fxtran::Beautifier'->repackStatementsAfterMerge ($merged, %opts);
+'Fxtran::Formatter'->repackStatementsAfterMerge ($merged, %opts);
 
 exit (0);
 

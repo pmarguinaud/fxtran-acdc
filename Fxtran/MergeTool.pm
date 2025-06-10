@@ -10,7 +10,7 @@ sub merge
 
   $class = join ('::', $class, ucfirst ($opts{mergetool}));
 
-  &Fxtran::Beautifier::loadClass ($class) 
+  &Fxtran::Formatter::loadClass ($class) 
     or die ("Cannot load $class\n");
 
   $class->merge ($base, $local, $remote, $merged, %opts);
