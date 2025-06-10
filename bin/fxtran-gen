@@ -6,12 +6,12 @@
 # philippe.marguinaud@meteo.fr
 #
 
-use local::lib;
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
 
 use strict;
 
+use Fxtran::Common;
 use Fxtran::Util;
 
 use Fxtran::Generate;

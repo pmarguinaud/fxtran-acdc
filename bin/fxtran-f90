@@ -6,7 +6,6 @@
 # philippe.marguinaud@meteo.fr
 #
 
-use local::lib;
 use Getopt::Long;
 use FileHandle;
 use Data::Dumper;
@@ -21,6 +20,7 @@ use lib "$Bin/../lib";
 
 use strict;
 
+use Fxtran::Common;
 use Fxtran::Bt;
 use Fxtran::F90Compiler;
 use Fxtran::Util;

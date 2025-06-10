@@ -8,7 +8,22 @@ package Fxtran::Common;
 
 
 use strict;
-use local::lib;
 use Fxtran::Bt;
+
+sub import
+{
+  my $c;
+
+  eval "use local::lib";
+
+  return unless ($c = $@);
+
+  eval "use Fxtran::local::lib";
+      
+  if ($c = $@)
+    {
+      die ($c);
+    }
+}
 
 1;
