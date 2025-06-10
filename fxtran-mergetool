@@ -19,6 +19,51 @@ use strict;
 use Fxtran::Formatter;
 use Fxtran::MergeTool;
 
+my $log;
+
+sub ll
+{
+  $log ||= 'FileHandle'->new (">>fxtran-mergetool.txt");
+
+  my @call = caller (0);
+  $log->print ("$call[1]:$call[2]\n");
+  $log->print (@_);
+  $log->print ("\n" x 2);
+}
+
+sub debugCommand
+{
+  my @cmd = @_;
+
+  'FileHandle'->new ('>cmd.sh')->print (<< "EOF");
+#!/bin/bash
+
+set -x
+
+exec @cmd
+
+EOF
+  chmod (0755, 'cmd.sh');
+  system ('xterm');
+}
+
+sub runCommand
+{
+  my %args = @_;
+
+  my @cmd = @{ $args{cmd} };
+
+  if (system (@cmd))
+    {
+      die unless ($args{debug});
+
+      &debugCommand (@cmd);
+
+      system (@cmd)
+        and die;
+    }
+}
+
 my %opts = qw (mergetool kdiff3 simplify-associate-blocks 1);
 my @opts_f = qw (simplify-associate-blocks);
 my @opts_s = qw (mergetool);
@@ -28,6 +73,9 @@ my @opts_s = qw (mergetool);
   (map { ("$_!", \$opts{$_}) } @opts_f),
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
+
+$opts{log} = \&ll;
+$opts{runcommand} = \&runCommand;
 
 my ($base, $local, $remote, $merged) = @ARGV;
 

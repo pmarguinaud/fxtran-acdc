@@ -13,7 +13,7 @@ sub merge
 
   &copy ($base, $merged);
 
-  &Fxtran::Formatter::runCommand (cmd => ['vimdiff', $local, $merged, $remote], debug => 0);
+  $opts{runcommand}->(cmd => ['vimdiff', $local, $merged, $remote], debug => 0);
 }
 
 1;

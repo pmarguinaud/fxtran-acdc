@@ -9,51 +9,6 @@ use fxtran::xpath;
 
 use strict;
 
-my $log;
-
-sub ll
-{
-  $log ||= 'FileHandle'->new (">>fxtran-mergetool.txt");
-
-  my @call = caller (0);
-  $log->print ("$call[1]:$call[2]\n");
-  $log->print (@_);
-  $log->print ("\n" x 2);
-}
-
-sub debugCommand
-{
-  my @cmd = @_;
-
-  'FileHandle'->new ('>cmd.sh')->print (<< "EOF");
-#!/bin/bash
-
-set -x
-
-exec @cmd
-
-EOF
-  chmod (0755, 'cmd.sh');
-  system ('xterm');
-}
-
-sub runCommand
-{
-  my %args = @_;
-
-  my @cmd = @{ $args{cmd} };
-
-  if (system (@cmd))
-    {
-      die unless ($args{debug});
-
-      &debugCommand (@cmd);
-
-      system (@cmd)
-        and die;
-    }
-}
-
 sub getIndent
 {
   my $stmt = shift;
@@ -96,11 +51,11 @@ sub getIndent
 
 sub getDocument
 {
-  my $f = shift;
+  my ($f, %opts) = @_;
 
   my @fopts = qw (-construct-tag -line-length 1000 -no-cpp -no-include);
 
-  &runCommand (cmd => ['fxtran', @fopts, $f], debug => 1);
+  $opts{runcommand}->(cmd => ['fxtran', @fopts, $f], debug => 1);
 
   return 'XML::LibXML'->load_xml (location => "$f.xml");
 }
@@ -225,7 +180,7 @@ sub prepareFileForMerging
   shift;
   my ($f, %opts) = @_;
 
-  my $d = &getDocument ($f);
+  my $d = &getDocument ($f, %opts);
 
   &simplifyAssociateBlocks ($d)
     if ($opts{'simplify-associate-blocks'});
@@ -249,7 +204,7 @@ sub repackStatementsAfterMerge
   shift;
   my ($f, %opts) = @_;
 
-  my $d = &getDocument ($f);
+  my $d = &getDocument ($f, %opts);
 
   for my $stmt (&F ('.//ANY-stmt', $d))
     {

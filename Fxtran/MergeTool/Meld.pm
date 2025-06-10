@@ -10,7 +10,7 @@ sub merge
   my ($base, $local, $remote, $merged) = splice (@_, 0, 4);
   my %opts = @_;
 
-  &Fxtran::Formatter::runCommand (cmd => ['meld', -o => $merged, $base, $local, $remote], debug => 0);
+  $opts{runcommand}->(cmd => ['meld', -o => $merged, $base, $local, $remote], debug => 0);
 }
 
 1;
