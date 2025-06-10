@@ -5,10 +5,9 @@ use Getopt::Long;
 use FileHandle;
 use FindBin qw ($Bin);
 
-use lib "$Bin/fxtran-merge";
+use lib "$Bin/../lib";
 
-use lib '/home/marguina/perl5/lib/perl5';
-use lib '/home/marguina/perl5/lib/perl5/x86_64-linux-gnu-thread-multi';
+use Fxtran::Common;
 
 use fxtran;
 use fxtran::parser;
