@@ -33,18 +33,39 @@ sub ll
 
 sub debugCommand
 {
-  my @cmd = @_;
+  use File::Temp;
+  my %args = @_;
 
-  'FileHandle'->new ('>cmd.sh')->print (<< "EOF");
-#!/bin/bash
+  my @cmd = @{ $args{cmd} };
+  my $file = $args{file} || '';
 
-set -x
+  my $bashrc = 'File::Temp'->new (UNLINK => 1, SUFFIX => '.sh');
 
-exec @cmd
+  $bashrc->print (<< "EOF");
+
+alias r="echo \\"@cmd\\";  @cmd"
+
+alias e="vi $file"
+
+echo "Command \'@cmd\' fails:"
+echo
+@cmd
+echo
+echo "Type r for running command '@cmd'"
+echo
+if [ "x$file" != "x" ]
+then
+echo "Type e for editing '$file'"
+fi
+echo
+
+export PS1='debug> '
 
 EOF
-  chmod (0755, 'cmd.sh');
-  system ('xterm');
+
+  $bashrc->flush ();
+
+  system (qw (xterm -e bash --init-file), $bashrc, '-i');
 }
 
 sub runCommand
@@ -55,12 +76,10 @@ sub runCommand
 
   if (system (@cmd))
     {
-      die unless ($args{debug});
-
-      &debugCommand (@cmd);
+      &debugCommand (%args) if ($args{debug});
 
       system (@cmd)
-        and die;
+        and die ("Command `@cmd' failed");
     }
 }
 

@@ -49,13 +49,20 @@ sub getIndent
   return 0;
 }
 
+sub runcommand
+{
+  my %args = @_;
+  my @cmd = @{ $args{cmd} };
+  system (@cmd) && die ("Command `@cmd' failed");
+}
+
 sub getDocument
 {
   my ($f, %opts) = @_;
 
   my @fopts = qw (-construct-tag -line-length 1000 -no-cpp -no-include);
 
-  $opts{runcommand}->(cmd => ['fxtran', @fopts, $f], debug => 1);
+  ($opts{runcommand} || \&runcommand)->(cmd => ['fxtran', @fopts, $f], debug => 1, file => $f);
 
   return 'XML::LibXML'->load_xml (location => "$f.xml");
 }
