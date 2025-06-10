@@ -187,6 +187,8 @@ sub prepareFileForMerging
   shift;
   my ($f, %opts) = @_;
 
+  return unless ($f =~ m/\.(?:F90|F)$/io);
+
   my $d = &getDocument ($f, %opts);
 
   &simplifyAssociateBlocks ($d)
@@ -210,6 +212,8 @@ sub repackStatementsAfterMerge
 {
   shift;
   my ($f, %opts) = @_;
+
+  return unless ($f =~ m/\.(?:F90|F)$/io);
 
   my $d = &getDocument ($f, %opts);
 

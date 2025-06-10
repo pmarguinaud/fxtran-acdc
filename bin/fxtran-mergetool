@@ -1,5 +1,41 @@
 #!/usr/bin/perl -w
 
+=head1 NAME
+
+fxtran-mergetool
+
+=head1 SYNOPSIS
+
+  $ git mergetool -t fxtran-mergetool
+
+=head1 DESCRIPTION
+
+Wrap kdiff3, meld or vimdiff. Expand the following FORTRAN statetemnts before calling merge utilities:
+
+- call
+- associate
+- subroutine
+
+Repack after merging.
+
+=head1 CONFIGURATION
+
+Add this in your ~/.gitconfig :
+
+  [mergetool "fxtran-mergetool"]
+          cmd = fxtran-mergetool --mergetool kdiff3 "$BASE" "$LOCAL" "$REMOTE" "$MERGED"
+          trustExitCode = true
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 SEE ALSO
+
+fxtran
+
+=cut
+
 use Data::Dumper;
 use Getopt::Long;
 use FileHandle;
@@ -88,8 +124,18 @@ FAILED:
   die ("Command `@cmd' failed");
 }
 
-my %opts = qw (mergetool kdiff3 simplify-associate-blocks 1);
-my @opts_f = qw (simplify-associate-blocks);
+sub which
+{
+  my $prog = shift;
+  for my $path (split (m/:/o, $ENV{PATH}))
+    {
+      my $p = "$path/$prog";
+      return $p if ((-f $p) && (-x $p));
+    }
+}
+
+my %opts = qw (simplify-associate-blocks 1);
+my @opts_f = qw (simplify-associate-blocks help);
 my @opts_s = qw (mergetool);
 
 &GetOptions
@@ -97,6 +143,21 @@ my @opts_s = qw (mergetool);
   (map { ("$_!", \$opts{$_}) } @opts_f),
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
+
+if ($opts{help} || (scalar (@ARGV) != 4))
+  {
+    exec ('perldoc', $0);
+  }
+
+unless ($opts{mergetool})
+  {
+    for my $prog (qw (kdiff3 meld vimdiff))
+      {
+        next unless (&which ($prog));
+        $opts{mergetool} = $prog;
+        last;
+      }
+  }
 
 $opts{log} = \&ll;
 $opts{runcommand} = \&runCommand;
