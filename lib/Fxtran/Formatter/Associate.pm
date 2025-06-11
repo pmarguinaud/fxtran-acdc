@@ -2,6 +2,8 @@ package Fxtran::Formatter::Associate;
 
 use base qw (Fxtran::Formatter::block);
 
+use Data::Dumper;
+
 use strict;
 
 use fxtran;
@@ -41,6 +43,9 @@ sub repack
   my $class = shift;
   my ($stmt, $indent) = @_;
   my @associate = &F ('./associate-LT/associate', $stmt, 1);
+
+  @associate = sort (@associate);
+
   $class->repackCallLikeStatement ("ASSOCIATE (", @associate, ")", $indent);
 }
 

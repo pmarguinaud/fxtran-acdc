@@ -213,17 +213,36 @@ sub repackStatementsAfterMerge
   my $class = shift;
   my ($f, %opts) = @_;
 
-  $class->formatStatements ($f);
+  return unless ($f =~ m/\.(?:F90|F)$/io);
+
+  my $d = &getDocument ($f, %opts);
+
+  $class->repackStatements ($f);
+
+  'FileHandle'->new (">$f")->print ($d->textContent);
 }
 
 sub formatStatements
 {
-  shift;
+  my $class = shift;
   my ($f, %opts) = @_;
 
   return unless ($f =~ m/\.(?:F90|F)$/io);
 
   my $d = &getDocument ($f, %opts);
+
+  &simplifyAssociateBlocks ($d)
+    if ($opts{'simplify-associate-blocks'});
+
+  $class->repackStatements ($d, %opts);
+
+  'FileHandle'->new (">$f")->print ($d->textContent);
+}
+
+sub repackStatements
+{
+  shift;
+  my ($d, %opts) = @_;
 
   for my $stmt (&F ('.//ANY-stmt', $d))
     {
@@ -237,7 +256,6 @@ sub formatStatements
       $stmt->replaceNode ($repackStmt);
     }
 
-  'FileHandle'->new (">$f")->print ($d->textContent);
 }
 
 sub repackCallLikeStatement
