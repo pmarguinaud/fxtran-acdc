@@ -1,0 +1,36 @@
+#!/usr/bin/perl -w
+
+use Data::Dumper;
+use Getopt::Long;
+use FileHandle;
+use FindBin qw ($Bin);
+
+use lib "$Bin/../lib";
+
+use Fxtran::Common;
+
+use fxtran;
+use fxtran::parser;
+use fxtran::xpath;
+
+use strict;
+
+use Fxtran::Formatter;
+
+my %opts = qw (simplify-associate-blocks 1);
+my @opts_f = qw (simplify-associate-blocks);
+my @opts_s = qw (mergetool);
+
+&GetOptions
+(
+  (map { ("$_!", \$opts{$_}) } @opts_f),
+  (map { ("$_=s", \$opts{$_}) } @opts_s),
+);
+
+for my $f (@ARGV)
+  {
+    'Fxtran::Formatter'->formatStatements ($f, %opts);
+  }
+
+exit (0);
+

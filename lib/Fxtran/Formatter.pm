@@ -210,6 +210,14 @@ sub prepareFileForMerging
 
 sub repackStatementsAfterMerge
 {
+  my $class = shift;
+  my ($f, %opts) = @_;
+
+  $class->formatStatements ($f);
+}
+
+sub formatStatements
+{
   shift;
   my ($f, %opts) = @_;
 
