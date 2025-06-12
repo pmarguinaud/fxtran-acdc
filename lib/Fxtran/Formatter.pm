@@ -217,7 +217,7 @@ sub repackStatementsAfterMerge
 
   my $d = &getDocument ($f, %opts);
 
-  $class->repackStatements ($f);
+  $class->repackStatements ($d);
 
   'FileHandle'->new (">$f")->print ($d->textContent);
 }
