@@ -337,6 +337,7 @@ sub pointerparallel
   skip-types=s                    -- Skip these derived types
   sorted                          -- Sort files (with number prefix) in compilation order
   numbered-submodules             -- Do not generate submodules with full names, use numbers instead
+  method-prefix=s                 -- Prefix for method names                                                         -- ACDC_
 EOF
 sub methods
 {

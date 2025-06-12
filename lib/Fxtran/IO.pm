@@ -20,13 +20,27 @@ sub callSubroutineMethod
 {
   my ($opts, $object, $methodName, $methodNameLong, $isFieldAPI, @args) = @_;
 
-  if ($opts->{'type-bound-methods'} && (! $isFieldAPI))
+  if ($isFieldAPI)
     {
-      return "CALL $object%$methodName (" . join (', ', @args) . ")";
+      if ($methodName =~ m/^(?:LOAD|SAVE)$/io)
+        {
+          return "CALL $methodNameLong (" . join (', ', @args, $object) . ")";
+        }
+      else
+        {
+          return "CALL $methodNameLong (" . join (', ', $object, @args) . ")";
+        }
     }
   else
     {
-      return "CALL $methodNameLong (" . join (', ', $object, @args) . ")";
+      if ($opts->{'type-bound-methods'})
+        {
+          return "CALL $object%$opts->{'method-prefix'}$methodName (" . join (', ', @args) . ")";
+        }
+      else
+        {
+          return "CALL $opts->{'method-prefix'}$methodNameLong (" . join (', ', $object, @args) . ")";
+        }
     }
 }
 
@@ -34,13 +48,20 @@ sub callFunctionMethod
 {
   my ($opts, $object, $methodName, $methodNameLong, $isFieldAPI, @args) = @_;
 
-  if ($opts->{'type-bound-methods'} && (! $isFieldAPI))
+  if ($isFieldAPI)
     {
-      return "$object%$methodName (" . join (', ', @args) . ")";
+      return "$methodNameLong (" . join (', ', @args, $object) . ")";
     }
   else
     {
-      return "$methodNameLong (" . join (', ', $object, @args) . ")";
+      if ($opts->{'type-bound-methods'})
+        {
+          return "$object%$opts->{'method-prefix'}$methodName (" . join (', ', @args) . ")";
+        }
+      else
+        {
+          return "$opts->{'method-prefix'}$methodNameLong (" . join (', ', $object, @args) . ")";
+        }
     }
 }
 
@@ -406,14 +427,14 @@ sub processTypes1
       my $GENERIC_SIZE   = '';
   
   
-      $GENERIC_SAVE   .= "MODULE PROCEDURE SAVE_$name\n";
-      $GENERIC_LOAD   .= "MODULE PROCEDURE LOAD_$name\n";
-      $GENERIC_COPY   .= "MODULE PROCEDURE COPY_$name\n";
-      $GENERIC_HOST   .= "MODULE PROCEDURE HOST_$name\n";
-      $GENERIC_LEGACY .= "MODULE PROCEDURE LEGACY_$name\n";
-      $GENERIC_CRC64  .= "MODULE PROCEDURE CRC64_$name\n";
-      $GENERIC_WIPE   .= "MODULE PROCEDURE WIPE_$name\n";
-      $GENERIC_SIZE   .= "MODULE PROCEDURE SIZE_$name\n";
+      $GENERIC_SAVE   .= "MODULE PROCEDURE $opts->{'method-prefix'}SAVE_$name\n";
+      $GENERIC_LOAD   .= "MODULE PROCEDURE $opts->{'method-prefix'}LOAD_$name\n";
+      $GENERIC_COPY   .= "MODULE PROCEDURE $opts->{'method-prefix'}COPY_$name\n";
+      $GENERIC_HOST   .= "MODULE PROCEDURE $opts->{'method-prefix'}HOST_$name\n";
+      $GENERIC_LEGACY .= "MODULE PROCEDURE $opts->{'method-prefix'}LEGACY_$name\n";
+      $GENERIC_CRC64  .= "MODULE PROCEDURE $opts->{'method-prefix'}CRC64_$name\n";
+      $GENERIC_WIPE   .= "MODULE PROCEDURE $opts->{'method-prefix'}WIPE_$name\n";
+      $GENERIC_SIZE   .= "MODULE PROCEDURE $opts->{'method-prefix'}SIZE_$name\n";
   
       my (@BODY_SAVE, @BODY_LOAD, @BODY_COPY, @BODY_WIPE, @BODY_SIZE, @BODY_HOST, @BODY_LEGACY, @BODY_CRC64);
 
@@ -606,7 +627,7 @@ sub processTypes1
       $type = 'CLASS' if ($opts->{'type-bound-methods'});
 
       my $HEAD_SAVE = << "EOF";
-SUBROUTINE SAVE_$name (SELF, KLUN)
+SUBROUTINE $opts->{'method-prefix'}SAVE_$name (SELF, KLUN)
 $USE_SAVE
 IMPLICIT NONE
 $type ($name), INTENT (IN), TARGET :: SELF
@@ -614,7 +635,7 @@ INTEGER, INTENT (IN) :: KLUN
 EOF
 
       my $HEAD_LOAD = << "EOF";
-SUBROUTINE LOAD_$name (SELF, KLUN)
+SUBROUTINE $opts->{'method-prefix'}LOAD_$name (SELF, KLUN)
 $USE_LOAD
 IMPLICIT NONE
 $type ($name), INTENT (OUT), TARGET :: SELF
@@ -622,14 +643,14 @@ INTEGER, INTENT (IN) :: KLUN
 EOF
 
       my $HEAD_HOST = << "EOF";
-SUBROUTINE HOST_$name (SELF)
+SUBROUTINE $opts->{'method-prefix'}HOST_$name (SELF)
 $USE_HOST
 IMPLICIT NONE
 $type ($name), TARGET :: SELF
 EOF
 
       my $HEAD_LEGACY = << "EOF";
-SUBROUTINE LEGACY_$name (SELF, KADDRL, KADDRU, KDIR)
+SUBROUTINE $opts->{'method-prefix'}LEGACY_$name (SELF, KADDRL, KADDRU, KDIR)
 $USE_LEGACY
 IMPLICIT NONE
 $type ($name), TARGET :: SELF
@@ -639,7 +660,7 @@ INTEGER, INTENT (IN) :: KDIR
 EOF
 
       my $HEAD_CRC64 = << "EOF";
-SUBROUTINE CRC64_$name (SELF, KLUN, CDPATH)
+SUBROUTINE $opts->{'method-prefix'}CRC64_$name (SELF, KLUN, CDPATH)
 $USE_CRC64
 IMPLICIT NONE
 $type ($name), TARGET :: SELF
@@ -648,7 +669,7 @@ CHARACTER(LEN=*), INTENT (IN) :: CDPATH
 EOF
 
       my $HEAD_COPY = << "EOF";
-SUBROUTINE COPY_$name (SELF, LDCREATED, LDFIELDAPI)
+SUBROUTINE $opts->{'method-prefix'}COPY_$name (SELF, LDCREATED, LDFIELDAPI)
 $USE_COPY
 IMPLICIT NONE
 $type ($name), INTENT (IN), TARGET :: SELF
@@ -656,7 +677,7 @@ LOGICAL, OPTIONAL, INTENT (IN) :: LDCREATED, LDFIELDAPI
 EOF
 
       my $HEAD_WIPE = << "EOF";
-SUBROUTINE WIPE_$name (SELF, LDDELETED, LDFIELDAPI)
+SUBROUTINE $opts->{'method-prefix'}WIPE_$name (SELF, LDDELETED, LDFIELDAPI)
 $USE_WIPE
 IMPLICIT NONE
 $type ($name), INTENT (IN), TARGET :: SELF
@@ -664,7 +685,7 @@ LOGICAL, OPTIONAL, INTENT (IN) :: LDDELETED, LDFIELDAPI
 EOF
 
       my $HEAD_SIZE = << "EOF";
-FUNCTION SIZE_$name (SELF, CDPATH, LDPRINT) RESULT (KSIZE)
+FUNCTION $opts->{'method-prefix'}SIZE_$name (SELF, CDPATH, LDPRINT) RESULT (KSIZE)
 $USE_SIZE
 IMPLICIT NONE
 $type ($name),     INTENT (IN), TARGET :: SELF
@@ -719,14 +740,14 @@ EOF
       $IMPL_WIPE        = '' unless ($opts->{wipe});
       $IMPL_SIZE        = '' unless ($opts->{size});
 
-      $GENERIC_SAVE        = "INTERFACE SAVE\n$GENERIC_SAVE\nEND INTERFACE\n";
-      $GENERIC_LOAD        = "INTERFACE LOAD\n$GENERIC_LOAD\nEND INTERFACE\n";
-      $GENERIC_COPY        = "INTERFACE COPY\n$GENERIC_COPY\nEND INTERFACE\n";
-      $GENERIC_HOST        = "INTERFACE HOST\n$GENERIC_HOST\nEND INTERFACE\n";
-      $GENERIC_LEGACY      = "INTERFACE LEGACY\n$GENERIC_LEGACY\nEND INTERFACE\n";
-      $GENERIC_CRC64       = "INTERFACE CRC64\n$GENERIC_CRC64\nEND INTERFACE\n";
-      $GENERIC_WIPE        = "INTERFACE WIPE\n$GENERIC_WIPE\nEND INTERFACE\n";
-      $GENERIC_SIZE        = "INTERFACE SIZE\n$GENERIC_SIZE\nEND INTERFACE\n";
+      $GENERIC_SAVE        = "INTERFACE $opts->{'method-prefix'}SAVE\n$GENERIC_SAVE\nEND INTERFACE\n";
+      $GENERIC_LOAD        = "INTERFACE $opts->{'method-prefix'}LOAD\n$GENERIC_LOAD\nEND INTERFACE\n";
+      $GENERIC_COPY        = "INTERFACE $opts->{'method-prefix'}COPY\n$GENERIC_COPY\nEND INTERFACE\n";
+      $GENERIC_HOST        = "INTERFACE $opts->{'method-prefix'}HOST\n$GENERIC_HOST\nEND INTERFACE\n";
+      $GENERIC_LEGACY      = "INTERFACE $opts->{'method-prefix'}LEGACY\n$GENERIC_LEGACY\nEND INTERFACE\n";
+      $GENERIC_CRC64       = "INTERFACE $opts->{'method-prefix'}CRC64\n$GENERIC_CRC64\nEND INTERFACE\n";
+      $GENERIC_WIPE        = "INTERFACE $opts->{'method-prefix'}WIPE\n$GENERIC_WIPE\nEND INTERFACE\n";
+      $GENERIC_SIZE        = "INTERFACE $opts->{'method-prefix'}SIZE\n$GENERIC_SIZE\nEND INTERFACE\n";
 
       if ($abstract || $opts->{'type-bound-methods'})
         {
@@ -854,6 +875,9 @@ sub processTypes
               my $sub = $opts->{'numbered-submodules'}
                        ? $mod . '_' . $count . '_smod'
                        : $mod . '_' . $type->{name} . '_' . $methodName . '_smod'; 
+
+
+              $methodName = $opts->{'method-prefix'} . $methodName;
 
               my $SUB = uc ($sub);
 
