@@ -157,6 +157,8 @@ sub singlecolumn
 
   &Fxtran::Util::loadModule ('Fxtran::SingleColumn');
 
+  my @fopts;
+
   my ($F90) = @args;
 
   $opts->{dir} = 'File::Spec'->rel2abs ($opts->{dir});
@@ -184,7 +186,7 @@ sub singlecolumn
   
   &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
   
-  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag -no-include -no-cpp -line-length 5000)], dir => $opts->{tmp});
+  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -canonic), @fopts], dir => $opts->{tmp});
   
   &Fxtran::Canonic::makeCanonic ($d, %$opts);
 
@@ -252,6 +254,8 @@ sub pointerparallel
   &Fxtran::Util::loadModule ('Fxtran::Pointer::Parallel');
   &Fxtran::Util::loadModule ('Fxtran::IO::Link');
 
+  my @fopts = qw (-directive ACDC);
+
   my ($F90) = @args;
 
   $opts->{dir} = 'File::Spec'->rel2abs ($opts->{dir});
@@ -279,7 +283,7 @@ sub pointerparallel
   
   &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
   
-  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -directive ACDC -canonic)], dir => $opts->{tmp});
+  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -canonic), @fopts], dir => $opts->{tmp});
   
   &Fxtran::Canonic::makeCanonic ($d, %$opts);
   
@@ -324,6 +328,169 @@ sub pointerparallel
     }
 }
 
+
+&click (<< "EOF");
+@options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 style 
+             suffix-singlecolumn suffix-singleblock version checker)}
+  drhooktonvtx                    -- Change DrHook calls into NVTX calls
+  inlined=s@                      -- List of routines to inline
+  openmptoparallel                -- Transform OpenMP parallel sections into ACDC parallel sections
+EOF
+sub singleblock
+{
+  my ($opts, @args) = @_;
+
+  &Fxtran::Util::loadModule ('Fxtran::SingleBlock');
+
+  my @fopts = qw (-directive ACDC); 
+  push @fopts, '-openmp' if ($opts->{openmptoparallel});
+
+  my ($F90) = @args;
+
+  $opts->{dir} = 'File::Spec'->rel2abs ($opts->{dir});
+  
+  if ($opts->{dir} ne 'File::Spec'->rel2abs (&dirname ($F90)))
+    {
+      &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
+    }
+
+  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{'suffix-singleblock'}) . '.F90'}eo;
+  
+  $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
+  
+  if ($opts->{'only-if-newer'})
+    {
+      my $st = stat ($F90);
+      my $stout = stat ($F90out);
+      if ($st && $stout)
+        {
+          return unless ($st->mtime > $stout->mtime);
+        }
+    }
+  
+  my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
+  
+  &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
+  
+  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -canonic), @fopts], dir => $opts->{tmp});
+  
+  &Fxtran::Canonic::makeCanonic ($d, %$opts);
+  
+  $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
+
+  $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
+
+  if ($opts->{openmptoparallel})
+    {
+      &Fxtran::SingleBlock::openmpToACDC ($d, %$opts);
+    }
+  
+  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
+  
+  my @pu = &F ('./object/file/program-unit', $d);
+
+  my $NAME = uc (&basename ($F90out, qw (.F90)));
+  
+  for my $pu (@pu)
+    {
+      &Fxtran::SingleBlock::processSingleRoutine ($pu, $find, %$opts);
+    }
+  
+  @pu = &F ('./object/file/program-unit', $d);
+
+  if ($opts->{'drhooktonvtx'})
+    {
+      for my $pu (@pu)
+        {
+          &Fxtran::NVTX::drHookToNVTX ($pu);
+        }
+    }
+  
+  &Fxtran::Util::addVersion ($d)
+    if ($opts->{version});
+  
+  &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
+
+
+}
+
+&click (<< "EOF");
+@options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 style 
+             suffix-singlecolumn suffix-manyblocks version checker)}
+  drhooktonvtx                    -- Change DrHook calls into NVTX calls
+  inlined=s@                      -- List of routines to inline
+EOF
+sub manyblocks
+{
+  my ($opts, @args) = @_;
+
+  &Fxtran::Util::loadModule ('Fxtran::ManyBlocks');
+
+  my @fopts = qw (-directive ACDC);
+
+  my ($F90) = @args;
+
+  $opts->{dir} = 'File::Spec'->rel2abs ($opts->{dir});
+  
+  if ($opts->{dir} ne 'File::Spec'->rel2abs (&dirname ($F90)))
+    {
+      &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
+    }
+
+  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{'suffix-manyblocks'}) . '.F90'}eo;
+  
+  $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
+  
+  if ($opts->{'only-if-newer'})
+    {
+      my $st = stat ($F90);
+      my $stout = stat ($F90out);
+      if ($st && $stout)
+        {
+          return unless ($st->mtime > $stout->mtime);
+        }
+    }
+  
+  my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
+  
+  &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
+  
+  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -canonic), @fopts], dir => $opts->{tmp});
+  
+  &Fxtran::Canonic::makeCanonic ($d, %$opts);
+  
+  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
+  
+  $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
+
+  $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
+
+  my @pu = &F ('./object/file/program-unit', $d);
+
+  my $NAME = uc (&basename ($F90out, qw (.F90)));
+  
+  for my $pu (@pu)
+    {
+      &Fxtran::ManyBlocks::processSingleRoutine ($pu, $find, %$opts);
+    }
+  
+  @pu = &F ('./object/file/program-unit', $d);
+
+  if ($opts->{'drhooktonvtx'})
+    {
+      for my $pu (@pu)
+        {
+          &Fxtran::NVTX::drHookToNVTX ($pu);
+        }
+    }
+  
+  &Fxtran::Util::addVersion ($d)
+    if ($opts->{version});
+
+  &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
+
+
+}
 
 &click (<< "EOF");
 @options{qw (dir pragma tmp type-bound-methods types-constant-dir types-fieldapi-dir checker)}
@@ -460,16 +627,16 @@ sub methods
   $parseSkipOnly->($opts, 'skip-components', 'only-components');
   $parseSkipOnly->($opts, 'skip-types', 'only-types');
   
-  my $doc = &Fxtran::parse (location => $F90, fopts => [qw (-construct-tag -no-include -line-length 800)], dir => $opts->{tmp});
+  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -construct-tag -no-include)], dir => $opts->{tmp});
   
   if ($opts->{load} || $opts->{save} || $opts->{size} || $opts->{copy} || $opts->{host} || $opts->{crc64} || $opts->{legacy})
     {
-      &Fxtran::IO::processTypes ($doc, $opts);
+      &Fxtran::IO::processTypes ($d, $opts);
     }
   
   if ($opts->{'field-api'})
     {
-      &Fxtran::FieldAPI::Register::registerFieldAPI ($doc, $opts);
+      &Fxtran::FieldAPI::Register::registerFieldAPI ($d, $opts);
     }
 }
 
@@ -485,17 +652,17 @@ sub interface
   my $ext = '.intfb.h';
 
   my @D = @{ $opts->{D} };
-  my $doc = &Fxtran::parse (location => $F90, fopts => [@D, '-construct-tag', '-no-include', '-line-length' => 500], dir => $opts->{tmp});
+  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -construct-tag -no-include), @D], dir => $opts->{tmp});
 
-  my @text = split (m/\n/o, $doc->textContent);
+  my @text = split (m/\n/o, $d->textContent);
   
-  &Fxtran::Interface::intfbBody ($doc);
+  &Fxtran::Interface::intfbBody ($d);
 
   my %intfb;
   
   # Strip empty lines
   
-  $intfb{regular} = $doc->textContent ();
+  $intfb{regular} = $d->textContent ();
   $intfb{regular} =~ s/^\s*\n$//goms;
 
   &Fxtran::Util::loadModule ('Fxtran::Generate::Interface');
@@ -504,7 +671,7 @@ sub interface
 
   for my $method (@method)
     {
-      &Fxtran::Generate::Interface::interface ($doc, \@text, $opts, \%intfb, $method);
+      &Fxtran::Generate::Interface::interface ($d, \@text, $opts, \%intfb, $method);
     }
 
   my $sub = &basename ($F90, qw (.F90));
@@ -514,167 +681,6 @@ sub interface
     "$opts->{dir}/$sub$ext", 
     join ("\n", 'INTERFACE', map ({ $intfb{$_} } ('regular', @method)), 'END INTERFACE', '')
   );
-
-}
-
-&click (<< "EOF");
-@options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 style 
-             suffix-singlecolumn suffix-singleblock version checker)}
-  drhooktonvtx                    -- Change DrHook calls into NVTX calls
-  inlined=s@                      -- List of routines to inline
-  openmptoparallel                -- Transform OpenMP parallel sections into ACDC parallel sections
-EOF
-sub singleblock
-{
-  my ($opts, @args) = @_;
-
-  &Fxtran::Util::loadModule ('Fxtran::SingleBlock');
-
-  my ($F90) = @args;
-
-  $opts->{dir} = 'File::Spec'->rel2abs ($opts->{dir});
-  
-  if ($opts->{dir} ne 'File::Spec'->rel2abs (&dirname ($F90)))
-    {
-      &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
-    }
-
-  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{'suffix-singleblock'}) . '.F90'}eo;
-  
-  $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
-  
-  if ($opts->{'only-if-newer'})
-    {
-      my $st = stat ($F90);
-      my $stout = stat ($F90out);
-      if ($st && $stout)
-        {
-          return unless ($st->mtime > $stout->mtime);
-        }
-    }
-  
-  my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
-  
-  &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
-  
-  my @openmp = qw (-directive ACDC); 
-  push @openmp, '-openmp' if ($opts->{openmptoparallel});
-
-  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -canonic), @openmp], dir => $opts->{tmp});
-  
-  &Fxtran::Canonic::makeCanonic ($d, %$opts);
-  
-  $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
-
-  $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
-
-  if ($opts->{openmptoparallel})
-    {
-      &Fxtran::SingleBlock::openmpToACDC ($d, %$opts);
-    }
-  
-  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
-  
-  my @pu = &F ('./object/file/program-unit', $d);
-
-  my $NAME = uc (&basename ($F90out, qw (.F90)));
-  
-  for my $pu (@pu)
-    {
-      &Fxtran::SingleBlock::processSingleRoutine ($pu, $find, %$opts);
-    }
-  
-  @pu = &F ('./object/file/program-unit', $d);
-
-  if ($opts->{'drhooktonvtx'})
-    {
-      for my $pu (@pu)
-        {
-          &Fxtran::NVTX::drHookToNVTX ($pu);
-        }
-    }
-  
-  &Fxtran::Util::addVersion ($d)
-    if ($opts->{version});
-  
-  &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
-
-
-}
-
-&click (<< "EOF");
-@options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 style 
-             suffix-singlecolumn suffix-manyblocks version checker)}
-  drhooktonvtx                    -- Change DrHook calls into NVTX calls
-  inlined=s@                      -- List of routines to inline
-EOF
-sub manyblocks
-{
-  my ($opts, @args) = @_;
-
-  &Fxtran::Util::loadModule ('Fxtran::ManyBlocks');
-
-  my ($F90) = @args;
-
-  $opts->{dir} = 'File::Spec'->rel2abs ($opts->{dir});
-  
-  if ($opts->{dir} ne 'File::Spec'->rel2abs (&dirname ($F90)))
-    {
-      &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
-    }
-
-  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{'suffix-manyblocks'}) . '.F90'}eo;
-  
-  $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
-  
-  if ($opts->{'only-if-newer'})
-    {
-      my $st = stat ($F90);
-      my $stout = stat ($F90out);
-      if ($st && $stout)
-        {
-          return unless ($st->mtime > $stout->mtime);
-        }
-    }
-  
-  my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
-  
-  &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
-  
-  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -directive ACDC -canonic)], dir => $opts->{tmp});
-  
-  &Fxtran::Canonic::makeCanonic ($d, %$opts);
-  
-  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
-  
-  $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
-
-  $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
-
-  my @pu = &F ('./object/file/program-unit', $d);
-
-  my $NAME = uc (&basename ($F90out, qw (.F90)));
-  
-  for my $pu (@pu)
-    {
-      &Fxtran::ManyBlocks::processSingleRoutine ($pu, $find, %$opts);
-    }
-  
-  @pu = &F ('./object/file/program-unit', $d);
-
-  if ($opts->{'drhooktonvtx'})
-    {
-      for my $pu (@pu)
-        {
-          &Fxtran::NVTX::drHookToNVTX ($pu);
-        }
-    }
-  
-  &Fxtran::Util::addVersion ($d)
-    if ($opts->{version});
-
-  &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
-
 
 }
 
