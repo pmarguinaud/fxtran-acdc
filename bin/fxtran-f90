@@ -30,41 +30,43 @@ sub runACDCMethod
 {
   my %args = @_;
 
-  my ($opts, $ACDC, $obj, $F90) = @args{qw (opts ACDC obj F90)};
+  my ($opts, $obj, $F90) = @args{qw (opts obj F90)};
 
   my @f90flags = @{ $args{f90flags} };
 
   my @I = grep { m/^-I/o } @f90flags;
 
-  $ACDC =~ s/^(\w+)\s*//o;
-  my $method = $1;
 
-  $method = $opts->{method} if ($opts->{method});
-
-  my $hopts = 'click'->getOptionList (package => $opts->{package}, method => $method);
-
-  my ($ok, @optsfile);
-
-  for my $opt (map { m/^(--[\w-]+)=(.*)$/o ? ($1, $2) : ($_) } split (m/\s+/o, $ACDC))
+  for my $ACDC (@{ $args{ACDC} })
     {
-      if ($opt =~ m/^--([\w-]+)$/o)
+      $ACDC =~ s/^(\w+)\s*//o;
+      my $method = $1;
+     
+      my $hopts = 'click'->getOptionList (package => $opts->{package}, method => $method);
+     
+      my ($ok, @optsfile);
+     
+      for my $opt (map { m/^(--[\w-]+)=(.*)$/o ? ($1, $2) : ($_) } split (m/\s+/o, $ACDC))
         {
-          my $k = $1;
-          $ok = exists ($hopts->{"$k=s"}) 
-             || exists ($hopts->{"$k!"}) 
-             || (($k =~ s/^no//o) && exists ($hopts->{"$k!"})) 
-             || 0;
+          if ($opt =~ m/^--([\w-]+)$/o)
+            {
+              my $k = $1;
+              $ok = exists ($hopts->{"$k=s"}) 
+                 || exists ($hopts->{"$k!"}) 
+                 || (($k =~ s/^no//o) && exists ($hopts->{"$k!"})) 
+                 || 0;
+            }
+          push @optsfile, $opt if ($ok);
         }
-      push @optsfile, $opt if ($ok);
+     
+      my $tmp =  'File::Temp'->newdir (CLEANUP => ! $opts->{debug});
+     
+      my @cmd = ("fxtran-gen1", $opts->{package}, $method, 
+                 'click'->hashToCommandLine (package => $opts->{package}, method => $method, opts => $opts),
+                 '--tmp' => "$tmp", @optsfile, @I, $F90);
+     
+      &Fxtran::Util::runCommand (cmd => \@cmd, %$opts);
     }
-
-  my $tmp =  'File::Temp'->newdir (CLEANUP => ! $opts->{debug});
-
-  my @cmd = ("fxtran-gen1", $opts->{package}, $method, 
-             'click'->hashToCommandLine (package => $opts->{package}, method => $method, opts => $opts),
-             '--tmp' => "$tmp", @optsfile, @I, $F90);
-
-  &Fxtran::Util::runCommand (cmd => \@cmd, %$opts);
 
   &Fxtran::F90Compiler::compile (%args);
 }
@@ -229,17 +231,20 @@ FILE: for my $F90 (@F90)
 
     my @text = do { my $fh = 'FileHandle'->new ("<$F90"); <$fh> };
 
-    my ($ACDC) = map { m/^\!\$ACDC (\S.*)$/o ? ($1) : () } @text;
- 
-    unless ($ACDC)
+    my @ACDC;
+
+    if ($opts{method})
       {
-        $ACDC = $opts{method};
+        @ACDC = ($opts{method});
+      }
+    else
+      {
+        @ACDC = grep { (! m/\{\s*$/o) && (! m/\}\s*$/o) && (! m/\&\s*$/o) }
+                map { m/^\!\$ACDC (\S.*)$/o ? ($1) : () } @text;
       }
 
-    if ($ACDC)
+    if (@ACDC)
       {
-        goto NORMAL if ($ACDC =~ m/\{\s*$/o);
-
         &runACDCMethod
         (
           f90compiler => $f90compiler, 
@@ -248,11 +253,10 @@ FILE: for my $F90 (@F90)
           F90 => $F90, 
           opts => \%opts,
           cwd => $cwd, 
-          ACDC => $ACDC,
+          ACDC => \@ACDC,
         );
 
         next FILE;
-
       }
 
 NORMAL:

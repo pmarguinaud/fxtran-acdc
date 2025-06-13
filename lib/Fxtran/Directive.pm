@@ -37,7 +37,7 @@ sub parseDirectives
   while (my $C  = shift (@C))
     {
       my $bdir = $C->textContent;
-      if ($bdir =~ m/^(?:pointerparallel|openacc|methods)/io)
+      if ($bdir =~ m/^(?:pointerparallel|singlecolumn|methods|singleblock)/io)
         {
           $C->unbindNode ();
           next;
