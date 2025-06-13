@@ -316,12 +316,9 @@ sub singleblock
 
   &Fxtran::Util::loadModule ('Fxtran::SingleBlock');
 
-  my @fopts = qw (-directive ACDC); 
-  push @fopts, '-openmp' if ($opts->{openmptoparallel});
-
   my ($F90) = @args;
 
-  my ($d, $F90out) = &routineToRoutineHead ($F90, 'singleblock', $opts, @fopts);
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'singleblock', $opts, qw (-directive ACDC), $opts->{openmptoparallel} ? ('-openmp') : ());
 
   if ($opts->{openmptoparallel})
     {
