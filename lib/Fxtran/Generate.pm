@@ -179,6 +179,16 @@ sub routineToRoutineHead
   return ($d, $F90out);
 }
 
+sub routineToRoutineTail
+{
+  my ($F90out, $d, $opts) = @_;
+
+  &Fxtran::Util::addVersion ($d)
+    if ($opts->{version});
+  
+  &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
+}
+
 &click (<< "EOF");
 @options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 style redim-arguments set-variables 
              suffix-singlecolumn tmp value-attribute version inline-contained checker)}
@@ -226,10 +236,7 @@ sub singlecolumn
         }
     }
   
-  &Fxtran::Util::addVersion ($d)
-    if ($opts->{version});
-  
-  &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
+  &routineToRoutineTail ($F90out, $d, $opts);
 
   if ($opts->{'create-interface'} && $singleRoutine)
     {
@@ -288,13 +295,9 @@ sub pointerparallel
     {
       &Fxtran::Pointer::Parallel::processSingleRoutine ($pu, $NAME, $types, %$opts);
     }
-  
-  &Fxtran::Util::addVersion ($d)
-    if ($opts->{version});
-  
-  &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
 
-
+  &routineToRoutineTail ($F90out, $d, $opts);
+  
   if ($opts->{'parallelmethod-section'})
     {
       &Fxtran::Util::loadModule ('Fxtran::Generate::ParallelMethod');
@@ -346,12 +349,7 @@ sub singleblock
         }
     }
   
-  &Fxtran::Util::addVersion ($d)
-    if ($opts->{version});
-  
-  &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
-
-
+  &routineToRoutineTail ($F90out, $d, $opts);
 }
 
 &click (<< "EOF");
@@ -391,12 +389,7 @@ sub manyblocks
         }
     }
   
-  &Fxtran::Util::addVersion ($d)
-    if ($opts->{version});
-
-  &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
-
-
+  &routineToRoutineTail ($F90out, $d, $opts);
 }
 
 &click (<< "EOF");
