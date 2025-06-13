@@ -141,7 +141,42 @@ EOF
 
 sub routineToRoutineHead
 {
+  my ($F90, $method, $opts, @fopts) = @_;
 
+  $opts->{dir} = 'File::Spec'->rel2abs ($opts->{dir});
+  
+  if ($opts->{dir} ne 'File::Spec'->rel2abs (&dirname ($F90)))
+    {
+      &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
+    }
+
+  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{"suffix-$method"}) . '.F90'}eo;
+  
+  $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
+  
+  if ($opts->{'only-if-newer'})
+    {
+      my $st = stat ($F90);
+      my $stout = stat ($F90out);
+      if ($st && $stout)
+        {
+          return unless ($st->mtime > $stout->mtime);
+        }
+    }
+  
+  $opts->{find} = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
+  
+  &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
+  
+  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -canonic), @fopts], dir => $opts->{tmp});
+  
+  &Fxtran::Canonic::makeCanonic ($d, %$opts);
+  
+  $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
+
+  $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
+
+  return ($d, $F90out);
 }
 
 &click (<< "EOF");
@@ -162,44 +197,10 @@ sub singlecolumn
 
   &Fxtran::Util::loadModule ('Fxtran::SingleColumn');
 
-  my @fopts;
-  my $method = 'singlecolumn';
-
   my ($F90) = @args;
 
-  $opts->{dir} = 'File::Spec'->rel2abs ($opts->{dir});
-  
-  if ($opts->{dir} ne 'File::Spec'->rel2abs (&dirname ($F90)))
-    {
-      &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
-    }
-  
-  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{"suffix-$method"}) . '.F90'}eo;
-  
-  $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
-  
-  if ($opts->{'only-if-newer'})
-    {
-      my $st = stat ($F90);
-      my $stout = stat ($F90out);
-      if ($st && $stout)
-        {
-          return unless ($st->mtime > $stout->mtime);
-        }
-    }
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'singlecolumn', $opts);
 
-  $opts->{find} = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
-  
-  &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
-  
-  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -canonic), @fopts], dir => $opts->{tmp});
-  
-  &Fxtran::Canonic::makeCanonic ($d, %$opts);
-
-  $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
-
-  $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
-  
   $opts->{style}->preProcessForOpenACC ($d, %$opts);
   
   my @pu = &F ('./object/file/program-unit', $d);
@@ -260,43 +261,9 @@ sub pointerparallel
   &Fxtran::Util::loadModule ('Fxtran::Pointer::Parallel');
   &Fxtran::Util::loadModule ('Fxtran::IO::Link');
 
-  my @fopts = qw (-directive ACDC);
-  my $method = 'pointerparallel';
-
   my ($F90) = @args;
 
-  $opts->{dir} = 'File::Spec'->rel2abs ($opts->{dir});
-  
-  if ($opts->{dir} ne 'File::Spec'->rel2abs (&dirname ($F90)))
-    {
-      &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
-    }
-
-  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{"suffix-$method"}) . '.F90'}eo;
-  
-  $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
-  
-  if ($opts->{'only-if-newer'})
-    {
-      my $st = stat ($F90);
-      my $stout = stat ($F90out);
-      if ($st && $stout)
-        {
-          return unless ($st->mtime > $stout->mtime);
-        }
-    }
-  
-  $opts->{find} = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
-  
-  &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
-  
-  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -canonic), @fopts], dir => $opts->{tmp});
-  
-  &Fxtran::Canonic::makeCanonic ($d, %$opts);
-  
-  $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
-
-  $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'pointerparallel', $opts, qw (-directive ACDC));
 
   &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
   
