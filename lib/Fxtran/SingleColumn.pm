@@ -66,13 +66,15 @@ sub addValueAttribute
 
 sub processSingleModule
 {
-  my ($d, $find, %opts) = @_;
+  my ($d, %opts) = @_;
+
+  my $find = $opts{find};
 
   my @pu = &F ('./program-unit', $d);
 
   for my $pu (@pu)
     {
-      &processSingleRoutine ($pu, $find, %opts);
+      &processSingleRoutine ($pu, %opts);
     }
 
   my ($dp) = &F ('./specification-part/declaration-part', $d);
@@ -83,7 +85,7 @@ sub processSingleModule
      
       for my $pu (@pu)
         {
-          &processSingleInterface ($pu, $find, %opts);
+          &processSingleInterface ($pu, %opts);
         }
     }
 
@@ -92,7 +94,9 @@ sub processSingleModule
 
 sub processSingleInterface
 {
-  my ($d, $find, %opts) = @_;
+  my ($d, %opts) = @_;
+
+  my $find = $opts{find};
 
   my $end = $d->lastChild;
 
@@ -119,7 +123,9 @@ sub processSingleInterface
 
 sub processSingleRoutine
 {
-  my ($pu, $find, %opts) = @_;
+  my ($pu, %opts) = @_;
+
+  my $find = $opts{find};
 
   my @pointer;
 

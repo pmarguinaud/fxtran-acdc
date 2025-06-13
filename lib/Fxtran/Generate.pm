@@ -139,6 +139,11 @@ EOF
   @options
 };
 
+sub routineToRoutineHead
+{
+
+}
+
 &click (<< "EOF");
 @options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 style redim-arguments set-variables 
              suffix-singlecolumn tmp value-attribute version inline-contained checker)}
@@ -183,7 +188,7 @@ sub singlecolumn
         }
     }
 
-  my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
+  $opts->{find} = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
   
   &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
   
@@ -195,7 +200,7 @@ sub singlecolumn
 
   $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
   
-  $opts->{style}->preProcessForOpenACC ($d, %$opts, find => $find);
+  $opts->{style}->preProcessForOpenACC ($d, %$opts);
   
   my @pu = &F ('./object/file/program-unit', $d);
   
@@ -208,11 +213,11 @@ sub singlecolumn
       if ($kind eq 'module')
         {
           $singleRoutine = 0;
-          &Fxtran::SingleColumn::processSingleModule ($pu, $find, %$opts);
+          &Fxtran::SingleColumn::processSingleModule ($pu, %$opts);
         }
       elsif ($kind eq 'subroutine')
         {
-          &Fxtran::SingleColumn::processSingleRoutine ($pu, $find, %$opts);
+          &Fxtran::SingleColumn::processSingleRoutine ($pu, %$opts);
         }
       else
         {
@@ -281,7 +286,7 @@ sub pointerparallel
         }
     }
   
-  my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
+  $opts->{find} = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
   
   &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
   
@@ -314,7 +319,7 @@ sub pointerparallel
   
   for my $pu (@pu)
     {
-      &Fxtran::Pointer::Parallel::processSingleRoutine ($pu, $NAME, $find, $types, %$opts);
+      &Fxtran::Pointer::Parallel::processSingleRoutine ($pu, $NAME, $types, %$opts);
     }
   
   &Fxtran::Util::addVersion ($d)
@@ -371,7 +376,7 @@ sub singleblock
         }
     }
   
-  my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
+  $opts->{find} = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
   
   &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
   
@@ -396,7 +401,7 @@ sub singleblock
   
   for my $pu (@pu)
     {
-      &Fxtran::SingleBlock::processSingleRoutine ($pu, $find, %$opts);
+      &Fxtran::SingleBlock::processSingleRoutine ($pu, %$opts);
     }
   
   @pu = &F ('./object/file/program-unit', $d);
@@ -455,7 +460,7 @@ sub manyblocks
         }
     }
   
-  my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
+  $opts->{find} = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
   
   &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
   
@@ -475,7 +480,7 @@ sub manyblocks
   
   for my $pu (@pu)
     {
-      &Fxtran::ManyBlocks::processSingleRoutine ($pu, $find, %$opts);
+      &Fxtran::ManyBlocks::processSingleRoutine ($pu, %$opts);
     }
   
   @pu = &F ('./object/file/program-unit', $d);

@@ -143,7 +143,9 @@ EOF
 
 sub processSingleRoutine
 {
-  my ($pu, $NAME, $find, $types, %opts) = @_;
+  my ($pu, $NAME, $types, %opts) = @_;
+
+  my $find = $opts{find};
 
   for my $unseen (&F ('.//unseen', $pu))
     {

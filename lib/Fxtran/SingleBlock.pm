@@ -18,7 +18,9 @@ use Fxtran;
 
 sub processSingleRoutine
 {
-  my ($pu, $find, %opts) = @_;
+  my ($pu, %opts) = @_;
+
+  my $find = $opts{find};
 
   for my $in (@{ $opts{inlined} })
     {
