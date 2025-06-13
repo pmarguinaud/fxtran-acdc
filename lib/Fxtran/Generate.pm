@@ -125,6 +125,7 @@ my %options= do
   suffix-singleblock=s      -- Suffix for single block routines                                                                             --  _SINGLEBLOCK
   suffix-manyblocks=s       -- Suffix for many blocks routines                                                                              --  _MANYBLOCKS
   ydcpg_opts                -- Change KIDIA, KFDIA -> YDCPG_OPTS, YDCPG_BNDS
+  checker                   -- Sanity checks, produce a report
 EOF
 
   my @options;
@@ -140,7 +141,7 @@ EOF
 
 &click (<< "EOF");
 @options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 style redim-arguments set-variables 
-             suffix-singlecolumn tmp value-attribute version inline-contained)}
+             suffix-singlecolumn tmp value-attribute version inline-contained checker)}
   keep-drhook               -- Keep DrHook
   dummy                     -- Generate a dummy routine (strip all executable code)
   inlined=s@                -- List of routines to inline
@@ -158,6 +159,8 @@ sub singlecolumn
 
   my ($F90) = @args;
 
+  $opts->{dir} = 'File::Spec'->rel2abs ($opts->{dir});
+  
   if ('File::Spec'->rel2abs ($opts->{dir}) ne 'File::Spec'->rel2abs (&dirname ($F90)))
     {
       &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
@@ -228,7 +231,7 @@ sub singlecolumn
 
 
 &click (<< "EOF");
-@options{qw (cycle dir tmp only-if-newer merge-interfaces pragma stack84 style redim-arguments ydcpg_opts
+@options{qw (cycle dir tmp only-if-newer merge-interfaces pragma stack84 style redim-arguments ydcpg_opts checker
              suffix-singlecolumn suffix-pointerparallel version type-bound-methods types-constant-dir types-fieldapi-dir)}
   base                            -- Base directory for file lookup
   contiguous-pointers             -- Add CONTIGUOUS attribute to pointer accessors
@@ -251,8 +254,6 @@ sub pointerparallel
   &Fxtran::Util::loadModule ('Fxtran::IO::Link');
 
   my ($F90) = @args;
-
-  $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
 
   $opts->{dir} = 'File::Spec'->rel2abs ($opts->{dir});
   
@@ -290,6 +291,8 @@ sub pointerparallel
   
   $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
 
+  $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
+
   if ($opts->{ydcpg_opts})
     {
       &changeKidiaToYDCPG_OPTS ($d, $opts);
@@ -324,7 +327,7 @@ sub pointerparallel
 
 
 &click (<< "EOF");
-@options{qw (dir pragma tmp type-bound-methods types-constant-dir types-fieldapi-dir)}
+@options{qw (dir pragma tmp type-bound-methods types-constant-dir types-fieldapi-dir checker)}
   field-api                       -- Dump Field API information
   field-api-class=s               -- Field API structure category
   methods-list=s@                 -- List of methods (copy, crc64, host, legacy, load, save, size, wipe
@@ -517,7 +520,7 @@ sub interface
 
 &click (<< "EOF");
 @options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 style 
-             suffix-singlecolumn suffix-singleblock version)}
+             suffix-singlecolumn suffix-singleblock version checker)}
   drhooktonvtx                    -- Change DrHook calls into NVTX calls
   inlined=s@                      -- List of routines to inline
   openmptoparallel                -- Transform OpenMP parallel sections into ACDC parallel sections
@@ -601,7 +604,7 @@ sub singleblock
 
 &click (<< "EOF");
 @options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 style 
-             suffix-singlecolumn suffix-manyblocks version)}
+             suffix-singlecolumn suffix-manyblocks version checker)}
   drhooktonvtx                    -- Change DrHook calls into NVTX calls
   inlined=s@                      -- List of routines to inline
 EOF

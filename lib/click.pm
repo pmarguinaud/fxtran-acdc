@@ -119,7 +119,7 @@ sub click
 
   my $code = $h->{$name};
 
-  my (%hopts, @aopts, @copts, @oopts, %desc, %list, %flag);
+  my (%hopts, @aopts, @oopts, %desc, %list, %flag, %hash);
 
   $METHOD{$package}{$name} =
   {
@@ -128,13 +128,13 @@ sub click
     code  => $code,                          # Routine/method to be called
     hopts => \%hopts,                        # Hash with all options & values
     aopts => \@aopts,                        # Hash will all options names & references to values (list of arguments of GetOptions)
-    copts => \@copts,                        # Callback to apply to packed string list arguments (split the string into a reference on a list)
     oopts => \@oopts,                        # Arguments for constructor method
     arg   => \@arg,                          # List of routine scalar arguments, to pass to method/routine
     ctor  => $ctor || 'new',                 # Constructor name
     dtor  => $dtor,                          # Destructor name
     desc  => \%desc,                         # Description (help message)
     list  => \%list,                         # Option is a list
+    hash  => \%hash,                         # Option is a hash
     flag  => \%flag,                         # Option is a flag
   };
 
@@ -152,6 +152,7 @@ sub click
       $hopts{$name} = $default;
       $desc{$name}  = $desc;
       $list{$name}  = $list;
+      $hash{$name}  = $hash;
       $flag{$name}  = ! $val;
 
       if ((! $list) && (! $hash) && ($opt !~ m/=s/o)) # Allow for --nooption
@@ -161,14 +162,6 @@ sub click
 
       push @aopts, $opt, \$hopts{$name};
 
-      if ($list)
-        {
-          push @copts, sub { $hopts{$name} = [split (m/,/o, $hopts{$name} || '')] };
-        }
-      elsif ($hash)
-        {
-          push @copts, sub { $hopts{$name} = {split (m/,|=/o, $hopts{$name} || '')} };
-        }
       push @oopts, $name if ($oo);
     }
 
@@ -375,9 +368,18 @@ sub commandLineToHash
 
   &GetOptions (@opts);
 
-  for (@{ $method->{copts} })
+  my $hopts = $method->{hopts};
+
+  for my $name (sort keys (%{ $hopts }))
     {
-      $_->();
+      if ($method->{list}{$name})
+        {
+          $hopts->{$name} = [split (m/,/o, defined ($hopts->{$name}) ? $hopts->{$name} : '')];
+        }
+      elsif ($method->{hash}{$name})
+        {
+          $hopts->{$name} = {split (m/,|=/o, defined ($hopts->{$name}) ? $hopts->{$name} : '')};
+        }
     }
 
   my %opts = (%{ $method->{hopts} }, I => \@I, D => \@D);

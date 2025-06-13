@@ -16,7 +16,7 @@ use Fxtran::Util;
 
 my $package = 'Fxtran::Generate';
 
-if ($ARGV[0] =~ m/::/o)
+if (@ARGV && ($ARGV[0] =~ m/::/o))
   {
     $package = shift;
   }
