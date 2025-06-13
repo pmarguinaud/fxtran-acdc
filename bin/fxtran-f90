@@ -120,7 +120,7 @@ my %opts = (package => $package, config => $config);
 my $hopts = 'click'->getOptionList (package => $package);
 
 my @opts_f = qw (dryrun debug);
-my @opts_s = qw (package method config user-directory-in user-directory-out);
+my @opts_s = qw (package method config user-directory-in user-directory-out prefix);
 
 &GetOptions
 (
@@ -159,9 +159,17 @@ my $f90compiler = shift (@ARGV);
 
 my $c = grep { $_ eq '-c' } @ARGV;
 
+
+if ($opts{prefix})
+  {
+    unshift (@ARGV, "-I$opts{prefix}/include");
+    push (@ARGV, "-L$opts{prefix}/lib", '-lACDC');
+  }
+
 unless ($c)
   {
-    exec ($f90compiler, @ARGV) unless ($opts{dryrun});
+    exec ($f90compiler, @ARGV) 
+      unless ($opts{dryrun});
     exit (0);
   }
 

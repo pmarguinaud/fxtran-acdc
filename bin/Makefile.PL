@@ -188,11 +188,12 @@ ifeq (\$(BUILD), )
 BUILD=.
 endif
 
-all: exe
+all: boot exe
 
 EOF
 
 $fh->print (join ("\n", map ({ "include $_"  } @{ $opts{include} }), '', ''));
+
 
 my (@obj, @prg);
 

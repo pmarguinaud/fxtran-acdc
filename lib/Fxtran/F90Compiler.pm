@@ -63,8 +63,9 @@ sub make
   my %args = @_;
 
   my $obj = $args{obj};
-  my @F90 = @{ $args{F90} };
-  my @C   = @{ $args{C} };
+  my $lib = $args{lib};
+  my @F90 = @{ $args{F90} || [] };
+  my @C   = @{ $args{C} || [] };
 
   my $f90compiler = $args{f90compiler};
   my $CCompiler = 'gcc';
@@ -98,20 +99,47 @@ sub make
   my $fh = 'FileHandle'->new ('>Makefile');
   
   $fh->print (<< "EOF");
-
 FC=$f90compiler 
 CC=$CCompiler
 FCFLAGS=@f90flags
 CFLAGS=-fPIC
 LD=ld
+AR=ar
 
+EOF
+
+  if ($obj)
+    {
+      $fh->print (<< "EOF");
 $obj: @obj
 	@\$(LD) -r -o $obj @obj
 
+EOF
+
+  $fh->print (<< "EOF");
 clean:
 	\\rm -f $obj @obj *.mod *.smod *.lst
   
 EOF
+    }
+  elsif ($lib)
+    {
+      $fh->print (<< "EOF");
+$lib: @obj
+	@\$(AR) crv $lib @obj
+
+EOF
+
+  $fh->print (<< "EOF");
+clean:
+	\\rm -f $lib @obj *.mod *.smod *.lst
+  
+EOF
+    }
+  else
+    {
+      die ("Either obj or lib must be specified");
+    } 
   
   for my $F90 (@F90)
     {
@@ -220,7 +248,7 @@ sub compile
   my %args = @_;
 
   my @f90flags = @{ $args{f90flags} };
-  my ($obj, $f90compiler) = @args{qw (obj f90compiler)};
+  my ($obj, $lib, $f90compiler) = @args{qw (obj lib f90compiler)};
   my $opts = $args{opts};
 
   return if ($opts->{dryrun});
@@ -232,6 +260,7 @@ sub compile
   (
     f90compiler => $f90compiler, 
     f90flags    => \@f90flags, 
+    lib         => $lib, 
     obj         => $obj, 
     F90         => \@F90, 
     C           => \@C,

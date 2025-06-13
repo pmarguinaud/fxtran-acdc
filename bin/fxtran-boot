@@ -1,0 +1,81 @@
+#!/usr/bin/perl -w
+
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
+use Getopt::Long;
+use FileHandle;
+use Data::Dumper;
+use File::Temp;
+use File::Basename;
+use File::Spec;
+use File::Copy;
+use File::Path;
+use Cwd;
+
+use FindBin qw ($Bin);
+use lib "$Bin/../lib";
+
+use strict;
+
+use Fxtran::Common;
+use Fxtran::Bt;
+use Fxtran::F90Compiler;
+use Fxtran::Util;
+use Fxtran::PATH;
+
+my %opts = qw (prefix .);
+my @opts_s = qw (prefix);
+my @opts_f = qw (help);
+
+&GetOptions
+(
+  (map { ($_, \$opts{$_}) } @opts_f),
+  (map { ("$_=s", \$opts{$_}) } @opts_s),
+);
+
+if ($opts{help})
+  {
+    print
+     "Usage: " . &basename ($0) . "\n" .
+      join ('', map { "  --$_\n" } @opts_f) .
+      join ('', map { "  --$_=...\n" } @opts_f) .
+     "\n";
+    exit (0);
+  }
+
+$opts{prefix} = 'File::Spec'->rel2abs ($opts{prefix});
+
+for (qw (include lib))
+  {
+    &mkpath ("$opts{prefix}/$_") 
+      unless (-d "$opts{prefix}/$_");
+  }
+
+my ($f90compiler, @f90flags) = @ARGV;
+
+@f90flags = grep { $_ ne '-c' } @f90flags;
+
+my @F90 = <$Bin/../src/*.F90>;
+
+my $dir = 'File::Temp'->newdir ();
+
+chdir ($dir);
+
+&Fxtran::F90Compiler::run 
+(
+  f90compiler => $f90compiler, 
+  f90flags    => \@f90flags, 
+  lib         => "$opts{prefix}/lib/libACDC.a",
+  F90         => \@F90,
+);
+
+for (<*.mod>, <*.smod>, <$Bin/../src/*.h>)
+  {
+    &copy ($_, "$opts{prefix}/include/" . &basename ($_));
+  }
+
+
