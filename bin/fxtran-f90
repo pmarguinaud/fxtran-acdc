@@ -61,7 +61,7 @@ sub runACDCMethod
      
       my $tmp =  'File::Temp'->newdir (CLEANUP => ! $opts->{debug});
      
-      my @cmd = ("fxtran-gen1", $opts->{package}, $method, 
+      my @cmd = ("fxtran-gen", $opts->{package}, $method, 
                  'click'->hashToCommandLine (package => $opts->{package}, method => $method, opts => $opts),
                  '--tmp' => "$tmp", @optsfile, @I, $F90);
      
