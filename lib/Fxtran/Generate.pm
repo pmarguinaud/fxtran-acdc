@@ -161,26 +161,29 @@ sub singlecolumn
 
   $opts->{dir} = 'File::Spec'->rel2abs ($opts->{dir});
   
-  if ('File::Spec'->rel2abs ($opts->{dir}) ne 'File::Spec'->rel2abs (&dirname ($F90)))
+  if ($opts->{dir} ne 'File::Spec'->rel2abs (&dirname ($F90)))
     {
       &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
     }
   
-  my $suffix = lc ($opts->{'suffix-singlecolumn'});
-  (my $F90out = $F90) =~ s/\.F90/$suffix.F90/;
-  $F90out = $opts->{dir} . '/' . &basename ($F90out);
-  $F90out = 'File::Spec'->rel2abs ($F90out);
-
+  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{'suffix-singlecolumn'}) . '.F90'}eo;
+  
+  $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
+  
   if ($opts->{'only-if-newer'})
     {
       my $st = stat ($F90);
       my $stout = stat ($F90out);
       if ($st && $stout)
         {
-          exit (0) unless ($st->mtime > $stout->mtime);
+          return unless ($st->mtime > $stout->mtime);
         }
     }
 
+  my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
+  
+  &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
+  
   my $d = &Fxtran::parse (location => $F90, fopts => [qw (-canonic -construct-tag -no-include -no-cpp -line-length 5000)], dir => $opts->{tmp});
   
   &Fxtran::Canonic::makeCanonic ($d, %$opts);
@@ -188,8 +191,6 @@ sub singlecolumn
   $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
 
   $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
-  
-  my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
   
   $opts->{style}->preProcessForOpenACC ($d, %$opts, find => $find);
   
@@ -219,8 +220,6 @@ sub singlecolumn
   &Fxtran::Util::addVersion ($d)
     if ($opts->{version});
   
-  &mkpath (&dirname ($F90out));
-  'FileHandle'->new (">$F90out.xml")->print ($d->toString);
   &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
 
   if ($opts->{'create-interface'} && $singleRoutine)
@@ -272,14 +271,11 @@ sub pointerparallel
       my $stout = stat ($F90out);
       if ($st && $stout)
         {
-          exit (0) unless ($st->mtime > $stout->mtime);
+          return unless ($st->mtime > $stout->mtime);
         }
     }
   
   my $find = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
-  
-  my $linkTypes = &Fxtran::IO::Link::link ('types-fieldapi-dir' => $opts->{'types-fieldapi-dir'});
-  my $types = $linkTypes->{decls};
   
   &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
   
@@ -287,12 +283,12 @@ sub pointerparallel
   
   &Fxtran::Canonic::makeCanonic ($d, %$opts);
   
-  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
-  
   $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
 
   $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
 
+  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
+  
   if ($opts->{ydcpg_opts})
     {
       &changeKidiaToYDCPG_OPTS ($d, $opts);
@@ -306,6 +302,9 @@ sub pointerparallel
     }
   
   my $NAME = uc (&basename ($F90out, qw (.F90)));
+  
+  my $linkTypes = &Fxtran::IO::Link::link ('types-fieldapi-dir' => $opts->{'types-fieldapi-dir'});
+  my $types = $linkTypes->{decls};
   
   for my $pu (@pu)
     {
@@ -533,8 +532,6 @@ sub singleblock
 
   my ($F90) = @args;
 
-  $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
-
   $opts->{dir} = 'File::Spec'->rel2abs ($opts->{dir});
   
   if ($opts->{dir} ne 'File::Spec'->rel2abs (&dirname ($F90)))
@@ -552,7 +549,7 @@ sub singleblock
       my $stout = stat ($F90out);
       if ($st && $stout)
         {
-          exit (0) unless ($st->mtime > $stout->mtime);
+          return unless ($st->mtime > $stout->mtime);
         }
     }
   
@@ -560,12 +557,17 @@ sub singleblock
   
   &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
   
-  my @openmp = $opts->{openmptoparallel} ? qw (-openmp) : ();
+  my @openmp = qw (-directive ACDC); 
+  push @openmp, '-openmp' if ($opts->{openmptoparallel});
 
-  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -directive ACDC -canonic), @openmp], dir => $opts->{tmp});
+  my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -canonic), @openmp], dir => $opts->{tmp});
   
   &Fxtran::Canonic::makeCanonic ($d, %$opts);
   
+  $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
+
+  $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
+
   if ($opts->{openmptoparallel})
     {
       &Fxtran::SingleBlock::openmpToACDC ($d, %$opts);
@@ -573,8 +575,6 @@ sub singleblock
   
   &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
   
-  $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
-
   my @pu = &F ('./object/file/program-unit', $d);
 
   my $NAME = uc (&basename ($F90out, qw (.F90)));
@@ -616,8 +616,6 @@ sub manyblocks
 
   my ($F90) = @args;
 
-  $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
-
   $opts->{dir} = 'File::Spec'->rel2abs ($opts->{dir});
   
   if ($opts->{dir} ne 'File::Spec'->rel2abs (&dirname ($F90)))
@@ -635,7 +633,7 @@ sub manyblocks
       my $stout = stat ($F90out);
       if ($st && $stout)
         {
-          exit (0) unless ($st->mtime > $stout->mtime);
+          return unless ($st->mtime > $stout->mtime);
         }
     }
   
@@ -649,6 +647,8 @@ sub manyblocks
   
   &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
   
+  $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
+
   $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
 
   my @pu = &F ('./object/file/program-unit', $d);
@@ -672,8 +672,6 @@ sub manyblocks
   
   &Fxtran::Util::addVersion ($d)
     if ($opts->{version});
-  
-
 
   &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
 
