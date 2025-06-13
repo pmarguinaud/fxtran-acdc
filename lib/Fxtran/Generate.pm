@@ -158,6 +158,7 @@ sub singlecolumn
   &Fxtran::Util::loadModule ('Fxtran::SingleColumn');
 
   my @fopts;
+  my $method = 'singlecolumn';
 
   my ($F90) = @args;
 
@@ -168,7 +169,7 @@ sub singlecolumn
       &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
     }
   
-  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{'suffix-singlecolumn'}) . '.F90'}eo;
+  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{"suffix-$method"}) . '.F90'}eo;
   
   $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
   
@@ -255,6 +256,7 @@ sub pointerparallel
   &Fxtran::Util::loadModule ('Fxtran::IO::Link');
 
   my @fopts = qw (-directive ACDC);
+  my $method = 'pointerparallel';
 
   my ($F90) = @args;
 
@@ -265,7 +267,7 @@ sub pointerparallel
       &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
     }
 
-  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{'suffix-pointerparallel'}) . '.F90'}eo;
+  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{"suffix-$method"}) . '.F90'}eo;
   
   $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
   
@@ -344,6 +346,7 @@ sub singleblock
 
   my @fopts = qw (-directive ACDC); 
   push @fopts, '-openmp' if ($opts->{openmptoparallel});
+  my $method = "singleblock";
 
   my ($F90) = @args;
 
@@ -354,7 +357,7 @@ sub singleblock
       &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
     }
 
-  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{'suffix-singleblock'}) . '.F90'}eo;
+  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{"suffix-$method"}) . '.F90'}eo;
   
   $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
   
@@ -427,6 +430,7 @@ sub manyblocks
   &Fxtran::Util::loadModule ('Fxtran::ManyBlocks');
 
   my @fopts = qw (-directive ACDC);
+  my $method = "manyblocks";
 
   my ($F90) = @args;
 
@@ -437,7 +441,7 @@ sub manyblocks
       &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
     }
 
-  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{'suffix-manyblocks'}) . '.F90'}eo;
+  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{"suffix-$method"}) . '.F90'}eo;
   
   $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
   
