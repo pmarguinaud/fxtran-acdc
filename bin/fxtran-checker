@@ -1,0 +1,24 @@
+#!/usr/bin/perl -w
+
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
+use Data::Dumper;
+
+use FindBin qw ($Bin);
+use lib "$Bin/../lib";
+
+use strict;
+
+use Fxtran::Common;
+use Fxtran::Bt;
+use Fxtran::PATH;
+
+my @F90 = grep { m/\.(?:F90|F)$/o } @ARGV;
+@ARGV = grep { !m/\.(?:F90|F)$/o } @ARGV;
+
+exec (qw (fxtran-f90 --checker --dryrun), @ARGV, qw (-- f90 -c), @F90);
+
