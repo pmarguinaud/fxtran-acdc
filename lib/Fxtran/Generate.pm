@@ -176,6 +176,12 @@ sub routineToRoutineHead
 
   $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
 
+  if ($opts->{checker})
+    {
+      &Fxtran::Util::loadModule ('Fxtran::Generate::Checker');
+      'Fxtran::Generate::Checker'->$method ($d, %$opts)
+    }
+
   return ($d, $F90out);
 }
 
