@@ -19,6 +19,7 @@ use strict;
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";
 
+use Fxtran::Common;
 use Fxtran::Bt;
 use Fxtran::PATH;
 

@@ -6,9 +6,7 @@ package Fxtran::Common;
 # philippe.marguinaud@meteo.fr
 #
 
-
 use strict;
-use Fxtran::Bt;
 
 sub import
 {

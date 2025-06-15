@@ -130,6 +130,7 @@ my %options= do
   ydcpg_opts                -- Change KIDIA, KFDIA -> YDCPG_OPTS, YDCPG_BNDS
   checker                   -- Sanity checks, produce a report
   suffix-semiimplicit=s     -- Suffix for semi-implicit  routines                                                                           --  _SEMIIMPLICIT
+  base                      -- Base directory for file search                                                                               -- .
 EOF
 
   my @options;
@@ -367,7 +368,6 @@ sub pointerparallel
       &Fxtran::Generate::ParallelMethod::generateCCode ($d, $opts);
     }
 }
-
 
 &click (<< "EOF");
 @options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 style 

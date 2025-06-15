@@ -12,6 +12,7 @@ use lib "$Bin/../lib";
 use strict;
 
 use Fxtran::Common;
+use Fxtran::Bt;
 use Fxtran::Util;
 
 my $package = 'Fxtran::Generate';

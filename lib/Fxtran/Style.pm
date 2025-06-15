@@ -16,7 +16,7 @@ sub newFromStyle
 {
   my $class = shift;
   my %args = @_;
-  my $class = "Fxtran::Style::$args{style}";
+  $class = "Fxtran::Style::$args{style}";
   eval "use $class";
   $@ && die ($@);
   return $class->new ();
