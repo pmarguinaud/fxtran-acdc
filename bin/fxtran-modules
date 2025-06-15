@@ -1,0 +1,37 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+use FindBin qw ($Bin);
+
+use File::Find;
+
+my @skip = qw (Fxtran::FieldAPI::Parallel);
+
+sub wanted
+{
+  my $f = $File::Find::name;
+
+  return unless ((-f $f) && ($f =~ m/\.pm$/o));
+
+  my $pm = $f;
+
+  for ($pm)
+    {
+      s,^\.\/,,o;
+      s,/,::,go;
+      s/\.pm$//o;
+    }
+
+  return if (grep { $_ eq $pm } @skip);
+
+  print "$pm\n";
+  
+  system ("perl -e ' use Fxtran::Common; use $pm '")
+    and die ("Cannot load $pm\n");
+}
+
+chdir ("$Bin/../lib");
+
+&find ({wanted => \&wanted, no_chdir => 1}, '.');
+
