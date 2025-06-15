@@ -151,7 +151,14 @@ sub getVarToDim
 
   for my $klon (@klon)
     {
-      push @en_decl, &F ('.//EN-decl[./array-spec/shape-spec-LT/shape-spec[string(upper-bound)="?"]]', $klon, $dp);
+      if ($klon =~ m/:/o)
+        {
+          push @en_decl, &F ('.//EN-decl[./array-spec/shape-spec-LT/shape-spec[string(.)="?"]]', $klon, $dp);
+        }
+      else
+        {
+          push @en_decl, &F ('.//EN-decl[./array-spec/shape-spec-LT/shape-spec[string(upper-bound)="?"]]', $klon, $dp);
+        }
     }
 
   my %var2dim;

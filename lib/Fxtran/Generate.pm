@@ -24,6 +24,9 @@ use Fxtran::Directive;
 use Fxtran::PATH;
 use Fxtran::Interface;
 use Fxtran::NVTX;
+use Fxtran::Finder;
+use Fxtran::Style;
+use Fxtran::Pragma;
 
 use click;
 
@@ -126,6 +129,7 @@ my %options= do
   suffix-manyblocks=s       -- Suffix for many blocks routines                                                                              --  _MANYBLOCKS
   ydcpg_opts                -- Change KIDIA, KFDIA -> YDCPG_OPTS, YDCPG_BNDS
   checker                   -- Sanity checks, produce a report
+  suffix-semiimplicit=s     -- Suffix for semi-implicit  routines                                                                           --  _SEMIIMPLICIT
 EOF
 
   my @options;
@@ -169,7 +173,7 @@ sub routineToRoutineHead
   &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
   
   my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -canonic), @fopts], dir => $opts->{tmp});
-  
+
   &Fxtran::Canonic::makeCanonic ($d, %$opts);
   
   $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
@@ -193,6 +197,59 @@ sub routineToRoutineTail
     if ($opts->{version});
   
   &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
+}
+
+&click (<< "EOF");
+@options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 style redim-arguments set-variables 
+             suffix-semiimplicit tmp value-attribute version inline-contained checker)}
+  keep-drhook               -- Keep DrHook
+  dummy                     -- Generate a dummy routine (strip all executable code)
+  inlined=s@                -- List of routines to inline
+  inline-comment            -- Add a comment when inlining a routine
+  create-interface          -- Generate an interface file
+  openmptoparallel          -- Transform OpenMP parallel sections into ACDC parallel sections
+EOF
+sub semiimplicit
+{
+  my ($opts, @args) = @_;
+
+  &Fxtran::Util::loadModule ('Fxtran::SemiImplicit');
+
+  my ($F90) = @args;
+
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'semiimplicit', $opts, qw (-directive ACDC), $opts->{openmptoparallel} ? ('-openmp') : ());
+
+  if ($opts->{openmptoparallel})
+    {
+      &Fxtran::Directive::openmpToACDC ($d, %$opts);
+    }
+  
+  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
+
+  $opts->{style}->preProcessForOpenACC ($d, %$opts);
+  
+  my @pu = &F ('./object/file/program-unit', $d);
+  
+  for my $pu (@pu)
+    {
+      my $stmt = $pu->firstChild;
+      (my $kind = $stmt->nodeName) =~ s/-stmt$//o;
+      if ($kind eq 'subroutine')
+        {
+          &Fxtran::SemiImplicit::processSingleRoutine ($pu, %$opts);
+        }
+      else
+        {
+          die;
+        }
+    }
+  
+  &routineToRoutineTail ($F90out, $d, $opts);
+
+  if ($opts->{'create-interface'})
+    {
+      $opts->{style}->generateInterface ($F90out, %$opts);
+    }
 }
 
 &click (<< "EOF");
@@ -331,7 +388,7 @@ sub singleblock
 
   if ($opts->{openmptoparallel})
     {
-      &Fxtran::SingleBlock::openmpToACDC ($d, %$opts);
+      &Fxtran::Directive::openmpToACDC ($d, %$opts);
     }
   
   &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');

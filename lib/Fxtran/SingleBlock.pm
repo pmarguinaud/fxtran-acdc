@@ -30,6 +30,13 @@ sub processSingleRoutine
       &Fxtran::Inline::inlineExternalSubroutine ($pu, $di, %opts);
     }
       
+
+  # Process abort sections
+  for my $abort (&F ('.//abort-section', $pu))
+    {
+      $abort->replaceNode (&s ("CALL ABOR1 ('NOT SUPPORTED')"));
+    }
+
   my $style = $opts{style};
   my $pragma = $opts{pragma};
 
@@ -60,11 +67,11 @@ sub processSingleRoutine
   # Create local arrays, assume argument arrays are on the device
   $pragma->insertData ($ep, PRESENT => \@present, CREATE => \@create);
   }
-  
+
   # Parallel sections
 
   my @par = &F ('.//parallel-section', $pu);
-  
+
   for my $par (@par)
     {
 
@@ -146,7 +153,15 @@ EOF
     match => sub 
     { 
       my $proc = shift; 
-      (! ($proc =~ m/$opts{'suffix-singlecolumn'}$/i)) && ($proc ne 'ABOR1')
+
+      return if ($proc eq 'ABOR1');
+
+      if ($opts{'suffix-singlecolumn'})
+        {
+          return if ($proc =~ m/$opts{'suffix-singlecolumn'}$/i);
+        }
+
+      return 1;
     },
   );
   
@@ -162,46 +177,6 @@ EOF
                           'INTEGER :: ' . $jlon);
 
   &Fxtran::Decl::use ($pu, 'USE STACK_MOD');
-}
-
-sub openmpToACDC 
-{
-  my ($d, %opts) = @_;
-
-  for my $p (&F ('.//parallel-openmp|.//parallel-do-openmp|.//end-parallel-openmp|.//end-parallel-do-openmp', $d))
-    {
-      my $nn = $p->nodeName;
-
-      if (my $pp = $p->previousSibling)
-        {
-          $pp->unbindNode () if ($pp->nodeName eq '#text');
-        }
-
-      $p->replaceNode (my $acdc = &n ('<ACDC>!$ACDC</ACDC>'));
-
-      if (($nn eq 'parallel-openmp') || ($nn eq 'parallel-do-openmp'))
-        {
-          $acdc->parentNode->insertAfter ($_, $acdc) for (&n ('<ACDC-directive>PARALLEL{</ACDC-directive>', &t (' ')));
-        }
-      elsif (($nn eq 'end-parallel-openmp') || ($nn eq 'end-parallel-do-openmp'))
-        {
-          $acdc->parentNode->insertAfter ($_, $acdc) for (&n ('<ACDC-directive>}</ACDC-directive>', &t (' ')));
-        }
-      else
-        {
-          die $p;
-        }
-    }
-
-  for my $omp (&F ('.//omp|.//ANY-openmp', $d))
-    {
-      if (my $n = $omp->nextSibling ())
-        {
-          $n->unbindNode () if ($n->nodeName eq '#text');
-        }
-      $omp->unbindNode ();
-    }
-
 }
 
 1;

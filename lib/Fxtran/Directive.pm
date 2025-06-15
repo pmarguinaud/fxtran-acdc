@@ -32,70 +32,113 @@ sub parseDirectives
 
   my @e;
 
-  my @C = &F ("//$name-directive", $d);
-  
-  while (my $C  = shift (@C))
+  my @section;
+
+  for my $C (&F ("//$name-directive", $d))
     {
       my $bdir = $C->textContent;
-      if ($bdir =~ m/^(?:pointerparallel|singlecolumn|methods|singleblock)/io)
+
+      if ($bdir =~ m/^(?:pointerparallel|singlecolumn|methods|singleblock|semiimplicit)/io)
         {
           $C->unbindNode ();
           next;
         }
 
-      my $noend = ! ($bdir =~ s/\s*{\s*$//o);
-
-      my %opts;
-
-      my @bdir = split (m/\s*,\s*/o, $bdir);
-
-      $bdir = lc (shift (@bdir));
-
-      for my $s (@bdir)
+      if ($bdir =~ s/\s*{\s*$//o) # Open section
         {
-          my ($k, $v) = split (m/\s*=\s*/o, $s);
-          $opts{$k} = $v;
-        }
+          my %opts;
 
-      my ($tag) = ($bdir =~ m/^(\w+)/o);
+          my @bdir = split (m/\s*,\s*/o, $bdir);
 
-      my $Tag = $tag; 
-      $Tag .= '-section' unless ($noend);
+          $bdir = lc (shift (@bdir));
 
-      my $e = &n ("<$Tag " . join (' ', map { sprintf ('%s="%s"', lc ($_), $opts{$_}) } keys (%opts))  . "/>");
-
-      if (! $noend)
-        {
-          my @node;
-          for (my $node = $C->nextSibling; ; $node = $node->nextSibling)
+          for my $s (@bdir)
             {
-              $node or die &Dumper ([$C->textContent, map { $_->textContent } @node]);
-              if ($node->nodeName eq "$name-directive")
-                {
-                  my $C = shift (@C);
-                  die &Dumper ([$C->toString, $node->toString]) unless ($C->unique_key eq $node->unique_key);
-                  my $edir = $C->textContent;
-                  die &Dumper ([map { $_->textContent } @node]) unless ($edir =~ m/\s*}\s*/o);
-
-                  $C->unbindNode ();
-                  
-                  last;
-                }
-              push @node, $node;
+              my ($k, $v) = split (m/\s*=\s*/o, $s);
+              $opts{$k} = $v;
             }
 
-          for my $node (@node)
-            {
-              $e->appendChild ($node);
-            }
-        }
+          my ($tag) = ($bdir =~ m/^(\w+)/o);
+          my $Tag = $tag; 
 
-      $C->replaceNode ($e);
-      push @e, $e;
+          $Tag .= '-section';
+
+          my $e = &n ("<$Tag " . join (' ', map { sprintf ('%s="%s"', lc ($_), $opts{$_}) } keys (%opts))  . "/>");
+
+          push @section, [$C, $e, $tag];
+        }
+      elsif ($bdir =~ s/\s*}\s*$//o) # Close section
+        {
+          my $Cc = $C;
+
+          die ("Unexpected " . $Cc->textContent) 
+            unless (@section);
+  
+          my ($Co, $e, $tag) = @{ pop @section };
+
+          die ("Unexpected " . $Cc->textContent) 
+            unless ($Co->parentNode->unique_key == $Cc->parentNode->unique_key);
+          
+          for my $n (&F ('following-sibling::node()', $Co))
+            {
+              $n->unbindNode ();
+              last if ($n->unique_key eq $Cc->unique_key);
+              $e->appendChild ($n);
+            }
+
+          $Co->replaceNode ($e);
+
+          push @e, $e;
+        }
 
     }
 
+  for (@section)
+    {
+      die ("Section " . $_->textContent . " was not closed");
+    }
+
   return @e;
+}
+
+sub openmpToACDC 
+{
+  my ($d, %opts) = @_;
+
+  for my $p (&F ('.//parallel-openmp|.//parallel-do-openmp|.//end-parallel-openmp|.//end-parallel-do-openmp', $d))
+    {
+      my $nn = $p->nodeName;
+
+      if (my $pp = $p->previousSibling)
+        {
+          $pp->unbindNode () if ($pp->nodeName eq '#text');
+        }
+
+      $p->replaceNode (my $acdc = &n ('<ACDC>!$ACDC</ACDC>'));
+
+      if (($nn eq 'parallel-openmp') || ($nn eq 'parallel-do-openmp'))
+        {
+          $acdc->parentNode->insertAfter ($_, $acdc) for (&n ('<ACDC-directive>PARALLEL{</ACDC-directive>', &t (' ')));
+        }
+      elsif (($nn eq 'end-parallel-openmp') || ($nn eq 'end-parallel-do-openmp'))
+        {
+          $acdc->parentNode->insertAfter ($_, $acdc) for (&n ('<ACDC-directive>}</ACDC-directive>', &t (' ')));
+        }
+      else
+        {
+          die $p;
+        }
+    }
+
+  for my $omp (&F ('.//omp|.//ANY-openmp', $d))
+    {
+      if (my $n = $omp->nextSibling ())
+        {
+          $n->unbindNode () if ($n->nodeName eq '#text');
+        }
+      $omp->unbindNode ();
+    }
+
 }
 
 
