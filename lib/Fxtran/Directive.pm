@@ -38,7 +38,7 @@ sub parseDirectives
     {
       my $bdir = $C->textContent;
 
-      if ($bdir =~ m/^(?:pointerparallel|singlecolumn|methods|singleblock|semiimplicit)/io)
+      if ($bdir =~ m/^(?:pointerparallel|singlecolumn|methods|singleblock|semiimplicit|outline1|manyblocks)/io)
         {
           $C->unbindNode ();
           next;
