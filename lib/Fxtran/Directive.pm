@@ -38,36 +38,7 @@ sub parseDirectives
     {
       my $bdir = $C->textContent;
 
-      if ($bdir =~ m/^(?:pointerparallel|singlecolumn|methods|singleblock|semiimplicit|outline1|manyblocks)/io)
-        {
-          $C->unbindNode ();
-          next;
-        }
-
-      if ($bdir =~ s/\s*{\s*$//o) # Open section
-        {
-          my %opts;
-
-          my @bdir = split (m/\s*,\s*/o, $bdir);
-
-          $bdir = lc (shift (@bdir));
-
-          for my $s (@bdir)
-            {
-              my ($k, $v) = split (m/\s*=\s*/o, $s);
-              $opts{$k} = $v;
-            }
-
-          my ($tag) = ($bdir =~ m/^(\w+)/o);
-          my $Tag = $tag; 
-
-          $Tag .= '-section';
-
-          my $e = &n ("<$Tag " . join (' ', map { sprintf ('%s="%s"', lc ($_), $opts{$_}) } keys (%opts))  . "/>");
-
-          push @section, [$C, $e, $tag];
-        }
-      elsif ($bdir =~ s/\s*}\s*$//o) # Close section
+      if ($bdir =~ s/\s*}\s*$//o) # Close section
         {
           my $Cc = $C;
 
@@ -89,6 +60,38 @@ sub parseDirectives
           $Co->replaceNode ($e);
 
           push @e, $e;
+        }
+      else # Open section or one liner
+        {
+          my $open = $bdir =~ s/\s*{\s*$//o;
+
+          my %opts;
+
+          my @bdir = split (m/\s*,\s*/o, $bdir);
+
+          $bdir = lc (shift (@bdir));
+
+          for my $s (@bdir)
+            {
+              my ($k, $v) = split (m/\s*=\s*/o, $s);
+              $opts{$k} = $v;
+            }
+
+          my ($tag) = ($bdir =~ m/^(\w+)/o);
+          my $Tag = $tag; 
+
+          $Tag .= '-section';
+
+          my $e = &n ("<$Tag " . join (' ', map { sprintf ('%s="%s"', lc ($_), $opts{$_}) } keys (%opts))  . "/>");
+
+          if ($open)
+            {
+              push @section, [$C, $e, $tag];
+            }
+          else
+            {
+              $C->replaceNode ($e);
+            }
         }
 
     }
