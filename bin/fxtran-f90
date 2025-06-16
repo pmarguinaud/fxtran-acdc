@@ -247,7 +247,7 @@ FILE: for my $F90 (@F90)
       }
     else
       {
-        @ACDC = grep { (! m/\{\s*$/o) && (! m/\}\s*$/o) && (! m/\&\s*$/o) }
+        @ACDC = grep { (! m/\{\s*$/o) && (! m/\}\s*$/o) && (! m/\&\s*$/o) && (! m/^(?:BEGIN|END)\s+/o) }
                 map { m/^\!\$ACDC (\S.*)$/o ? ($1) : () } @text;
       }
 

@@ -38,7 +38,7 @@ sub parseDirectives
     {
       my $bdir = $C->textContent;
 
-      if ($bdir =~ s/\s*}\s*$//o) # Close section
+      if ($bdir =~ s/(?:\s*}\s*$|^END)//io) # Close section
         {
           my $Cc = $C;
 
@@ -63,7 +63,7 @@ sub parseDirectives
         }
       else # Open section or one liner
         {
-          my $open = $bdir =~ s/\s*{\s*$//o;
+          my $open = $bdir =~ s/(?:\s*{\s*$|^BEGIN)//o;
 
           my %opts;
 
