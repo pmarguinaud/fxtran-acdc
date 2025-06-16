@@ -68,7 +68,7 @@ EOF
     }
 
   system (@cmd)
-   and die ("Command `@cmd' failed");
+    and die ("Command `@cmd' failed");
 }
 
 }

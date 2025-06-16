@@ -110,6 +110,8 @@ sub bt
         }
     }
 
+  $DB::single = 1;
+
   die "\n";
 }
 

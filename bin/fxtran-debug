@@ -1,0 +1,26 @@
+#!/usr/bin/perl -w
+
+use FileHandle;
+use FindBin qw ($Bin);
+use lib "$Bin/../lib";
+
+use strict;
+
+use Fxtran::PATH;
+
+unless ($ARGV[0] =~ m,^/,o)
+  {
+    $ARGV[0] = "$Bin/$ARGV[0]";
+  }
+
+(my $fh = 'FileHandle'->new ("<$ARGV[0]"))
+  or die ("Cannot open file `$ARGV[0]' for reading\n");
+(my $line = <$fh>) =~ s,^#!,,o;
+$fh->close ();
+
+
+my @perl = split (m/\s+/o, $line);
+
+local $ENV{PERLDB_OPTS} = "NonStop"; 
+
+exec (@perl, '-d', @ARGV);
