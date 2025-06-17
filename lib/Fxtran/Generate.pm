@@ -131,6 +131,7 @@ my %options= do
   checker                   -- Sanity checks, produce a report
   suffix-semiimplicit=s     -- Suffix for semi-implicit  routines                                                                           --  _SEMIIMPLICIT
   base                      -- Base directory for file search                                                                               -- .
+  array-slice-to-address    -- Pass addresses of first array element instead of array slices
 EOF
 
   my @options;
@@ -255,7 +256,7 @@ sub semiimplicit
 
 &click (<< "EOF");
 @options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 style redim-arguments set-variables 
-             suffix-singlecolumn tmp value-attribute version inline-contained checker)}
+             suffix-singlecolumn tmp value-attribute version inline-contained checker array-slice-to-address)}
   keep-drhook               -- Keep DrHook
   dummy                     -- Generate a dummy routine (strip all executable code)
   inlined=s@                -- List of routines to inline
@@ -417,7 +418,7 @@ sub singleblock
 
 &click (<< "EOF");
 @options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 style 
-             suffix-singlecolumn suffix-manyblocks version checker)}
+             suffix-singlecolumn suffix-manyblocks version checker array-slice-to-address)}
   drhooktonvtx                    -- Change DrHook calls into NVTX calls
   inlined=s@                      -- List of routines to inline
 EOF

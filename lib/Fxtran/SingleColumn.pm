@@ -6,9 +6,6 @@ package Fxtran::SingleColumn;
 # philippe.marguinaud@meteo.fr
 #
 
-
-use strict;
-
 use FileHandle;
 use Data::Dumper;
 use Getopt::Long;
@@ -17,30 +14,114 @@ use File::Path;
 use File::Copy;
 use File::Basename;
 
+use strict;
+
 use Fxtran::Common;
 use Fxtran;
 use Fxtran::Stack;
-use Fxtran::Associate;
 use Fxtran::Loop;
-use Fxtran::Pragma;
 use Fxtran::ReDim;
-use Fxtran::Construct;
-use Fxtran::DIR;
 use Fxtran::Subroutine;
 use Fxtran::Module;
 use Fxtran::Call;
 use Fxtran::Canonic;
 use Fxtran::DrHook;
-use Fxtran::Identifier;
-use Fxtran::Decl;
 use Fxtran::Dimension;
 use Fxtran::Include;
 use Fxtran::Inline;
-use Fxtran::Finder;
 use Fxtran::Pointer;
 use Fxtran::Print;
-use Fxtran::Style;
 use Fxtran::Interface;
+
+
+sub arraySliceToAddress
+{
+  my ($pu, %opts) = @_;
+
+  my $style = $opts{style};
+  
+  my @nproma = $style->nproma ();
+  
+  my ($dp) = &F ('./specification-part/declaration-part', $pu);
+  my ($ep) = &F ('./execution-part', $pu);
+  
+  my %ptr;
+  
+  my @decl = &F ('./T-decl-stmt[./attribute[string(attribute-N)="INTENT"]]', $dp);
+  
+  my $last = $decl[-1];
+  
+  $dp->insertAfter (&t ("\n"), $last);
+  
+  for my $decl (reverse (@decl))
+    {
+      my ($en_decl) = &F ('./EN-decl-LT/EN-decl', $decl);
+      next unless (my ($as) = &F ('./array-spec', $en_decl));
+  
+      my @ss = &F ('./shape-spec-LT/shape-spec', $as, 1);
+      next unless (grep { $ss[0] eq $_ } @nproma);
+  
+      my ($n) = &F ('./EN-N/N/n/text()', $en_decl, 1);
+      my $stmt = &Fxtran::stmt ($en_decl);
+      
+      my ($t) = &F ('./_T-spec_', $stmt, 1);
+  
+      my $temp = &s ("temp ($t, ${n}_PTR, " . $as->textContent . ")");
+  
+      $dp->insertAfter ($_, $last)
+        for ($temp, &t ("\n"));
+      
+      $ptr{$n}++;
+  
+      $as->unbindNode ();
+  
+      my $assoc;
+  
+      if (&F ('./attribute[string(attribute-N)="OPTIONAL"]', $decl))
+        {
+          ($assoc) = &fxtran::parse (fragment => << "EOF", fopts => [qw (-construct-tag)]);
+IF (PRESENT ($n)) THEN
+assoc (${n}_PTR, ${n})
+ELSE
+nullptr (${n}_PTR)
+ENDIF
+EOF
+
+          &Fxtran::Canonic::makeCanonicReferences ($assoc);
+  
+        }
+      else
+        {
+          $assoc = &s ("assoc (${n}_PTR, ${n})");
+        }
+  
+      $ep->insertBefore ($_, $ep->firstChild) 
+        for (&t ("\n"), $assoc, &t ("\n"));
+  
+    }
+  
+  $dp->insertAfter (&t ("\n"), $last);
+  
+  for my $expr (&F ('.//named-E', $ep))
+    {
+      my ($n) = &F ('./N/n/text()', $expr);
+      next unless ($ptr{$n->textContent});
+  
+      my $expr = &Fxtran::expr ($n); 
+      $expr = &Fxtran::expr ($expr);
+  
+      if ($expr && ($expr->nodeName eq 'named-E') 
+         && ((&F ('./N', $expr, 1))[0] eq 'PRESENT') 
+         && (&F ('./R-LT/function-R', $expr)))
+        { 
+          next;
+        }
+  
+      $n->setData ($n->textContent . '_PTR');
+    }
+
+}
+
 
 sub addValueAttribute
 {
@@ -214,6 +295,8 @@ sub processSingleRoutine
       &Fxtran::Print::changePRINT_MSGintoPRINT ($pu);
     }
 
+  &arraySliceToAddress ($pu, %opts)
+    if ($opts{'array-slice-to-address'});
 
 }
 

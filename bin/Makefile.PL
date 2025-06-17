@@ -40,8 +40,8 @@ $opts{include} = [split (m/,/o, $opts{include})];
 
 my @sys = qw (NVTX OMP_LIB CUDAFOR IEEE_ARITHMETIC ISO_C_BINDING OPENACC ECCODES CUBLAS ISO_FORTRAN_ENV);
 my @extern_mod = qw (YOMHOOK MPL_MODULE PARKIND1 OML_MOD EC_LUN MPL_MPIF MPL_MODULE MPL_BARRIER_MOD FIELD_MODULE 
-                     FIELD_FACTORY_MODULE FIELD_ACCESS_MODULE);
-my @extern_inc = qw (setup_trans.h setup_trans0.h inv_trans.h gath_grid.h gath_spec.h dist_spec.h abor1.intfb.h);
+                     FIELD_FACTORY_MODULE FIELD_ACCESS_MODULE ABOR1_ACC_MOD STACK_MOD);
+my @extern_inc = qw (setup_trans.h setup_trans0.h inv_trans.h gath_grid.h gath_spec.h dist_spec.h abor1.intfb.h stack.h);
 
 for my $mod (@extern_mod)
   {

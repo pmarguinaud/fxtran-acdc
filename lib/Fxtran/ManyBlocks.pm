@@ -103,8 +103,33 @@ sub processSingleRoutine
             }
 
           my ($sslt) = &F ('./array-R/section-subscript-LT', $rlt);
-          $sslt->appendChild ($_) for (&t (', '), &e ('JBLK'));
+          $sslt->appendChild ($_) for (&t (', '), &n ('<section-subscript><lower-bound>' . &e ('JBLK') . '</lower-bound></section-subscript>'));
 
+          if ($opts{'array-slice-to-address'})  # Transform array slice to the address of the first element of the slice; we assume that the slice is a contiguous chunk of memory
+            {
+              my @ss = &F ('./array-R/section-subscript-LT/section-subscript', $rlt); 
+
+              for my $i (0 .. $#ss-1)
+                {
+                  my $ss = $ss[$i];
+
+                  my ($lb) = &F ('./lower-bound', $ss);
+                  my ($ub) = &F ('./upper-bound', $ss);
+                  my ($dd) = &F ('./text()[string(.)=":"]', $ss);
+
+                  $_->unbindNode () 
+                    for ($ss->childNodes ());
+
+                  if ($lb)
+                    {
+                      $ss->appendChild ($lb);
+                    }
+                  else
+                    {
+                      $ss->appendChild (&n ('<lower-bound>' . &e ("LBOUND ($N, " . ($i+1) . ")") . '</lower-bound>'));
+                    }
+                }
+            }
         }
 
       # Move section contents into a DO loop over KLON

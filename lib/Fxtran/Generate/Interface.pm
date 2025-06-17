@@ -47,6 +47,7 @@ sub interface
       my @opts = 'click'->hashToCommandLine (method => $method, package => 'Fxtran::Generate', opts => $opts);
 
       my @cmd = ('fxtran-f90', @opts, '--dryrun', '--dir', '.', '--tmp', '.', '--', 'f90', '-c', $tmp);
+
       &Fxtran::Util::runCommand (cmd => \@cmd);
 
       my $suffix = lc ($opts->{"suffix-$method"});

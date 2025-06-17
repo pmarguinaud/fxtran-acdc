@@ -24,8 +24,6 @@ sub intfbBody
         }
     }
 
-  
-
   for my $pu (@pu)
     {
       if (my ($ep) = &F ('./execution-part', $pu))
@@ -264,7 +262,10 @@ sub intfb
       $openacc =~ s/^\!\$ACDC\s+//o;
       my @openacc = split (m/\s+/o, $openacc);
 
-      system ("$Bin/fxtran-gen", @openacc, 'tmp.F90');
+      my @cmd = ("$Bin/fxtran-gen", @openacc, 'tmp.F90');
+
+      system (@cmd)
+        and die ("Command `@cmd' failed");
 
       my $doc_acc = &Fxtran::parse (location => 'tmp_openacc.F90', fopts => ['-construct-tag', '-no-include', '-line-length' => 500]);
       $_->unbindNode () for (&F ('.//a-stmt', $doc_acc));
