@@ -105,7 +105,8 @@ sub processSingleRoutine
           my ($sslt) = &F ('./array-R/section-subscript-LT', $rlt);
           $sslt->appendChild ($_) for (&t (', '), &n ('<section-subscript><lower-bound>' . &e ('JBLK') . '</lower-bound></section-subscript>'));
 
-          if ($opts{'array-slice-to-address'})  # Transform array slice to the address of the first element of the slice; we assume that the slice is a contiguous chunk of memory
+          if ($opts{'array-slice-to-address'})  # Transform array slice to the address of the first element of the slice
+                                                # We assume that the slice is a contiguous chunk of memory
             {
               my @ss = &F ('./array-R/section-subscript-LT/section-subscript', $rlt); 
 
@@ -268,7 +269,9 @@ EOF
 
   for my $stmt (&F ('./T-decl-stmt', $dp))
     {
-      next unless (my ($sslt) = &F ('./EN-decl-LT/EN-decl/array-spec/shape-spec-LT', $stmt));
+      next unless (my ($as) = &F ('./EN-decl-LT/EN-decl/array-spec', $stmt));
+
+      my ($sslt) = &F ('./shape-spec-LT', $as);
 
       my @ss = &F ('./shape-spec', $sslt);
 
@@ -284,6 +287,8 @@ NPROMA:
      if (&F ('./attribute[string(attribute-N)="INTENT"]', $stmt))
        {
          # Dummy argument : use implicit shape
+
+         my $comment = $as->textContent;
 
          my $iss = &n ('<shape-spec>:</shape-spec>');
 
@@ -301,6 +306,8 @@ NPROMA:
            }
 
          $sslt->appendChild ($_) for (&t (", "), $iss);
+
+         $dp->insertAfter ($_, $stmt) for (&n ("<C>! $comment</C>"), &t (' '));
        }   
      else
        {
