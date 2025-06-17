@@ -205,7 +205,7 @@ EOF
 
       $pragma->insertLoopVector ($do_jlon, PRIVATE => [sort (keys (%priv))]);
 
-      $pragma->insertParallelLoopGang ($do_jblk, PRIVATE => ['JBLK']);
+      $pragma->insertParallelLoopGang ($do_jblk, PRIVATE => ['JBLK'], VECTOR_LENGTH => [$nproma[0]]);
 
     }
   
