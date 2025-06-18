@@ -66,13 +66,14 @@ EOF
       'Fxtran::Pointer::Parallel'->getWhereTargetFromTarget (my $target = $target[$itarget], my $where);
  
       my $class = 'Fxtran::Pointer::Parallel'->class ($target);
+
       my $onlySimpleFields = $class->onlySimpleFields ();
 
       my $addBlockIndex = $class->getAddBlockIndex ();
 
       my $parallel1 = $parallel->cloneNode (1);
 
-      $parallel{$onlySimpleFields} ||= 
+      $parallel{$onlySimpleFields}{$addBlockIndex} ||= 
         &Fxtran::Pointer::Parallel::makeParallel ($parallel1, $t, $find, $types, "$NAME:$name", $opts{'post-parallel'}, $onlySimpleFields, $addBlockIndex);
 
       $$puseUtilMod ||= $class->requireUtilMod ();
@@ -87,7 +88,9 @@ EOF
 
       my $onlySimpleFields = $class->onlySimpleFields ();
 
-      my $parallel1 = $parallel{$onlySimpleFields};
+      my $addBlockIndex = $class->getAddBlockIndex ();
+
+      my $parallel1 = $parallel{$onlySimpleFields}{$addBlockIndex};
 
       unless ($parallel1)
         {
