@@ -136,7 +136,7 @@ sub processSingleRoutine
       # Move section contents into a DO loop over KLON
 
       my ($do_jlon) = &fxtran::parse (fragment => << "EOF");
-DO $jlon = $kidia, $kfdia
+DO $jlon = $kidia, MERGE ($nproma[0], $kfdia, JBLK < $KGPBLKS)
 ENDDO
 EOF
   
