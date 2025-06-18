@@ -60,7 +60,7 @@ sub processSingleRoutine
   my @create = grep { ! $arg{$_} } sort (keys (%$var2dim));
   
   # Create local arrays, assume argument arrays are on the device
-  $pragma->insertData ($ep, PRESENT => \@present, CREATE => \@create);
+  $pragma->insertData ($ep, PRESENT => \@present, CREATE => \@create, IF => ['LDACC']);
   }
   
   # Parallel sections
@@ -158,7 +158,7 @@ EOF
 
       for my $call (&F ('.//call-stmt', $do_jlon))
         {
-          for my $var ($kidia,, $kfdia)
+          for my $var ($kidia, $kfdia)
             {
               for my $expr (&F ('.//named-E[string(.)="?"]', $var, $call))
                 {
@@ -206,7 +206,7 @@ EOF
 
       $pragma->insertLoopVector ($do_jlon, PRIVATE => [sort (keys (%priv))]);
 
-      $pragma->insertParallelLoopGang ($do_jblk, PRIVATE => ['JBLK'], VECTOR_LENGTH => [$nproma[0]]);
+      $pragma->insertParallelLoopGang ($do_jblk, PRIVATE => ['JBLK'], VECTOR_LENGTH => [$nproma[0]], IF => ['LDACC']);
 
     }
   
@@ -220,16 +220,18 @@ EOF
     match => sub { my $proc = shift; ! ($proc =~ m/$opts{'suffix-singlecolumn'}$/i) },
   );
 
-  # Add KGPLKS argument to manyblock routines
+  # Add KGPLKS argument to manyblock routines + add LDACC argument
   
   for my $call (&F ('.//call-stmt[contains(string(procedure-designator),"?")]', $opts{'suffix-manyblocks'}, $ep))
     {
+      my ($argspec) = &F ('./arg-spec', $call);
       for my $nproma (@nproma)
         {
-          next unless (my ($arg) = &F ('./arg-spec/arg[string(.)="?"]', $nproma, $call));
+          next unless (my ($arg) = &F ('./arg[string(.)="?"]', $nproma, $argspec));
           $arg->parentNode->insertAfter ($_, $arg) for (&n ('<arg>' . &e ($KGPBLKS) . '</arg>'), &t (", "));
           last;
         }
+      $argspec->appendChild ($_) for (&t (", "), &n ("<arg><arg-N><k>LDACC</k></arg-N> = " . &e ('LDACC') . '</arg>'));
     }
   
   # Add KGPBLKS dummy argument
@@ -252,6 +254,18 @@ EOF
       last;
     }
 
+  # Add LDACC argument
+  
+  {
+    my ($dal) = &F ('./subroutine-stmt/dummy-arg-LT', $pu);
+    my @arg = &F ('./arg-N', $dal, 1);
+
+    my ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $arg[-1], $dp);
+
+    $dp->insertAfter ($_, $decl) for (&s ("LOGICAL, INTENT (IN) :: LDACC"), &t ("\n"));
+
+    $dal->appendChild ($_) for (&t (", "), &n ("<arg-N>LDACC</arg-N>"));
+  }
 
   # Stack definition & declaration
   
