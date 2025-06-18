@@ -1,4 +1,4 @@
-package Fxtran::Pointer::Parallel::OpenACCManyBlocks;
+package Fxtran::Pointer::Parallel::HostManyBlocks;
 
 #
 # Copyright 2025 Meteo-France
@@ -22,7 +22,7 @@ sub getAddBlockIndex
 
 sub getDefaultWhere
 {
-  'device';
+  'host';
 }
 
 sub onlySimpleFields
@@ -39,7 +39,7 @@ sub makeParallel
 {
   my $class = shift;
   my ($par1, $t, %opts) = @_;
-  return $class->SUPER::makeParallel ($par1, $t, %opts, acc => 1);
+  return $class->SUPER::makeParallel ($par1, $t, %opts, acc => 0);
 }
 
 1;
