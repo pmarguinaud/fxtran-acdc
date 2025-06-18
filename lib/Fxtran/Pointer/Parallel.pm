@@ -679,87 +679,9 @@ sub fieldifyDecl
 
 }
 
-sub makeParallel
+sub replaceObjectExprByPointerExpr
 {
-  my ($par, $t, $find, $types, $NAME, $POST, $onlysimplefields, $blockLoop) = @_;
-
-  my %POST = map { ($_, 1) } grep { $_ } @$POST;
-
-  my $FILTER = $par->getAttribute ('filter');
-  my $SUBROUTINE = $FILTER && $par->getAttribute ('subroutine');
-
-  if ($SUBROUTINE)
-    {
-      my @proc = &F ('.//procedure-designator/named-E/N/n/text()[string(.)="?"]', $SUBROUTINE, $par);
-      for my $proc (@proc)
-        {
-          my $stmt = &Fxtran::stmt ($proc);
-          my @arg = &F ('./arg-spec/arg', $stmt);
-          &Fxtran::removeListElement ($arg[-1]);
-          (my $tt = $proc->textContent) =~ s/_SELECT$//o;
-          $proc->setData ($tt);
-        }
-    }
-
-  # Add a loop nest on blocks
-
-  my ($stmt) = &F ('.//ANY-stmt', $par);
-
-  $stmt or return;
-
-  my ($JBLKMIN, $JBLKMAX);
-
-  if ($FILTER)
-    {
-      ($JBLKMIN, $JBLKMAX) = ('1', 'YL_FGS%KGPBLKS');
-    }
-  else
-    {
-      ($JBLKMIN, $JBLKMAX) = ('YDCPG_OPTS%JBLKMIN', 'YDCPG_OPTS%JBLKMAX');
-    }
-
-  my $loop;
-
-  if ($blockLoop)
-    {
-      ($loop) = &Fxtran::parse (fragment => << "EOF");
-DO JBLK = $JBLKMIN, $JBLKMAX
-CALL YLCPG_BNDS%UPDATE (JBLK)
-ENDDO
-EOF
-
-      my ($enddo) = &F ('.//end-do-stmt', $loop);
-      my $p = $enddo->parentNode;
-     
-      for my $node ($par->childNodes ())
-        {
-          $p->insertBefore ($node, $enddo);
-        }
-      
-      $par->appendChild ($loop);
-    }
-  else
-    {
-      $loop = &n ('<comp/>');
-
-      for my $node ($par->childNodes ())
-        {
-          $loop->appendChild ($node);
-        }
-      
-      $par->appendChild ($loop);
-    }
-
-
-  if ($blockLoop)
-    {
-      for my $expr (&F ('.//named-E/N/n[string(.)="YDCPG_BNDS"]/text()', $par))
-        {
-          $expr->setData ('YLCPG_BNDS');
-        }
-    }
-
-  my %intent;
+  my ($par, $t, $onlysimplefields, $intent, $types, $blockLoop, $find) = @_;
 
   # Process each expression (only NPROMA local arrays and FIELD API backed data) in the parallel section
 
@@ -879,9 +801,96 @@ EOF
               my ($r) = &F ('./R-LT/ANY-R', $e);
               $rlt->appendChild ($r);
             }
-          &Fxtran::Call::grokIntent ($expr, \$intent{$N}, $find);
+          &Fxtran::Call::grokIntent ($expr, \$intent->{$N}, $find);
         }
     }
+
+
+}
+
+sub makeParallel
+{
+  my ($par, $t, $find, $types, $NAME, $POST, $onlysimplefields, $blockLoop) = @_;
+
+  my %POST = map { ($_, 1) } grep { $_ } @$POST;
+
+  my $FILTER = $par->getAttribute ('filter');
+  my $SUBROUTINE = $FILTER && $par->getAttribute ('subroutine');
+
+  if ($SUBROUTINE)
+    {
+      my @proc = &F ('.//procedure-designator/named-E/N/n/text()[string(.)="?"]', $SUBROUTINE, $par);
+      for my $proc (@proc)
+        {
+          my $stmt = &Fxtran::stmt ($proc);
+          my @arg = &F ('./arg-spec/arg', $stmt);
+          &Fxtran::removeListElement ($arg[-1]);
+          (my $tt = $proc->textContent) =~ s/_SELECT$//o;
+          $proc->setData ($tt);
+        }
+    }
+
+  # Add a loop nest on blocks
+
+  my ($stmt) = &F ('.//ANY-stmt', $par);
+
+  $stmt or return;
+
+  my ($JBLKMIN, $JBLKMAX);
+
+  if ($FILTER)
+    {
+      ($JBLKMIN, $JBLKMAX) = ('1', 'YL_FGS%KGPBLKS');
+    }
+  else
+    {
+      ($JBLKMIN, $JBLKMAX) = ('YDCPG_OPTS%JBLKMIN', 'YDCPG_OPTS%JBLKMAX');
+    }
+
+  my $loop;
+
+  if ($blockLoop)
+    {
+      ($loop) = &Fxtran::parse (fragment => << "EOF");
+DO JBLK = $JBLKMIN, $JBLKMAX
+CALL YLCPG_BNDS%UPDATE (JBLK)
+ENDDO
+EOF
+
+      my ($enddo) = &F ('.//end-do-stmt', $loop);
+      my $p = $enddo->parentNode;
+     
+      for my $node ($par->childNodes ())
+        {
+          $p->insertBefore ($node, $enddo);
+        }
+      
+      $par->appendChild ($loop);
+    }
+  else
+    {
+      $loop = &n ('<comp/>');
+
+      for my $node ($par->childNodes ())
+        {
+          $loop->appendChild ($node);
+        }
+      
+      $par->appendChild ($loop);
+    }
+
+
+  if ($blockLoop)
+    {
+      for my $expr (&F ('.//named-E/N/n[string(.)="YDCPG_BNDS"]/text()', $par))
+        {
+          $expr->setData ('YLCPG_BNDS');
+        }
+    }
+
+  my %intent;
+
+  &replaceObjectExprByPointerExpr ($par, $t, $onlysimplefields, \%intent, $types, $blockLoop, $find);
 
   my %intent2access = qw (IN RDONLY INOUT RDWR OUT WRONLY);
 
