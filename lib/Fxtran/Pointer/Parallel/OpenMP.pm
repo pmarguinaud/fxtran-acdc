@@ -8,8 +8,14 @@ package Fxtran::Pointer::Parallel::OpenMP;
 
 
 use strict;
+
 use Fxtran::Pointer::Parallel;
 use Fxtran;
+
+sub getAddBlockIndex
+{
+  1;
+}
 
 sub getDefaultWhere
 {

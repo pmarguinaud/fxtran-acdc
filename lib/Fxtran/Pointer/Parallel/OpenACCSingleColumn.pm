@@ -7,17 +7,24 @@ package Fxtran::Pointer::Parallel::OpenACCSingleColumn;
 #
 
 
+use Data::Dumper;
+
 use strict;
+
 use Fxtran::Pointer::Parallel;
 use Fxtran;
 use Fxtran::DIR;
 use Fxtran::Loop;
-use Data::Dumper;
 use Fxtran::ReDim;
 use Fxtran::Stack;
 use Fxtran::ACPY;
 use Fxtran::Print;
 
+
+sub getAddBlockIndex
+{
+  1;
+}
 
 sub getDefaultWhere
 {
@@ -164,7 +171,7 @@ EOF
     {
       my ($proc) = &F ('./procedure-designator/named-E/N/n/text()', $call);
       next if ($proc eq 'ABOR1');
-      $proc->setData ($proc->textContent . '_OPENACC');
+      $proc->setData ($proc->textContent . $opts{'suffix-singlecolumn'});
       my ($argspec) = &F ('./arg-spec', $call);
       $argspec->appendChild (&t (','));
       $argspec->appendChild (&n ('<arg><arg-N><k>YDSTACK</k></arg-N>=<named-E><N><n>YLSTACK</n></N></named-E></arg>'));

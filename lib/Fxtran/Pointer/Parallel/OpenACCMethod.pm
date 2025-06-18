@@ -6,11 +6,17 @@ package Fxtran::Pointer::Parallel::OpenACCMethod;
 # philippe.marguinaud@meteo.fr
 #
 
+use Data::Dumper;
 
 use strict;
+
 use Fxtran::Pointer::Parallel;
 use Fxtran;
-use Data::Dumper;
+
+sub getAddBlockIndex
+{
+  1;
+}
 
 sub getDefaultWhere
 {

@@ -22,7 +22,6 @@ use Fxtran::Associate;
 use Fxtran::Subroutine;
 use Fxtran::Finder;
 use Fxtran::Include;
-use Fxtran::DIR;
 use Fxtran::Bt;
 use Fxtran::Canonic;
 use Fxtran::Inline;
@@ -65,12 +64,16 @@ EOF
   for my $itarget (0 .. $#target)
     {
       'Fxtran::Pointer::Parallel'->getWhereTargetFromTarget (my $target = $target[$itarget], my $where);
+ 
       my $class = 'Fxtran::Pointer::Parallel'->class ($target);
       my $onlySimpleFields = $class->onlySimpleFields ();
 
+      my $addBlockIndex = $class->getAddBlockIndex ();
+
       my $parallel1 = $parallel->cloneNode (1);
+
       $parallel{$onlySimpleFields} ||= 
-        &Fxtran::Pointer::Parallel::makeParallel ($parallel1, $t, $find, $types, "$NAME:$name", $opts{'post-parallel'}, $onlySimpleFields);
+        &Fxtran::Pointer::Parallel::makeParallel ($parallel1, $t, $find, $types, "$NAME:$name", $opts{'post-parallel'}, $onlySimpleFields, $addBlockIndex);
 
       $$puseUtilMod ||= $class->requireUtilMod ();
     }
@@ -678,7 +681,7 @@ sub fieldifyDecl
 
 sub makeParallel
 {
-  my ($par, $t, $find, $types, $NAME, $POST, $onlysimplefields) = @_;
+  my ($par, $t, $find, $types, $NAME, $POST, $onlysimplefields, $blockLoop) = @_;
 
   my %POST = map { ($_, 1) } grep { $_ } @$POST;
 
@@ -715,27 +718,45 @@ sub makeParallel
       ($JBLKMIN, $JBLKMAX) = ('YDCPG_OPTS%JBLKMIN', 'YDCPG_OPTS%JBLKMAX');
     }
 
-  my ($loop) = &Fxtran::parse (fragment => << "EOF");
+  my $loop;
+
+  if ($blockLoop)
+    {
+      ($loop) = &Fxtran::parse (fragment => << "EOF");
 DO JBLK = $JBLKMIN, $JBLKMAX
 CALL YLCPG_BNDS%UPDATE (JBLK)
 ENDDO
 EOF
 
-  my ($enddo) = &F ('.//end-do-stmt', $loop);
-  my $p = $enddo->parentNode;
-
-  for my $node ($par->childNodes ())
-    {
-      $p->insertBefore ($node, $enddo);
+      my ($enddo) = &F ('.//end-do-stmt', $loop);
+      my $p = $enddo->parentNode;
+     
+      for my $node ($par->childNodes ())
+        {
+          $p->insertBefore ($node, $enddo);
+        }
+      
+      $par->appendChild ($loop);
     }
-  
-  $par->appendChild ($loop);
-
-  my @expr = &F ('.//named-E/N/n[string(.)="YDCPG_BNDS"]/text()', $par);
-
-  for my $expr (@expr)
+  else
     {
-      $expr->setData ('YLCPG_BNDS');
+      $loop = &n ('<comp/>');
+
+      for my $node ($par->childNodes ())
+        {
+          $loop->appendChild ($node);
+        }
+      
+      $par->appendChild ($loop);
+    }
+
+
+  if ($blockLoop)
+    {
+      for my $expr (&F ('.//named-E/N/n[string(.)="YDCPG_BNDS"]/text()', $par))
+        {
+          $expr->setData ('YLCPG_BNDS');
+        }
     }
 
   my %intent;
@@ -837,7 +858,14 @@ EOF
         {
           if ($s->{blocked})
             {
-              &addExtraIndex ($expr, &n ("<named-E><N><n>JBLK</n></N></named-E>"), $s) 
+              if ($blockLoop)
+                {
+                  &addExtraIndex ($expr, &e ('JBLK'), $s) 
+                }
+              else
+                {
+                  &addExtraIndex ($expr, &t (':'), $s) 
+                }
             }
           else # Workaround for PGI bug : add (:,:,:) to avoid PGI error (non contiguous array)
             {
@@ -968,8 +996,14 @@ sub addExtraIndex
   
   my ($rlt) = &F ('./R-LT', $expr);
 
+  if ((! $rlt) && ($ind->textContent eq ':'))
+    {
+      return;
+    }
+
   if ($rlt && (! &F ('./ANY-R', $rlt)))
     {
+      return if ($ind->textContent eq ':');
       $rlt->unbindNode ();
       $rlt = undef;
     }
@@ -995,13 +1029,13 @@ sub addExtraIndex
     {
       my ($sslt) = &F ('./section-subscript-LT', $r);
       $sslt->appendChild (&t (', '));
-      $sslt->appendChild (&n ('<section-subscript><lower-bound><named-E><N><n>JBLK</n></N></named-E></lower-bound></section-subscript>'));
+      $sslt->appendChild (&n ('<section-subscript><lower-bound>' . $ind . '</lower-bound></section-subscript>'));
     }
   elsif ($r->nodeName eq 'parens-R')
     {
       my ($elt) = &F ('./element-LT', $r);
       $elt->appendChild (&t (', '));
-      $elt->appendChild (&n ('<named-E><N><n>JBLK</n></N></named-E>'));
+      $elt->appendChild (&n ($ind));
     }
   else
     {

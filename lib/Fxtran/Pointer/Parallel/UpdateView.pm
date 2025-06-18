@@ -7,10 +7,17 @@ package Fxtran::Pointer::Parallel::UpdateView;
 #
 
 
+use Data::Dumper;
+
 use strict;
+
 use Fxtran::Pointer::Parallel;
 use Fxtran;
-use Data::Dumper;
+
+sub getAddBlockIndex
+{
+  1;
+}
 
 sub getDefaultWhere
 {
