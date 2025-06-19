@@ -2,28 +2,10 @@ package Fxtran::Generate::Checker;
 
 use Data::Dumper;
 
-use Fxtran;
-
 use strict;
 
-sub reportStatement
-{
-  use Text::Wrap;
-
-  my $width = 80;
-
-  my ($mess, $stmt) = @_;
-
-  local $Text::Wrap::columns = $width;
-
-  print "-" x $width, "\n\n";
-
-  print &wrap ('', '', $mess . ':') . "\n\n";
-
-  local $Text::Wrap::separator = " &\n";
-
-  print &wrap ('   ', ' & ', $stmt->textContent), "\n" x 2;
-}
+use Fxtran;
+use Fxtran::Message;
 
 sub checkVariables
 {
@@ -51,51 +33,51 @@ sub checkVariables
    
       if ((! $intent) && $dummy)
         {
-          &reportStatement ("Dummy argument $N must have the INTENT attribute", $decl);
+          &Fxtran::Message::message ("Dummy argument $N must have the INTENT attribute", $decl);
         }
 
       if (($ts->nodeName eq 'derived-T-spec') && ($intent ne 'IN') && $dummy)
         {
-          &reportStatement ("Dummy argument $N must have the INTENT (IN) attribute", $decl);
+          &Fxtran::Message::message ("Dummy argument $N must have the INTENT (IN) attribute", $decl);
         }
 
       if (($ts->nodeName eq 'derived-T-spec') && (! $dummy))
         {
-          &reportStatement ("Local variable with derived type $N is forbidden", $decl);
+          &Fxtran::Message::message ("Local variable with derived type $N is forbidden", $decl);
         }
 
       if (($ts->nodeName eq 'derived-T-spec') && scalar (@ss))
         {
-          &reportStatement ("Derived type array $N is forbidden", $decl);
+          &Fxtran::Message::message ("Derived type array $N is forbidden", $decl);
         }
 
       if ($dummy && (scalar (@ss) == 0) && ($intent ne 'IN') && $intent && ($ts->nodeName ne 'derived-T-spec'))
         {
-          &reportStatement ("Dummy argument $N with intent $intent is forbidden", $decl);
+          &Fxtran::Message::message ("Dummy argument $N with intent $intent is forbidden", $decl);
         }
      
       if (@ss)
         {
           if ((! $allocatable) && (! $pointer) && grep { $_->textContent eq ':' } @ss)
             {
-              &reportStatement ("Assumed shape array $N is forbidden", $decl);
+              &Fxtran::Message::message ("Assumed shape array $N is forbidden", $decl);
             }
           elsif (! grep { $ss[0]->textContent eq $_ } @nproma)
             {
               my @expr = &F ('./ANY-bound/ANY-E', $ss[0]);
-              &reportStatement ("Non NPROMA array $N with unknown compile-time size is forbidden", $decl)
+              &Fxtran::Message::message ("Non NPROMA array $N with unknown compile-time size is forbidden", $decl)
                 if (grep { $_->nodeName eq 'named-E' } @expr);
             }
         }
 
       if ($allocatable)
         {
-          &reportStatement ("Allocatable variable $N is forbidden", $decl);
+          &Fxtran::Message::message ("Allocatable variable $N is forbidden", $decl);
         }
 
       if ($pointer)
         {
-          &reportStatement ("Pointer variable $N is forbidden", $decl);
+          &Fxtran::Message::message ("Pointer variable $N is forbidden", $decl);
         }
     }
 }
@@ -117,7 +99,7 @@ sub checkArraySyntax
           my ($E2) = &F ('./E-2/ANY-E', $stmt);
           if (($E2->nodeName ne 'named-E') && ($E2->nodeName ne 'litteral-E'))
             {
-              &reportStatement ("Assignment statement is forbidden : array syntax is limited to array copy or initialization", $stmt);
+              &Fxtran::Message::message ("Assignment statement is forbidden : array syntax is limited to array copy or initialization", $stmt);
             }
         }
       elsif ($stmt->nodeName eq 'call-stmt')
@@ -135,7 +117,7 @@ sub checkArraySyntax
                 {
                   if ($dd)
                     {
-                      &reportStatement ("Call statement is forbidden because of non-contiguous array section", $stmt);
+                      &Fxtran::Message::message ("Call statement is forbidden because of non-contiguous array section", $stmt);
                       last;
                     }
                 }
@@ -198,13 +180,13 @@ sub checkExpressions
             }
           if ($ss[0] ne "$kidia:$kfdia")
             {
-              &reportStatement ("NPROMA dimensioned array should be indexed with $kidia:$kfdia", $stmt);
+              &Fxtran::Message::message ("NPROMA dimensioned array should be indexed with $kidia:$kfdia", $stmt);
             }
 OK:
         }
       elsif ($ss[0] ne $jlon)
         {
-          &reportStatement ("NPROMA dimensioned array should be indexed with $jlon", $stmt);
+          &Fxtran::Message::message ("NPROMA dimensioned array should be indexed with $jlon", $stmt);
         }
     }
 

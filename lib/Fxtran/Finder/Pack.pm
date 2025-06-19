@@ -38,10 +38,6 @@ sub scanView
     {
       &find ({no_chdir => 1, wanted => $wanted}, "$pack/src/$view/");
     }
-  else
-    {
-      print STDERR "Warning: directory `$pack/src/$view/' does not exist\n";
-    }
 }
 
 # Index files in pack

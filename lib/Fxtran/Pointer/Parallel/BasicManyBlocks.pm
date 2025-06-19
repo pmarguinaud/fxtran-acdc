@@ -12,11 +12,35 @@ use strict;
 
 use Fxtran::Pointer::Parallel;
 use Fxtran;
+use Fxtran::Message;
 
 sub makeParallel
 {
   shift;
   my ($par1, $t, %opts) = @_;
+
+  for my $stmt (&F ('.//ANY-stmt', $par1))
+    {
+      if ($stmt->nodeName eq 'a-stmt')
+        {
+          my %blocked;
+
+          for my $N (&F ('.//named-E/N', $stmt, 1))
+            {
+              my $s = $t->{$N};
+              $blocked{$N}++ if ($s->{blocked});
+            }
+
+          &Fxtran::Message::error 
+          (
+             "NPROMA blocked variables:\n\n" 
+           . join ("\n", map { " - $_\n" } sort keys (%blocked)) . "\n"
+           . "are used following statement is forbidden in a ManyBlocks section",
+           $stmt
+          ) if (%blocked);
+
+        }
+    }
 
   my $style = $par1->getAttribute ('style') || 'IAL';
   $style = 'Fxtran::Style'->new (style => $style);
@@ -34,7 +58,6 @@ sub makeParallel
           $D->setData ($it1);
         }
     }
-
 
   my ($KLON, $KGPTOT, $KGPBLKS, $JBLKMIN);
 
