@@ -421,6 +421,7 @@ sub singleblock
              suffix-singlecolumn suffix-manyblocks version checker array-slice-to-address)}
   drhooktonvtx                    -- Change DrHook calls into NVTX calls
   inlined=s@                      -- List of routines to inline
+  create-interface                -- Generate an interface file
 EOF
 sub manyblocks
 {
@@ -454,6 +455,11 @@ sub manyblocks
     }
   
   &routineToRoutineTail ($F90out, $d, $opts);
+
+  if ($opts->{'create-interface'})
+    {
+      $opts->{style}->generateInterface ($F90out, %$opts);
+    }
 }
 
 &click (<< "EOF");

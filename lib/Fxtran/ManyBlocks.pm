@@ -216,7 +216,7 @@ EOF
   (
     $pu,
     suffix => $opts{'suffix-manyblocks'},
-    'merge-interfaces' => 1,
+    'merge-interfaces' => $opts{'merge-interfaces'},
     match => sub { my $proc = shift; ! ($proc =~ m/$opts{'suffix-singlecolumn'}$/i) },
   );
 
