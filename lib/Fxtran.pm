@@ -39,7 +39,7 @@ Date:   Sun Feb 5 16:09:41 2023 +0000
 
   unless ($version)
     {
-      my @log = split (m/\n/o, `git -C $Bin log -n1`);
+      my @log = split (m/\n/o, `/usr/bin/git --git-dir=$Bin/../.git log -n1`);
       ($version) = ($log[0] =~ m/commit\s+(\w+)/o);
     }
 

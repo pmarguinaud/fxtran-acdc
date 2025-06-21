@@ -359,7 +359,10 @@ sub processSingleRoutine
   
   for my $style (qw (Fxtran::Style::IAL Fxtran::Style::MESONH))
     {
-      $style->setOpenACCInterfaces ($pu, %opts, suffix => $opts{'suffix-singlecolumn'});
+      for my $suffix (@opts{qw (suffix-singlecolumn suffix-manyblocks)})
+        {
+          $style->setOpenACCInterfaces ($pu, %opts, suffix => $suffix);
+        }
     }
   
   if (@parallel)
