@@ -62,7 +62,7 @@ sub slurp
   return $slurp{$f};
 }
 
-my (%deps, %mod2obj);
+my (%deps, %mod2obj, %notfound);
 
 sub deps
 {
@@ -86,16 +86,23 @@ sub deps
       my @mod = map { lc ($_) . '.mod' } @use;
       $deps{$f} = [@mod, @inc];
 
-      for (@{ $deps{$f} })
+      for my $dep (@{ $deps{$f} })
         {
-          s/\.h$/.ok/o;
-          if (m/\.mod$/o)
+          if ($dep =~ s/\.h$/.ok/o)
             {
-               $_ = $mod2obj{$_};
+            }
+          elsif ($dep =~ m/\.mod$/o)
+            {
+              if ($mod2obj{$dep})
+                {
+                  $dep = $mod2obj{$dep};
+                }
+              else
+                {
+                  push @{ $notfound{$f} }, $dep;
+                }
             }
         }
-
-      die $f . "\n" . &Dumper ([$f, $deps{$f}]) if (grep { ! defined ($_) } @{ $deps{$f} });
 
       @{ $deps{$f} } = &uniq (@{ $deps{$f} });
 
@@ -259,6 +266,8 @@ $ok: \$(SRC)/$h @deps
 EOF
   }
 
+
+
 my @subobj;
 
 for my $F90 (@F90)
@@ -283,6 +292,17 @@ EOF
     push @obj, $obj if ($kind ne 'PROGRAM');
 
     push @subobj, $obj if ($kind ne 'MODULE');
+  }
+
+if (%notfound)
+  {
+    print STDERR "The following modules were not found;\n";
+    for my $f (sort keys %notfound)
+      {
+        print STDERR " - $f\n";
+        print STDERR  '   ' . join (" ", @{ $notfound{$f} }) . "\n";
+      }
+    die "\n";
   }
 
 for my $C (<$opts{SRC}/*.c>)
