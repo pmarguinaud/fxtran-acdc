@@ -1,33 +1,5 @@
 #!/usr/bin/perl -w
 
-=head1 NAME
-
-fxtran-difftool
-
-=head1 SYNOPSIS
-
-  $ git difftool -t fxtran-difftool
-
-=head1 DESCRIPTION
-
-Wrap kdiff3, meld or vimdiff. Expand the following FORTRAN statetemnts before calling diff utilities:
-
-- call
-- associate
-- subroutine
-
-Repack after merging.
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 SEE ALSO
-
-fxtran
-
-=cut
-
 use Data::Dumper;
 use Getopt::Long;
 use FileHandle;
@@ -35,97 +7,13 @@ use FindBin qw ($Bin);
 
 use lib "$Bin/../lib";
 
-use Fxtran::Common;
-use Fxtran::Bt;
-
-use fxtran;
-use fxtran::parser;
-use fxtran::xpath;
-
 use strict;
 
+use Fxtran::Common;
+use Fxtran::Bt;
 use Fxtran::Formatter;
 use Fxtran::DiffTool;
-
-my $log;
-
-sub ll
-{
-  $log ||= 'FileHandle'->new (">>fxtran-difftool.txt");
-
-  my @call = caller (0);
-  $log->print ("$call[1]:$call[2]\n");
-  $log->print (@_);
-  $log->print ("\n" x 2);
-}
-
-sub debugCommand
-{
-  use File::Temp;
-  my %args = @_;
-
-  my @cmd = @{ $args{cmd} };
-  my $file = $args{file} || '';
-
-  my $bashrc = 'File::Temp'->new (UNLINK => 1, SUFFIX => '.sh');
-
-  $bashrc->print (<< "EOF");
-
-alias r="echo \\"@cmd\\";  @cmd"
-
-alias e="vi $file"
-
-echo "Command \'@cmd\' fails:"
-echo
-@cmd
-echo
-echo "Type r for running command '@cmd'"
-echo
-if [ "x$file" != "x" ]
-then
-echo "Type e for editing '$file'"
-fi
-echo
-
-export PS1='debug> '
-
-EOF
-
-  $bashrc->flush ();
-
-  system (qw (xterm -e bash --init-file), $bashrc, '-i');
-}
-
-sub runCommand
-{
-  my %args = @_;
-
-  my @cmd = @{ $args{cmd} };
-
-  if (system (@cmd))
-    {
-      goto FAILED unless ($args{debug});
-
-      &debugCommand (%args);
-
-      system (@cmd)
-        and goto FAILED;
-    }
-
-  return;
-FAILED:
-  die ("Command `@cmd' failed");
-}
-
-sub which
-{
-  my $prog = shift;
-  for my $path (split (m/:/o, $ENV{PATH}))
-    {
-      my $p = "$path/$prog";
-      return $p if ((-f $p) && (-x $p));
-    }
-}
+use Fxtran::Tool;
 
 my %opts = qw (simplify-associate-blocks 1);
 my @opts_f = qw (simplify-associate-blocks help);
@@ -146,14 +34,14 @@ unless ($opts{difftool})
   {
     for my $prog (qw (kdiff3 meld vimdiff))
       {
-        next unless (&which ($prog));
+        next unless (&Fxtran::Tool::which ($prog));
         $opts{difftool} = $prog;
         last;
       }
   }
 
-$opts{log} = \&ll;
-$opts{runcommand} = \&runCommand;
+$opts{log} = \&Fxtran::Tool::ll;
+$opts{runcommand} = \&Fxtran::Tool::runCommand;
 
 my ($local, $remote) = @ARGV;
 
