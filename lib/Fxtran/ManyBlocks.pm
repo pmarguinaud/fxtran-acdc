@@ -16,6 +16,157 @@ use Fxtran::Decl;
 use Fxtran::Inline;
 use Fxtran;
 
+sub processSingleSection
+{
+  my ($pu, $par, $var2dim, $KGPBLKS, %opts) = @_;
+
+  my ($style, $pragma) = @opts{qw (style pragma)};
+
+  my @nproma = $style->nproma ();
+  my $jlon = $style->jlon ();
+  my $kidia = $style->kidia ();
+  my $kfdia = $style->kfdia ();
+  
+  # Make the section single column
+  
+  &Fxtran::Loop::removeNpromaLoopsInSection
+  (
+    $par, 
+    style => $style, 
+    var2dim => $var2dim,
+  );
+  
+  # Get JLON indexed expressions and add JBLK as last index
+  
+  for my $sslt (&F ('.//array-R/section-subscript-LT[./section-subscript[string(.)="?"]]', $jlon, $par))
+    {
+      $sslt->appendChild ($_) for (&t (", "), &n ('<section-subscript><lower-bound>' . &e ('JBLK') . '</lower-bound></section-subscript>'));
+    }
+  
+  
+  # JBLK slice for array arguments
+  
+  for my $expr (&F ('.//call-stmt/arg-spec/arg/named-E', $par))
+    {
+      my ($N) = &F ('./N', $expr, 1);
+      next unless (my $nd = $var2dim->{$N});
+  
+      my ($rlt) = &F ('./R-LT', $expr);
+  
+      unless ($rlt)
+        {
+          $rlt = &n ('<R-LT><array-R>(<section-subscript-LT>' . join (', ', ('<section-subscript>:</section-subscript>') x $nd) . '</section-subscript-LT>)</array-R></R-LT>');
+          $expr->appendChild ($rlt);
+        }
+  
+      my ($sslt) = &F ('./array-R/section-subscript-LT', $rlt);
+      $sslt->appendChild ($_) for (&t (', '), &n ('<section-subscript><lower-bound>' . &e ('JBLK') . '</lower-bound></section-subscript>'));
+  
+      if ($opts{'array-slice-to-address'})  # Transform array slice to the address of the first element of the slice
+                                            # We assume that the slice is a contiguous chunk of memory
+        {
+          my @ss = &F ('./array-R/section-subscript-LT/section-subscript', $rlt); 
+  
+          for my $i (0 .. $#ss-1)
+            {
+              my $ss = $ss[$i];
+  
+              my ($lb) = &F ('./lower-bound', $ss);
+              my ($ub) = &F ('./upper-bound', $ss);
+              my ($dd) = &F ('./text()[string(.)=":"]', $ss);
+  
+              $_->unbindNode () 
+                for ($ss->childNodes ());
+  
+              if ($lb)
+                {
+                  $ss->appendChild ($lb);
+                }
+              else
+                {
+                  $ss->appendChild (&n ('<lower-bound>' . &e ("LBOUND ($N, " . ($i+1) . ")") . '</lower-bound>'));
+                }
+            }
+        }
+    }
+  
+  # Move section contents into a DO loop over KLON
+  
+  my ($do_jlon) = &fxtran::parse (fragment => << "EOF");
+DO $jlon = $kidia, MERGE ($nproma[0], $kfdia, JBLK < $KGPBLKS)
+ENDDO
+EOF
+  
+  for my $x ($par->childNodes ())
+    {
+      $do_jlon->insertBefore ($x, $do_jlon->lastChild);
+    }
+  
+  $par->replaceNode ($do_jlon);    
+  
+  # Use a stack
+  
+  if (&Fxtran::Stack::addStackInSection ($do_jlon))
+    {
+      &Fxtran::Stack::iniStackManyBlocks ($do_jlon, stack84 => 1, JBLKMIN => 1, KGPBLKS => $KGPBLKS);
+    }
+  
+  # Replace KIDIA/KFDIA by JLON in call statements
+  
+  for my $call (&F ('.//call-stmt', $do_jlon))
+    {
+      for my $var ($kidia, $kfdia)
+        {
+          for my $expr (&F ('.//named-E[string(.)="?"]', $var, $call))
+            {
+              $expr->replaceNode (&e ($jlon));
+            }
+        }
+    }
+  
+  # Add single column suffix to routines called in this section
+  
+  &Fxtran::Call::addSuffix 
+  (
+    $pu,
+    section => $do_jlon,
+    suffix => $opts{'suffix-singlecolumn'},
+    'merge-interfaces' => $opts{'merge-interfaces'},
+  );
+  
+  # Move loop over NPROMA into a loop over the blocks
+  
+  my ($do_jblk) = &fxtran::parse (fragment => << "EOF");
+DO JBLK = 1, $KGPBLKS
+ENDDO
+EOF
+
+  my $do_jlon1 = $do_jlon->cloneNode (); $do_jlon1->appendChild ($_) for ($do_jlon->childNodes ());
+  
+  $do_jblk->insertBefore ($_, $do_jblk->lastChild) 
+    for ($do_jlon1, &t ("\n"));
+  
+  $do_jlon->replaceNode ($do_jblk); $do_jlon = $do_jlon1;
+  
+  # Find private variables
+  
+  my %priv;
+  for my $expr (&F ('.//named-E', $do_jlon))
+    {
+      my ($n) = &F ('./N', $expr, 1);
+      next if ($var2dim->{$n});
+      my $p = $expr->parentNode;
+      $priv{$n}++ if (($p->nodeName eq 'E-1') || ($p->nodeName eq 'do-V'));
+    }
+  
+  # Add OpenACC directive  
+  
+  $pragma->insertLoopVector ($do_jlon, PRIVATE => [sort (keys (%priv))]);
+  
+  $pragma->insertParallelLoopGang ($do_jblk, PRIVATE => ['JBLK'], VECTOR_LENGTH => [$nproma[0]], IF => ['LDACC']);
+
+}
+
 sub processSingleRoutine
 {
   my ($pu, %opts) = @_;
@@ -39,7 +190,6 @@ sub processSingleRoutine
   my ($ep) = &F ('./execution-part', $pu);
   
   my @nproma = $style->nproma ();
-  
   my $jlon = $style->jlon ();
   my $kidia = $style->kidia ();
   my $kfdia = $style->kfdia ();
@@ -69,145 +219,7 @@ sub processSingleRoutine
   
   for my $par (@par)
     {
-
-      # Make the section single column
-
-      &Fxtran::Loop::removeNpromaLoopsInSection
-      (
-        $par, 
-        style => $style, 
-        var2dim => $var2dim,
-      );
-
-      # Get JLON indexed expressions and add JBLK as last index
-
-      for my $sslt (&F ('.//array-R/section-subscript-LT[./section-subscript[string(.)="?"]]', $jlon, $par))
-        {
-          $sslt->appendChild ($_) for (&t (", "), &n ('<section-subscript><lower-bound>' . &e ('JBLK') . '</lower-bound></section-subscript>'));
-        }
-
-
-      # JBLK slice for array arguments
-
-      for my $expr (&F ('.//call-stmt/arg-spec/arg/named-E', $par))
-        {
-          my ($N) = &F ('./N', $expr, 1);
-          next unless (my $nd = $var2dim->{$N});
-
-          my ($rlt) = &F ('./R-LT', $expr);
-
-          unless ($rlt)
-            {
-              $rlt = &n ('<R-LT><array-R>(<section-subscript-LT>' . join (', ', ('<section-subscript>:</section-subscript>') x $nd) . '</section-subscript-LT>)</array-R></R-LT>');
-              $expr->appendChild ($rlt);
-            }
-
-          my ($sslt) = &F ('./array-R/section-subscript-LT', $rlt);
-          $sslt->appendChild ($_) for (&t (', '), &n ('<section-subscript><lower-bound>' . &e ('JBLK') . '</lower-bound></section-subscript>'));
-
-          if ($opts{'array-slice-to-address'})  # Transform array slice to the address of the first element of the slice
-                                                # We assume that the slice is a contiguous chunk of memory
-            {
-              my @ss = &F ('./array-R/section-subscript-LT/section-subscript', $rlt); 
-
-              for my $i (0 .. $#ss-1)
-                {
-                  my $ss = $ss[$i];
-
-                  my ($lb) = &F ('./lower-bound', $ss);
-                  my ($ub) = &F ('./upper-bound', $ss);
-                  my ($dd) = &F ('./text()[string(.)=":"]', $ss);
-
-                  $_->unbindNode () 
-                    for ($ss->childNodes ());
-
-                  if ($lb)
-                    {
-                      $ss->appendChild ($lb);
-                    }
-                  else
-                    {
-                      $ss->appendChild (&n ('<lower-bound>' . &e ("LBOUND ($N, " . ($i+1) . ")") . '</lower-bound>'));
-                    }
-                }
-            }
-        }
-
-      # Move section contents into a DO loop over KLON
-
-      my ($do_jlon) = &fxtran::parse (fragment => << "EOF");
-DO $jlon = $kidia, MERGE ($nproma[0], $kfdia, JBLK < $KGPBLKS)
-ENDDO
-EOF
-  
-      for my $x ($par->childNodes ())
-        {
-          $do_jlon->insertBefore ($x, $do_jlon->lastChild);
-        }
-  
-      $par->replaceNode ($do_jlon);    
-  
-      # Use a stack
-
-      if (&Fxtran::Stack::addStackInSection ($do_jlon))
-        {
-          &Fxtran::Stack::iniStackManyBlocks ($do_jlon, stack84 => 1, JBLKMIN => 1, KGPBLKS => $KGPBLKS);
-        }
-
-      # Replace KIDIA/KFDIA by JLON in call statements
-
-      for my $call (&F ('.//call-stmt', $do_jlon))
-        {
-          for my $var ($kidia, $kfdia)
-            {
-              for my $expr (&F ('.//named-E[string(.)="?"]', $var, $call))
-                {
-                  $expr->replaceNode (&e ($jlon));
-                }
-            }
-        }
-
-      # Add single column suffix to routines called in this section
-
-      &Fxtran::Call::addSuffix 
-      (
-        $pu,
-        section => $do_jlon,
-        suffix => $opts{'suffix-singlecolumn'},
-        'merge-interfaces' => $opts{'merge-interfaces'},
-      );
-  
-      # Move loop over NPROMA into a loop over the blocks
-  
-      my ($do_jblk) = &fxtran::parse (fragment => << "EOF");
-DO JBLK = 1, $KGPBLKS
-ENDDO
-EOF
-
-      my $do_jlon1 = $do_jlon->cloneNode (); $do_jlon1->appendChild ($_) for ($do_jlon->childNodes ());
-
-      $do_jblk->insertBefore ($_, $do_jblk->lastChild) 
-        for ($do_jlon1, &t ("\n"));
-
-      $do_jlon->replaceNode ($do_jblk); $do_jlon = $do_jlon1;
-
-      # Find private variables
-
-      my %priv;
-      for my $expr (&F ('.//named-E', $do_jlon))
-        {
-          my ($n) = &F ('./N', $expr, 1);
-          next if ($var2dim->{$n});
-          my $p = $expr->parentNode;
-          $priv{$n}++ if (($p->nodeName eq 'E-1') || ($p->nodeName eq 'do-V'));
-        }
-
-      # Add OpenACC directive  
-
-      $pragma->insertLoopVector ($do_jlon, PRIVATE => [sort (keys (%priv))]);
-
-      $pragma->insertParallelLoopGang ($do_jblk, PRIVATE => ['JBLK'], VECTOR_LENGTH => [$nproma[0]], IF => ['LDACC']);
-
+      &processSingleSection ($pu, $par, $var2dim, $KGPBLKS, %opts);
     }
   
   # Add single block suffix to routines not called from within parallel sections
