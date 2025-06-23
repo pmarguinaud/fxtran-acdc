@@ -43,25 +43,26 @@ sub iniStackManyBlocks
 {
   my ($do_jlon, %opts) = @_;
 
-  my ($JBLKMIN, $KGPBLKS, $YDSTACKBASE) = @opts{qw (JBLKMIN KGPBLKS YDSTACKBASE)};
+  my ($JBLKMIN, $KGPBLKS, $stackmacro, $stackbase) = @opts{qw (JBLKMIN KGPBLKS stack-macro stack-base)};
+
+  $stackmacro ||= 'stack';
+  $stackbase ||= 'YSTACK';
 
   if ($opts{stack84})
     {
       for my $size (4, 8)
         {
-          my $base = $YDSTACKBASE ? '_base' : ''; my $ydstackbase = $YDSTACKBASE ? ", $YDSTACKBASE" : "";
-          $do_jlon->insertAfter (&s ("YLSTACK%U${size} = stack_u${size}${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS $ydstackbase)"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&s ("YLSTACK%U${size} = ${stackmacro}_u${size} ($stackbase, (JBLK-$JBLKMIN)+1, $KGPBLKS)"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&s ("YLSTACK%L${size} = stack_l${size}${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS $ydstackbase)"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&s ("YLSTACK%L${size} = ${stackmacro}_l${size} ($stackbase, (JBLK-$JBLKMIN)+1, $KGPBLKS)"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
         }
     }
   else
     {
-      my $base = $YDSTACKBASE ? '_base' : ''; my $ydstackbase = $YDSTACKBASE ? ", $YDSTACKBASE" : "";
-      $do_jlon->insertAfter (&s ("YLSTACK%U = stack_u${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS $ydstackbase)"), $do_jlon->firstChild);
+      $do_jlon->insertAfter (&s ("YLSTACK%U = ${stackmacro}_u ($stackbase, (JBLK-$JBLKMIN)+1, $KGPBLKS)"), $do_jlon->firstChild);
       $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
-      $do_jlon->insertAfter (&s ("YLSTACK%L = stack_l${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS $ydstackbase)"), $do_jlon->firstChild);
+      $do_jlon->insertAfter (&s ("YLSTACK%L = ${stackmacro}_l ($stackbase, (JBLK-$JBLKMIN)+1, $KGPBLKS)"), $do_jlon->firstChild);
       $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
     }
 
