@@ -43,23 +43,25 @@ sub iniStackManyBlocks
 {
   my ($do_jlon, %opts) = @_;
 
-  my ($JBLKMIN, $KGPBLKS) = @opts{qw (JBLKMIN KGPBLKS)};
+  my ($JBLKMIN, $KGPBLKS, $YDSTACKBASE) = @opts{qw (JBLKMIN KGPBLKS YDSTACKBASE)};
 
   if ($opts{stack84})
     {
       for my $size (4, 8)
         {
-          $do_jlon->insertAfter (&s ("YLSTACK%U${size} = stack_u${size} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS)"), $do_jlon->firstChild);
+          my $base = $YDSTACKBASE ? '_base' : ''; my $ydstackbase = $YDSTACKBASE ? ", $YDSTACKBASE" : "";
+          $do_jlon->insertAfter (&s ("YLSTACK%U${size} = stack_u${size}${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS $ydstackbase)"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&s ("YLSTACK%L${size} = stack_l${size} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS)"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&s ("YLSTACK%L${size} = stack_l${size}${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS $ydstackbase)"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
         }
     }
   else
     {
-      $do_jlon->insertAfter (&s ("YLSTACK%U = stack_u (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS)"), $do_jlon->firstChild);
+      my $base = $YDSTACKBASE ? '_base' : ''; my $ydstackbase = $YDSTACKBASE ? ", $YDSTACKBASE" : "";
+      $do_jlon->insertAfter (&s ("YLSTACK%U = stack_u${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS $ydstackbase)"), $do_jlon->firstChild);
       $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
-      $do_jlon->insertAfter (&s ("YLSTACK%L = stack_l (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS)"), $do_jlon->firstChild);
+      $do_jlon->insertAfter (&s ("YLSTACK%L = stack_l${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS $ydstackbase)"), $do_jlon->firstChild);
       $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
     }
 

@@ -27,10 +27,20 @@ USE PARKIND1, ONLY : JPRB
 #define malign(p,k) ((((p)+(k)-1)/(k)) * (k))
 
 #define stack_l4(ydstack,ibl,nbl) malign(LOC (ydstack%ZDATA4 (1,1,1,1)) + ((INT (ibl, 8) - 1) * SIZE (ydstack%ZDATA4) * KIND (ydstack%ZDATA4)) / INT (nbl, 8), ydstack%IALIGN) 
-#define stack_u4(ydstack,ibl,nbl)        LOC (ydstack%ZDATA4 (1,1,1,1)) + ((INT (ibl, 8)    ) * SIZE (ydstack%ZDATA4) * KIND (ydstack%ZDATA4)) / INT (nbl, 8)
+#define stack_u4(ydstack,ibl,nbl)       (LOC (ydstack%ZDATA4 (1,1,1,1)) + ((INT (ibl, 8)    ) * SIZE (ydstack%ZDATA4) * KIND (ydstack%ZDATA4)) / INT (nbl, 8))
   
 #define stack_l8(ydstack,ibl,nbl) malign(LOC (ydstack%ZDATA8 (1,1,1,1)) + ((INT (ibl, 8) - 1) * SIZE (ydstack%ZDATA8) * KIND (ydstack%ZDATA8)) / INT (nbl, 8), ydstack%IALIGN) 
-#define stack_u8(ydstack,ibl,nbl)        LOC (ydstack%ZDATA8 (1,1,1,1)) + ((INT (ibl, 8)    ) * SIZE (ydstack%ZDATA8) * KIND (ydstack%ZDATA8)) / INT (nbl, 8)
+#define stack_u8(ydstack,ibl,nbl)       (LOC (ydstack%ZDATA8 (1,1,1,1)) + ((INT (ibl, 8)    ) * SIZE (ydstack%ZDATA8) * KIND (ydstack%ZDATA8)) / INT (nbl, 8))
+  
+#define stack_l4_base(ydstack,ibl,nbl,ydstackbase) \
+  malign(ydstackbase%L4 + LOC (ydstack%ZDATA4 (1,1,1,1)) + ((INT (ibl, 8) - 1) * (SIZE (ydstack%ZDATA4) * KIND (ydstack%ZDATA4) - ydstackbase%L4)) / INT (nbl, 8), ydstack%IALIGN) 
+#define stack_u4_base(ydstack,ibl,nbl,ydstackbase) \
+        (ydstackbase%L4 + LOC (ydstack%ZDATA4 (1,1,1,1)) + ((INT (ibl, 8)    ) * (SIZE (ydstack%ZDATA4) * KIND (ydstack%ZDATA4) - ydstackbase%L4)) / INT (nbl, 8))
+  
+#define stack_l8_base(ydstack,ibl,nbl,ydstackbase) \
+  malign(ydstackbase%L8 + LOC (ydstack%ZDATA8 (1,1,1,1)) + ((INT (ibl, 8) - 1) * (SIZE (ydstack%ZDATA8) * KIND (ydstack%ZDATA8) - ydstackbase%L8)) / INT (nbl, 8), ydstack%IALIGN) 
+#define stack_u8_base(ydstack,ibl,nbl,ydstackbase) \
+        (ydstackbase%L8 + LOC (ydstack%ZDATA8 (1,1,1,1)) + ((INT (ibl, 8)    ) * (SIZE (ydstack%ZDATA8) * KIND (ydstack%ZDATA8) - ydstackbase%L8)) / INT (nbl, 8))
   
 #else
 

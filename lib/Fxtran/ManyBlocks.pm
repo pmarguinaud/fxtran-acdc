@@ -18,7 +18,7 @@ use Fxtran;
 
 sub processSingleSection
 {
-  my ($pu, $par, $var2dim, $KGPBLKS, %opts) = @_;
+  my ($pu, $par, $var2dim, $typearg, $KGPBLKS, %opts) = @_;
 
   my ($style, $pragma) = @opts{qw (style pragma)};
 
@@ -108,7 +108,11 @@ EOF
   
   if (&Fxtran::Stack::addStackInSection ($do_jlon))
     {
-      &Fxtran::Stack::iniStackManyBlocks ($do_jlon, stack84 => 1, JBLKMIN => 1, KGPBLKS => $KGPBLKS);
+      &Fxtran::Stack::iniStackManyBlocks 
+        ( 
+          $do_jlon, stack84 => 1, JBLKMIN => 1, KGPBLKS => $KGPBLKS, 
+          $opts{'use-stack'} ? (YDSTACKBASE => 'YLSTACKBASE') : (),
+        );
     }
   
   # Replace KIDIA/KFDIA by JLON in call statements
@@ -148,22 +152,39 @@ EOF
   
   $do_jlon->replaceNode ($do_jblk); $do_jlon = $do_jlon1;
   
-  # Find private variables
+  # Find private variables, derived typed arguments, NPROMA blocked arrays
   
-  my %priv;
+  my (%priv, %nproma, %type);
+  
   for my $expr (&F ('.//named-E', $do_jlon))
     {
       my ($n) = &F ('./N', $expr, 1);
-      next if ($var2dim->{$n});
-      my $p = $expr->parentNode;
-      $priv{$n}++ if (($p->nodeName eq 'E-1') || ($p->nodeName eq 'do-V'));
+      if ($var2dim->{$n})
+        {
+          $nproma{$n}++;
+        }
+      elsif ($typearg->{$n})
+        {
+          $type{$n}++;
+        }
+      else
+        {
+          my $p = $expr->parentNode;
+          $priv{$n}++ if (($p->nodeName eq 'E-1') || ($p->nodeName eq 'do-V'));
+        }
     }
   
   # Add OpenACC directive  
   
   $pragma->insertLoopVector ($do_jlon, PRIVATE => [sort (keys (%priv))]);
   
-  $pragma->insertParallelLoopGang ($do_jblk, PRIVATE => ['JBLK'], VECTOR_LENGTH => [$nproma[0]], IF => ['LDACC']);
+  $pragma->insertParallelLoopGang 
+    ( 
+      $do_jblk, PRIVATE => ['JBLK'], VECTOR_LENGTH => [$nproma[0]], IF => ['LDACC'],
+      $opts{'use-stack'}
+     ? (PRESENT => [sort (keys (%nproma), keys (%type))])
+     : ()
+    );
 
 }
 
@@ -194,23 +215,31 @@ sub processSingleRoutine
   my $kidia = $style->kidia ();
   my $kfdia = $style->kfdia ();
   
+  $opts{'use-stack'} = 1;
+
   # Arrays dimensioned with KLON and their dimensions
 
   my $var2dim = &Fxtran::Loop::getVarToDim ($pu, style => $style);
+  my $typearg = {};
   
   {
-  # Derived types, assume they are present on the device
-  my @type = &F ('./T-decl-stmt[./_T-spec_/derived-T-spec]/EN-decl-LT/EN-decl/EN-N', $dp, 1);
-  my %type = map { ($_, 1) } @type;
-  
-  my @arg = &F ('./subroutine-stmt/dummy-arg-LT/arg-N', $pu, 1);
-  my %arg = map { ($_, 1) } @arg;
-  
-  my @present = grep { $var2dim->{$_} || $type{$_} } @arg;
-  my @create = grep { ! $arg{$_} } sort (keys (%$var2dim));
-  
-  # Create local arrays, assume argument arrays are on the device
-  $pragma->insertData ($ep, PRESENT => \@present, CREATE => \@create, IF => ['LDACC']);
+    # Derived types, assume they are present on the device
+    my @typearg = &F ('./T-decl-stmt[./_T-spec_/derived-T-spec]/EN-decl-LT/EN-decl/EN-N', $dp, 1);
+
+    my @arg = &F ('./subroutine-stmt/dummy-arg-LT/arg-N', $pu, 1);
+    my %arg = map { ($_, 1) } @arg;
+
+    $typearg = {map { ($_, 1) } grep { $arg{$_} } @typearg};
+
+    unless ($opts{'use-stack'})
+      {
+        my @present = grep { $var2dim->{$_} || $typearg->{$_} } @arg;
+        my @create = grep { ! $arg{$_} } sort (keys (%$var2dim));
+       
+        # Create local arrays, assume argument arrays are on the device
+        $pragma->insertData ($ep, PRESENT => \@present, CREATE => \@create, IF => ['LDACC']);
+      }
+
   }
   
   # Parallel sections
@@ -219,7 +248,7 @@ sub processSingleRoutine
   
   for my $par (@par)
     {
-      &processSingleSection ($pu, $par, $var2dim, $KGPBLKS, %opts);
+      &processSingleSection ($pu, $par, $var2dim, $typearg, $KGPBLKS, %opts);
     }
   
   # Add single block suffix to routines not called from within parallel sections
@@ -244,6 +273,11 @@ sub processSingleRoutine
           last;
         }
       $argspec->appendChild ($_) for (&t (", "), &n ("<arg><arg-N><k>LDACC</k></arg-N> = " . &e ('LDACC') . '</arg>'));
+
+      if ($opts{'use-stack'})
+        {
+          $argspec->appendChild ($_) for (&t (", "), &n ("<arg><arg-N><k>YDSTACKBASE</k></arg-N> = " . &e ('YLSTACKBASE') . '</arg>'));
+        }
     }
   
   # Add KGPBLKS dummy argument
@@ -275,8 +309,13 @@ sub processSingleRoutine
     my ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $arg[-1], $dp);
 
     $dp->insertAfter ($_, $decl) for (&s ("LOGICAL, INTENT (IN) :: LDACC"), &t ("\n"));
-
     $dal->appendChild ($_) for (&t (", "), &n ("<arg-N>LDACC</arg-N>"));
+
+    if ($opts{'use-stack'})
+      {
+        $dp->insertAfter ($_, $decl) for (&s ("TYPE (STACK), INTENT (IN) :: YDSTACKBASE"), &t ("\n"));
+        $dal->appendChild ($_) for (&t (", "), &n ("<arg-N>YDSTACKBASE</arg-N>"));
+      }
   }
 
   # Stack definition & declaration
@@ -288,6 +327,7 @@ sub processSingleRoutine
  
 
   &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLSTACK');
+  &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLSTACKBASE') if ($opts{'use-stack'});
   &Fxtran::Decl::use ($pu, 'USE STACK_MOD');
 
   # Add extra dimensions to all nproma arrays + make all array spec implicit
@@ -347,6 +387,83 @@ NPROMA:
   &Fxtran::Decl::declare ($pu, 'INTEGER :: JBLK');
 
   &Fxtran::Subroutine::addSuffix ($pu, $opts{'suffix-manyblocks'});
+
+  &stackAllocateTemporaries ($pu, $var2dim, %opts)
+    if ($opts{'use-stack'});
+}
+
+sub stackAllocateTemporaries
+{
+  my ($pu, $var2dim, %opts) = @_;
+
+  my ($ep) = &F ('./execution-part', $pu);
+  my ($dp) = &F ('./specification-part/declaration-part', $pu);
+
+  $ep->insertBefore (my $C = &n ("<C>!</C>"), $ep->firstChild);
+
+  for my $decl (&F ('./T-decl-stmt', $dp))
+    {
+      next if (&F ('./attribute[string(./attribute-N)="INTENT"]', $decl));
+      my ($en_decl) = &F ('./EN-decl-LT/EN-decl', $decl);
+      my ($n) = &F ('./EN-N', $en_decl, 1);
+      next unless ($var2dim->{$n});
+      my ($ts) = &F ('./_T-spec_', $decl, 1);
+      my ($as) = &F ('./array-spec', $en_decl, 1);
+      $decl->replaceNode (&t ("temp ($ts, $n, $as)"));
+
+      my ($if) = &fxtran::parse (fragment => << "EOF");
+IF (KIND ($n) == 8) THEN
+  alloc8 ($n)
+ELSEIF (KIND ($n) == 4) THEN
+  alloc4 ($n)
+ELSE
+  STOP 1
+ENDIF
+EOF
+
+      $ep->insertBefore ($_, $ep->firstChild) for (&t ("\n"), $if);
+    }
+
+if(0){
+  $ep->insertBefore ($_, $ep->firstChild)
+    for (&t ("\n"), &t ("PRINT *, __FILE__, ':', __LINE__, ' YLSTACK%L4 = ', YLSTACK%L4"),
+         &t ("\n"), &t ("PRINT *, __FILE__, ':', __LINE__, ' YLSTACK%L8 = ', YLSTACK%L8"));
+}
+
+
+  # Before allocations : initialize YLSTACK, using YSTACK and YDSTACKBASE
+  for my $size (4, 8)
+    {
+
+      for my $x (&t ("\n"), &s ("YLSTACK%L${size} = stack_l${size}_base (YSTACK, 1, 1, YDSTACKBASE)"),
+                 &t ("\n"), &s ("YLSTACK%U${size} = stack_u${size}_base (YSTACK, 1, 1, YDSTACKBASE)"))
+        {
+          $ep->insertBefore ($x, $ep->firstChild);
+        }
+
+    }
+
+  $ep->insertAfter (&t ("\n"), $C);
+
+  # After allocations, initialize YLSTACKBASE
+
+if(0){
+  $ep->insertAfter ($_, $C)
+    for (&t ("\n"), &t ("PRINT *, __FILE__, ':', __LINE__, ' YLSTACKBASE%L4 = ', YLSTACKBASE%L4"),
+         &t ("\n"), &t ("PRINT *, __FILE__, ':', __LINE__, ' YLSTACKBASE%L8 = ', YLSTACKBASE%L8"));
+
+  $ep->insertAfter ($_, $C)
+    for (&t ("\n"), &t ("PRINT *, __FILE__, ':', __LINE__, ' YLSTACK%L4 = ', YLSTACK%L4"),
+         &t ("\n"), &t ("PRINT *, __FILE__, ':', __LINE__, ' YLSTACK%L8 = ', YLSTACK%L8"));
+}
+
+  $ep->insertAfter ($_, $C) 
+     for (&t ("\n"), &s ("YLSTACKBASE%L8 = YLSTACK%L8 - stack_l8_base (YSTACK, 1, 1, YDSTACKBASE) + YDSTACKBASE%L8"),
+          &t ("\n"), &s ("YLSTACKBASE%L4 = YLSTACK%L4 - stack_l4_base (YSTACK, 1, 1, YDSTACKBASE) + YDSTACKBASE%L4"));
+
+  $C->unbindNode ();
+
+
 
 }
 
