@@ -1,0 +1,36 @@
+#ifndef _STACK_MACROS_H
+#define _STACK_MACROS_H
+
+#define temp(t, n, s) t, DIMENSION s :: n; POINTER (IP_##n##_, n)
+
+#define alloc(n) IP_##n##_=YLSTACK%L;YLSTACK%L=YLSTACK%L+MAX(JPRB,KIND(n))*SIZE(n,KIND=8);IF(YLSTACK%L>YLSTACK%U)CALL ABOR1_ACC(__FILE__)
+
+#define assoc(p,q) IP_##p##_ = LOC(q)
+
+#define nullptr(p) IP_##p##_ = 0
+
+#define alloc4(n) IP_##n##_=YLSTACK%L4;YLSTACK%L4=YLSTACK%L4+4*SIZE(n,KIND=8);IF(YLSTACK%L4>YLSTACK%U4)CALL ABOR1_ACC(__FILE__)
+
+#define alloc8(n) IP_##n##_=YLSTACK%L8;YLSTACK%L8=YLSTACK%L8+8*SIZE(n,KIND=8);IF(YLSTACK%L8>YLSTACK%U8)CALL ABOR1_ACC(__FILE__)
+
+#define malign(p,k) ((((p)+(k)-1)/(k)) * (k))
+
+#define stack_l4(ydstack,ibl,nbl) malign(LOC (ydstack%ZDATA4 (1,1,1,1)) + ((INT (ibl, 8) - 1) * SIZE (ydstack%ZDATA4,KIND=8) * KIND (ydstack%ZDATA4)) / INT (nbl, 8), ydstack%IALIGN) 
+#define stack_u4(ydstack,ibl,nbl)       (LOC (ydstack%ZDATA4 (1,1,1,1)) + ((INT (ibl, 8)    ) * SIZE (ydstack%ZDATA4,KIND=8) * KIND (ydstack%ZDATA4)) / INT (nbl, 8))
+  
+#define stack_l8(ydstack,ibl,nbl) malign(LOC (ydstack%ZDATA8 (1,1,1,1)) + ((INT (ibl, 8) - 1) * SIZE (ydstack%ZDATA8,KIND=8) * KIND (ydstack%ZDATA8)) / INT (nbl, 8), ydstack%IALIGN) 
+#define stack_u8(ydstack,ibl,nbl)       (LOC (ydstack%ZDATA8 (1,1,1,1)) + ((INT (ibl, 8)    ) * SIZE (ydstack%ZDATA8,KIND=8) * KIND (ydstack%ZDATA8)) / INT (nbl, 8))
+  
+#define stackd_l4(ydstack,ibl,nbl) malign(ydstack%L4 + ((INT (ibl, 8) - 1) * (ydstack%U4 - ydstack%L4)) / INT (nbl, 8), 8) 
+#define stackd_u4(ydstack,ibl,nbl)       (ydstack%L4 + ((INT (ibl, 8)    ) * (ydstack%U4 - ydstack%L4)) / INT (nbl, 8))
+  
+#define stackd_l8(ydstack,ibl,nbl) malign(ydstack%L8 + ((INT (ibl, 8) - 1) * (ydstack%U8 - ydstack%L8)) / INT (nbl, 8), 8) 
+#define stackd_u8(ydstack,ibl,nbl)       (ydstack%L8 + ((INT (ibl, 8)    ) * (ydstack%U8 - ydstack%L8)) / INT (nbl, 8))
+
+#ifdef _OPENACC
+#define devaddr(x,ldacc) MERGE (TRANSFER (ACC_DEVICEPTR (x), 1_8), LOC (x), ldacc)
+#else
+#define devaddr(x,ldacc) LOC (x)
+#endif
+
+#endif
