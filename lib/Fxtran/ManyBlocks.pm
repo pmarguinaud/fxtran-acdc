@@ -111,7 +111,7 @@ EOF
       &Fxtran::Stack::iniStackManyBlocks 
         ( 
           $do_jlon, stack84 => 1, JBLKMIN => 1, KGPBLKS => $KGPBLKS, 
-          $opts{'use-stack'} ? (YDSTACKBASE => 'YLSTACKBASE') : (),
+          $opts{'use-stack-manyblocks'} ? (YDSTACKBASE => 'YLSTACKBASE') : (),
         );
     }
   
@@ -181,7 +181,7 @@ EOF
   $pragma->insertParallelLoopGang 
     ( 
       $do_jblk, PRIVATE => ['JBLK'], VECTOR_LENGTH => [$nproma[0]], IF => ['LDACC'],
-      $opts{'use-stack'}
+      $opts{'use-stack-manyblocks'}
      ? (PRESENT => [sort (keys (%nproma), keys (%type))])
      : ()
     );
@@ -215,8 +215,6 @@ sub processSingleRoutine
   my $kidia = $style->kidia ();
   my $kfdia = $style->kfdia ();
   
-  $opts{'use-stack'} = 1;
-
   # Arrays dimensioned with KLON and their dimensions
 
   my $var2dim = &Fxtran::Loop::getVarToDim ($pu, style => $style);
@@ -231,7 +229,7 @@ sub processSingleRoutine
 
     $typearg = {map { ($_, 1) } grep { $arg{$_} } @typearg};
 
-    unless ($opts{'use-stack'})
+    unless ($opts{'use-stack-manyblocks'})
       {
         my @present = grep { $var2dim->{$_} || $typearg->{$_} } @arg;
         my @create = grep { ! $arg{$_} } sort (keys (%$var2dim));
@@ -274,7 +272,7 @@ sub processSingleRoutine
         }
       $argspec->appendChild ($_) for (&t (", "), &n ("<arg><arg-N><k>LDACC</k></arg-N> = " . &e ('LDACC') . '</arg>'));
 
-      if ($opts{'use-stack'})
+      if ($opts{'use-stack-manyblocks'})
         {
           $argspec->appendChild ($_) for (&t (", "), &n ("<arg><arg-N><k>YDSTACKBASE</k></arg-N> = " . &e ('YLSTACKBASE') . '</arg>'));
         }
@@ -311,7 +309,7 @@ sub processSingleRoutine
     $dp->insertAfter ($_, $decl) for (&s ("LOGICAL, INTENT (IN) :: LDACC"), &t ("\n"));
     $dal->appendChild ($_) for (&t (", "), &n ("<arg-N>LDACC</arg-N>"));
 
-    if ($opts{'use-stack'})
+    if ($opts{'use-stack-manyblocks'})
       {
         $dp->insertAfter ($_, $decl) for (&s ("TYPE (STACK), INTENT (IN) :: YDSTACKBASE"), &t ("\n"));
         $dal->appendChild ($_) for (&t (", "), &n ("<arg-N>YDSTACKBASE</arg-N>"));
@@ -327,7 +325,7 @@ sub processSingleRoutine
  
 
   &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLSTACK');
-  &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLSTACKBASE') if ($opts{'use-stack'});
+  &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLSTACKBASE') if ($opts{'use-stack-manyblocks'});
   &Fxtran::Decl::use ($pu, 'USE STACK_MOD');
 
   # Add extra dimensions to all nproma arrays + make all array spec implicit
@@ -389,7 +387,7 @@ NPROMA:
   &Fxtran::Subroutine::addSuffix ($pu, $opts{'suffix-manyblocks'});
 
   &stackAllocateTemporaries ($pu, $var2dim, %opts)
-    if ($opts{'use-stack'});
+    if ($opts{'use-stack-manyblocks'});
 }
 
 sub stackAllocateTemporaries

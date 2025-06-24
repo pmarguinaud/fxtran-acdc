@@ -422,6 +422,7 @@ sub singleblock
   drhooktonvtx                    -- Change DrHook calls into NVTX calls
   inlined=s@                      -- List of routines to inline
   create-interface                -- Generate an interface file
+  use-stack-manyblocks            -- Use stack allocation for manyblocks routines
 EOF
 sub manyblocks
 {
