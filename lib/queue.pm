@@ -2,17 +2,34 @@ package queue;
 
 use threads;
 use Thread::Queue;
+use Data::Dumper;
 
 use strict;
 
-sub new
+sub runCommand
 {
-  my $class = shift;
-  my %args = @_;
+  my %opts = @_;
 
-  my $self = bless \%args, $class;
+  my $cmd = $opts{command};
 
-  $self->{threads} ||= 1;
+  if ((scalar (@$cmd) == 3) && (! ref ($cmd->[0])) && (! ref ($cmd->[1])) && (ref ($cmd->[2]) eq 'ARRAY'))
+    {
+      my ($class, $method, $args) = @$cmd;
+      print "Call $class->$method (" . join (', ', @$args) . ")\n" if ($opts{verbose});
+      $class->$method (@$args);
+    }
+  else
+    {
+      print "@$cmd\n" if ($opts{verbose});
+      system (@$cmd)
+        and die ("Command `@$cmd' failed");
+    }
+
+}
+
+sub init
+{
+  my $self = shift;
 
   if ($self->{threads} > 1)
     {
@@ -28,9 +45,7 @@ sub new
                {
                  while (my $cmd = $q->dequeue ())
                    {
-                     print "@$cmd\n";
-                     system (@$cmd)
-                       and die ("Command `@$cmd' failed");
+                     &runCommand (command => $cmd, verbose => $self->{verbose});
                    }
                };
 
@@ -49,6 +64,16 @@ sub new
       $self->{tasks} = \@t;
 
     }
+}
+
+sub new
+{
+  my $class = shift;
+  my %args = @_;
+
+  my $self = bless \%args, $class;
+
+  $self->{threads} ||= 1;
 
   return $self;
 }
@@ -56,17 +81,17 @@ sub new
 sub append
 {
   my $self = shift;
-  if ($self->{queue})
+
+  if ($self->{threads} > 1)
     {
+      $self->{queue} or $self->init ();
       $self->{queue}->enqueue (@_);
     }
   else
     {
       for my $cmd (@_)
         {
-          print "@$cmd\n";
-          system (@$cmd)
-            and die ("Command `@$cmd' failed\n");
+          &runCommand (command => $cmd, verbose => $self->{verbose});
         }
     }
 }
@@ -91,6 +116,9 @@ sub flush
         }
 
       $c or die;
+
+      delete $self->{queue};
+      delete $self->{tasks};
     }
 }
 

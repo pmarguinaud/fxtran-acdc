@@ -30,6 +30,7 @@ use Fxtran::Inline;
 use Fxtran::Pointer;
 use Fxtran::Print;
 use Fxtran::Interface;
+use Fxtran::Module;
 
 
 sub arraySliceToAddress
