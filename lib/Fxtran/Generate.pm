@@ -132,6 +132,7 @@ my %options= do
   suffix-semiimplicit=s     -- Suffix for semi-implicit  routines                                                                           --  _SEMIIMPLICIT
   base                      -- Base directory for file search                                                                               -- .
   array-slice-to-address    -- Pass addresses of first array element instead of array slices
+  use-stack-manyblocks      -- Use stack allocation for manyblocks routines
 EOF
 
   my @options;
@@ -418,11 +419,10 @@ sub singleblock
 
 &click (<< "EOF");
 @options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 style 
-             suffix-singlecolumn suffix-manyblocks version checker array-slice-to-address)}
+             suffix-singlecolumn suffix-manyblocks version checker array-slice-to-address use-stack-manyblocks)}
   drhooktonvtx                    -- Change DrHook calls into NVTX calls
   inlined=s@                      -- List of routines to inline
   create-interface                -- Generate an interface file
-  use-stack-manyblocks            -- Use stack allocation for manyblocks routines
 EOF
 sub manyblocks
 {
@@ -612,7 +612,8 @@ sub methods
 }
 
 &click (<< "EOF");
-@options{qw (dir pragma tmp merge-interfaces suffix-singlecolumn suffix-singleblock suffix-pointerparallel suffix-manyblocks ydcpg_opts)}
+@options{qw (dir pragma tmp merge-interfaces suffix-singlecolumn suffix-singleblock suffix-pointerparallel suffix-manyblocks 
+             use-stack-manyblocks ydcpg_opts)}
 EOF
 sub interface
 {
