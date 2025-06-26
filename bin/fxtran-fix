@@ -1,0 +1,100 @@
+#!/usr/bin/perl -w
+
+use FileHandle;
+use File::stat;
+use File::Copy;
+use File::Path;
+use File::Temp;
+use File::Basename;
+use Getopt::Long;
+use Data::Dumper;
+
+use strict;
+
+sub script
+{
+  'FileHandle'->new ('>' . $_[0])->print ($_[1]);
+  chmod (0755, $_[0]);
+}
+
+my %opts = qw (type xterm);
+my @opts_s = qw (type init);
+my @opts_f = qw ();
+
+&GetOptions 
+(
+  (map { ("$_=s" => \$opts{$_}) } @opts_s),
+  (map { ($_ => \$opts{$_}) } @opts_f),
+);
+
+my @cmd = @ARGV;
+
+goto END unless ($ENV{FXTRANFIX});
+
+exit (0) unless (system (@cmd)); # Exit if it work
+
+my $user = getpwuid ($<);
+my $prog = &basename ($0, qw (.pl));
+
+my ($file) = grep { m/\.(?:F90|F)$/io } @ARGV;
+
+my $tmpdir = 'File::Temp'->newdir ();
+
+my $shell = "$tmpdir/shell.sh";
+
+my @session;
+
+if ($opts{type} eq 'xterm')
+  {
+    @session = (qw (xterm +sb -bg black -fg grey70 -geometry 150x60+0+0),  -e => $shell);
+  }
+elsif ($opts{type} eq 'screen')
+  {
+    @session = (qw (screen -S), $prog, '-D', -m => $shell);
+  }
+else
+  {
+    die ("Unknown session type `$opts{type}'");
+  }
+    
+# Create scripts
+    
+&script ("$tmpdir/run.sh", << "EOF");
+#!/bin/bash
+set -x
+exec @cmd
+EOF
+
+&script ("$tmpdir/bashrc", << "EOF");
+if [ -f ~/.bashrc ]
+then
+  . ~/.bashrc
+fi
+
+if [ -f ~/.bash_profile ]
+then
+  . ~/.bash_profile
+fi
+  
+export PS1="$prog> "
+  
+alias r='$tmpdir/run.sh'
+alias e="vi $file"
+  
+$tmpdir/run.sh 
+EOF
+  
+&script ("$tmpdir/shell.sh", << "EOF");
+#!/bin/bash
+exec bash --init-file $tmpdir/bashrc -i
+EOF
+  
+# Start interactive session
+
+system (@session);
+
+END:
+
+# Compile once more, to check everything is OK
+
+exec (@cmd);
