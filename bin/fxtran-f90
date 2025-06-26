@@ -189,6 +189,11 @@ for (my $i = 0; $i < scalar (@ARGV); $i++)
         push @argv, '-I' . 'File::Spec'->rel2abs ($ARGV[$i+1]);
         $i++;
       }
+    elsif ($ARGV[$i] eq '-module')
+      {
+        push @argv, $ARGV[$i], 'File::Spec'->rel2abs ($ARGV[$i+1]);
+        $i++;
+      }
     elsif (my ($inc) = ($ARGV[$i] =~ m/^-I(.*)$/o))
       {
         push @argv, '-I' . 'File::Spec'->rel2abs ($inc);
