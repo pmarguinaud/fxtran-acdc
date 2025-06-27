@@ -13,6 +13,7 @@ use File::Temp;
 use File::Basename;
 use File::Spec;
 use File::Copy;
+use File::Path;
 use Cwd;
 
 use FindBin qw ($Bin);
@@ -58,9 +59,9 @@ sub runACDCMethod
             }
           push @optsfile, $opt if ($ok);
         }
-     
+
       my $tmp =  'File::Temp'->newdir (CLEANUP => ! $opts->{debug});
-     
+
       my @cmd = ("fxtran-gen", $opts->{package}, $method, 
                  'click'->hashToCommandLine (package => $opts->{package}, method => $method, opts => $opts),
                  '--tmp' => "$tmp", @optsfile, @I, $F90);
@@ -223,9 +224,10 @@ my $tmp = delete $opts{tmp}; $tmp = undef if ($tmp && ($tmp eq '.'));
 
 FILE: for my $F90 (@F90)
   {
+
     if ($tmp)
       {
-        $dir = 'File::Temp'->newdir (CLEANUP => ! $opts{debug}, DIR => $opts{tmp});
+        $dir = 'File::Temp'->newdir (CLEANUP => 0);
       }
 
     chdir ($dir);
@@ -268,23 +270,28 @@ FILE: for my $F90 (@F90)
           cwd => $cwd, 
           ACDC => \@ACDC,
         );
-
-        next FILE;
+      }
+    else
+      {
+        &Fxtran::F90Compiler::run 
+        (
+          f90compiler => $f90compiler, 
+          f90flags    => \@f90flags, 
+          obj         => $obj, 
+          F90         => [$F90], 
+          %opts
+        );
       }
 
-NORMAL:
+    for my $mod (<*.mod>, <*.smod>)
+      {
+        &move ($mod, "$cwd/$mod");
+      }
 
-    &Fxtran::F90Compiler::run 
-    (
-      f90compiler => $f90compiler, 
-      f90flags    => \@f90flags, 
-      obj         => $obj, 
-      F90         => [$F90], 
-      %opts
-    );
+
+    chdir ($cwd);
+
+    &rmtree ($dir) unless ($opts{debug});
+
   }
 
-for my $mod (<*.mod>, <*.smod>)
-  {
-    &move ($mod, "$cwd/$mod");
-  }
