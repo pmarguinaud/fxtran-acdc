@@ -497,9 +497,16 @@ sub methods
 
   my ($F90) = @args;  
 
-  if ($opts->{'type-bound-methods'} && (&dirname ($F90) eq $opts->{dir}))
+  if ($opts->{'type-bound-methods'})
     {
-      die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
+      if (&dirname ($F90) eq $opts->{dir})
+        {
+          die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
+        }
+    }
+  elsif ($opts->{dir} ne 'File::Spec'->rel2abs (&dirname ($F90)))
+    {
+      &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
     }
 
   ( -d $opts->{dir}) or &mkpath ($opts->{dir});
@@ -609,6 +616,8 @@ sub methods
     {
       &Fxtran::FieldAPI::Register::registerFieldAPI ($d, $opts);
     }
+
+
 }
 
 &click (<< "EOF");

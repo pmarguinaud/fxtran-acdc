@@ -605,14 +605,14 @@ sub processTypes1
 
       if ($extends)
         {
-          $USE_SAVE   .= "USE UTIL_${extends}_MOD, ONLY : $extends, SAVE_$extends\n"    unless ($opts->{'type-bound-methods'});
-          $USE_LOAD   .= "USE UTIL_${extends}_MOD, ONLY : $extends, LOAD_$extends\n"    unless ($opts->{'type-bound-methods'});
-          $USE_HOST   .= "USE UTIL_${extends}_MOD, ONLY : $extends, HOST_$extends\n"    unless ($opts->{'type-bound-methods'});
-          $USE_LEGACY .= "USE UTIL_${extends}_MOD, ONLY : $extends, LEGACY_$extends\n"  unless ($opts->{'type-bound-methods'});
-          $USE_CRC64  .= "USE UTIL_${extends}_MOD, ONLY : $extends, CRC64_$extends\n"   unless ($opts->{'type-bound-methods'});
-          $USE_COPY   .= "USE UTIL_${extends}_MOD, ONLY : $extends, COPY_$extends\n"    unless ($opts->{'type-bound-methods'});
-          $USE_WIPE   .= "USE UTIL_${extends}_MOD, ONLY : $extends, WIPE_$extends\n"    unless ($opts->{'type-bound-methods'});
-          $USE_SIZE   .= "USE UTIL_${extends}_MOD, ONLY : $extends, SIZE_$extends\n"    unless ($opts->{'type-bound-methods'});
+          $USE_SAVE   .= "USE UTIL_${extends}_MOD, ONLY : $extends, $opts->{'method-prefix'}SAVE_$extends\n"    unless ($opts->{'type-bound-methods'});
+          $USE_LOAD   .= "USE UTIL_${extends}_MOD, ONLY : $extends, $opts->{'method-prefix'}LOAD_$extends\n"    unless ($opts->{'type-bound-methods'});
+          $USE_HOST   .= "USE UTIL_${extends}_MOD, ONLY : $extends, $opts->{'method-prefix'}HOST_$extends\n"    unless ($opts->{'type-bound-methods'});
+          $USE_LEGACY .= "USE UTIL_${extends}_MOD, ONLY : $extends, $opts->{'method-prefix'}LEGACY_$extends\n"  unless ($opts->{'type-bound-methods'});
+          $USE_CRC64  .= "USE UTIL_${extends}_MOD, ONLY : $extends, $opts->{'method-prefix'}CRC64_$extends\n"   unless ($opts->{'type-bound-methods'});
+          $USE_COPY   .= "USE UTIL_${extends}_MOD, ONLY : $extends, $opts->{'method-prefix'}COPY_$extends\n"    unless ($opts->{'type-bound-methods'});
+          $USE_WIPE   .= "USE UTIL_${extends}_MOD, ONLY : $extends, $opts->{'method-prefix'}WIPE_$extends\n"    unless ($opts->{'type-bound-methods'});
+          $USE_SIZE   .= "USE UTIL_${extends}_MOD, ONLY : $extends, $opts->{'method-prefix'}SIZE_$extends\n"    unless ($opts->{'type-bound-methods'});
         }
 
       $USE_CRC64 .= "USE CRC64_INTRINSIC, ONLY : FCRC64 => CRC64\n";

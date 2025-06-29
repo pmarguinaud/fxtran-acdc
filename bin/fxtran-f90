@@ -291,7 +291,7 @@ FILE: for my $F90 (@F90)
 
     chdir ($cwd);
 
-    &rmtree ($dir) unless ($opts{debug});
+    &rmtree ($dir) if ($tmp && (! $opts{debug}));
 
   }
 

@@ -75,13 +75,19 @@ sub deps
   unless ($deps{$f})
     {
       my $code = &slurp ($f);
+
+      my ($sub) = ($code =~ m/SUBMODULE\s*\(s*(\w+)\s*\)/goms); $sub = uc ($sub) if ($sub);
+
       my @inc = ($code =~ m/\n\s*#include\s+"(.*?)"/goms);
       @inc = grep { ! $extern_inc{$_} } @inc;
 
       my @use = map { uc ($_) } 
                 (($code =~ m/\n\s*use\s+(\w+)/gomis), 
                  ($code =~ m/\n\s*submodule\*s\(\s*(\w+)\s*\)/gomis));
-      @use = grep { ! $sys{uc ($_)} } @use;
+
+      push @use, $sub if ($sub);
+
+      @use = sort grep { ! $sys{uc ($_)} } @use;  
 
       my @mod = map { lc ($_) . '.mod' } @use;
       $deps{$f} = [@mod, @inc];
@@ -299,8 +305,10 @@ if (%notfound)
     print STDERR "The following modules were not found;\n";
     for my $f (sort keys %notfound)
       {
+        my @mod = @{ $notfound{$f} };
+        s/\.mod$/.F90/o for (@mod);
         print STDERR " - $f\n";
-        print STDERR  '   ' . join (" ", @{ $notfound{$f} }) . "\n";
+        print STDERR  '   ' . join (" ", @mod) . "\n";
       }
     die "\n";
   }
