@@ -789,7 +789,7 @@ EOF
               },
             };
         }
-      else
+      elsif (0)
         {
           push @file, "util_${n}_mod.F90";
 
@@ -827,6 +827,102 @@ $IMPL_SIZE
 
 END MODULE
 EOF
+        }
+      else
+        {
+
+          $code{"util_${n}_mod.F90"} = << "EOF";
+MODULE UTIL_${name}_MOD
+
+USE $mod, ONLY : $name
+
+EOF
+
+          $code{"util_${n}_mod.F90"} .= "USE UTIL_${name}_SAVE_MOD\n"   if ($IMPL_SAVE);
+          $code{"util_${n}_mod.F90"} .= "USE UTIL_${name}_LOAD_MOD\n"   if ($IMPL_LOAD);
+          $code{"util_${n}_mod.F90"} .= "USE UTIL_${name}_COPY_MOD\n"   if ($IMPL_COPY);
+          $code{"util_${n}_mod.F90"} .= "USE UTIL_${name}_HOST_MOD\n"   if ($IMPL_HOST);
+          $code{"util_${n}_mod.F90"} .= "USE UTIL_${name}_LEGACY_MOD\n" if ($IMPL_LEGACY);
+          $code{"util_${n}_mod.F90"} .= "USE UTIL_${name}_CRC64_MOD\n"  if ($IMPL_CRC64);
+          $code{"util_${n}_mod.F90"} .= "USE UTIL_${name}_WIPE_MOD\n"   if ($IMPL_WIPE);
+          $code{"util_${n}_mod.F90"} .= "USE UTIL_${name}_SIZE_MOD\n"   if ($IMPL_SIZE);
+
+          $code{"util_${n}_mod.F90"} .= "END MODULE\n";
+    
+          $code{"util_${n}_save_mod.F90"} = << "EOF" if ($IMPL_SAVE);
+MODULE UTIL_${name}_SAVE_MOD
+USE $mod, ONLY : $name
+$GENERIC_SAVE
+CONTAINS
+$IMPL_SAVE
+END MODULE
+EOF
+
+          $code{"util_${n}_load_mod.F90"} = << "EOF" if ($IMPL_LOAD);
+MODULE UTIL_${name}_LOAD_MOD
+USE $mod, ONLY : $name
+$GENERIC_LOAD
+CONTAINS
+$IMPL_LOAD
+END MODULE
+EOF
+
+          $code{"util_${n}_copy_mod.F90"} = << "EOF" if ($IMPL_COPY);
+MODULE UTIL_${name}_COPY_MOD
+USE $mod, ONLY : $name
+$GENERIC_COPY
+CONTAINS
+$IMPL_COPY
+END MODULE
+EOF
+
+          $code{"util_${n}_host_mod.F90"} = << "EOF" if ($IMPL_HOST);
+MODULE UTIL_${name}_HOST_MOD
+USE $mod, ONLY : $name
+$GENERIC_HOST
+CONTAINS
+$IMPL_HOST
+END MODULE
+EOF
+
+          $code{"util_${n}_legacy_mod.F90"} = << "EOF" if ($IMPL_LEGACY);
+MODULE UTIL_${name}_LEGACY_MOD
+USE $mod, ONLY : $name
+$GENERIC_LEGACY
+CONTAINS
+$IMPL_LEGACY
+END MODULE
+EOF
+
+          $code{"util_${n}_crc64_mod.F90"} = << "EOF" if ($IMPL_CRC64);
+MODULE UTIL_${name}_CRC64_MOD
+USE $mod, ONLY : $name
+$GENERIC_CRC64
+CONTAINS
+$IMPL_CRC64
+END MODULE
+EOF
+
+          $code{"util_${n}_wipe_mod.F90"} = << "EOF" if ($IMPL_WIPE);
+MODULE UTIL_${name}_WIPE_MOD
+USE $mod, ONLY : $name
+$GENERIC_WIPE
+CONTAINS
+$IMPL_WIPE
+END MODULE
+EOF
+
+          $code{"util_${n}_size_mod.F90"} = << "EOF" if ($IMPL_SIZE);
+MODULE UTIL_${name}_SIZE_MOD
+USE $mod, ONLY : $name
+$GENERIC_SIZE
+CONTAINS
+$IMPL_SIZE
+END MODULE
+EOF
+
+
+          push @file, sort (keys (%code));
         }
 
     
