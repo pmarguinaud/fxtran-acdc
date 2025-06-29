@@ -67,9 +67,7 @@ sub callFunctionMethod
 
 sub processDecl
 {
-  my ($opts, $en_decl, $sname, $prefix, 
-      $BODY_SAVE, $BODY_LOAD, $BODY_COPY, $BODY_WIPE, $BODY_SIZE, $BODY_HOST, $BODY_LEGACY, $BODY_CRC64,
-      $U, $J, $L, $B, $T, $en_decl_hash) = @_;
+  my ($opts, $en_decl, $sname, $prefix, $BODY, $U, $J, $L, $B, $T, $en_decl_hash) = @_;
 
   my (@BODY_SAVE, @BODY_LOAD, @BODY_COPY, @BODY_WIPE, @BODY_SIZE, @BODY_HOST, @BODY_LEGACY, @BODY_CRC64);
   my (%U, %J, %L, %B, %T);
@@ -342,14 +340,14 @@ sub processDecl
 
 RETURN:
 
-  push @$BODY_SAVE       , @BODY_SAVE;
-  push @$BODY_LOAD       , @BODY_LOAD;
-  push @$BODY_COPY       , @BODY_COPY   if ($hasCOPY);
-  push @$BODY_HOST       , @BODY_HOST;
-  push @$BODY_LEGACY     , @BODY_LEGACY if ($hasLEGACY);
-  push @$BODY_CRC64      , @BODY_CRC64  if ($hasCRC64);
-  push @$BODY_WIPE       , @BODY_WIPE   if ($hasWIPE);
-  push @$BODY_SIZE       , @BODY_SIZE   if ($hasSIZE);
+  push @{ $BODY->{save}  }, @BODY_SAVE;
+  push @{ $BODY->{load}  }, @BODY_LOAD;
+  push @{ $BODY->{copy}  }, @BODY_COPY   if ($hasCOPY);
+  push @{ $BODY->{host}  }, @BODY_HOST;
+  push @{ $BODY->{legacy}}, @BODY_LEGACY if ($hasLEGACY);
+  push @{ $BODY->{crc64} }, @BODY_CRC64  if ($hasCRC64);
+  push @{ $BODY->{wipe}  }, @BODY_WIPE   if ($hasWIPE);
+  push @{ $BODY->{size}  }, @BODY_SIZE   if ($hasSIZE);
 
   %$U = (%$U, %U); %$J = (%$J, %J); 
   %$L = (%$L, %L); %$B = (%$B, %B); 
@@ -407,6 +405,8 @@ sub processTypes1
   
   my @tconst = &F ('.//T-construct', $doc);
 
+  my @method = qw (save load copy host legacy crc64 wipe size);
+
   for my $tconst (@tconst)
     {
       my ($name) = &F ('.//T-stmt/T-N/N/n/text()', $tconst, 1);
@@ -417,38 +417,28 @@ sub processTypes1
       my ($abstract) = &F ('./T-stmt/attribute[string(attribute-N)="ABSTRACT"]', $tconst);
       my ($extends) = &F ('./T-stmt/attribute[string(attribute-N)="EXTENDS"]/N/n/text()', $tconst);
 
-      my $GENERIC_SAVE   = '';
-      my $GENERIC_LOAD   = '';
-      my $GENERIC_COPY   = '';
-      my $GENERIC_HOST   = '';
-      my $GENERIC_LEGACY = '';
-      my $GENERIC_CRC64  = '';
-      my $GENERIC_WIPE   = '';
-      my $GENERIC_SIZE   = '';
-  
-  
-      $GENERIC_SAVE   .= "MODULE PROCEDURE $opts->{'method-prefix'}SAVE_$name\n";
-      $GENERIC_LOAD   .= "MODULE PROCEDURE $opts->{'method-prefix'}LOAD_$name\n";
-      $GENERIC_COPY   .= "MODULE PROCEDURE $opts->{'method-prefix'}COPY_$name\n";
-      $GENERIC_HOST   .= "MODULE PROCEDURE $opts->{'method-prefix'}HOST_$name\n";
-      $GENERIC_LEGACY .= "MODULE PROCEDURE $opts->{'method-prefix'}LEGACY_$name\n";
-      $GENERIC_CRC64  .= "MODULE PROCEDURE $opts->{'method-prefix'}CRC64_$name\n";
-      $GENERIC_WIPE   .= "MODULE PROCEDURE $opts->{'method-prefix'}WIPE_$name\n";
-      $GENERIC_SIZE   .= "MODULE PROCEDURE $opts->{'method-prefix'}SIZE_$name\n";
-  
-      my (@BODY_SAVE, @BODY_LOAD, @BODY_COPY, @BODY_WIPE, @BODY_SIZE, @BODY_HOST, @BODY_LEGACY, @BODY_CRC64);
 
-      push @BODY_WIPE,  
+      my %GENERIC;
+
+      $GENERIC{$_} = '' for (@method);
+
+      for my $method (@method)
+        {
+          $GENERIC{$method} .= "MODULE PROCEDURE $opts->{'method-prefix'}\U${method}_$name\n";
+        }
+
+      my %BODY = map { ($_, []) } @method;
+
+      push @{ $BODY{wipe} },  
                        "LLFIELDAPI = .FALSE.\n",
                        "IF (PRESENT (LDFIELDAPI)) THEN\n",
                        "LLFIELDAPI = LDFIELDAPI\n",
                        "ENDIF\n";
-      push @BODY_COPY,  
+      push @{ $BODY{copy} },  
                        "LLFIELDAPI = .FALSE.\n",
                        "IF (PRESENT (LDFIELDAPI)) THEN\n",
                        "LLFIELDAPI = LDFIELDAPI\n",
-                       "ENDIF\n";
-      push @BODY_COPY,  
+                       "ENDIF\n",
                        "LLCREATED = .FALSE.\n",
                        "IF (PRESENT (LDCREATED)) THEN\n",
                        "LLCREATED = LDCREATED\n",
@@ -457,7 +447,8 @@ sub processTypes1
                        $opts->{pragma}->enterDataCreate ('SELF') . "\n",
                        $opts->{pragma}->updateDevice ('SELF') . "\n",
                        "ENDIF\n";
-      push @BODY_SIZE, "LLPRINT = .FALSE.\n",
+      push @{ $BODY{size} }, 
+                       "LLPRINT = .FALSE.\n",
                        "IF (PRESENT (LDPRINT)) THEN\n",
                        "LLPRINT = LDPRINT\n",
                        "ENDIF\n",
@@ -469,18 +460,18 @@ sub processTypes1
 
       if ($extends)
         {
-          for (\@BODY_SAVE, \@BODY_LOAD, \@BODY_COPY, \@BODY_WIPE, \@BODY_SIZE, \@BODY_HOST, \@BODY_LEGACY, \@BODY_CRC64)
+          for my $body (values (%BODY))
             {
-              push @$_, "YLSUPER => SELF\n";
+              push @$body, "YLSUPER => SELF\n";
             }
-          push @BODY_SAVE       , &callSubroutineMethod ($opts, 'YLSUPER', 'SAVE',   "SAVE_$extends",   0, 'KLUN');
-          push @BODY_LOAD       , &callSubroutineMethod ($opts, 'YLSUPER', 'LOAD',   "LOAD_$extends",   0, 'KLUN');
-          push @BODY_COPY       , &callSubroutineMethod ($opts, 'YLSUPER', 'COPY',   "COPY_$extends",   0, 'LDCREATED=.TRUE.', 'LDFIELDAPI=LDFIELDAPI');
-          push @BODY_HOST       , &callSubroutineMethod ($opts, 'YLSUPER', 'HOST',   "HOST_$extends",   0);
-          push @BODY_LEGACY     , &callSubroutineMethod ($opts, 'YLSUPER', 'LEGACY', "LEGACY_$extends", 0, 'KADDRL', 'KADDRU', 'KDIR=KDIR');
-          push @BODY_CRC64      , &callSubroutineMethod ($opts, 'YLSUPER', 'CRC64',  "CRC64_$extends",  0, 'KLUN', 'CDPATH');
-          push @BODY_WIPE       , &callSubroutineMethod ($opts, 'YLSUPER', 'WIPE',   "WIPE_$extends",   0, 'LDDELETED=.TRUE.', 'LDFIELDAPI=LDFIELDAPI');
-          push @BODY_SIZE       , "KSIZE = KSIZE + " . &callFunctionMethod ($opts, 'YLSUPER', 'SIZE', "SIZE_$extends", 0, 'CLPATH', 'LLPRINT');
+          push @{ $BODY{save}   }, &callSubroutineMethod ($opts, 'YLSUPER', 'SAVE',   "SAVE_$extends",   0, 'KLUN');
+          push @{ $BODY{load}   }, &callSubroutineMethod ($opts, 'YLSUPER', 'LOAD',   "LOAD_$extends",   0, 'KLUN');
+          push @{ $BODY{copy}   }, &callSubroutineMethod ($opts, 'YLSUPER', 'COPY',   "COPY_$extends",   0, 'LDCREATED=.TRUE.', 'LDFIELDAPI=LDFIELDAPI');
+          push @{ $BODY{host}   }, &callSubroutineMethod ($opts, 'YLSUPER', 'HOST',   "HOST_$extends",   0);
+          push @{ $BODY{legacy} }, &callSubroutineMethod ($opts, 'YLSUPER', 'LEGACY', "LEGACY_$extends", 0, 'KADDRL', 'KADDRU', 'KDIR=KDIR');
+          push @{ $BODY{crc64}  }, &callSubroutineMethod ($opts, 'YLSUPER', 'CRC64',  "CRC64_$extends",  0, 'KLUN', 'CDPATH');
+          push @{ $BODY{wipe}   }, &callSubroutineMethod ($opts, 'YLSUPER', 'WIPE',   "WIPE_$extends",   0, 'LDDELETED=.TRUE.', 'LDFIELDAPI=LDFIELDAPI');
+          push @{ $BODY{size}   }, "KSIZE = KSIZE + " . &callFunctionMethod ($opts, 'YLSUPER', 'SIZE', "SIZE_$extends", 0, 'CLPATH', 'LLPRINT');
         }
     
       my (%U, %J, %L, %B, %T);
@@ -495,12 +486,12 @@ sub processTypes1
       for my $en_decl (@en_decl)
         {
           &processDecl ($opts, $en_decl, "$tname%", 'SELF%', 
-                        \@BODY_SAVE, \@BODY_LOAD, \@BODY_COPY, \@BODY_WIPE, \@BODY_SIZE, \@BODY_HOST, \@BODY_LEGACY, \@BODY_CRC64,
-                        \%U, \%J, \%L, \%B, \%T, \%en_decl);
+                        \%BODY, \%U, \%J, \%L, \%B, \%T, \%en_decl);
 
         }
 
-      push @BODY_WIPE, "LLDELETED = .FALSE.\n",
+      push @{ $BODY{wipe} }, 
+                       "LLDELETED = .FALSE.\n",
                        "IF (PRESENT (LDDELETED)) THEN\n", 
                        "LLDELETED = LDDELETED\n",
                        "ENDIF",
@@ -509,19 +500,22 @@ sub processTypes1
                        "ENDIF\n";
                        
   
-      my $DECL_SAVE        = '';
-      my $DECL_LOAD        = '';
-      my $DECL_COPY        = "LOGICAL :: LLCREATED\n";      $DECL_COPY .= "LOGICAL :: LLFIELDAPI\n";
-      my $DECL_HOST        = '';
-      my $DECL_LEGACY      = '';
-      my $DECL_CRC64       = "CHARACTER(LEN=128) :: CLIND\n";
-      my $DECL_WIPE        = "LOGICAL :: LLDELETED\n";      $DECL_WIPE .= "LOGICAL :: LLFIELDAPI\n";
-      my $DECL_SIZE        = "INTEGER*8 :: ISIZE, JSIZE\n"; $DECL_SIZE .= "LOGICAL :: LLPRINT\nCHARACTER(LEN=128) :: CLPATH\n";
+      my %DECL =
+      (
+         save   => '',
+         load   => '',
+         copy   => "LOGICAL :: LLCREATED\nLOGICAL :: LLFIELDAPI\n",
+         host   => '',
+         legacy => '',
+         crc64  => "CHARACTER(LEN=128) :: CLIND\n",
+         wipe   => "LOGICAL :: LLDELETED\nLOGICAL :: LLFIELDAPI\n",
+         size   => "INTEGER*8 :: ISIZE, JSIZE\nLOGICAL :: LLPRINT\nCHARACTER(LEN=128) :: CLPATH\n",
+      );
 
 
       if ($extends)
         {
-          for ($DECL_SAVE, $DECL_LOAD, $DECL_COPY, $DECL_WIPE, $DECL_SIZE, $DECL_HOST, $DECL_LEGACY, $DECL_CRC64)
+          for (values (%DECL))
             {
               $_ .= "CLASS ($extends), POINTER :: YLSUPER\n";
             }
@@ -529,43 +523,35 @@ sub processTypes1
   
       if (%J)
         {
-          $DECL_SAVE        .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
-          $DECL_LOAD        .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
-          $DECL_COPY        .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
-          $DECL_HOST        .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
-          $DECL_LEGACY      .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
-          $DECL_CRC64       .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
-          $DECL_WIPE        .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
-          $DECL_SIZE        .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
+          for (values (%DECL))
+            {
+              $_ .= "INTEGER :: " . join (', ', sort keys (%J)) . "\n";
+            }
         }
       if (%B)
         {
-          $DECL_LOAD        .= "INTEGER :: " . join (', ', map  { ("IL$_($_)", "IU$_($_)") } sort keys (%B)) . "\n";
+          $DECL{load} .= "INTEGER :: " . join (', ', map  { ("IL$_($_)", "IU$_($_)") } sort keys (%B)) . "\n";
         }
       if (%L)
         {
           my @L = sort keys (%L);
           while (my @l = splice (@L, 0, 10))
             {
-              $DECL_SAVE        .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
-              $DECL_LOAD        .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
-              $DECL_HOST        .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
-              $DECL_LEGACY      .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
-              $DECL_CRC64       .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
-              $DECL_COPY        .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
-              $DECL_WIPE        .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
-              $DECL_SIZE        .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
+              for (values (%DECL))
+                {
+                  $_ .= "LOGICAL :: " . join (', ', map { "L$_" } @l) . "\n";
+                }
             }
         }
       if (%T)
         {
           if (exists $T{'0'})
             {
-              $DECL_LOAD .= "REAL(KIND=JPRD) :: ZTMP0\n";
+              $DECL{load} .= "REAL(KIND=JPRD) :: ZTMP0\n";
             }
           for my $i (grep { $_ } sort keys (%T))
             {
-              $DECL_LOAD .= "REAL(KIND=JPRD), ALLOCATABLE :: ZTMP$i (" . join (',', (':') x $i) . ")\n";
+              $DECL{load} .= "REAL(KIND=JPRD), ALLOCATABLE :: ZTMP$i (" . join (',', (':') x $i) . ")\n";
             }
         }
   
@@ -589,35 +575,29 @@ sub processTypes1
       %U = map { ($_, 1) } @U;
       @U = sort keys (%U);
 
-      my $USE_SAVE        = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
-      my $USE_LOAD        = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
-      my $USE_HOST        = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
-      my $USE_LEGACY      = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
-      my $USE_CRC64       = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
-      my $USE_COPY        = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
-      my $USE_WIPE        = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
-      my $USE_SIZE        = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
+      my %USE;
+
+      for my $method (@method)
+        {
+          $USE{$method} = join ('', map { "USE ${_}\n" } grep { $_ ne $name } @U);
+        }
   
       if (%T)
         {
-          $USE_LOAD .= "USE PARKIND1, ONLY : JPRD\n";
+          $USE{load} .= "USE PARKIND1, ONLY : JPRD\n";
         }
 
-      if ($extends)
+      if ($extends && (! $opts->{'type-bound-methods'}))
         {
-          $USE_SAVE   .= "USE UTIL_${extends}_MOD, ONLY : $extends, $opts->{'method-prefix'}SAVE_$extends\n"    unless ($opts->{'type-bound-methods'});
-          $USE_LOAD   .= "USE UTIL_${extends}_MOD, ONLY : $extends, $opts->{'method-prefix'}LOAD_$extends\n"    unless ($opts->{'type-bound-methods'});
-          $USE_HOST   .= "USE UTIL_${extends}_MOD, ONLY : $extends, $opts->{'method-prefix'}HOST_$extends\n"    unless ($opts->{'type-bound-methods'});
-          $USE_LEGACY .= "USE UTIL_${extends}_MOD, ONLY : $extends, $opts->{'method-prefix'}LEGACY_$extends\n"  unless ($opts->{'type-bound-methods'});
-          $USE_CRC64  .= "USE UTIL_${extends}_MOD, ONLY : $extends, $opts->{'method-prefix'}CRC64_$extends\n"   unless ($opts->{'type-bound-methods'});
-          $USE_COPY   .= "USE UTIL_${extends}_MOD, ONLY : $extends, $opts->{'method-prefix'}COPY_$extends\n"    unless ($opts->{'type-bound-methods'});
-          $USE_WIPE   .= "USE UTIL_${extends}_MOD, ONLY : $extends, $opts->{'method-prefix'}WIPE_$extends\n"    unless ($opts->{'type-bound-methods'});
-          $USE_SIZE   .= "USE UTIL_${extends}_MOD, ONLY : $extends, $opts->{'method-prefix'}SIZE_$extends\n"    unless ($opts->{'type-bound-methods'});
+          for my $method (@method)
+            {
+              $USE{$method} .= "USE UTIL_${extends}_MOD, ONLY : $extends, $opts->{'method-prefix'}${method}_$extends\n";
+            }
         }
 
-      $USE_CRC64 .= "USE CRC64_INTRINSIC, ONLY : FCRC64 => CRC64\n";
+      $USE{crc64} .= "USE CRC64_INTRINSIC, ONLY : FCRC64 => CRC64\n";
 
-      for ($USE_SAVE, $USE_SAVE, $USE_COPY, $USE_WIPE, $USE_SIZE, $DECL_SAVE, $DECL_LOAD, $DECL_HOST, $DECL_LEGACY, $DECL_CRC64)
+      for (values (%USE), values (%DECL))
         {
           chomp ($_);
         }
@@ -626,32 +606,34 @@ sub processTypes1
       $type = 'CLASS' if ($abstract);
       $type = 'CLASS' if ($opts->{'type-bound-methods'});
 
-      my $HEAD_SAVE = << "EOF";
+      my %HEAD;
+
+      $HEAD{save} = << "EOF";
 SUBROUTINE $opts->{'method-prefix'}SAVE_$name (SELF, KLUN)
-$USE_SAVE
+$USE{save}
 IMPLICIT NONE
 $type ($name), INTENT (IN), TARGET :: SELF
 INTEGER, INTENT (IN) :: KLUN
 EOF
 
-      my $HEAD_LOAD = << "EOF";
+      $HEAD{load} = << "EOF";
 SUBROUTINE $opts->{'method-prefix'}LOAD_$name (SELF, KLUN)
-$USE_LOAD
+$USE{load}
 IMPLICIT NONE
 $type ($name), INTENT (OUT), TARGET :: SELF
 INTEGER, INTENT (IN) :: KLUN
 EOF
 
-      my $HEAD_HOST = << "EOF";
+      $HEAD{host} = << "EOF";
 SUBROUTINE $opts->{'method-prefix'}HOST_$name (SELF)
-$USE_HOST
+$USE{host}
 IMPLICIT NONE
 $type ($name), TARGET :: SELF
 EOF
 
-      my $HEAD_LEGACY = << "EOF";
+      $HEAD{legacy} = << "EOF";
 SUBROUTINE $opts->{'method-prefix'}LEGACY_$name (SELF, KADDRL, KADDRU, KDIR)
-$USE_LEGACY
+$USE{legacy}
 IMPLICIT NONE
 $type ($name), TARGET :: SELF
 INTEGER*8, INTENT (IN) :: KADDRL
@@ -659,34 +641,34 @@ INTEGER*8, INTENT (IN) :: KADDRU
 INTEGER, INTENT (IN) :: KDIR
 EOF
 
-      my $HEAD_CRC64 = << "EOF";
+      $HEAD{crc64} = << "EOF";
 SUBROUTINE $opts->{'method-prefix'}CRC64_$name (SELF, KLUN, CDPATH)
-$USE_CRC64
+$USE{crc64}
 IMPLICIT NONE
 $type ($name), TARGET :: SELF
 INTEGER, INTENT (IN) :: KLUN
 CHARACTER(LEN=*), INTENT (IN) :: CDPATH
 EOF
 
-      my $HEAD_COPY = << "EOF";
+      $HEAD{copy} = << "EOF";
 SUBROUTINE $opts->{'method-prefix'}COPY_$name (SELF, LDCREATED, LDFIELDAPI)
-$USE_COPY
+$USE{copy}
 IMPLICIT NONE
 $type ($name), INTENT (IN), TARGET :: SELF
 LOGICAL, OPTIONAL, INTENT (IN) :: LDCREATED, LDFIELDAPI
 EOF
 
-      my $HEAD_WIPE = << "EOF";
+      $HEAD{wipe} = << "EOF";
 SUBROUTINE $opts->{'method-prefix'}WIPE_$name (SELF, LDDELETED, LDFIELDAPI)
-$USE_WIPE
+$USE{wipe}
 IMPLICIT NONE
 $type ($name), INTENT (IN), TARGET :: SELF
 LOGICAL, OPTIONAL, INTENT (IN) :: LDDELETED, LDFIELDAPI
 EOF
 
-      my $HEAD_SIZE = << "EOF";
+      $HEAD{size} = << "EOF";
 FUNCTION $opts->{'method-prefix'}SIZE_$name (SELF, CDPATH, LDPRINT) RESULT (KSIZE)
-$USE_SIZE
+$USE{size}
 IMPLICIT NONE
 $type ($name),     INTENT (IN), TARGET :: SELF
 CHARACTER(LEN=*), INTENT (IN), OPTIONAL :: CDPATH
@@ -695,80 +677,57 @@ INTEGER*8 :: KSIZE
 EOF
 
 
-      @BODY_SAVE   = &indent (@BODY_SAVE);
-      @BODY_LOAD   = &indent (@BODY_LOAD);
-      @BODY_HOST   = &indent (@BODY_HOST);
-      @BODY_LEGACY = &indent (@BODY_LEGACY);
-      @BODY_CRC64  = &indent (@BODY_CRC64);
-      @BODY_COPY   = &indent (@BODY_COPY);
-      @BODY_WIPE   = &indent (@BODY_WIPE);
-      @BODY_SIZE   = &indent (@BODY_SIZE);
+      for (values (%BODY))
+        {
+          @$_ = &indent (@$_);
+        }
 
+      my %IMPL;
 
-      my $IMPL_SAVE   = $HEAD_SAVE   . $DECL_SAVE   . "\n" . join ("\n", @BODY_SAVE  , '') . "END SUBROUTINE\n";
-      my $IMPL_LOAD   = $HEAD_LOAD   . $DECL_LOAD   . "\n" . join ("\n", @BODY_LOAD  , '') . "END SUBROUTINE\n";
-      my $IMPL_HOST   = $HEAD_HOST   . $DECL_HOST   . "\n" . join ("\n", @BODY_HOST  , '') . "END SUBROUTINE\n";
-      my $IMPL_LEGACY = $HEAD_LEGACY . $DECL_LEGACY . "\n" . join ("\n", @BODY_LEGACY, '') . "END SUBROUTINE\n";
-      my $IMPL_CRC64  = $HEAD_CRC64  . $DECL_CRC64  . "\n" . join ("\n", @BODY_CRC64 , '') . "END SUBROUTINE\n";
-      my $IMPL_COPY   = $HEAD_COPY   . $DECL_COPY   . "\n" . join ("\n", @BODY_COPY  , '') . "END SUBROUTINE\n";
-      my $IMPL_WIPE   = $HEAD_WIPE   . $DECL_WIPE   . "\n" . join ("\n", @BODY_WIPE  , '') . "END SUBROUTINE\n";
-      my $IMPL_SIZE   = $HEAD_SIZE   . $DECL_SIZE   . "\n" . join ("\n", @BODY_SIZE  , '') . "END FUNCTION\n";
+      for my $method (@method)
+        {
+          $IMPL{$method} = $HEAD{$method} . $DECL{$method} . "\n" . join ("\n", @{ $BODY{$method} }, '');
+          if ($IMPL{$method} =~ m/^SUBROUTINE/o)
+            {
+              $IMPL{$method} .= "END SUBROUTINE\n";
+              $HEAD{$method} .= "END SUBROUTINE\n";
+            }
+          elsif ($IMPL{$method} =~ m/^FUNCTION/o)
+            {
+              $IMPL{$method} .= "END FUNCTION\n";
+              $HEAD{$method} .= "END FUNCTION\n";
+            }
+        }
 
-      $HEAD_SAVE   .= "END SUBROUTINE\n";
-      $HEAD_LOAD   .= "END SUBROUTINE\n";
-      $HEAD_HOST   .= "END SUBROUTINE\n";
-      $HEAD_LEGACY .= "END SUBROUTINE\n";
-      $HEAD_CRC64  .= "END SUBROUTINE\n";
-      $HEAD_COPY   .= "END SUBROUTINE\n";
-      $HEAD_WIPE   .= "END SUBROUTINE\n";
-      $HEAD_SIZE   .= "END FUNCTION\n";
-
-      for ($IMPL_SAVE, $IMPL_SAVE, $IMPL_COPY, $IMPL_WIPE, $IMPL_SIZE, $IMPL_HOST, $IMPL_LEGACY, $IMPL_CRC64,
-           $GENERIC_SAVE, $GENERIC_LOAD, $GENERIC_COPY, $GENERIC_WIPE, $GENERIC_SIZE, $GENERIC_HOST, $GENERIC_LEGACY, $GENERIC_CRC64)
+      for (values (%IMPL), values (%GENERIC))
         {
           chomp ($_);
         }
   
       my $n = lc ($name);
 
-      $IMPL_SAVE        = '' unless ($opts->{save});
-      $IMPL_LOAD        = '' unless ($opts->{load});
-      $IMPL_COPY        = '' unless ($opts->{copy});
-      $IMPL_HOST        = '' unless ($opts->{host});
-      $IMPL_LEGACY      = '' unless ($opts->{legacy});
-      $IMPL_CRC64       = '' unless ($opts->{crc64});
-      $IMPL_WIPE        = '' unless ($opts->{wipe});
-      $IMPL_SIZE        = '' unless ($opts->{size});
+      for my $method (@method)
+        {
+          $IMPL{$method} = '' unless ($opts->{$method});
+        }
 
-      $GENERIC_SAVE        = "INTERFACE $opts->{'method-prefix'}SAVE\n$GENERIC_SAVE\nEND INTERFACE\n";
-      $GENERIC_LOAD        = "INTERFACE $opts->{'method-prefix'}LOAD\n$GENERIC_LOAD\nEND INTERFACE\n";
-      $GENERIC_COPY        = "INTERFACE $opts->{'method-prefix'}COPY\n$GENERIC_COPY\nEND INTERFACE\n";
-      $GENERIC_HOST        = "INTERFACE $opts->{'method-prefix'}HOST\n$GENERIC_HOST\nEND INTERFACE\n";
-      $GENERIC_LEGACY      = "INTERFACE $opts->{'method-prefix'}LEGACY\n$GENERIC_LEGACY\nEND INTERFACE\n";
-      $GENERIC_CRC64       = "INTERFACE $opts->{'method-prefix'}CRC64\n$GENERIC_CRC64\nEND INTERFACE\n";
-      $GENERIC_WIPE        = "INTERFACE $opts->{'method-prefix'}WIPE\n$GENERIC_WIPE\nEND INTERFACE\n";
-      $GENERIC_SIZE        = "INTERFACE $opts->{'method-prefix'}SIZE\n$GENERIC_SIZE\nEND INTERFACE\n";
+      for my $method (@method)
+        {
+          $GENERIC{$method} = "INTERFACE $opts->{'method-prefix'}\U$method\n$GENERIC{$method}\nEND INTERFACE\n";
+        }
 
       if ($abstract || $opts->{'type-bound-methods'})
         {
-          $GENERIC_SAVE        = "";
-          $GENERIC_LOAD        = "";
-          $GENERIC_COPY        = "";
-          $GENERIC_HOST        = "";
-          $GENERIC_LEGACY      = "";
-          $GENERIC_CRC64       = "";
-          $GENERIC_WIPE        = "";
-          $GENERIC_SIZE        = "";
+          for my $method (@method)
+            {
+              $GENERIC{$method} = '';
+            }
         }
   
-      $GENERIC_SAVE        = '' unless ($opts->{save});
-      $GENERIC_LOAD        = '' unless ($opts->{load});
-      $GENERIC_COPY        = '' unless ($opts->{copy});
-      $GENERIC_HOST        = '' unless ($opts->{host});
-      $GENERIC_LEGACY      = '' unless ($opts->{legacy});
-      $GENERIC_CRC64       = '' unless ($opts->{crc64});
-      $GENERIC_WIPE        = '' unless ($opts->{wipe});
-      $GENERIC_SIZE        = '' unless ($opts->{size});
+      for my $method (@method)
+        {
+          $GENERIC{$method} = '' unless ($opts->{$method});
+        }
 
       if ($opts->{'type-bound-methods'})
         {
@@ -778,18 +737,47 @@ EOF
               tconst => $tconst,
               methods =>
               {
-                ($opts->{save}   ? (save   => {head => $HEAD_SAVE  , impl => $IMPL_SAVE  }) : ()),
-                ($opts->{load}   ? (load   => {head => $HEAD_LOAD  , impl => $IMPL_LOAD  }) : ()),
-                ($opts->{copy}   ? (copy   => {head => $HEAD_COPY  , impl => $IMPL_COPY  }) : ()),
-                ($opts->{host}   ? (host   => {head => $HEAD_HOST  , impl => $IMPL_HOST  }) : ()),
-                ($opts->{legacy} ? (legacy => {head => $HEAD_LEGACY, impl => $IMPL_LEGACY}) : ()),
-                ($opts->{crc64}  ? (crc64  => {head => $HEAD_CRC64 , impl => $IMPL_CRC64 }) : ()),
-                ($opts->{wipe}   ? (wipe   => {head => $HEAD_WIPE  , impl => $IMPL_WIPE  }) : ()),
-                ($opts->{size}   ? (size   => {head => $HEAD_SIZE  , impl => $IMPL_SIZE  }) : ()),
+                map 
+                {
+                  my $method = $_;
+                  ($opts->{$method} ? ($method => {head => $HEAD{$method}  , impl => $IMPL{$method}  }) : ())
+                }
+                @method
               },
             };
         }
-      elsif (0)
+      elsif ($opts->{'split-util'})
+        {
+
+          $code{"util_${n}_mod.F90"} = << "EOF";
+MODULE UTIL_${name}_MOD
+
+USE $mod, ONLY : $name
+
+EOF
+
+          for my $method (@method)
+            {
+              $code{"util_${n}_mod.F90"} .= "USE UTIL_${name}_${method}_MOD\n"   if ($IMPL{$method});
+            }
+
+          $code{"util_${n}_mod.F90"} .= "END MODULE\n";
+    
+          for my $method (@method)
+            {
+              $code{"util_${n}_${method}_mod.F90"} = << "EOF" if ($IMPL{$method});
+MODULE UTIL_${name}_${method}_MOD
+USE $mod, ONLY : $name
+$GENERIC{$method}
+CONTAINS
+$IMPL{$method}
+END MODULE
+EOF
+            }
+
+          push @file, sort (keys (%code));
+        }
+      else
         {
           push @file, "util_${n}_mod.F90";
 
@@ -798,131 +786,21 @@ MODULE UTIL_${name}_MOD
 
 USE $mod, ONLY : $name
 
-$GENERIC_SAVE
-$GENERIC_LOAD
-$GENERIC_COPY
-$GENERIC_HOST
-$GENERIC_LEGACY     
-$GENERIC_CRC64
-$GENERIC_WIPE
-$GENERIC_SIZE
-
-CONTAINS
-
-$IMPL_SAVE
-
-$IMPL_LOAD
-
-$IMPL_COPY
-
-$IMPL_HOST
-
-$IMPL_LEGACY     
-
-$IMPL_CRC64
-
-$IMPL_WIPE
-
-$IMPL_SIZE
-
-END MODULE
-EOF
-        }
-      else
-        {
-
-          $code{"util_${n}_mod.F90"} = << "EOF";
-MODULE UTIL_${name}_MOD
-
-USE $mod, ONLY : $name
-
 EOF
 
-          $code{"util_${n}_mod.F90"} .= "USE UTIL_${name}_SAVE_MOD\n"   if ($IMPL_SAVE);
-          $code{"util_${n}_mod.F90"} .= "USE UTIL_${name}_LOAD_MOD\n"   if ($IMPL_LOAD);
-          $code{"util_${n}_mod.F90"} .= "USE UTIL_${name}_COPY_MOD\n"   if ($IMPL_COPY);
-          $code{"util_${n}_mod.F90"} .= "USE UTIL_${name}_HOST_MOD\n"   if ($IMPL_HOST);
-          $code{"util_${n}_mod.F90"} .= "USE UTIL_${name}_LEGACY_MOD\n" if ($IMPL_LEGACY);
-          $code{"util_${n}_mod.F90"} .= "USE UTIL_${name}_CRC64_MOD\n"  if ($IMPL_CRC64);
-          $code{"util_${n}_mod.F90"} .= "USE UTIL_${name}_WIPE_MOD\n"   if ($IMPL_WIPE);
-          $code{"util_${n}_mod.F90"} .= "USE UTIL_${name}_SIZE_MOD\n"   if ($IMPL_SIZE);
+          for my $method (@method)
+            {
+              $code{"util_${n}_mod.F90"} .= $GENERIC{$method} . "\n";
+            }
+
+          $code{"util_${n}_mod.F90"} .= "CONTAINS\n\n";
+
+          for my $method (@method)
+            {
+              $code{"util_${n}_mod.F90"} .= $IMPL{$method} . "\n\n";
+            }
 
           $code{"util_${n}_mod.F90"} .= "END MODULE\n";
-    
-          $code{"util_${n}_save_mod.F90"} = << "EOF" if ($IMPL_SAVE);
-MODULE UTIL_${name}_SAVE_MOD
-USE $mod, ONLY : $name
-$GENERIC_SAVE
-CONTAINS
-$IMPL_SAVE
-END MODULE
-EOF
-
-          $code{"util_${n}_load_mod.F90"} = << "EOF" if ($IMPL_LOAD);
-MODULE UTIL_${name}_LOAD_MOD
-USE $mod, ONLY : $name
-$GENERIC_LOAD
-CONTAINS
-$IMPL_LOAD
-END MODULE
-EOF
-
-          $code{"util_${n}_copy_mod.F90"} = << "EOF" if ($IMPL_COPY);
-MODULE UTIL_${name}_COPY_MOD
-USE $mod, ONLY : $name
-$GENERIC_COPY
-CONTAINS
-$IMPL_COPY
-END MODULE
-EOF
-
-          $code{"util_${n}_host_mod.F90"} = << "EOF" if ($IMPL_HOST);
-MODULE UTIL_${name}_HOST_MOD
-USE $mod, ONLY : $name
-$GENERIC_HOST
-CONTAINS
-$IMPL_HOST
-END MODULE
-EOF
-
-          $code{"util_${n}_legacy_mod.F90"} = << "EOF" if ($IMPL_LEGACY);
-MODULE UTIL_${name}_LEGACY_MOD
-USE $mod, ONLY : $name
-$GENERIC_LEGACY
-CONTAINS
-$IMPL_LEGACY
-END MODULE
-EOF
-
-          $code{"util_${n}_crc64_mod.F90"} = << "EOF" if ($IMPL_CRC64);
-MODULE UTIL_${name}_CRC64_MOD
-USE $mod, ONLY : $name
-$GENERIC_CRC64
-CONTAINS
-$IMPL_CRC64
-END MODULE
-EOF
-
-          $code{"util_${n}_wipe_mod.F90"} = << "EOF" if ($IMPL_WIPE);
-MODULE UTIL_${name}_WIPE_MOD
-USE $mod, ONLY : $name
-$GENERIC_WIPE
-CONTAINS
-$IMPL_WIPE
-END MODULE
-EOF
-
-          $code{"util_${n}_size_mod.F90"} = << "EOF" if ($IMPL_SIZE);
-MODULE UTIL_${name}_SIZE_MOD
-USE $mod, ONLY : $name
-$GENERIC_SIZE
-CONTAINS
-$IMPL_SIZE
-END MODULE
-EOF
-
-
-          push @file, sort (keys (%code));
         }
 
     

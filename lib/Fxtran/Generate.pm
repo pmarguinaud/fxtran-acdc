@@ -478,6 +478,7 @@ sub manyblocks
   sorted                          -- Sort files (with number prefix) in compilation order
   numbered-submodules             -- Do not generate submodules with full names, use numbers instead
   method-prefix=s                 -- Prefix for method names                                                         -- ACDC_
+  split-util                      -- Split util module into several modules (one per method)
 EOF
 sub methods
 {
