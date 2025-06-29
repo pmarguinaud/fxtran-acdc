@@ -1,0 +1,94 @@
+#!/usr/bin/perl -w
+
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
+use Getopt::Long;
+use FileHandle;
+use Data::Dumper;
+use File::Temp;
+use File::Basename;
+use File::Spec;
+use File::Copy;
+use File::Path;
+use Cwd;
+
+use FindBin qw ($Bin);
+use lib "$Bin/../lib";
+
+use strict;
+
+use Fxtran::Common;
+use Fxtran::Bt;
+use Fxtran::Util;
+use Fxtran::PATH;
+use Fxtran::Interface;
+
+use Fxtran;
+
+my %opts;
+
+for my $F90 (@ARGV) {
+
+my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -construct-tag -canonic)]);
+
+for (&F ('.//C|.//print-stmt|.//write-stmt|.//include|.//if-stmt|.//associate-construct|.//allocate-stmt|.//deallocate-stmt|'
+      . './/pointer-a-stmt|.//a-stmt|.//do-construct|.//if-construct|.//call-stmt|.//selectcase-construct|.//inquire-stmt|'
+      . './/nullify-stmt|.//select-type-construct|.//open-stmt', $d))
+  {
+    $_->unbindNode ();
+  }
+
+for my $pu (&F ('.//program-unit', $d))
+  {
+    next unless ($pu->firstChild->nodeName eq 'subroutine-stmt');
+
+    my @args = &F ('./subroutine-stmt/dummy-arg-LT/arg-N', $pu, 1);
+    my %args = map { ($_, 1) } @args;
+
+    DECL: for my $decl (&F ('.//T-decl-stmt[not(.//attribute-N[string(.)="INTENT"])]', $pu))
+      {
+        for my $n (&F ('.//EN-N', $decl, 1))
+          {
+            next DECL if ($args{$n});
+          }
+        $decl->unbindNode ();
+      }
+  }
+
+for my $use (&F ('.//use-stmt', $d))
+  {
+    my ($Use) = &Fxtran::parse (fragment => $use->textContent, fopts => [qw (-line-length 5000 -no-include -canonic)]);
+    $use->replaceNode ($Use);
+    $use = $Use;
+
+
+    for my $r (&F ('.//rename-LT/rename', $use))
+      {
+        my $n = $r->textContent;
+        next if (&F ('.//named-E[string(N)="?"]', $n, $d) || &F ('.//T-N[string(.)="?"]', $n, $d));
+        if ($r->nextSibling)
+          {
+            $r->nextSibling->unbindNode;
+            $r->unbindNode;
+          }
+        elsif ($r->previousSibling)
+          {
+            $r->previousSibling->unbindNode;
+            $r->unbindNode;
+          }
+        else
+          {
+            $use->unbindNode;
+            last;
+          }
+      }
+  }
+
+
+  'FileHandle'->new (">$F90")->print ($d->textContent);
+
+}
