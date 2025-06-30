@@ -570,8 +570,23 @@ sub processTypes1
       else
         {
           @U = map { "UTIL_${_}_MOD" } sort keys (%U);
-          @U = map { (exists ($opts->{'module-map'}{$_}) ? $opts->{'module-map'}{$_} : $_) } @U;
+
+          if ($tname =~ m/^FIELD_\d\w\w_ARRAY$/o)  # Field API arrays have to be processed differently; here we translate UTIL_FIELD_1IM_MOD into FIELD_1IM_UTIL_MODULE
+            {
+              for (@U)
+                {
+                  if (m/^UTIL_FIELD_(\d\w\w)_MOD$/o)
+                    {
+                      $_ = "FIELD_${1}_UTIL_MODULE";
+                    }
+                }
+            }
+          else
+            {
+              @U = map { (exists ($opts->{'module-map'}{$_}) ? $opts->{'module-map'}{$_} : $_) } @U;
+            }
         }
+
       %U = map { ($_, 1) } @U;
       @U = sort keys (%U);
 
@@ -750,7 +765,7 @@ EOF
         {
 
           $code{"util_${n}_mod.F90"} = << "EOF";
-MODULE UTIL_${name}_MOD
+MODULE UTIL_\U${name}_MOD
 
 USE $mod, ONLY : $name
 
@@ -766,7 +781,7 @@ EOF
           for my $method (@method)
             {
               $code{"util_${n}_${method}_mod.F90"} = << "EOF" if ($IMPL{$method});
-MODULE UTIL_${name}_${method}_MOD
+MODULE UTIL_\U${name}_${method}_MOD
 USE $mod, ONLY : $name
 $GENERIC{$method}
 CONTAINS
@@ -782,7 +797,7 @@ EOF
           push @file, "util_${n}_mod.F90";
 
           $code{"util_${n}_mod.F90"} = << "EOF";
-MODULE UTIL_${name}_MOD
+MODULE UTIL_\U${name}_MOD
 
 USE $mod, ONLY : $name
 

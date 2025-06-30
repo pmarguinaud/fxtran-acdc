@@ -46,7 +46,10 @@ sub matchDocument
   shift;
   my $d = shift;
 
-  return unless (&F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="KLON"]', $d));
+  return unless (&F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="KLON"]', $d)
+             || (&F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="KIDIA"]', $d)
+              && &F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="KFDIA"]', $d)
+              && &F ('./object/file/program-unit/subroutine-stmt/dummy-arg-LT/arg-N[string(.)="YDGEOMETRY"]', $d)));
 
   return 1 unless (&F ('./object/file/program-unit/execution-part//do-construct', $d));
 
