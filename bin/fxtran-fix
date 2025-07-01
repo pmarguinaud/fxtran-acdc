@@ -36,7 +36,7 @@ exit (0) unless (system (@cmd)); # Exit if it work
 my $user = getpwuid ($<);
 my $prog = &basename ($0, qw (.pl));
 
-my ($file) = grep { m/\.(?:F90|F)$/io } @ARGV;
+my ($file) = grep { m/\.(?:F90|F|c|cc|cpp)$/io } @ARGV;
 
 my $tmpdir = 'File::Temp'->newdir ();
 
