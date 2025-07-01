@@ -27,6 +27,7 @@ use Fxtran::NVTX;
 use Fxtran::Finder;
 use Fxtran::Style;
 use Fxtran::Pragma;
+use Fxtran::Cycle;
 
 use click;
 
@@ -133,6 +134,7 @@ my %options= do
   base                      -- Base directory for file search                                                                               -- .
   array-slice-to-address    -- Pass addresses of first array element instead of array slices
   use-stack-manyblocks      -- Use stack allocation for manyblocks routines
+  method-prefix=s           -- Prefix for method names                                                         -- ACDC_
 EOF
 
   my @options;
@@ -313,7 +315,7 @@ sub singlecolumn
 
 &click (<< "EOF");
 @options{qw (cycle dir tmp only-if-newer merge-interfaces pragma stack84 style redim-arguments ydcpg_opts checker suffix-manyblocks
-             suffix-singlecolumn suffix-pointerparallel version type-bound-methods types-constant-dir types-fieldapi-dir)}
+             suffix-singlecolumn suffix-pointerparallel version type-bound-methods types-constant-dir types-fieldapi-dir method-prefix)}
   base                            -- Base directory for file lookup
   contiguous-pointers             -- Add CONTIGUOUS attribute to pointer accessors
   files=s@                        -- List of files to be looked at for inlining
@@ -464,7 +466,7 @@ sub manyblocks
 }
 
 &click (<< "EOF");
-@options{qw (dir pragma tmp type-bound-methods types-constant-dir types-fieldapi-dir checker)}
+@options{qw (dir pragma tmp type-bound-methods types-constant-dir types-fieldapi-dir checker method-prefix)}
   field-api                       -- Dump Field API information
   field-api-class=s               -- Field API structure category
   methods-list=s@                 -- List of methods (copy, crc64, host, legacy, load, save, size, wipe
@@ -477,7 +479,6 @@ sub manyblocks
   skip-types=s                    -- Skip these derived types
   sorted                          -- Sort files (with number prefix) in compilation order
   numbered-submodules             -- Do not generate submodules with full names, use numbers instead
-  method-prefix=s                 -- Prefix for method names                                                         -- ACDC_
   split-util                      -- Split util module into several modules (one per method)
 EOF
 sub methods
@@ -623,7 +624,7 @@ sub methods
 
 &click (<< "EOF");
 @options{qw (dir pragma tmp merge-interfaces suffix-singlecolumn suffix-singleblock suffix-pointerparallel suffix-manyblocks 
-             use-stack-manyblocks ydcpg_opts)}
+             use-stack-manyblocks ydcpg_opts cycle)}
 EOF
 sub interface
 {
@@ -639,6 +640,8 @@ sub interface
   my @text = split (m/\n/o, $d->textContent);
   
   &Fxtran::Interface::intfbBody ($d);
+
+  'Fxtran::Cycle'->simplify ($d, %$opts);
 
   my %intfb;
   

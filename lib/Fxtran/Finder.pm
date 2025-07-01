@@ -14,6 +14,7 @@ use Fxtran::Finder::Pack;
 use Fxtran::Finder::Pack::Build;
 use Fxtran::Finder::Include;
 use Fxtran::Finder::Files;
+use Fxtran::Finder::CMake;
 
 sub new
 {
@@ -26,7 +27,11 @@ sub new
       %args = @_;
     }
 
-  if ($ENV{TARGET_PACK})
+  if ($ENV{CMAKE_BUILD_DIRECTORY})
+    {
+      return 'Fxtran::Finder::CMake'->new (@_);
+    }
+  elsif ($ENV{TARGET_PACK})
     {
       return 'Fxtran::Finder::Pack::Build'->new (@_);
     }

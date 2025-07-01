@@ -86,11 +86,11 @@ sub makeParallel
       
       if ($opts{'type-bound-methods'})
         {
-          $prep->insertAfter ($_, $first) for (&s ("CALL $N%HOST ()"), &t ("\n"));
+          $prep->insertAfter ($_, $first) for (&s ("CALL $N%$opts{'method-prefix'}HOST ()"), &t ("\n"));
         }
       else
         {
-          $prep->insertAfter ($_, $first) for (&s ("CALL HOST ($N)"), &t ("\n"));
+          $prep->insertAfter ($_, $first) for (&s ("CALL $opts{'method-prefix'}HOST ($N)"), &t ("\n"));
         }
       
     }

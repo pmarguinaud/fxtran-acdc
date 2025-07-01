@@ -6,11 +6,12 @@ package Fxtran::Subroutine;
 # philippe.marguinaud@meteo.fr
 #
 
-
-use strict;
-use Fxtran;
 use FileHandle;
 use Data::Dumper;
+
+use strict;
+
+use Fxtran;
   
 sub addSuffix
 {
