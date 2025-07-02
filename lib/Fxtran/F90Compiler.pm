@@ -54,7 +54,7 @@ sub study
 sub obj
 {
   my $src = shift;
-  (my $obj = &basename ($src)) =~ s/\.(?:F90|c)$/.o/o;
+  (my $obj = &basename ($src)) =~ s/\.(?:F90|f90|c|cc)$/.o/o;
   return "O_$obj";
 }
 
@@ -65,14 +65,24 @@ sub make
   my $obj = $args{obj};
   my $lib = $args{lib};
   my @F90 = @{ $args{F90} || [] };
-  my @C   = @{ $args{C} || [] };
+  my @C   = @{ $args{C}   || [] };
+  my @CXX = @{ $args{CXX} || [] };
 
   my $f90compiler = $args{f90compiler};
-  my $CCompiler = 'gcc';
-  my @f90flags = grep { $_ ne '-c' } @{ $args{f90flags} };
+  my $ccompiler   = $args{ccompiler}   || 'gcc';
+  my $cxxcompiler = $args{cxxcompiler} || '';
+
+  my @f90flags = grep { $_ ne '-c' } @{ $args{f90flags} || [] };
+  my @cflags   = grep { $_ ne '-c' } @{ $args{cflags}   || ['-fPIC'] };
+  my @cxxflags = grep { $_ ne '-c' } @{ $args{cxxflags} || [] };
 
   my %mod2obj;
   my %obj2use;
+
+  if (@CXX)
+    {
+      die ("CXX compiler is required\n") unless ($cxxcompiler);
+    }
   
   my @obj;
   
@@ -96,13 +106,20 @@ sub make
       push @obj, &obj ($C);
     }
 
+  for my $CXX (@CXX)
+    {
+      push @obj, &obj ($CXX);
+    }
+
   my $fh = 'FileHandle'->new ('>Makefile');
   
   $fh->print (<< "EOF");
 FC=$f90compiler 
-CC=$CCompiler
+CC=$ccompiler
+CXX=$cxxcompiler
 FCFLAGS=@f90flags
-CFLAGS=-fPIC
+CFLAGS=@cflags
+CXXFLAGS=@cxxflags
 LD=ld
 AR=ar
 
@@ -165,6 +182,17 @@ $obj: $C
 EOF
     }
   
+  for my $CXX (@CXX)
+    {
+      my $obj = &obj ($CXX);
+      $fh->print (<<"EOF");
+$obj: $CXX 
+	\@echo "\$(CXX) -c $CXX"
+	@\$(CXX) \$(CXXFLAGS) -o $obj -c $CXX
+  
+EOF
+    }
+  
   $fh->close ();
 
   &Fxtran::Util::runCommand (cmd => ['make', -j => 4], %args);
@@ -198,13 +226,15 @@ sub run
 
   return if ($args{dryrun});
 
-  my $obj = $args{obj};
-  my @F90 = @{ $args{F90} };
-  my $f90compiler = $args{f90compiler};
-  my @f90flags = @{ $args{f90flags} };
+  my @F90 = @{ $args{F90} || [] };
+  my @C   = @{ $args{C}   || [] };
+  my @CXX = @{ $args{CXX} || [] };
 
-  if (scalar (@F90) == 1)
+  if ((scalar (@F90) == 1) && (scalar (@C) == 0) && (scalar (@CXX) == 0))
     {
+      my $f90compiler = $args{f90compiler};
+      my @f90flags = @{ $args{f90flags} };
+      my $obj = $args{obj};
       &Fxtran::Util::runCommand (cmd => [$f90compiler, @f90flags, ($obj ? (-o => $obj) : ()), @F90], %args);
     }
   else
