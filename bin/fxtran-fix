@@ -36,7 +36,7 @@ exit (0) unless (system (@cmd)); # Exit if it work
 my $user = getpwuid ($<);
 my $prog = &basename ($0, qw (.pl));
 
-my ($file) = grep { m/\.(?:F90|F|c|cc|cpp)$/io } @ARGV;
+my ($file) = grep { m/\.(?:F90|F|c|cc|cpp)$/io } @ARGV; $file ||= '';
 
 my $tmpdir = 'File::Temp'->newdir ();
 
@@ -79,7 +79,11 @@ fi
 export PS1="$prog> "
   
 alias r='$tmpdir/run.sh'
+
+if [ "x$file" != "x" ]
+then
 alias e="vi $file"
+fi
   
 $tmpdir/run.sh 
 EOF

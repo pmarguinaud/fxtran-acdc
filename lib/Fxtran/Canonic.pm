@@ -283,6 +283,7 @@ sub indent
   for my $stmt (&F ('.//ANY-stmt', $d))
     {
       my $name = $stmt->nodeName;
+      next if ($name eq 'broken-stmt'); 
 
       if ($name eq 'implicit-none-stmt')
         {
