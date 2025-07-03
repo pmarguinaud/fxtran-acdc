@@ -17,9 +17,112 @@ TYPE STACK
 END TYPE
 
 TYPE (STACK_DATA) :: YSTACK
-PUBLIC :: STACK, YSTACK
+
+PRIVATE
+PUBLIC :: STACK, YSTACK, STACK_ALLOC, STACK_BASE
 
 CONTAINS
+
+SUBROUTINE STACK_ALLOC (KPTR, KSIZE, KKIND, YDSTACK, CDFILE)
+
+!$acc routine seq
+
+USE ABOR1_ACC_MOD
+
+INTEGER*8 :: KPTR
+INTEGER*8 :: KSIZE
+INTEGER   :: KKIND
+TYPE (STACK) :: YDSTACK
+CHARACTER(LEN=*) :: CDFILE
+
+SELECT CASE (KKIND)
+  CASE (4) 
+
+    KPTR = YDSTACK%L4
+   
+    YDSTACK%L4 = YDSTACK%L4 + 4 * KSIZE
+   
+    IF (YDSTACK%L4 > YDSTACK%U4) GOTO 999
+
+  CASE (8) 
+
+    KPTR = YDSTACK%L8
+
+    YDSTACK%L8 = YDSTACK%L8 + 8 * KSIZE
+
+    IF (YDSTACK%L8 > YDSTACK%U8) GOTO 999
+
+  CASE DEFAULT
+
+    GOTO 999
+
+END SELECT
+
+RETURN
+
+999 CONTINUE
+
+CALL ABOR1_ACC (CDFILE)
+
+END SUBROUTINE
+
+INTEGER*8 FUNCTION STACK_BASE (YDSTACK, KKIND, CDW, IBL, NBL, YDSTACKBASE)
+
+!$acc routine seq
+
+USE ABOR1_ACC_MOD
+
+TYPE (STACK_DATA), INTENT (IN) :: YDSTACK
+INTEGER, INTENT (IN) :: KKIND, IBL, NBL
+CHARACTER :: CDW
+TYPE (STACK), INTENT (IN) :: YDSTACKBASE
+
+INTEGER*8 :: MALIGN, P, K
+
+MALIGN (P, K) = ((P+K-1)/K) * K
+
+STACK_BASE = 0
+
+SELECT CASE (KKIND)
+
+  CASE (4)
+    SELECT CASE (CDW)
+      CASE ('L')
+        STACK_BASE = &
+  malign(ydstackbase%L4 + LOC (ydstack%ZDATA4 (1,1,1,1)) + ((INT (ibl, 8) - 1) * (SIZE (ydstack%ZDATA4,KIND=8) * KIND (ydstack%ZDATA4) - ydstackbase%L4)) / INT (nbl, 8), ydstack%IALIGN) 
+
+      CASE ('U')
+        STACK_BASE = &
+        (ydstackbase%L4 + LOC (ydstack%ZDATA4 (1,1,1,1)) + ((INT (ibl, 8)    ) * (SIZE (ydstack%ZDATA4,KIND=8) * KIND (ydstack%ZDATA4) - ydstackbase%L4)) / INT (nbl, 8))
+
+      CASE DEFAULT
+
+        CALL ABOR1_ACC (__FILE__)
+    END SELECT
+
+  CASE (8)
+    SELECT CASE (CDW)
+      CASE ('L')
+        STACK_BASE = &
+  malign(ydstackbase%L8 + LOC (ydstack%ZDATA8 (1,1,1,1)) + ((INT (ibl, 8) - 1) * (SIZE (ydstack%ZDATA8,KIND=8) * KIND (ydstack%ZDATA8) - ydstackbase%L8)) / INT (nbl, 8), ydstack%IALIGN) 
+  
+      CASE ('U')
+        STACK_BASE = &
+        (ydstackbase%L8 + LOC (ydstack%ZDATA8 (1,1,1,1)) + ((INT (ibl, 8)    ) * (SIZE (ydstack%ZDATA8,KIND=8) * KIND (ydstack%ZDATA8) - ydstackbase%L8)) / INT (nbl, 8))
+
+      CASE DEFAULT
+
+        CALL ABOR1_ACC (__FILE__)
+    END SELECT
+
+  CASE DEFAULT
+
+    CALL ABOR1_ACC (__FILE__)
+END SELECT
+
+RETURN
+
+END FUNCTION
 
 END MODULE
 

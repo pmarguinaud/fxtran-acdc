@@ -55,12 +55,6 @@ for my $comp (qw (F90 CC CXX))
 
 $opts{prefix} = 'File::Spec'->rel2abs ($opts{prefix});
 
-for (qw (include lib))
-  {
-    &mkpath ("$opts{prefix}/$_") 
-      unless (-d "$opts{prefix}/$_");
-  }
-
 my ($f90compiler, @f90flags) = $opts{F90} ? @{ $opts{F90} } : @ARGV;
 my ($ccompiler,   @cflags)   = @{ $opts{CC} || [] };
 my ($cxxcompiler, @cxxflags) = @{ $opts{CXX} || [] };
@@ -91,12 +85,22 @@ chdir ($dir);
   cxxflags    => \@cxxflags,
   CXX         => \@CXX,
 
-  lib         => "$opts{prefix}/lib/libACDC.a",
+  lib         => "libACDC.a",
 );
+
+for (qw (include lib))
+  {
+    &mkpath ("$opts{prefix}/$_") 
+      unless (-d "$opts{prefix}/$_");
+  }
+
+&move ('libACDC.a', "$opts{prefix}/lib/libACDC.a")
+  or die ("Cannot install libACDC.a");
 
 for (<*.mod>, <*.smod>, <$Bin/../src/*.h>)
   {
-    &copy ($_, "$opts{prefix}/include/" . &basename ($_));
+    &copy ($_, "$opts{prefix}/include/" . &basename ($_))
+      or die ("Cannot install $_");
   }
 
 

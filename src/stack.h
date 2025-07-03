@@ -21,7 +21,6 @@ USE PARKIND1, ONLY : JPRB
 #define nullptr(p) IP_##p##_ = 0
 
 #define alloc4(n) IP_##n##_=YLSTACK%L4;YLSTACK%L4=YLSTACK%L4+4*SIZE(n,KIND=8);IF(YLSTACK%L4>YLSTACK%U4)CALL ABOR1_ACC(__FILE__)
-
 #define alloc8(n) IP_##n##_=YLSTACK%L8;YLSTACK%L8=YLSTACK%L8+8*SIZE(n,KIND=8);IF(YLSTACK%L8>YLSTACK%U8)CALL ABOR1_ACC(__FILE__)
 
 #define malign(p,k) ((((p)+(k)-1)/(k)) * (k))
@@ -31,16 +30,31 @@ USE PARKIND1, ONLY : JPRB
   
 #define stack_l8(ydstack,ibl,nbl) malign(LOC (ydstack%ZDATA8 (1,1,1,1)) + ((INT (ibl, 8) - 1) * SIZE (ydstack%ZDATA8,KIND=8) * KIND (ydstack%ZDATA8)) / INT (nbl, 8), ydstack%IALIGN) 
 #define stack_u8(ydstack,ibl,nbl)       (LOC (ydstack%ZDATA8 (1,1,1,1)) + ((INT (ibl, 8)    ) * SIZE (ydstack%ZDATA8,KIND=8) * KIND (ydstack%ZDATA8)) / INT (nbl, 8))
-  
+ 
 #define stack_l4_base(ydstack,ibl,nbl,ydstackbase) \
   malign(ydstackbase%L4 + LOC (ydstack%ZDATA4 (1,1,1,1)) + ((INT (ibl, 8) - 1) * (SIZE (ydstack%ZDATA4,KIND=8) * KIND (ydstack%ZDATA4) - ydstackbase%L4)) / INT (nbl, 8), ydstack%IALIGN) 
 #define stack_u4_base(ydstack,ibl,nbl,ydstackbase) \
         (ydstackbase%L4 + LOC (ydstack%ZDATA4 (1,1,1,1)) + ((INT (ibl, 8)    ) * (SIZE (ydstack%ZDATA4,KIND=8) * KIND (ydstack%ZDATA4) - ydstackbase%L4)) / INT (nbl, 8))
-  
+
 #define stack_l8_base(ydstack,ibl,nbl,ydstackbase) \
   malign(ydstackbase%L8 + LOC (ydstack%ZDATA8 (1,1,1,1)) + ((INT (ibl, 8) - 1) * (SIZE (ydstack%ZDATA8,KIND=8) * KIND (ydstack%ZDATA8) - ydstackbase%L8)) / INT (nbl, 8), ydstack%IALIGN) 
 #define stack_u8_base(ydstack,ibl,nbl,ydstackbase) \
         (ydstackbase%L8 + LOC (ydstack%ZDATA8 (1,1,1,1)) + ((INT (ibl, 8)    ) * (SIZE (ydstack%ZDATA8,KIND=8) * KIND (ydstack%ZDATA8) - ydstackbase%L8)) / INT (nbl, 8))
+
+#ifdef UNDEF 
+
+! Not used yet
+
+#define alloc4(n) CALL STACK_ALLOC (IP_##n##_, SIZE (n, KIND=8), 4, YLSTACK, __FILE__)
+#define alloc8(n) CALL STACK_ALLOC (IP_##n##_, SIZE (n, KIND=8), 8, YLSTACK, __FILE__)
+
+#define stack_l4_base(ydstack,ibl,nbl,ydstackbase) STACK_BASE (ydstack, 4, 'L', ibl, nbl, ydstackbase)
+#define stack_u4_base(ydstack,ibl,nbl,ydstackbase) STACK_BASE (ydstack, 4, 'U', ibl, nbl, ydstackbase)
+  
+#define stack_l8_base(ydstack,ibl,nbl,ydstackbase) STACK_BASE (ydstack, 8, 'L', ibl, nbl, ydstackbase)
+#define stack_u8_base(ydstack,ibl,nbl,ydstackbase) STACK_BASE (ydstack, 8, 'U', ibl, nbl, ydstackbase)
+
+#endif
   
 #else
 
