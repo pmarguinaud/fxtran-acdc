@@ -135,6 +135,7 @@ my %options= do
   array-slice-to-address    -- Pass addresses of first array element instead of array slices
   use-stack-manyblocks      -- Use stack allocation for manyblocks routines
   method-prefix=s           -- Prefix for method names                                                         -- ACDC_
+  use-bit-repro-intrinsics  -- Use bit reproducible intrinsics
 EOF
 
   my @options;
@@ -180,6 +181,14 @@ sub routineToRoutineHead
   my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -canonic), @fopts], dir => $opts->{tmp});
 
   &Fxtran::Canonic::makeCanonic ($d, %$opts);
+
+  if ($opts->{'use-bit-repro-intrinsics'})
+    {
+      for my $pu (&F ('.//program-unit', $d))
+        {
+          &Fxtran::Intrinsic::makeBitReproducible ($pu, %$opts);
+        }
+    }
   
   $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
 
@@ -259,7 +268,7 @@ sub semiimplicit
 
 &click (<< "EOF");
 @options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 style redim-arguments set-variables 
-             suffix-singlecolumn tmp value-attribute version inline-contained checker array-slice-to-address)}
+             suffix-singlecolumn tmp value-attribute version inline-contained checker array-slice-to-address use-bit-repro-intrinsics)}
   keep-drhook               -- Keep DrHook
   dummy                     -- Generate a dummy routine (strip all executable code)
   inlined=s@                -- List of routines to inline
