@@ -13,7 +13,6 @@ use Fxtran::Pragma;
 use Fxtran::Finder;
 use Fxtran::Style;
 use Fxtran::Decl;
-use Fxtran::Inline;
 use Fxtran;
 
 sub processSingleSection
@@ -196,14 +195,6 @@ sub processSingleRoutine
 
   my $KGPBLKS = 'KGPBLKS';
 
-  for my $in (@{ $opts{inlined} })
-    {
-      my $f90in = $find->resolve (file => $in);
-      my $di = &Fxtran::parse (location => $f90in, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)], dir => $opts{tmp});
-      &Fxtran::Canonic::makeCanonic ($di, %opts);
-      &Fxtran::Inline::inlineExternalSubroutine ($pu, $di, %opts);
-    }
-      
   my $style = $opts{style};
   my $pragma = $opts{pragma};
 

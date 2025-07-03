@@ -28,6 +28,7 @@ use Fxtran::Finder;
 use Fxtran::Style;
 use Fxtran::Pragma;
 use Fxtran::Cycle;
+use Fxtran::Inline;
 
 use click;
 
@@ -198,6 +199,36 @@ sub routineToRoutineHead
     {
       &Fxtran::Util::loadModule ('Fxtran::Generate::Checker');
       'Fxtran::Generate::Checker'->$method ($d, %$opts)
+    }
+
+
+  if ((scalar (@{ $opts->{inlined} || [] }) || $opts->{'inline-contained'}) && (! $opts->{dummy}))
+    {
+      &Fxtran::Include::loadContainedIncludes ($d, %$opts)
+        if ($opts->{'inline-contained'});
+
+      my $find = $opts->{find};
+
+      for my $pu (&F ('.//program-unit', $d))
+        {
+          my $stmt = $pu->firstChild;
+          next unless ($stmt->nodeName eq 'subroutine-stmt');
+
+          for my $in (@{ $opts->{inlined} || [] })
+            {   
+              my $f90in = $find->resolve (file => $in);
+              my $di = &Fxtran::parse (location => $f90in, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)], dir => $opts->{tmp});
+              &Fxtran::Canonic::makeCanonic ($di, %$opts);
+              &Fxtran::Inline::inlineExternalSubroutine ($pu, $di, %$opts);
+            }   
+
+          if ($opts->{'inline-contained'})
+            {
+              &Fxtran::Inline::inlineContainedSubroutines ($pu, skipDimensionCheck => 1, inlineDeclarations => 1, 
+                                                           comment => $opts->{'inline-comment'}, find => $find,
+                                                           style => $opts->{style});
+            }
+        }
     }
 
   return ($d, $F90out);

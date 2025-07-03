@@ -70,8 +70,6 @@ sub preProcessForOpenACC
   my $d = shift;
   my %opts = @_;
 
-  &Fxtran::Include::loadContainedIncludes ($d, %opts);
-
   # JIJ -> JI
 
   &Fxtran::Identifier::rename ($d, 'JIJ' => 'JI');

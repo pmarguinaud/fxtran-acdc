@@ -24,7 +24,6 @@ use Fxtran::Finder;
 use Fxtran::Include;
 use Fxtran::Bt;
 use Fxtran::Canonic;
-use Fxtran::Inline;
 use Fxtran::Style;
 use Fxtran::Style::IAL;
 use Fxtran::Style::MESONH;
@@ -160,21 +159,6 @@ sub processSingleRoutine
   
   &Fxtran::Subroutine::rename ($pu, sub { return $_[0] . uc ($opts{'suffix-pointerparallel'}) });
   
-  # Prepare the code
-  
-  for my $in (@{ $opts{inlined} })
-    {
-      my $f90in = $find->resolve (file => $in);
-      my $di = &Fxtran::parse (location => $f90in, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)], dir => $opts{tmp});
-      &Fxtran::Canonic::makeCanonic ($di, %opts);
-      &Fxtran::Inline::inlineExternalSubroutine ($pu, $di, %opts);
-    }
-      
-  if ($opts{'inline-contained'})
-    {
-      &Fxtran::Inline::inlineContainedSubroutines ($pu, skipDimensionCheck => 1);
-    }
-
   # Add modules
   
   my @use = qw (FIELD_MODULE FIELD_FACTORY_MODULE FIELD_ACCESS_MODULE YOMPARALLELMETHOD STACK_MOD YOMHOOK);

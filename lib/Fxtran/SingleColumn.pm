@@ -26,7 +26,6 @@ use Fxtran::Call;
 use Fxtran::Canonic;
 use Fxtran::DrHook;
 use Fxtran::Include;
-use Fxtran::Inline;
 use Fxtran::Pointer;
 use Fxtran::Print;
 use Fxtran::Interface;
@@ -211,19 +210,6 @@ sub processSingleRoutine
 
   unless ($opts{dummy})
     {
-
-      for my $in (@{ $opts{inlined} })
-        {
-          my $f90in = $find->resolve (file => $in);
-          my $di = &Fxtran::parse (location => $f90in, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)], dir => $opts{tmp});
-          &Fxtran::Canonic::makeCanonic ($di, %opts);
-          &Fxtran::Inline::inlineExternalSubroutine ($pu, $di, %opts);
-        }
-      
-      if ($opts{'inline-contained'})
-        {
-          &Fxtran::Inline::inlineContainedSubroutines ($pu, find => $find, inlineDeclarations => 1, comment => $opts{'inline-comment'}, style => $opts{style});
-        }
      
       @pointer = &Fxtran::Pointer::setPointersDimensions ($pu, 'no-check-pointers-dims' => $opts{'no-check-pointers-dims'})
         if ($opts{'process-pointers'});
