@@ -183,14 +183,6 @@ sub routineToRoutineHead
 
   &Fxtran::Canonic::makeCanonic ($d, %$opts);
 
-  if ($opts->{'use-bit-repro-intrinsics'})
-    {
-      for my $pu (&F ('.//program-unit', $d))
-        {
-          &Fxtran::Intrinsic::makeBitReproducible ($pu, %$opts);
-        }
-    }
-  
   $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
 
   $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
@@ -231,6 +223,14 @@ sub routineToRoutineHead
         }
     }
 
+  if ($opts->{'use-bit-repro-intrinsics'})
+    {
+      for my $pu (&F ('.//program-unit', $d))
+        {
+          &Fxtran::Intrinsic::makeBitReproducible ($pu, %$opts);
+        }
+    }
+  
   return ($d, $F90out);
 }
 

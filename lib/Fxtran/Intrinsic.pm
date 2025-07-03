@@ -37,6 +37,8 @@ sub slurp
   return do { my $fh = 'FileHandle'->new ("<$file"); local $/ = undef; <$fh> };
 }
 
+# Code to replace intrinsic with their BR version
+
 sub makeBitReproducibleSection
 {
   my $s = shift;
@@ -93,22 +95,27 @@ sub makeBitReproducible
     {
       my ($ft) = &F ('./filename/text()', $include);
       my $filename = $ft->textContent;
+
       next unless ($filename =~ m/\.func.h$/o);
 
       $filename = $find->resolve (file => $filename);
       my $text = &slurp ($filename);
-      my @stmt = grep { $_->nodeName =~ m/-stmt$/o }
-                 &Fxtran::parse (fragment => $text, fopts => [qw (-line-length 500 -canonic)]);
 
+      my ($prog) = &Fxtran::parse (program => "PROGRAM MAIN\n${text}\nEND\n", fopts => [qw (-line-length 500 -construct-tag)]);
 
-      my $fh = 'FileHandle'->new ('>' . 'br_' . &basename ($filename));
+      &Fxtran::Canonic::makeCanonicReferences ($prog);
+      next unless (&makeBitReproducibleSection ($prog, %opts, br => \%br));
 
-      for my $stmt (@stmt)
+      $filename = 'br_' . &basename ($filename);
+
+      my $fh = 'FileHandle'->new (">$filename");
+
+      for ($prog->firstChild, $prog->lastChild)
         {
-          &Fxtran::Canonic::makeCanonicReferences ($stmt);
-          &makeBitReproducibleSection ($stmt, %opts, br => \%br);
-          $fh->print ($stmt->textContent . "\n");
+          $_->unbindNode ();
         }
+
+      $fh->print ($prog->textContent);
 
       $fh->close ();
 
