@@ -402,7 +402,14 @@ sub stackAllocateTemporaries
       my ($as) = &F ('./array-spec', $en_decl, 1);
       $decl->replaceNode (&t ("temp ($ts, $n, $as)"));
 
-      my ($if) = &fxtran::parse (fragment => << "EOF");
+
+      if ($opts{'stack-method'})
+        {
+          $ep->insertBefore ($_, $ep->firstChild) for (&t ("\n"), &s ("stack_alloc ($n)"));
+        }
+      else
+        {
+          my ($if) = &fxtran::parse (fragment => << "EOF");
 IF (KIND ($n) == 8) THEN
   alloc8 ($n)
 ELSEIF (KIND ($n) == 4) THEN
@@ -411,8 +418,9 @@ ELSE
   STOP 1
 ENDIF
 EOF
+          $ep->insertBefore ($_, $ep->firstChild) for (&t ("\n"), $if);
+        }
 
-      $ep->insertBefore ($_, $ep->firstChild) for (&t ("\n"), $if);
     }
 
 

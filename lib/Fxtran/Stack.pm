@@ -184,7 +184,12 @@ sub addStack
       
           if (! grep { $n eq $_ } @pointer)
             {
-              if ($opts{stack84})
+              if ($opts{stack84} && $opts{'stack-method'})
+                {
+                 $ep->insertBefore (&t ("\n"), $ep->firstChild);
+                 $ep->insertBefore (&s ("stack_alloc ($n)"), $ep->firstChild);
+                }
+              elsif ($opts{stack84})
                 {
                   my ($if) = &fxtran::parse (fragment => << "EOF");
 IF (KIND ($n) == 8) THEN

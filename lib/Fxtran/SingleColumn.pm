@@ -196,6 +196,7 @@ sub processSingleInterface
     skip => sub { $opts{style}->noComputeRoutine (@_) },
     stack84 => $opts{stack84},
     style => $opts{style},
+    'stack-method' => $opts{'stack-method'},
   );
 
 }
@@ -248,6 +249,7 @@ sub processSingleRoutine
     stack84 => $opts{stack84},
     style => $opts{style},
     pointer => \@pointer,
+    'stack-method' => $opts{'stack-method'},
   );
 
   if ($opts{dummy})
