@@ -30,8 +30,9 @@ sub addSuffix
   my %proc;
   for my $proc (&F ('.//call-stmt/procedure-designator', $section))
     {
-      next if ($proc->textContent =~ m/%/o);
-      next if ($proc->textContent eq 'DR_HOOK');
+      my $name = $proc->textContent;
+      next if ($name =~ m/%/o);
+      next if ($name eq 'DR_HOOK');
       ($proc) = &F ('./named-E/N/n/text()', $proc);
       next if ($contained{$proc->textContent});
       if ($match)

@@ -115,6 +115,7 @@ my %options= do
   merge-interfaces          -- Consider that single column interfaces and regular interfaces are in the same include file
   pragma=s                  -- Pragma (OpenACC or OpenMP)                                                                                   -- OpenACC
   stack84                   -- Use separate stacks for data types of sizes 4 and 8
+  stack-method              -- Use stack method instead of macros
   style=s                   -- Source code style (default: guess from file contents)
   redim-arguments           -- Transform 1D array arguments to scalars
   set-variables=s%          -- Apply variables values and simplify the code
@@ -245,7 +246,7 @@ sub routineToRoutineTail
 }
 
 &click (<< "EOF");
-@options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 style redim-arguments set-variables 
+@options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 stack-method style redim-arguments set-variables 
              suffix-semiimplicit tmp value-attribute version inline-contained checker)}
   keep-drhook               -- Keep DrHook
   dummy                     -- Generate a dummy routine (strip all executable code)
@@ -298,7 +299,7 @@ sub semiimplicit
 }
 
 &click (<< "EOF");
-@options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 style redim-arguments set-variables 
+@options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 stack-method style redim-arguments set-variables 
              suffix-singlecolumn tmp value-attribute version inline-contained checker array-slice-to-address use-bit-repro-intrinsics)}
   keep-drhook               -- Keep DrHook
   dummy                     -- Generate a dummy routine (strip all executable code)
@@ -354,7 +355,7 @@ sub singlecolumn
 
 
 &click (<< "EOF");
-@options{qw (cycle dir tmp only-if-newer merge-interfaces pragma stack84 style redim-arguments ydcpg_opts checker suffix-manyblocks
+@options{qw (cycle dir tmp only-if-newer merge-interfaces pragma stack84 stack-method style redim-arguments ydcpg_opts checker suffix-manyblocks
              suffix-singlecolumn suffix-pointerparallel version type-bound-methods types-constant-dir types-fieldapi-dir method-prefix)}
   base                            -- Base directory for file lookup
   contiguous-pointers             -- Add CONTIGUOUS attribute to pointer accessors
@@ -414,7 +415,7 @@ sub pointerparallel
 }
 
 &click (<< "EOF");
-@options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 style 
+@options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 stack-method style 
              suffix-singlecolumn suffix-singleblock version checker)}
   drhooktonvtx                    -- Change DrHook calls into NVTX calls
   inlined=s@                      -- List of routines to inline
@@ -460,7 +461,7 @@ sub singleblock
 }
 
 &click (<< "EOF");
-@options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 style 
+@options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 stack-method style 
              suffix-singlecolumn suffix-manyblocks version checker array-slice-to-address use-stack-manyblocks)}
   drhooktonvtx                    -- Change DrHook calls into NVTX calls
   inlined=s@                      -- List of routines to inline

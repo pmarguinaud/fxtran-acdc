@@ -111,6 +111,7 @@ EOF
         ( 
           $do_jlon, stack84 => 1, JBLKMIN => 1, KGPBLKS => $KGPBLKS, 
           $opts{'use-stack-manyblocks'} ? (YDSTACKBASE => 'YLSTACKBASE') : (),
+          'stack-method' => $opts{'stack-method'},
         );
     }
   
@@ -413,45 +414,35 @@ EOF
       $ep->insertBefore ($_, $ep->firstChild) for (&t ("\n"), $if);
     }
 
-if(0){
-  $ep->insertBefore ($_, $ep->firstChild)
-    for (&t ("\n"), &t ("PRINT *, __FILE__, ':', __LINE__, ' YLSTACK%L4 = ', YLSTACK%L4"),
-         &t ("\n"), &t ("PRINT *, __FILE__, ':', __LINE__, ' YLSTACK%L8 = ', YLSTACK%L8"));
-}
 
-
-  # Before allocations : initialize YLSTACK, using YSTACK and YDSTACKBASE
-  for my $size (4, 8)
+  if ($opts{'stack-method'} && 0)
     {
 
-      for my $x (&t ("\n"), &s ("YLSTACK%L${size} = stack_l${size}_base (YSTACK, 1, 1, YDSTACKBASE)"),
-                 &t ("\n"), &s ("YLSTACK%U${size} = stack_u${size}_base (YSTACK, 1, 1, YDSTACKBASE)"))
-        {
-          $ep->insertBefore ($x, $ep->firstChild);
-        }
-
     }
-
-  $ep->insertAfter (&t ("\n"), $C);
-
-  # After allocations, initialize YLSTACKBASE
-
-if(0){
-  $ep->insertAfter ($_, $C)
-    for (&t ("\n"), &t ("PRINT *, __FILE__, ':', __LINE__, ' YLSTACKBASE%L4 = ', YLSTACKBASE%L4"),
-         &t ("\n"), &t ("PRINT *, __FILE__, ':', __LINE__, ' YLSTACKBASE%L8 = ', YLSTACKBASE%L8"));
-
-  $ep->insertAfter ($_, $C)
-    for (&t ("\n"), &t ("PRINT *, __FILE__, ':', __LINE__, ' YLSTACK%L4 = ', YLSTACK%L4"),
-         &t ("\n"), &t ("PRINT *, __FILE__, ':', __LINE__, ' YLSTACK%L8 = ', YLSTACK%L8"));
-}
-
-  $ep->insertAfter ($_, $C) 
-     for (&t ("\n"), &s ("YLSTACKBASE%L8 = YLSTACK%L8 - stack_l8_base (YSTACK, 1, 1, YDSTACKBASE) + YDSTACKBASE%L8"),
-          &t ("\n"), &s ("YLSTACKBASE%L4 = YLSTACK%L4 - stack_l4_base (YSTACK, 1, 1, YDSTACKBASE) + YDSTACKBASE%L4"));
-
-  $C->unbindNode ();
-
+  else
+    {
+      # Before allocations : initialize YLSTACK, using YSTACK and YDSTACKBASE
+      for my $size (4, 8)
+        {
+     
+          for my $x (&t ("\n"), &s ("YLSTACK%L${size} = stack_l${size}_base (YSTACK, 1, 1, YDSTACKBASE)"),
+                     &t ("\n"), &s ("YLSTACK%U${size} = stack_u${size}_base (YSTACK, 1, 1, YDSTACKBASE)"))
+            {
+              $ep->insertBefore ($x, $ep->firstChild);
+            }
+     
+        }
+     
+      $ep->insertAfter (&t ("\n"), $C);
+     
+      # After allocations, initialize YLSTACKBASE
+     
+      $ep->insertAfter ($_, $C) 
+         for (&t ("\n"), &s ("YLSTACKBASE%L8 = YLSTACK%L8 - stack_l8_base (YSTACK, 1, 1, YDSTACKBASE) + YDSTACKBASE%L8"),
+              &t ("\n"), &s ("YLSTACKBASE%L4 = YLSTACK%L4 - stack_l4_base (YSTACK, 1, 1, YDSTACKBASE) + YDSTACKBASE%L4"));
+     
+      $C->unbindNode ();
+    }
 
 
 }
