@@ -21,47 +21,48 @@ END TYPE
 TYPE (STACK_DATA) :: YSTACK
 
 PRIVATE
-PUBLIC :: STACK, YSTACK, STACK_BASE, STACK_INIT, STACK_ALLOC
+PUBLIC :: STACK, YSTACK, STACK_INIT, STACK_ALLOC
 
 CONTAINS
 
-SUBROUTINE STACK_INIT (SELF, YDSTACK, IBL, NBL, YDSTACKBASE) 
+SUBROUTINE STACK_INIT (SELF, YDSTACK_DATA, KBLOCK, KGPBLKS, YDSTACKBASE) 
 
 !$acc routine seq
 
 TYPE (STACK) :: SELF
-TYPE (STACK_DATA), INTENT (IN) :: YDSTACK
-INTEGER, INTENT (IN) :: IBL, NBL
+TYPE (STACK_DATA), INTENT (IN) :: YDSTACK_DATA
+INTEGER, INTENT (IN) :: KBLOCK, KGPBLKS
 TYPE (STACK), INTENT (IN), OPTIONAL :: YDSTACKBASE
+
+INTEGER*8 :: IBASE4, IBASE8
 
 INTEGER*8 :: MALIGN, P, K
 MALIGN (P, K) = ((P+K-1)/K) * K
 
 IF (PRESENT (YDSTACKBASE)) THEN
-
-SELF%L4 = &
-  malign(ydstackbase%L4 + LOC (ydstack%ZDATA4 (1,1,1,1)) + ((INT (ibl, 8) - 1) * (SIZE (ydstack%ZDATA4,KIND=8) * KIND (ydstack%ZDATA4) - ydstackbase%L4)) / INT (nbl, 8), ydstack%IALIGN) 
-SELF%U4 = &
-        (ydstackbase%L4 + LOC (ydstack%ZDATA4 (1,1,1,1)) + ((INT (ibl, 8)    ) * (SIZE (ydstack%ZDATA4,KIND=8) * KIND (ydstack%ZDATA4) - ydstackbase%L4)) / INT (nbl, 8))
-
-SELF%L8 = &
-  malign(ydstackbase%L8 + LOC (ydstack%ZDATA8 (1,1,1,1)) + ((INT (ibl, 8) - 1) * (SIZE (ydstack%ZDATA8,KIND=8) * KIND (ydstack%ZDATA8) - ydstackbase%L8)) / INT (nbl, 8), ydstack%IALIGN) 
-SELF%U8 = &
-        (ydstackbase%L8 + LOC (ydstack%ZDATA8 (1,1,1,1)) + ((INT (ibl, 8)    ) * (SIZE (ydstack%ZDATA8,KIND=8) * KIND (ydstack%ZDATA8) - ydstackbase%L8)) / INT (nbl, 8))
-
+  IBASE4 = YDSTACKBASE%L4
+  IBASE8 = YDSTACKBASE%L8
 ELSE
-
-SELF%L4 = &
-  malign(LOC (ydstack%ZDATA4 (1,1,1,1)) + ((INT (ibl, 8) - 1) * SIZE (ydstack%ZDATA4,KIND=8) * KIND (ydstack%ZDATA4)) / INT (nbl, 8), ydstack%IALIGN) 
-SELF%U4 = &
-        (LOC (ydstack%ZDATA4 (1,1,1,1)) + ((INT (ibl, 8)    ) * SIZE (ydstack%ZDATA4,KIND=8) * KIND (ydstack%ZDATA4)) / INT (nbl, 8))
-
-SELF%L8 = &
-  malign(LOC (ydstack%ZDATA8 (1,1,1,1)) + ((INT (ibl, 8) - 1) * SIZE (ydstack%ZDATA8,KIND=8) * KIND (ydstack%ZDATA8)) / INT (nbl, 8), ydstack%IALIGN) 
-SELF%U8 = &
-        (LOC (ydstack%ZDATA8 (1,1,1,1)) + ((INT (ibl, 8)    ) * SIZE (ydstack%ZDATA8,KIND=8) * KIND (ydstack%ZDATA8)) / INT (nbl, 8))
-
+  IBASE4 = 0
+  IBASE8 = 0
 ENDIF
+
+SELF%L4 =   IBASE4 + LOC (YDSTACK_DATA%ZDATA4 (1,1,1,1)) + ((INT (KBLOCK, 8) - 1)    &
+        * (SIZE (YDSTACK_DATA%ZDATA4,KIND=8) * KIND (YDSTACK_DATA%ZDATA4) - IBASE4)) &
+        / INT (KGPBLKS, 8)
+SELF%U4 =   IBASE4 + LOC (YDSTACK_DATA%ZDATA4 (1,1,1,1)) + ((INT (KBLOCK, 8)    )    &
+        * (SIZE (YDSTACK_DATA%ZDATA4,KIND=8) * KIND (YDSTACK_DATA%ZDATA4) - IBASE4)) &
+        / INT (KGPBLKS, 8)
+
+SELF%L8 =   IBASE8 + LOC (YDSTACK_DATA%ZDATA8 (1,1,1,1)) + ((INT (KBLOCK, 8) - 1)    &
+        * (SIZE (YDSTACK_DATA%ZDATA8,KIND=8) * KIND (YDSTACK_DATA%ZDATA8) - IBASE8)) &
+        / INT (KGPBLKS, 8)
+SELF%U8 =   IBASE8 + LOC (YDSTACK_DATA%ZDATA8 (1,1,1,1)) + ((INT (KBLOCK, 8)    )    &
+        * (SIZE (YDSTACK_DATA%ZDATA8,KIND=8) * KIND (YDSTACK_DATA%ZDATA8) - IBASE8)) &
+        / INT (KGPBLKS, 8)
+
+SELF%L4 = MALIGN(SELF%L4, YDSTACK_DATA%IALIGN)
+SELF%L8 = MALIGN(SELF%L8, YDSTACK_DATA%IALIGN)
 
 END SUBROUTINE
  
