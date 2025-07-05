@@ -316,6 +316,7 @@ sub processSingleRoutine
   $implicit->parentNode->insertBefore (&t ("\n"), $implicit);
  
 
+  &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLSTACK0');
   &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLSTACK');
   &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLSTACKBASE') if ($opts{'use-stack-manyblocks'});
   &Fxtran::Decl::use ($pu, 'USE STACK_MOD');
@@ -415,9 +416,22 @@ EOF
     }
 
 
-  if ($opts{'stack-method'} && 0)
+  if ($opts{'stack-method'})
     {
-
+      # Before allocations : initialize YLSTACK, using YSTACK and YDSTACKBASE
+      for my $x (&t ("\n"), &s ("YLSTACK0 = YLSTACK"), &t ("\n"), &s ("YLSTACK = stack_init (YLSTACK, 1, 1, YDSTACKBASE)"))
+        {
+          $ep->insertBefore ($x, $ep->firstChild);
+        }
+     
+      $ep->insertAfter (&t ("\n"), $C);
+     
+      # After allocations, initialize YLSTACKBASE
+     
+      $ep->insertAfter ($_, $C) 
+         for (&t ("\n"), &s ("YLSTACKBASE = YLSTACK - YLSTACK0 + YDSTACKBASE"));
+     
+      $C->unbindNode ();
     }
   else
     {
