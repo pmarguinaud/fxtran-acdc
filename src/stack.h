@@ -12,7 +12,7 @@ USE PARKIND1, ONLY : JPRB
 
 #ifdef USE_STACK
 
-#define stack_init(ydstack, ibl, ...) STACK (0, 0, 0, 0); CALL STACK_INIT (ydstack, YSTACK, ibl, __VA_ARGS__)
+#define stack_init(ydstack, ibl, nbl, ...) STACK (0, 0, 0, 0); CALL STACK_INIT (ydstack, YSTACK, ibl, nbl, ##__VA_ARGS__)
 
 #define temp(t, n, s) t, DIMENSION s :: n; POINTER (IP_##n##_, n)
 
