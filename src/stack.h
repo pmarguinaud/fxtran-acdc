@@ -12,6 +12,8 @@ USE PARKIND1, ONLY : JPRB
 
 #ifdef USE_STACK
 
+#define stack_init(ydstack, ibl, ...) STACK (0, 0, 0, 0); CALL STACK_INIT (ydstack, YSTACK, ibl, __VA_ARGS__)
+
 #define temp(t, n, s) t, DIMENSION s :: n; POINTER (IP_##n##_, n)
 
 #define alloc(n) IP_##n##_=YLSTACK%L;YLSTACK%L=YLSTACK%L+MAX(JPRB,KIND(n))*SIZE(n,KIND=8);IF(YLSTACK%L>YLSTACK%U)CALL ABOR1_ACC(__FILE__)

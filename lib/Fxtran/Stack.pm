@@ -22,7 +22,7 @@ sub iniStackSingleBlock
     {
       die unless ($opts{stack84});
       $do_jlon->insertAfter ($_, $do_jlon->firstChild)
-        for (&s ("YLSTACK = STACK_INIT (YSTACK, 1, 1)"), &t ("\n"));
+        for (&s ("YLSTACK = stack_init (YLSTACK, 1, 1)"), &t ("\n"));
        
     }
   else
@@ -60,7 +60,7 @@ sub iniStackManyBlocks
       next unless ($opts{stack84});
       my $ydstackbase = $YDSTACKBASE ? ", $YDSTACKBASE" : "";
       $do_jlon->insertAfter ($_, $do_jlon->firstChild)
-        for (&s ("YLSTACK = STACK_INIT (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS$ydstackbase)"), &t ("\n"));
+        for (&s ("YLSTACK = stack_init (YLSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS$ydstackbase)"), &t ("\n"));
     }
   else
     {
