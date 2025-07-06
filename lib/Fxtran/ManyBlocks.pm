@@ -316,7 +316,7 @@ sub processSingleRoutine
   $implicit->parentNode->insertBefore (&t ("\n"), $implicit);
  
 
-  &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLSTACK0');
+  &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLSTACK0') if ($opts{'stack-method'});
   &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLSTACK');
   &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLOFFSET') if ($opts{'use-stack-manyblocks'});
   &Fxtran::Decl::use ($pu, 'USE STACK_MOD');

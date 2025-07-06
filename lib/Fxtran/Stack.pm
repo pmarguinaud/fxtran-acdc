@@ -58,9 +58,9 @@ sub iniStackManyBlocks
   if ($opts{'stack-method'})
     {
       next unless ($opts{stack84});
-      my $ydstackbase = $YDOFFSET ? ", $YDOFFSET" : "";
+      my $ydoffset = $YDOFFSET ? ", $YDOFFSET" : "";
       $do_jlon->insertAfter ($_, $do_jlon->firstChild)
-        for (&s ("YLSTACK = stack_init (YLSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS$ydstackbase)"), &t ("\n"));
+        for (&s ("YLSTACK = stack_init (YLSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS$ydoffset)"), &t ("\n"));
     }
   else
     {
@@ -68,19 +68,19 @@ sub iniStackManyBlocks
         {
           for my $size (4, 8)
             {
-              my $base = $YDOFFSET ? '_base' : ''; my $ydstackbase = $YDOFFSET ? ", $YDOFFSET" : "";
-              $do_jlon->insertAfter (&s ("YLSTACK%U${size} = stack_u${size}${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS $ydstackbase)"), $do_jlon->firstChild);
+              my $base = $YDOFFSET ? '_base' : ''; my $ydoffset = $YDOFFSET ? ", $YDOFFSET" : "";
+              $do_jlon->insertAfter (&s ("YLSTACK%U${size} = stack_u${size}${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS$ydoffset)"), $do_jlon->firstChild);
               $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
-              $do_jlon->insertAfter (&s ("YLSTACK%L${size} = stack_l${size}${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS $ydstackbase)"), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&s ("YLSTACK%L${size} = stack_l${size}${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS$ydoffset)"), $do_jlon->firstChild);
               $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
             }
         }
       else
         {
-          my $base = $YDOFFSET ? '_base' : ''; my $ydstackbase = $YDOFFSET ? ", $YDOFFSET" : "";
-          $do_jlon->insertAfter (&s ("YLSTACK%U = stack_u${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS $ydstackbase)"), $do_jlon->firstChild);
+          my $base = $YDOFFSET ? '_base' : ''; my $ydoffset = $YDOFFSET ? ", $YDOFFSET" : "";
+          $do_jlon->insertAfter (&s ("YLSTACK%U = stack_u${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS$ydoffset)"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&s ("YLSTACK%L = stack_l${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS $ydstackbase)"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&s ("YLSTACK%L = stack_l${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS$ydoffset)"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
         }
     }
