@@ -41,10 +41,10 @@ sub requireUtilMod
 
 sub setOpenMPDirective
 {
-  my ($par, $t) = @_;
+  my ($par, $t, %opts) = @_;
 
-  my $style = $par->getAttribute ('style') || 'IAL';
-  $style = 'Fxtran::Style'->new (style => $style);
+  my $style = $par->getAttribute ('style');
+  $style = $style ? 'Fxtran::Style'->new (style => $style) : $opts{style};
 
   my @priv = &Fxtran::Pointer::Parallel::getPrivateVariables ($par, $t);
 
@@ -59,7 +59,7 @@ sub setOpenMPDirective
     }
 
   my $C = &n ('<C>!$OMP PARALLEL DO PRIVATE (' .  join (', ', @priv)  . ')' . 
-              (@firstprivate ? 'firstprivate (' . join (', ', @firstprivate) . ')' : '') . 
+              (@firstprivate ? ' FIRSTPRIVATE (' . join (', ', @firstprivate) . ')' : '') . 
               '</C>');
   
   $do->parentNode->insertBefore ($C, $do);
@@ -72,8 +72,8 @@ sub makeParallel
   shift;
   my ($par1, $t, %opts) = @_;
 
-  my $style = $par1->getAttribute ('style') || 'IAL';
-  $style = 'Fxtran::Style'->new (style => $style);
+  my $style = $par1->getAttribute ('style');
+  $style = $style ? 'Fxtran::Style'->new (style => $style) : $opts{style};
 
   my $FILTER = $par1->getAttribute ('filter');
 
@@ -196,7 +196,7 @@ EOF
 
   &Fxtran::Print::useABOR1_ACC ($do_jlon);
 
-  &setOpenMPDirective ($par1, $t);
+  &setOpenMPDirective ($par1, $t, %opts);
 
   &Fxtran::ReDim::redimArguments ($par1) if ($opts{'redim-arguments'});
 

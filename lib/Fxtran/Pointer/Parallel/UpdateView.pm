@@ -39,7 +39,9 @@ sub makeParallel
   shift;
   my ($par1, $t, %opts) = @_;
 
-  my $style = $par1->getAttribute ('style') || 'IAL';
+  my $style = $opts{style};
+  $style ||= 'Fxtran::Style'->new (style => ($par1->getAttribute ('style') || 'IAL'));
+  
   my $FILTER = $par1->getAttribute ('filter');
 
   if ($FILTER)
