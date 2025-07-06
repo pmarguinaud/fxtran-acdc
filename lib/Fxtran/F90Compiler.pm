@@ -226,6 +226,17 @@ sub run
 
   return if ($args{dryrun});
 
+  if (my $dir = $args{'user-directory-out'})
+    { 
+      for my $F90 (@{ $args{F90} || [] })
+        {
+          if (-f "$dir/$F90")
+            {
+              $F90 = "$dir/$F90";
+            }
+        }
+    }
+
   my @F90 = @{ $args{F90} || [] };
   my @C   = @{ $args{C}   || [] };
   my @CXX = @{ $args{CXX} || [] };
