@@ -77,6 +77,7 @@ sub makeParallel
     }
 
   my $LDACC = $opts{acc} ? &e ('.TRUE.') : &e ('.FALSE.');
+  my $YDOFFSET = &e ('STACK (0, 0, 0, 0)');
 
   for my $call (&F ('.//call-stmt', $comp))
     {
@@ -86,8 +87,15 @@ sub makeParallel
 
       $proc->setData ($proc->textContent . $opts{'suffix-manyblocks'});
       my ($argspec) = &F ('./arg-spec', $call);
+
       $argspec->appendChild (&t (','));
       $argspec->appendChild (&n ('<arg><arg-N><k>LDACC</k></arg-N>=' . $LDACC . '</arg>'));
+
+      if ($opts{'use-stack-manyblocks'})
+        {
+          $argspec->appendChild (&t (','));
+          $argspec->appendChild (&n ('<arg><arg-N><k>YDOFFSET</k></arg-N>=' . $YDOFFSET . '</arg>'));
+        }
 
       for my $arg (&F ('./arg/ANY-E', $argspec))
         {

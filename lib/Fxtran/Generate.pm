@@ -356,7 +356,7 @@ sub singlecolumn
 
 &click (<< "EOF");
 @options{qw (cycle dir tmp only-if-newer merge-interfaces pragma stack84 stack-method style redim-arguments ydcpg_opts checker suffix-manyblocks
-             suffix-singlecolumn suffix-pointerparallel version type-bound-methods types-constant-dir types-fieldapi-dir method-prefix)}
+             suffix-singlecolumn suffix-pointerparallel version type-bound-methods types-constant-dir types-fieldapi-dir method-prefix use-stack-manyblocks)}
   base                            -- Base directory for file lookup
   contiguous-pointers             -- Add CONTIGUOUS attribute to pointer accessors
   files=s@                        -- List of files to be looked at for inlining
