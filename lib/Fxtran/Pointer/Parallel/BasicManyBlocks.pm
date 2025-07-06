@@ -42,8 +42,11 @@ sub makeParallel
         }
     }
 
-  my $style = $par1->getAttribute ('style') || 'IAL';
-  $style = 'Fxtran::Style'->new (style => $style);
+  my $style = $opts{style};
+
+  $style ||= 'Fxtran::Style'->new (style => ($par1->getAttribute ('style') || 'IAL'));
+
+  my @nproma = $style->nproma (); my %nproma = map { ($_, 1) } @nproma;
 
   my ($comp) = &F ('./comp', $par1);
   
@@ -83,7 +86,7 @@ sub makeParallel
     {
       my ($proc) = &F ('./procedure-designator/named-E/N/n/text()', $call);
 
-      next if ($proc eq 'ABOR1');
+      next if ($proc->textContent eq 'ABOR1');
 
       $proc->setData ($proc->textContent . $opts{'suffix-manyblocks'});
       my ($argspec) = &F ('./arg-spec', $call);
@@ -97,20 +100,34 @@ sub makeParallel
           $argspec->appendChild (&n ('<arg><arg-N><k>YDOFFSET</k></arg-N>=' . $YDOFFSET . '</arg>'));
         }
 
+      my $foundNproma = 0;
+
       for my $arg (&F ('./arg/ANY-E', $argspec))
         {
-          if ($arg->textContent eq 'YDCPG_OPTS%KLON')
+          my $argt = $arg->textContent;
+          if ($nproma{$argt})
             {
               $argspec->insertAfter ($_, $arg->parentNode) 
                 for (&n ('<arg>' . &e ($KGPBLKS) . '</arg>'), &t (', '));
               $arg->replaceNode (&e ($KLON));
+              $foundNproma++;
             }
-          elsif ($arg->textContent eq 'YDCPG_BNDS%KFDIA')
+          elsif ($argt eq 'YDCPG_BNDS%KFDIA')
             {
               my $kfdia = "MIN ($KLON, $KGPTOT - ($KGPBLKS - 1) * $KLON)";
               $arg->replaceNode (&e ($kfdia));
             }
         }
+
+      if ($foundNproma == 0)
+        {
+          die ("NPROMA argument was not found in call to " . $proc->textContent);
+        }
+      elsif ($foundNproma > 1)
+        {
+          die ("NPROMA argument was found several times in call to " . $proc->textContent);
+        }
+
 
     }
 

@@ -76,7 +76,9 @@ sub newFromDocument
         defined (*{"$pm\::matchDocument"})
       };
 
-      if ($canMatchDocument && $pm->matchDocument ($doc))
+      next unless ($canMatchDocument);
+
+      if ($pm->matchDocument ($doc))
         {
           return $pm->new ();
         }
