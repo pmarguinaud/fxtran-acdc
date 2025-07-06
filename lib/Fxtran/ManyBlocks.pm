@@ -110,7 +110,7 @@ EOF
       &Fxtran::Stack::iniStackManyBlocks 
         ( 
           $do_jlon, stack84 => 1, JBLKMIN => 1, KGPBLKS => $KGPBLKS, 
-          $opts{'use-stack-manyblocks'} ? (YDSTACKBASE => 'YLSTACKBASE') : (),
+          $opts{'use-stack-manyblocks'} ? (YDOFFSET => 'YLOFFSET') : (),
           'stack-method' => $opts{'stack-method'},
         );
     }
@@ -266,7 +266,7 @@ sub processSingleRoutine
 
       if ($opts{'use-stack-manyblocks'})
         {
-          $argspec->appendChild ($_) for (&t (", "), &n ("<arg><arg-N><k>YDSTACKBASE</k></arg-N> = " . &e ('YLSTACKBASE') . '</arg>'));
+          $argspec->appendChild ($_) for (&t (", "), &n ("<arg><arg-N><k>YDOFFSET</k></arg-N> = " . &e ('YLOFFSET') . '</arg>'));
         }
     }
   
@@ -303,8 +303,8 @@ sub processSingleRoutine
 
     if ($opts{'use-stack-manyblocks'})
       {
-        $dp->insertAfter ($_, $decl) for (&s ("TYPE (STACK), INTENT (IN) :: YDSTACKBASE"), &t ("\n"));
-        $dal->appendChild ($_) for (&t (", "), &n ("<arg-N>YDSTACKBASE</arg-N>"));
+        $dp->insertAfter ($_, $decl) for (&s ("TYPE (STACK), INTENT (IN) :: YDOFFSET"), &t ("\n"));
+        $dal->appendChild ($_) for (&t (", "), &n ("<arg-N>YDOFFSET</arg-N>"));
       }
   }
 
@@ -318,7 +318,7 @@ sub processSingleRoutine
 
   &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLSTACK0');
   &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLSTACK');
-  &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLSTACKBASE') if ($opts{'use-stack-manyblocks'});
+  &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLOFFSET') if ($opts{'use-stack-manyblocks'});
   &Fxtran::Decl::use ($pu, 'USE STACK_MOD');
 
   # Add extra dimensions to all nproma arrays + make all array spec implicit
@@ -426,29 +426,29 @@ EOF
 
   if ($opts{'stack-method'})
     {
-      # Before allocations : initialize YLSTACK, using YSTACK and YDSTACKBASE
-      for my $x (&t ("\n"), &s ("YLSTACK0 = YLSTACK"), &t ("\n"), &s ("YLSTACK = stack_init (YLSTACK, 1, 1, YDSTACKBASE)"))
+      # Before allocations : initialize YLSTACK, using YSTACK and YDOFFSET
+      for my $x (&t ("\n"), &s ("YLSTACK0 = YLSTACK"), &t ("\n"), &s ("YLSTACK = stack_init (YLSTACK, 1, 1, YDOFFSET)"))
         {
           $ep->insertBefore ($x, $ep->firstChild);
         }
      
       $ep->insertAfter (&t ("\n"), $C);
      
-      # After allocations, initialize YLSTACKBASE
+      # After allocations, initialize YLOFFSET
      
       $ep->insertAfter ($_, $C) 
-         for (&t ("\n"), &s ("YLSTACKBASE = YLSTACK - YLSTACK0 + YDSTACKBASE"));
+         for (&t ("\n"), &s ("YLOFFSET = YLSTACK - YLSTACK0 + YDOFFSET"));
      
       $C->unbindNode ();
     }
   else
     {
-      # Before allocations : initialize YLSTACK, using YSTACK and YDSTACKBASE
+      # Before allocations : initialize YLSTACK, using YSTACK and YDOFFSET
       for my $size (4, 8)
         {
      
-          for my $x (&t ("\n"), &s ("YLSTACK%L${size} = stack_l${size}_base (YSTACK, 1, 1, YDSTACKBASE)"),
-                     &t ("\n"), &s ("YLSTACK%U${size} = stack_u${size}_base (YSTACK, 1, 1, YDSTACKBASE)"))
+          for my $x (&t ("\n"), &s ("YLSTACK%L${size} = stack_l${size}_base (YSTACK, 1, 1, YDOFFSET)"),
+                     &t ("\n"), &s ("YLSTACK%U${size} = stack_u${size}_base (YSTACK, 1, 1, YDOFFSET)"))
             {
               $ep->insertBefore ($x, $ep->firstChild);
             }
@@ -457,11 +457,11 @@ EOF
      
       $ep->insertAfter (&t ("\n"), $C);
      
-      # After allocations, initialize YLSTACKBASE
+      # After allocations, initialize YLOFFSET
      
       $ep->insertAfter ($_, $C) 
-         for (&t ("\n"), &s ("YLSTACKBASE%L8 = YLSTACK%L8 - stack_l8_base (YSTACK, 1, 1, YDSTACKBASE) + YDSTACKBASE%L8"),
-              &t ("\n"), &s ("YLSTACKBASE%L4 = YLSTACK%L4 - stack_l4_base (YSTACK, 1, 1, YDSTACKBASE) + YDSTACKBASE%L4"));
+         for (&t ("\n"), &s ("YLOFFSET%L8 = YLSTACK%L8 - stack_l8_base (YSTACK, 1, 1, YDOFFSET) + YDOFFSET%L8"),
+              &t ("\n"), &s ("YLOFFSET%L4 = YLSTACK%L4 - stack_l4_base (YSTACK, 1, 1, YDOFFSET) + YDOFFSET%L4"));
      
       $C->unbindNode ();
     }

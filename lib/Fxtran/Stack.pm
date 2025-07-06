@@ -53,12 +53,12 @@ sub iniStackManyBlocks
 {
   my ($do_jlon, %opts) = @_;
 
-  my ($JBLKMIN, $KGPBLKS, $YDSTACKBASE) = @opts{qw (JBLKMIN KGPBLKS YDSTACKBASE)};
+  my ($JBLKMIN, $KGPBLKS, $YDOFFSET) = @opts{qw (JBLKMIN KGPBLKS YDOFFSET)};
 
   if ($opts{'stack-method'})
     {
       next unless ($opts{stack84});
-      my $ydstackbase = $YDSTACKBASE ? ", $YDSTACKBASE" : "";
+      my $ydstackbase = $YDOFFSET ? ", $YDOFFSET" : "";
       $do_jlon->insertAfter ($_, $do_jlon->firstChild)
         for (&s ("YLSTACK = stack_init (YLSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS$ydstackbase)"), &t ("\n"));
     }
@@ -68,7 +68,7 @@ sub iniStackManyBlocks
         {
           for my $size (4, 8)
             {
-              my $base = $YDSTACKBASE ? '_base' : ''; my $ydstackbase = $YDSTACKBASE ? ", $YDSTACKBASE" : "";
+              my $base = $YDOFFSET ? '_base' : ''; my $ydstackbase = $YDOFFSET ? ", $YDOFFSET" : "";
               $do_jlon->insertAfter (&s ("YLSTACK%U${size} = stack_u${size}${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS $ydstackbase)"), $do_jlon->firstChild);
               $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
               $do_jlon->insertAfter (&s ("YLSTACK%L${size} = stack_l${size}${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS $ydstackbase)"), $do_jlon->firstChild);
@@ -77,7 +77,7 @@ sub iniStackManyBlocks
         }
       else
         {
-          my $base = $YDSTACKBASE ? '_base' : ''; my $ydstackbase = $YDSTACKBASE ? ", $YDSTACKBASE" : "";
+          my $base = $YDOFFSET ? '_base' : ''; my $ydstackbase = $YDOFFSET ? ", $YDOFFSET" : "";
           $do_jlon->insertAfter (&s ("YLSTACK%U = stack_u${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS $ydstackbase)"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&s ("YLSTACK%L = stack_l${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS $ydstackbase)"), $do_jlon->firstChild);
