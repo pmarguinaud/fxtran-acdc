@@ -439,9 +439,6 @@ sub loopElementalSingleCall
   for my $expr (@expr)
     {
       my ($N) = &F ('./N', $expr, 1);
-      my ($ar) = &F ('./R-LT/array-R', $expr);
-
-      my $dd = $ar && &F ('./section-subscript-LT/section-subscript/text()[string(.)=":"]', $ar);
 
       my ($en_decl) = &F ('.//T-decl-stmt//EN-decl[string (EN-N)="?"]', $N, $d1);
       my ($as) = &F ('./array-spec', $en_decl);
@@ -450,6 +447,26 @@ sub loopElementalSingleCall
           my ($decl) = &Fxtran::stmt ($en_decl);
           ($as) = &F ('./attribute/array-spec', $decl);
         }
+
+      my ($ar) = &F ('./R-LT/array-R', $expr);
+
+      if ($as && (! $ar))
+        {
+          my $nd = &F ('./shape-spec-LT/shape-spec', $as);
+
+          my ($rlt) = &F ('./R-LT', $expr);
+          unless ($rlt)
+            {
+              $expr->appendChild ($rlt = &n ('<R-LT/>'));
+            }
+
+          $ar = &n ('<array-R>(<section-subscript-LT>' 
+                   . join (',', ('<section-subscript>:</section-subscript>') x $nd) 
+                   . '</section-subscript-LT>)</array-R>');
+          $rlt->appendChild ($ar);
+        }
+
+      my $dd = $ar && &F ('./section-subscript-LT/section-subscript/text()[string(.)=":"]', $ar);
 
       push @X, [$N, $expr, $ar, $as] if ((! $ar && $as) || ($dd));
     }
@@ -461,6 +478,7 @@ sub loopElementalSingleCall
   for my $X (@X)
     {
       my ($N, $expr, $ar, $as) = @$X;
+
       die "$N" unless ($ar);
       die "$N" unless ($as);
 
