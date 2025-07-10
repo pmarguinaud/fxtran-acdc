@@ -274,13 +274,9 @@ sub processSingleRoutine
   for my $call (&F ('.//call-stmt[contains(string(procedure-designator),"?")]', $opts{'suffix-manyblocks'}, $ep))
     {
       my ($argspec) = &F ('./arg-spec', $call);
-      for my $nproma (@nproma)
-        {
-          next unless (my ($arg) = &F ('./arg[string(.)="?"]', $nproma, $argspec));
-          $arg->parentNode->insertAfter ($_, $arg) for (&n ('<arg>' . &e ($KGPBLKS) . '</arg>'), &t (", "));
-          last;
-        }
+
       $argspec->appendChild ($_) for (&t (", "), &n ("<arg><arg-N><k>LDACC</k></arg-N> = " . &e ('LDACC') . '</arg>'));
+      $argspec->appendChild ($_) for (&t (", "), &n ("<arg><arg-N><k>KGPBLKS</k></arg-N> = " . &e ('KGPBLKS') . '</arg>'));
 
       if ($opts{'use-stack-manyblocks'})
         {

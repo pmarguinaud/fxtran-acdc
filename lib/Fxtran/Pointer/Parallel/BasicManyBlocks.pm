@@ -91,7 +91,7 @@ sub makeParallel
 
   my $pragma = $opts{pragma};
 
-  if ($opts{acc})
+  if ($opts{acc} && %present)
     {
       $pragma->insertData ($comp, PRESENT => [sort keys (%present)]);
     }
@@ -122,13 +122,8 @@ sub makeParallel
         {
           my $argt = $arg->textContent;
           my ($n) = &F ('./N', $arg, 1);
-          if ($nproma{$argt})
-            {
-              $argspec->insertAfter ($_, $arg->parentNode) 
-                for (&n ('<arg>' . &e ($KGPBLKS) . '</arg>'), &t (', '));
-              $arg->replaceNode (&e ($KLON));
-            }
-          elsif ($argt eq 'YDCPG_BNDS%KFDIA')
+
+          if ($argt eq 'YDCPG_BNDS%KFDIA')
             {
               my $kfdia = "MIN ($KLON, $KGPTOT - ($KGPBLKS - 1) * $KLON)";
               $arg->replaceNode (&e ($kfdia));
