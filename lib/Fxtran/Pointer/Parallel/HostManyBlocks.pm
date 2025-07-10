@@ -38,8 +38,8 @@ sub requireUtilMod
 sub makeParallel
 {
   my $class = shift;
-  my ($par1, $t, %opts) = @_;
-  return $class->SUPER::makeParallel ($par1, $t, %opts, acc => 0);
+  my ($pu, $par1, $t, %opts) = @_;
+  return $class->SUPER::makeParallel ($pu, $par1, $t, %opts, acc => 0);
 }
 
 1;

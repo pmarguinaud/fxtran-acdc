@@ -37,7 +37,7 @@ sub requireUtilMod
 sub makeParallel
 {
   shift;
-  my ($par1, $t, %opts) = @_;
+  my ($pu, $par1, $t, %opts) = @_;
 
   my $style = $opts{style};
   $style ||= 'Fxtran::Style'->new (style => ($par1->getAttribute ('style') || 'IAL'));

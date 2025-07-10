@@ -32,7 +32,7 @@ use Fxtran::Util;
 
 sub processSingleParallel
 {
-  my ($parallel, $ipar, $NAME, $t, $find, $types, $puseUtilMod, %opts) = @_;
+  my ($pu, $parallel, $ipar, $NAME, $t, $find, $types, $puseUtilMod, %opts) = @_;
 
   my $target = $parallel->getAttribute ('target');
 
@@ -73,7 +73,7 @@ EOF
       my $parallel1 = $parallel->cloneNode (1);
 
       $parallel{$onlySimpleFields}{$addBlockIndex} ||= 
-        &Fxtran::Pointer::Parallel::makeParallel ($parallel1, $t, $find, $types, "$NAME:$name", $opts{'post-parallel'}, $onlySimpleFields, $addBlockIndex);
+        &Fxtran::Pointer::Parallel::makeParallel ($pu, $parallel1, $t, $find, $types, "$NAME:$name", $opts{'post-parallel'}, $onlySimpleFields, $addBlockIndex);
 
       $$puseUtilMod ||= $class->requireUtilMod ();
     }
@@ -99,7 +99,7 @@ EOF
 
       $parallel1 = $parallel1->cloneNode (1);
 
-      $parallel1 = $class->makeParallel ($parallel1, $t, %opts);
+      $parallel1 = $class->makeParallel ($pu, $parallel1, $t, %opts);
       
       my $block;
       if ($itarget == 0)
@@ -303,7 +303,7 @@ sub processSingleRoutine
   
   for my $ipar (0 .. $#parallel)
     {
-      &processSingleParallel ($parallel[$ipar], $ipar, $NAME, $t, $find, 
+      &processSingleParallel ($pu, $parallel[$ipar], $ipar, $NAME, $t, $find, 
                               $types, \$useUtilMod, %opts);
     }
   
@@ -774,10 +774,6 @@ sub replaceObjectExprByPointerExpr
                 {
                   &addExtraIndex ($expr, &e ('JBLK'), $s) 
                 }
-              else
-                {
-                  &addExtraIndex ($expr, &t (':'), $s) 
-                }
             }
           else # Workaround for PGI bug : add (:,:,:) to avoid PGI error (non contiguous array)
             {
@@ -800,7 +796,7 @@ sub replaceObjectExprByPointerExpr
 
 sub makeParallel
 {
-  my ($par, $t, $find, $types, $NAME, $POST, $onlysimplefields, $blockLoop) = @_;
+  my ($pu, $par, $t, $find, $types, $NAME, $POST, $onlysimplefields, $blockLoop) = @_;
 
   my %POST = map { ($_, 1) } grep { $_ } @$POST;
 

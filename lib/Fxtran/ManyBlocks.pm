@@ -17,14 +17,17 @@ use Fxtran;
 
 sub processSingleSection
 {
-  my ($pu, $par, $var2dim, $typearg, $KGPBLKS, %opts) = @_;
+  my ($pu, $par, $var2dim, $typearg, $dims, $LDACC, %opts) = @_;
 
   my ($style, $pragma) = @opts{qw (style pragma)};
 
-  my @nproma = $style->nproma ();
-  my $jlon = $style->jlon ();
-  my $kidia = $style->kidia ();
-  my $kfdia = $style->kfdia ();
+  my $KGPBLKS    = $dims->{kgpblks};
+  my $nproma     = $dims->{nproma};
+  my $jlon       = $dims->{jlon};
+  my $kidia      = $dims->{kidia};
+  my $kfdia      = $dims->{kfdia};
+  my $kidia_call = $dims->{kidia_call};
+  my $kfdia_call = $dims->{kfdia_call};
   
   # Make the section single column
   
@@ -42,7 +45,6 @@ sub processSingleSection
       $sslt->appendChild ($_) for (&t (", "), &n ('<section-subscript><lower-bound>' . &e ('JBLK') . '</lower-bound></section-subscript>'));
     }
   
-  
   # JBLK slice for array arguments
   
   for my $expr (&F ('.//call-stmt/arg-spec/arg/named-E', $par))
@@ -50,15 +52,24 @@ sub processSingleSection
       my ($N) = &F ('./N', $expr, 1);
       next unless (my $nd = $var2dim->{$N});
   
-      my ($rlt) = &F ('./R-LT', $expr);
-  
-      unless ($rlt)
+      my ($rlt) = &F ('./R-LT/array-R', $expr);
+      my ($sslt) = &F ('./R-LT/array-R/section-subscript-LT', $expr);
+
+      unless ($sslt)
         {
+          $rlt;
+
+          if (($rlt) = &F ('./R-LT', $expr))
+            {
+              $rlt->unbindNode ();
+            }
+  
           $rlt = &n ('<R-LT><array-R>(<section-subscript-LT>' . join (', ', ('<section-subscript>:</section-subscript>') x $nd) . '</section-subscript-LT>)</array-R></R-LT>');
           $expr->appendChild ($rlt);
+
+          ($sslt) = &F ('./R-LT/array-R/section-subscript-LT', $expr);
         }
   
-      my ($sslt) = &F ('./array-R/section-subscript-LT', $rlt);
       $sslt->appendChild ($_) for (&t (', '), &n ('<section-subscript><lower-bound>' . &e ('JBLK') . '</lower-bound></section-subscript>'));
   
       if ($opts{'array-slice-to-address'})  # Transform array slice to the address of the first element of the slice
@@ -92,7 +103,7 @@ sub processSingleSection
   # Move section contents into a DO loop over KLON
   
   my ($do_jlon) = &fxtran::parse (fragment => << "EOF");
-DO $jlon = $kidia, MERGE ($nproma[0], $kfdia, JBLK < $KGPBLKS)
+DO $jlon = $kidia, MERGE ($nproma, $kfdia, JBLK < $KGPBLKS)
 ENDDO
 EOF
   
@@ -119,7 +130,7 @@ EOF
   
   for my $call (&F ('.//call-stmt', $do_jlon))
     {
-      for my $var ($kidia, $kfdia)
+      for my $var ($kidia_call, $kfdia_call)
         {
           for my $expr (&F ('.//named-E[string(.)="?"]', $var, $call))
             {
@@ -176,16 +187,19 @@ EOF
   
   # Add OpenACC directive  
   
-  $pragma->insertLoopVector ($do_jlon, PRIVATE => [sort (keys (%priv))]);
-  
-  $pragma->insertParallelLoopGang 
-    ( 
-      $do_jblk, PRIVATE => ['JBLK'], VECTOR_LENGTH => [$nproma[0]], IF => ['LDACC'],
-      $opts{'use-stack-manyblocks'}
-     ? (PRESENT => [sort (keys (%nproma), keys (%type))])
-     : ()
-    );
+  if ($LDACC ne '.FALSE.')
+    {
+      $pragma->insertLoopVector ($do_jlon, PRIVATE => [sort (keys (%priv))]);
+      $pragma->insertParallelLoopGang 
+        ( 
+          $do_jblk, PRIVATE => ['JBLK'], VECTOR_LENGTH => [$nproma], ($LDACC ne '.TRUE.' ? (IF => [$LDACC]) : ()),
+          $opts{'use-stack-manyblocks'}
+         ? (PRESENT => [sort (keys (%nproma), keys (%type))])
+         : ()
+        );
+    }
 
+  return $do_jlon;
 }
 
 sub processSingleRoutine
@@ -236,9 +250,13 @@ sub processSingleRoutine
 
   my @par = &F ('.//parallel-section', $pu);
   
+  my %dims = (kgpblks => 'KGPBLKS', jlon => $style->jlon (), kidia => $style->kidia (), 
+              kfdia => $style->kfdia (), nproma => ($style->nproma ())[0],
+              kidia_call => $style->kidia (), kfdia_call => $style->kfdia ());
+
   for my $par (@par)
     {
-      &processSingleSection ($pu, $par, $var2dim, $typearg, $KGPBLKS, %opts);
+      &processSingleSection ($pu, $par, $var2dim, $typearg, \%dims, 'LDACC', %opts);
     }
   
   # Add single block suffix to routines not called from within parallel sections
@@ -270,27 +288,7 @@ sub processSingleRoutine
         }
     }
   
-  # Add KGPBLKS dummy argument
-
-  for my $nproma (@nproma)
-    {
-      next unless (my ($arg) = &F ('./subroutine-stmt/dummy-arg-LT/arg-N[string(.)="?"]', $nproma, $pu));
-      $arg->parentNode->insertAfter ($_, $arg) for (&n ("<arg-N><N><n>$KGPBLKS</n></N></arg-N>"), &t (", "));      
-
-      my ($decl_nproma) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $nproma, $dp);
-
-      my $decl_kgpblks = $decl_nproma->cloneNode (1);
-
-      my ($n) = &F ('./EN-decl-LT/EN-decl/EN-N/N/n/text()', $decl_kgpblks);
-
-      $n->setData ($KGPBLKS);
-
-      $dp->insertAfter ($_, $decl_nproma) for ($decl_kgpblks, &t ("\n"));
-
-      last;
-    }
-
-  # Add LDACC argument
+  # Add extra arguments : LDACC, KGPBLKS, YDOFFSET
   
   {
     my ($dal) = &F ('./subroutine-stmt/dummy-arg-LT', $pu);
@@ -299,7 +297,10 @@ sub processSingleRoutine
     my ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $arg[-1], $dp);
 
     $dp->insertAfter ($_, $decl) for (&s ("LOGICAL, INTENT (IN) :: LDACC"), &t ("\n"));
+    $dp->insertAfter ($_, $decl) for (&s ("INTEGER, INTENT (IN) :: $KGPBLKS"), &t ("\n"));
+
     $dal->appendChild ($_) for (&t (", "), &n ("<arg-N>LDACC</arg-N>"));
+    $dal->appendChild ($_) for (&t (", "), &n ("<arg-N>$KGPBLKS</arg-N>"));
 
     if ($opts{'use-stack-manyblocks'})
       {
