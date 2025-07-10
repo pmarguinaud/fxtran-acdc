@@ -17,6 +17,7 @@ sub addSuffix
 {
   my ($pu, %opts) = @_;
 
+
   my ($suffix, $match, $section) = @opts{qw (suffix match section)};
 
   my ($ep) = &F ('./execution-part', $pu);
@@ -51,9 +52,10 @@ sub addSuffix
 
       for my $ext (@ext)
         {
+          next if (&F ('./include[string(filename)="?"]', lc ($proc) . lc ($suffix) . $ext, $dp));
           next unless (my ($include) = &F ('./include[string(filename)="?"]', lc ($proc) . $ext, $dp));
   
-          if (&F ('./call-stmt[string(procedure-designator)="?"]', $proc, $ep))
+          if (&F ('.//call-stmt[string(procedure-designator)="?"]', $proc, $ep))
             {
               my $include1 = $include->cloneNode (1);
               my ($t) = &F ('./filename/text()', $include1); 
@@ -89,7 +91,6 @@ sub addSuffix
         }
 
     }   
-
 
 }
 

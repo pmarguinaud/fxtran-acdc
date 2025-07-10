@@ -119,6 +119,7 @@ sub setOpenACCInterfaces
    
       if ((grep { $proc eq $_ } @called) && ! $opts{'merge-interfaces'})
         {
+          next if (&F ('./include/filename[string(.)="?"]', lc ($proc) . '.intfb.h', $dp));
           my $include_openacc = &n ('<include>#include "<filename>' . lc ($proc) . '.intfb.h</filename>"</include>');
           $include->parentNode->insertAfter ($include_openacc, $include);
           $include->parentNode->insertAfter (&t ("\n"), $include);
