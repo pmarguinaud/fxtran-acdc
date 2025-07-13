@@ -238,7 +238,18 @@ sub processSingleRoutine
 
     $typearg = {map { ($_, 1) } grep { $arg{$_} } @typearg};
 
-    unless ($opts{'use-stack-manyblocks'})
+    if ($opts{'use-stack-manyblocks'})
+      {
+        # Allocate target variables with an ACC CREATE
+        my @create;
+        for my $n (grep { ! $arg{$_} } sort (keys (%$var2dim)))
+          {
+            push @create, $n
+             if (&F ('./T-decl-stmt[./attribute[string(./attribute-N)="TARGET"]][./EN-decl-LT/EN-decl[string(./EN-N)="?"]]', $n, $dp));
+          }
+        $pragma->insertData ($ep, CREATE => \@create, IF => ['LDACC']) if (@create);
+      }  
+    else
       {
         my @present = grep { $var2dim->{$_} || $typearg->{$_} } @arg;
         my @create = grep { ! $arg{$_} } sort (keys (%$var2dim));
@@ -332,14 +343,16 @@ sub processSingleRoutine
 
   # Add extra dimensions to all nproma arrays + make all array spec implicit
 
-
   for my $stmt (&F ('./T-decl-stmt', $dp))
     {
       next unless (my ($as) = &F ('./EN-decl-LT/EN-decl/array-spec', $stmt));
+      my ($n) = &F ('./EN-decl-LT/EN-decl/EN-N', $stmt, 1);
 
       my ($sslt) = &F ('./shape-spec-LT', $as);
 
       my @ss = &F ('./shape-spec', $sslt);
+
+      goto NPROMA if (($ss[0]->textContent eq ':') && $var2dim->{$n});
 
       for my $nproma (@nproma)
         {
@@ -375,10 +388,18 @@ NPROMA:
 
          $dp->insertAfter ($_, $stmt) for (&n ("<C>! $comment</C>"), &t (' '));
        }   
+     elsif (&F ('./attribute[string(attribute-N)="POINTER"]', $stmt))
+       {
+         if (my ($attr) = &F ('./attribute[string(attribute-N)="CONTIGUOUS"]', $stmt))
+           {
+             $_->unbindNode () for ($attr->previousSibling, $attr);
+           }
+         $sslt->appendChild ($_) for (&t (","), &n ('<shape-spec>:</shape-spec>'));
+       }
      else
        {
          # Local variable : add KGPBLKS dimension
-         $sslt->appendChild ($_) for (&t (", "), &n ('<shape-spec>' . &e ($KGPBLKS) . '</shape-spec>'));
+         $sslt->appendChild ($_) for (&t (","), &n ('<shape-spec>' . &e ($KGPBLKS) . '</shape-spec>'));
        }
     
 
@@ -404,6 +425,10 @@ sub stackAllocateTemporaries
   for my $decl (&F ('./T-decl-stmt', $dp))
     {
       next if (&F ('./attribute[string(./attribute-N)="INTENT"]', $decl));
+      next if (&F ('./attribute[string(./attribute-N)="TARGET"]', $decl));
+      next if (&F ('./attribute[string(./attribute-N)="POINTER"]', $decl));
+      
+
       my ($en_decl) = &F ('./EN-decl-LT/EN-decl', $decl);
       my ($n) = &F ('./EN-N', $en_decl, 1);
       next unless ($var2dim->{$n});

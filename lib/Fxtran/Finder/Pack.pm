@@ -62,14 +62,12 @@ sub scanpack
       # Read back existing scan
       $scan = do ("$pack/.scan.pl");
     }
-
-  for my $view (@view)
-    {
-      $self->scanView ($scan, $view);
-    }
-
-  if (! -f "$pack/.scan.pl")
-    {
+  else
+   {
+     for my $view (@view)
+       {
+         $self->scanView ($scan, $view);
+       }
       local $Data::Dumper::Terse = 1;
       local $Data::Dumper::Sortkeys = 1;
       'FileHandle'->new (">$pack/.scan.pl")->print (&Dumper ($scan));

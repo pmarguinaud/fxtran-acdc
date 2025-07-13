@@ -140,6 +140,7 @@ sub getVarToDim
   my %opts = @_;
 
   my ($dp) = &F ('./specification-part/declaration-part', $pu);
+  my ($ep) = &F ('./execution-part', $pu);
 
   my $style = $opts{style};
 
@@ -169,6 +170,29 @@ sub getVarToDim
       my ($N) = &F ('./EN-N', $en_decl, 1);
       $var2dim{$N} = scalar (@ss);
     }
+
+  my %N1toN2;
+
+  for my $ptrastmt (&F ('.//pointer-a-stmt', $ep))
+    {
+      my ($N1) = &F ('./E-1/named-E/N', $ptrastmt, 1);
+      my ($N2) = &F ('./E-2/named-E/N', $ptrastmt, 1);
+
+      if ($N1toN2{$N1} && (! $var2dim{$N2}))
+        {
+          die ("Pointer $N1 is ambiguous; it points to the field variable `$N1toN2{$N1}' and to the non-field variable `$N2'");
+        }
+      elsif ($var2dim{$N2})
+        {
+          $N1toN2{$N1} = $N2;
+        }
+    }
+
+   for my $N1 (sort keys (%N1toN2))
+     {
+       my $N2 = $N1toN2{$N1};
+       $var2dim{$N1} = $var2dim{$N2};
+     }
 
   return \%var2dim;
 }
