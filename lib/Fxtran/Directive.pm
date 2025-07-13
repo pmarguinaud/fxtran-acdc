@@ -47,8 +47,10 @@ sub parseDirectives
   
           my ($Co, $e, $tag) = @{ pop @section };
 
-          die ("Unexpected " . $Cc->textContent) 
-            unless ($Co->parentNode->unique_key == $Cc->parentNode->unique_key);
+          unless ($Co->parentNode->unique_key == $Cc->parentNode->unique_key)
+            {
+              die ("Unexpected " . $Cc->textContent . " in " . $C->parentNode->textContent);
+            }
           
           for my $n (&F ('following-sibling::node()', $Co))
             {

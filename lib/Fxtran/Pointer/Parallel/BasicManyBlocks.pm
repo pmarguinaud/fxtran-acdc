@@ -89,6 +89,8 @@ sub makeParallel
 
   my ($comp) = &F ('./comp', $par1);
 
+  $comp->insertBefore ($_, $comp->firstChild) for (&s ("YLOFFSET = STACK (0, 0, 0, 0)"), &t ("\n"));
+
   my $pragma = $opts{pragma};
 
   if ($opts{acc} && %present)
@@ -97,7 +99,7 @@ sub makeParallel
     }
 
   my $LDACC = $opts{acc} ? &e ('.TRUE.') : &e ('.FALSE.');
-  my $YDOFFSET = &e ('STACK (0, 0, 0, 0)');
+  my $YDOFFSET = &e ('YLOFFSET');
 
   for my $call (&F ('.//call-stmt', $comp))
     {
@@ -130,7 +132,7 @@ sub makeParallel
             }
           elsif ($n && $var2dim{$n} && (my ($sslt) = &F ('.//array-R/section-subscript-LT', $arg)))
             {
-              $sslt->appendChild ($_) for (&t (','), &n ('<section-subscript>:</section-subscript'));
+              $sslt->appendChild ($_) for (&t (','), &n ('<section-subscript>:</section-subscript>'));
             }
         }
 

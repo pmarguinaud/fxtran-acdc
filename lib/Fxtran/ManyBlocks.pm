@@ -49,16 +49,16 @@ sub processSingleSection
   
   for my $expr (&F ('.//call-stmt/arg-spec/arg/named-E', $par))
     {
+
+
       my ($N) = &F ('./N', $expr, 1);
       next unless (my $nd = $var2dim->{$N});
   
-      my ($rlt) = &F ('./R-LT/array-R', $expr);
+      my ($rlt) = &F ('./R-LT', $expr);
       my ($sslt) = &F ('./R-LT/array-R/section-subscript-LT', $expr);
 
       unless ($sslt)
         {
-          $rlt;
-
           if (($rlt) = &F ('./R-LT', $expr))
             {
               $rlt->unbindNode ();
@@ -76,7 +76,7 @@ sub processSingleSection
                                             # We assume that the slice is a contiguous chunk of memory
         {
           my @ss = &F ('./array-R/section-subscript-LT/section-subscript', $rlt); 
-  
+
           for my $i (0 .. $#ss-1)
             {
               my $ss = $ss[$i];
@@ -97,7 +97,10 @@ sub processSingleSection
                   $ss->appendChild (&n ('<lower-bound>' . &e ("LBOUND ($N, " . ($i+1) . ")") . '</lower-bound>'));
                 }
             }
+
         }
+
+
     }
   
   # Move section contents into a DO loop over KLON
@@ -266,7 +269,7 @@ sub processSingleRoutine
     $pu,
     suffix => $opts{'suffix-manyblocks'},
     'merge-interfaces' => $opts{'merge-interfaces'},
-    match => sub { my $proc = shift; ! ($proc =~ m/$opts{'suffix-singlecolumn'}$/i) },
+    match => sub { my $proc = shift; ! (($proc =~ m/$opts{'suffix-singlecolumn'}$/i) or ($proc eq 'ABOR1')) },
   );
 
   # Add KGPLKS argument to manyblock routines + add LDACC argument
@@ -281,6 +284,15 @@ sub processSingleRoutine
       if ($opts{'use-stack-manyblocks'})
         {
           $argspec->appendChild ($_) for (&t (", "), &n ("<arg><arg-N><k>YDOFFSET</k></arg-N> = " . &e ('YLOFFSET') . '</arg>'));
+        }
+
+      for my $expr (&F ('./arg/named-E', $argspec))
+        {
+          my ($N) = &F ('./N', $expr);
+          if (my ($sslt) = &F ('./R-LT/array-R/section-subscript-LT', $expr))
+            {
+              $sslt->appendChild ($_) for (&t (','), &n ('<section-subscript>:</section-subscript>'));
+            }
         }
     }
   

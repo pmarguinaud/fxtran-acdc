@@ -181,6 +181,7 @@ sub processSingleRoutine
     'REAL(KIND=JPHOOK) :: ZHOOK_HANDLE_PARALLEL',
     'REAL(KIND=JPHOOK) :: ZHOOK_HANDLE_COMPUTE',
     'TYPE(STACK) :: YLSTACK',
+    'TYPE(STACK) :: YLOFFSET',
   );
   
   my $t = &Fxtran::Pointer::SymbolTable::getSymbolTable 
