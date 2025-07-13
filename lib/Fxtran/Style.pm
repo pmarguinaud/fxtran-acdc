@@ -6,11 +6,14 @@ package Fxtran::Style;
 # philippe.marguinaud@meteo.fr
 #
 
-use strict;
 use Data::Dumper;
 use File::Basename;
 use File::Spec;
 use File::Find;
+
+use strict;
+
+use Fxtran;
 
 sub newFromStyle
 {
@@ -124,6 +127,24 @@ sub customIterator
 
 sub updateCustomIterator
 {
+}
+
+sub getActualNproma
+{
+  my $self = shift;
+  my $pu = shift;
+
+  my @arg = &F ('./dummy-arg-LT/arg-N', $pu->firstChild, 1);
+
+  my @nproma = $self->nproma ();
+
+  for my $nproma (@nproma)
+    {
+      my ($expr) = &e ($nproma);
+      my ($n) = &F ('./N', $expr, 1);
+      return $nproma if (grep { $_ eq $n } @arg);
+    }
+
 }
 
 1;

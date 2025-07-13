@@ -220,6 +220,7 @@ sub processSingleRoutine
   my ($ep) = &F ('./execution-part', $pu);
   
   my @nproma = $style->nproma ();
+
   my $jlon = $style->jlon ();
   my $kidia = $style->kidia ();
   my $kfdia = $style->kfdia ();
@@ -265,7 +266,7 @@ sub processSingleRoutine
   my @par = &F ('.//parallel-section', $pu);
   
   my %dims = (kgpblks => 'KGPBLKS', jlon => $style->jlon (), kidia => $style->kidia (), 
-              kfdia => $style->kfdia (), nproma => ($style->nproma ())[0],
+              kfdia => $style->kfdia (), nproma => $style->getActualNproma ($pu),
               kidia_call => $style->kidia (), kfdia_call => $style->kfdia ());
 
   for my $par (@par)
