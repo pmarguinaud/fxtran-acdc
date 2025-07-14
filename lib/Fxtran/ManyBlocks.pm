@@ -28,6 +28,7 @@ sub processSingleSection
   my $kfdia      = $dims->{kfdia};
   my $kidia_call = $dims->{kidia_call};
   my $kfdia_call = $dims->{kfdia_call};
+  my $pointer    = $dims->{pointer} || {};
   
   # Make the section single column
   
@@ -187,18 +188,23 @@ EOF
           $priv{$n}++ if (($p->nodeName eq 'E-1') || ($p->nodeName eq 'do-V'));
         }
     }
-  
+
   # Add OpenACC directive  
   
   if ($LDACC ne '.FALSE.')
     {
+      my @pointer;
+
+      for my $n (grep { $nproma{$_} && $pointer->{$_} } sort (keys (%$var2dim)))
+        {
+          push @pointer, $n;
+        }
+
       $pragma->insertLoopVector ($do_jlon, PRIVATE => [sort (keys (%priv))]);
       $pragma->insertParallelLoopGang 
         ( 
           $do_jblk, PRIVATE => ['JBLK'], VECTOR_LENGTH => [$nproma], ($LDACC ne '.TRUE.' ? (IF => [$LDACC]) : ()),
-          $opts{'use-stack-manyblocks'}
-         ? (PRESENT => [sort (keys (%nproma), keys (%type))])
-         : ()
+          $opts{'use-stack-manyblocks'} ? (PRESENT => \@pointer) : ()
         );
     }
 
@@ -241,14 +247,15 @@ sub processSingleRoutine
 
     if ($opts{'use-stack-manyblocks'})
       {
+        my @present = grep { $var2dim->{$_} || $typearg->{$_} } @arg;
         # Allocate target variables with an ACC CREATE
-        my @create;
+        my @target;
         for my $n (grep { ! $arg{$_} } sort (keys (%$var2dim)))
           {
-            push @create, $n
+            push @target, $n
              if (&F ('./T-decl-stmt[./attribute[string(./attribute-N)="TARGET"]][./EN-decl-LT/EN-decl[string(./EN-N)="?"]]', $n, $dp));
           }
-        $pragma->insertData ($ep, CREATE => \@create, IF => ['LDACC']) if (@create);
+        $pragma->insertData ($ep, PRESENT => \@present, CREATE => \@target, IF => ['LDACC']);
       }  
     else
       {
@@ -261,13 +268,25 @@ sub processSingleRoutine
 
   }
   
+
+  # Find pointers
+  
+  my %pointer;
+
+  for my $n (keys (%$var2dim))
+    {
+      $pointer{$n} = 1
+        if (&F ('./T-decl-stmt[./attribute[string(./attribute-N)="POINTER"]][./EN-decl-LT/EN-decl[string(./EN-N)="?"]]', $n, $dp));
+    }
+
+  my %dims = (kgpblks => 'KGPBLKS', jlon => $style->jlon (), kidia => $style->kidia (), 
+              kfdia => $style->kfdia (), nproma => $style->getActualNproma ($pu),
+              kidia_call => $style->kidia (), kfdia_call => $style->kfdia (),
+              pointer => \%pointer);
+
   # Parallel sections
 
   my @par = &F ('.//parallel-section', $pu);
-  
-  my %dims = (kgpblks => 'KGPBLKS', jlon => $style->jlon (), kidia => $style->kidia (), 
-              kfdia => $style->kfdia (), nproma => $style->getActualNproma ($pu),
-              kidia_call => $style->kidia (), kfdia_call => $style->kfdia ());
 
   for my $par (@par)
     {
