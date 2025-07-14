@@ -437,10 +437,23 @@ sub stackAllocateTemporaries
 {
   my ($pu, $var2dim, %opts) = @_;
 
+  my $pragma = $opts{pragma};
+
   my ($ep) = &F ('./execution-part', $pu);
+
+  $ep->setNodeName ('comp');
+  $pu->replaceChild (my ($ep1) = &n ('<execution-part/>'), $ep);
+  $ep1->appendChild ($ep);
+
+  my $comp = $ep;
+
+  $ep = $ep1;
+
   my ($dp) = &F ('./specification-part/declaration-part', $pu);
 
   $ep->insertBefore (my $C = &n ("<C>!</C>"), $ep->firstChild);
+
+  my @alloc;
 
   for my $decl (&F ('./T-decl-stmt', $dp))
     {
@@ -475,8 +488,13 @@ EOF
           $ep->insertBefore ($_, $ep->firstChild) for (&t ("\n"), $if);
         }
 
+      push @alloc, $n;
     }
 
+  if (@alloc)
+    {
+      $pragma->insertData ($comp, PRESENT => \@alloc, IF => ['LDACC']);
+    }
 
   if ($opts{'stack-method'})
     {
