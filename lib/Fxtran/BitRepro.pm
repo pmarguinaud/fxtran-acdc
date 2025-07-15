@@ -39,20 +39,20 @@ sub processSingleModule
 {
   my ($d, %opts) = @_;
 
-  my @pu = &F ('./program-unit', $d);
-
-  for my $pu (@pu)
+  for my $pu (&F ('./program-unit', $d))
     {
       &processSingleRoutine ($pu, %opts);
     }
 
   &Fxtran::Module::addSuffix ($d, $opts{'suffix-bitrepro'});
+
 }
 
 sub processSingleRoutine
 {
   my ($pu, %opts) = @_;
 
+  &Fxtran::Intrinsic::makeBitReproducible ($pu, %opts);
 
   &Fxtran::Call::addSuffix 
   (
@@ -64,6 +64,11 @@ sub processSingleRoutine
   );
 
   &Fxtran::Subroutine::addSuffix ($pu, $opts{'suffix-bitrepro'});
+
+  for my $pu (&F ('./program-unit', $pu))
+    {
+      &processSingleRoutine ($pu, %opts);
+    }
 
 }
 

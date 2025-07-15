@@ -720,8 +720,6 @@ sub bitrepro
 {
   my ($opts, @args) = @_;
 
-  $opts->{'use-bit-repro-intrinsics'} = 1;
-
   &Fxtran::Util::loadModule ('Fxtran::BitRepro');
 
   my ($F90) = @args;

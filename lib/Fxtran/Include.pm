@@ -83,7 +83,11 @@ sub loadContainedIncludes
           s/"$//o;
         }
 
+      my $f = $filename;
+
       $filename = $find->resolve (file => $filename);
+
+      $filename or die ("Cannot find include file `$f'");
 
       my $text = do { local $/ = undef; my $fh = 'FileHandle'->new ("<$filename"); <$fh> };
       my $di = &Fxtran::parse (string => $text, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]);

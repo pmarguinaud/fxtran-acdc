@@ -9,6 +9,7 @@ package Fxtran::Intrinsic;
 use Data::Dumper;
 use FileHandle;
 use File::Basename;
+use File::Temp;
 
 use strict;
 
@@ -44,7 +45,7 @@ sub makeBitReproducibleSection
   my $s = shift;
   my %opts = @_;
 
-  my $br = $opts{br};
+  my $brlist = $opts{brlist};
 
   my $count = 0;
 
@@ -54,7 +55,7 @@ sub makeBitReproducibleSection
       my $t = $n->textContent;
       next unless ($BR{$t});
       $n->setData ("BR_$t");
-      $br->{"BR_$t"} = 1;
+      $brlist->{"BR_$t"} = 1;
       $count++;
     }
 
@@ -68,7 +69,7 @@ sub makeBitReproducibleSection
 
       $expr->replaceNode ($e);
 
-      $br->{'BR_POW'} = 1;
+      $brlist->{'BR_POW'} = 1;
       $count++;
     }
 
@@ -78,6 +79,7 @@ sub makeBitReproducibleSection
 sub makeBitReproducible
 { 
   my $pu = shift;
+
   my %opts = @_;
 
   my $find = $opts{find};
@@ -85,13 +87,11 @@ sub makeBitReproducible
   my ($dp) = &F ('./specification-part/declaration-part', $pu);
   my ($ep) = &F ('./execution-part', $pu);
 
-  my %br;
+  my $brlist = $opts{brlist} || {};
 
-  &makeBitReproducibleSection ($ep, %opts, br => \%br);
+  &makeBitReproducibleSection ($ep, %opts, brlist => $brlist);
 
-  my @include = &F ('./include', $dp);
-
-  for my $include (@include)
+  for my $include (&F ('./include', $dp))
     {
       my ($ft) = &F ('./filename/text()', $include);
       my $filename = $ft->textContent;
@@ -104,7 +104,8 @@ sub makeBitReproducible
       my ($prog) = &Fxtran::parse (program => "PROGRAM MAIN\n${text}\nEND\n", fopts => [qw (-line-length 500 -construct-tag)]);
 
       &Fxtran::Canonic::makeCanonicReferences ($prog);
-      next unless (&makeBitReproducibleSection ($prog, %opts, br => \%br));
+
+      next unless (&makeBitReproducibleSection ($prog, %opts, brlist => $brlist));
 
       $filename = 'br_' . &basename ($filename);
 
@@ -122,9 +123,45 @@ sub makeBitReproducible
       $ft->setData ($filename);
     }
 
-  if (%br)
+  if (my ($contains) = &F ('./contains-stmt', $pu))
     {
-      &Fxtran::Decl::use ($pu, 'USE BR_INTRINSICS, ONLY : ' . join (', ', sort keys (%br)));
+      for my $include (&F ('following-sibling::include-stmt', $contains))
+        {
+          my ($ft) = &F ('./filename/S/text()', $include);
+          my $filename = $ft->textContent;
+
+          $filename =~ s/(?:^['"]|['"]$)//goms;
+
+          $filename = $find->resolve (file => $filename);
+
+          my $text = &slurp ($filename);
+
+          my $fh = 'File::Temp'->new (SUFFIX => '.F90');
+          $fh->print ($text);
+          $fh->close ();
+
+          my ($prog) = &Fxtran::parse (location => $fh->filename (), fopts => [qw (-line-length 500 -construct-tag)]);
+
+          &Fxtran::Canonic::makeCanonicReferences ($prog);
+          &Fxtran::Canonic::makeCanonic ($prog, %opts);
+
+          &Fxtran::BitRepro::makeBitReproducible ($prog, %opts, brlist => $brlist, contained => 1);
+
+          $filename = 'br_' . &basename ($filename);
+
+          my $fh = 'FileHandle'->new (">$filename");
+
+          $fh->print ($prog->textContent);
+
+          $fh->close ();
+
+          $ft->setData ('"' . $filename . '"');
+        }
+    }
+
+  if ((%$brlist) && (! $opts{contained}))
+    {
+      &Fxtran::Decl::use ($pu, 'USE BR_INTRINSICS, ONLY : ' . join (', ', sort keys (%$brlist)));
     }
 
 }
