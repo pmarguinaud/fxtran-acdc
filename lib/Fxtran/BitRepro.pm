@@ -60,7 +60,7 @@ sub processSingleRoutine
     section => $pu,
     suffix => $opts{'suffix-bitrepro'},
     'merge-interfaces' => $opts{'merge-interfaces'},
-    match => sub { my $proc = shift; $proc ne 'ABOR1' },
+    match => sub { my $proc = shift; ($proc ne 'ABOR1') && ($proc ne 'PRINT_MSG') },
   );
 
   &Fxtran::Subroutine::addSuffix ($pu, $opts{'suffix-bitrepro'});
