@@ -43,6 +43,9 @@ sub processSingleRoutine
 
   my $var2dim = &Fxtran::Loop::getVarToDim ($pu, style => $style);
   
+
+  my %pointer;
+
   {
   # Derived types, assume they are present on the device
   my @type = &F ('./T-decl-stmt[./_T-spec_/derived-T-spec]/EN-decl-LT/EN-decl/EN-N', $dp, 1);
@@ -52,7 +55,20 @@ sub processSingleRoutine
   my %arg = map { ($_, 1) } @arg;
   
   my @present = grep { $var2dim->{$_} || $type{$_} } @arg;
-  my @create = grep { ! $arg{$_} } sort (keys (%$var2dim));
+  my @create;
+
+  for my $n (sort (keys (%$var2dim)))
+    {
+      next if ($arg{$n});
+      if (&F ('./T-decl-stmt[./attribute[string(./attribute-N)="POINTER"]][./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $n, $dp))
+        {
+          $pointer{$n} = 1;
+        }
+      else
+        {
+          push @create, $n;
+        }
+    }
   
   # Create local arrays, assume argument arrays are on the device
   $pragma->insertData ($ep, PRESENT => \@present, CREATE => \@create);
@@ -118,19 +134,23 @@ EOF
         'merge-interfaces' => $opts{'merge-interfaces'},
       );
   
-      # Find private variables
-      my %priv;
+      # Find private variables & pointers used in section
+      my (%private, %present);
       for my $expr (&F ('.//named-E', $do))
         {
           my ($n) = &F ('./N', $expr, 1);
-          next if ($var2dim->{$n});
+          if ($var2dim->{$n})
+            {
+              $present{$n} = 1 if ($pointer{$n});
+              next;
+            }
           my $p = $expr->parentNode;
-          $priv{$n}++ if (($p->nodeName eq 'E-1') || ($p->nodeName eq 'do-V'));
+          $private{$n}++ if (($p->nodeName eq 'E-1') || ($p->nodeName eq 'do-V'));
         }
 
       # Add OpenACC directive  
 
-      $pragma->insertParallelLoopGangVector ($do, PRIVATE => [sort (keys (%priv))]);
+      $pragma->insertParallelLoopGangVector ($do, PRESENT => [sort (keys (%present))], PRIVATE => [sort (keys (%private))]);
     }
   
   # Add single block suffix to routines not called from within parallel sections
