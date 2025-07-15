@@ -17,7 +17,6 @@ sub addSuffix
 {
   my ($pu, %opts) = @_;
 
-
   my ($suffix, $match, $section) = @opts{qw (suffix match section)};
 
   my ($ep) = &F ('./execution-part', $pu);
@@ -36,10 +35,12 @@ sub addSuffix
       next if ($name eq 'DR_HOOK');
       ($proc) = &F ('./named-E/N/n/text()', $proc);
       next if ($contained{$proc->textContent});
+
       if ($match)
         {
           next unless $match->($proc);
         }
+
       $proc{$proc->textContent} = 1;
       $proc->setData ($proc->textContent . $suffix);
     }

@@ -138,6 +138,7 @@ my %options= do
   use-stack-manyblocks      -- Use stack allocation for manyblocks routines
   method-prefix=s           -- Prefix for method names                                                         -- ACDC_
   use-bit-repro-intrinsics  -- Use bit reproducible intrinsics
+  suffix-bitrepro=s         -- Suffix for bit-repro routines                                                   -- _BITREPRO
 EOF
 
   my @options;
@@ -664,7 +665,7 @@ sub methods
 }
 
 &click (<< "EOF");
-@options{qw (dir pragma tmp merge-interfaces suffix-singlecolumn suffix-singleblock suffix-pointerparallel suffix-manyblocks 
+@options{qw (dir pragma tmp merge-interfaces suffix-singlecolumn suffix-singleblock suffix-pointerparallel suffix-manyblocks suffix-bitrepro
              use-stack-manyblocks ydcpg_opts cycle)}
 EOF
 sub interface
@@ -693,7 +694,7 @@ sub interface
 
   &Fxtran::Util::loadModule ('Fxtran::Generate::Interface');
 
-  my @method = qw (singlecolumn singleblock pointerparallel manyblocks);
+  my @method = qw (singlecolumn singleblock pointerparallel manyblocks bitrepro);
 
   for my $method (@method)
     {
@@ -708,6 +709,37 @@ sub interface
     join ("\n", 'INTERFACE', map ({ $intfb{$_} } ('regular', @method)), 'END INTERFACE', '')
   );
 
+}
+
+&click (<< "EOF");
+@options{qw (use-bit-repro-intrinsics tmp cycle dir merge-interfaces inline-contained suffix-bitrepro)}
+EOF
+sub bitrepro
+{
+  my ($opts, @args) = @_;
+
+  &Fxtran::Util::loadModule ('Fxtran::Intrinsic');
+  &Fxtran::Util::loadModule ('Fxtran::Call');
+  &Fxtran::Util::loadModule ('Fxtran::Subroutine');
+
+  my ($F90) = @args;
+
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'bitrepro', $opts);
+
+  for my $pu (&F ('./object/file/program-unit', $d))
+    {
+      &Fxtran::Call::addSuffix 
+      (
+        $pu,
+        section => $pu,
+        suffix => $opts->{'suffix-bitrepro'},
+        'merge-interfaces' => $opts->{'merge-interfaces'},
+        match => sub { my $proc = shift; print "proc=$proc\n"; $proc ne 'ABOR1' },
+      );
+      &Fxtran::Subroutine::addSuffix ($pu, $opts->{'suffix-bitrepro'});
+    }
+
+  &routineToRoutineTail ($F90out, $d, $opts);
 }
 
 1;
