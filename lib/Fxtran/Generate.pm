@@ -718,6 +718,8 @@ sub bitrepro
 {
   my ($opts, @args) = @_;
 
+  $opts->{'use-bit-repro-intrinsics'} = 1;
+
   &Fxtran::Util::loadModule ('Fxtran::Intrinsic');
   &Fxtran::Util::loadModule ('Fxtran::Call');
   &Fxtran::Util::loadModule ('Fxtran::Subroutine');
@@ -734,7 +736,7 @@ sub bitrepro
         section => $pu,
         suffix => $opts->{'suffix-bitrepro'},
         'merge-interfaces' => $opts->{'merge-interfaces'},
-        match => sub { my $proc = shift; print "proc=$proc\n"; $proc ne 'ABOR1' },
+        match => sub { my $proc = shift; $proc ne 'ABOR1' },
       );
       &Fxtran::Subroutine::addSuffix ($pu, $opts->{'suffix-bitrepro'});
     }
