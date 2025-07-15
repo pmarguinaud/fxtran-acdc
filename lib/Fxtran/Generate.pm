@@ -229,6 +229,8 @@ sub routineToRoutineHead
     {
       for my $pu (&F ('.//program-unit', $d))
         {
+          my $stmt = $pu->firstChild;
+          next unless ($stmt->nodeName eq 'subroutine-stmt');
           &Fxtran::Intrinsic::makeBitReproducible ($pu, %$opts);
         }
     }
@@ -720,26 +722,13 @@ sub bitrepro
 
   $opts->{'use-bit-repro-intrinsics'} = 1;
 
-  &Fxtran::Util::loadModule ('Fxtran::Intrinsic');
-  &Fxtran::Util::loadModule ('Fxtran::Call');
-  &Fxtran::Util::loadModule ('Fxtran::Subroutine');
+  &Fxtran::Util::loadModule ('Fxtran::BitRepro');
 
   my ($F90) = @args;
 
   my ($d, $F90out) = &routineToRoutineHead ($F90, 'bitrepro', $opts);
 
-  for my $pu (&F ('./object/file/program-unit', $d))
-    {
-      &Fxtran::Call::addSuffix 
-      (
-        $pu,
-        section => $pu,
-        suffix => $opts->{'suffix-bitrepro'},
-        'merge-interfaces' => $opts->{'merge-interfaces'},
-        match => sub { my $proc = shift; $proc ne 'ABOR1' },
-      );
-      &Fxtran::Subroutine::addSuffix ($pu, $opts->{'suffix-bitrepro'});
-    }
+  &Fxtran::BitRepro::makeBitReproducible ($d, %$opts);
 
   &routineToRoutineTail ($F90out, $d, $opts);
 }

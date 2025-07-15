@@ -4,7 +4,9 @@
 USE ABOR1_ACC_MOD
 USE PARKIND1, ONLY : JPRB
 
+#ifndef __INTEL_COMPILER
 #define stack_init(ydstack, ibl, nbl, ...) STACK (0, 0, 0, 0); CALL STACK_INIT (ydstack, YSTACK, ibl, nbl, ##__VA_ARGS__)
+#endif
 
 #define temp(t, n, s) t, DIMENSION s :: n; POINTER (IP_##n##_, n)
 
