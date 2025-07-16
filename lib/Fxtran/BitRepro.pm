@@ -54,13 +54,16 @@ sub processSingleRoutine
 
   &Fxtran::Intrinsic::makeBitReproducible ($pu, %opts);
 
+  my ($ep) = &F ('./execution-part', $pu);
+
   &Fxtran::Call::addSuffix 
   (
     $pu,
-    section => $pu,
+    section => $ep,
     suffix => $opts{'suffix-bitrepro'},
     'merge-interfaces' => $opts{'merge-interfaces'},
     match => sub { my $proc = shift; ($proc ne 'ABOR1') && ($proc ne 'PRINT_MSG') },
+    contained => 1,
   );
 
   &Fxtran::Subroutine::addSuffix ($pu, $opts{'suffix-bitrepro'});

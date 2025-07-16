@@ -724,6 +724,8 @@ sub bitrepro
 
   my ($F90) = @args;
 
+  $opts->{'use-bit-repro-intrinsics'} = 0; # Avoid doing the processing twice
+
   my ($d, $F90out) = &routineToRoutineHead ($F90, 'bitrepro', $opts);
 
   &Fxtran::BitRepro::makeBitReproducible ($d, %$opts);

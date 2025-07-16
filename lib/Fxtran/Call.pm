@@ -17,7 +17,7 @@ sub addSuffix
 {
   my ($pu, %opts) = @_;
 
-  my ($suffix, $match, $section) = @opts{qw (suffix match section)};
+  my ($suffix, $match, $section, $contained) = @opts{qw (suffix match section contained)};
 
   my ($ep) = &F ('./execution-part', $pu);
   my ($dp) = &F ('./specification-part/declaration-part', $pu);
@@ -25,7 +25,13 @@ sub addSuffix
 
   $section ||= $pu;
 
-  my %contained = map { ($_, 1) } &F ('//subroutine-stmt[count(ancestor::program-unit)>1]/subroutine-N/N/n/text()', $pu, 1);
+  my %contained;
+
+  unless ($contained)
+    {
+      %contained = map { ($_, 1) }
+        &F ('//subroutine-stmt[count(ancestor::program-unit)>1]/subroutine-N/N/n/text()', $pu, 1);
+    }
 
   my %proc;
   for my $proc (&F ('.//call-stmt/procedure-designator', $section))

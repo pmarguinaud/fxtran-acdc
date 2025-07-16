@@ -292,8 +292,6 @@ sub compile
   my ($obj, $lib, $f90compiler) = @args{qw (obj lib f90compiler)};
   my $opts = $args{opts};
 
-  return if ($opts->{dryrun});
-
   my @F90 = <*.F90>;
   my @C = <*.c>;
 
