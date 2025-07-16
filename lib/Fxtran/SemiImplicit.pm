@@ -11,8 +11,10 @@ sub processSingleRoutine
 {
   my ($pu, %opts) = @_;
 
+print $opts{style}, "\n";
+
   &Fxtran::SingleBlock::processSingleRoutine 
-    ($pu, %opts, 'suffix-singleblock' => '_SINGLEBLOCK'); #, 'suffix-singlecolumn' => '_OPENACC');
+    ($pu, %opts, 'suffix-singleblock' => '_SINGLEBLOCK'); 
 
 }
 
