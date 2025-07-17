@@ -27,7 +27,7 @@ use Fxtran::Interface;
 use Fxtran::PATH;
 
 my %opts = qw (out Makefile include Makefile.inc SRC .);
-my @opts_f = qw (assume-generated-util-modules);
+my @opts_f = qw (assume-generated-util-modules help);
 my @opts_s = qw (out include SRC);
 
 &GetOptions
@@ -35,6 +35,14 @@ my @opts_s = qw (out include SRC);
   (map { ($_, \$opts{$_}) } @opts_f),
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
+
+if ($opts{help})
+  {
+    print "Usage: ", &basename ($0), "\n";
+    print map ({ "  --$_\n" } @opts_f);
+    print map ({ "  --$_=s\n" } @opts_s);
+    exit (0);
+  }
 
 $opts{include} = [split (m/,/o, $opts{include})];
 

@@ -71,7 +71,7 @@ sub processSingleRoutine
     }
   
   # Create local arrays, assume argument arrays are on the device
-  $pragma->insertData ($ep, PRESENT => \@present, CREATE => \@create);
+  $pragma->insertData ($ep, PRESENT => \@present, CREATE => \@create, IF => ['LDACC']);
   }
 
   # Parallel sections
@@ -115,7 +115,7 @@ EOF
 
       for my $call (&F ('.//call-stmt', $do))
         {
-          for my $var ($kidia,, $kfdia)
+          for my $var ($kidia, $kfdia)
             {
               for my $expr (&F ('.//named-E[string(.)="?"]', $var, $call))
                 {
@@ -150,7 +150,7 @@ EOF
 
       # Add OpenACC directive  
 
-      $pragma->insertParallelLoopGangVector ($do, PRESENT => [sort (keys (%present))], PRIVATE => [sort (keys (%private))]);
+      $pragma->insertParallelLoopGangVector ($do, PRESENT => [sort (keys (%present))], PRIVATE => [sort (keys (%private))], IF => ['LDACC']);
     }
   
   # Add single block suffix to routines not called from within parallel sections
@@ -171,10 +171,18 @@ EOF
           return if ($proc =~ m/$opts{'suffix-singlecolumn'}$/i);
         }
 
+      for my $s (&F ('ancestor::ANY-section', $proc))
+        {
+          my $nn = $s->nodeName;
+          return if ($nn eq 'parallel-section');
+          return if ($nn eq 'horizontal-section');
+          return if ($nn eq 'MXMAOPTR');
+        }
+
       return 1;
     },
   );
-  
+
   &Fxtran::Subroutine::addSuffix ($pu, $opts{'suffix-singleblock'});
   
   my ($implicit) = &F ('.//implicit-none-stmt', $pu);
@@ -187,6 +195,22 @@ EOF
                           'INTEGER :: ' . $jlon);
 
   &Fxtran::Decl::use ($pu, 'USE STACK_MOD');
+
+  
+  my ($arglist) = &F ('./dummy-arg-LT', $pu->firstChild);
+  $arglist->appendChild ($_) for (&t (', '), &n ('<arg-N><N><n>LDACC</n></N></arg-N>'));
+  my @decl = &F ('./T-decl-stmt[./attribute[string(attribute-N)="INTENT"]]', $dp);
+  
+  $dp->insertAfter ($_, $decl[-1]) for (&s ("LOGICAL, INTENT (IN) :: LDACC"), &t ("\n"));
+
+  for my $call (&F ('.//call-stmt', $pu))
+    {
+      my ($proc) = &F ('./procedure-designator', $call, 1);
+      next unless (($proc =~ m/$opts{'suffix-singleblock'}$/) || ($proc eq 'MXMAOPTR'));
+      my ($argspec) = &F ('./arg-spec', $call);
+      $argspec->appendChild ($_) for (&t (', '), &n ('<arg><arg-N n="LDACC"><k>LDACC</k></arg-N>=' . &e ('LDACC') . '</arg>'));
+    }
+  
 }
 
 1;
