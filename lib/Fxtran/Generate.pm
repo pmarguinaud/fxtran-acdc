@@ -715,6 +715,7 @@ sub interface
 
 &click (<< "EOF");
 @options{qw (use-bit-repro-intrinsics tmp cycle dir merge-interfaces inline-contained suffix-bitrepro)}
+  use-bit-repro-parens      -- Make sure additions are executed in the right order
 EOF
 sub bitrepro
 {
