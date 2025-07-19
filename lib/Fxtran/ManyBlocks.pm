@@ -29,7 +29,7 @@ sub processSingleSection
   my $kidia_call = $dims->{kidia_call};
   my $kfdia_call = $dims->{kfdia_call};
   my $pointer    = $dims->{pointer} || {};
-  
+
   # Make the section single column
   
   &Fxtran::Loop::removeNpromaLoopsInSection
@@ -50,8 +50,6 @@ sub processSingleSection
   
   for my $expr (&F ('.//call-stmt/arg-spec/arg/named-E', $par))
     {
-
-
       my ($N) = &F ('./N', $expr, 1);
       next unless (my $nd = $var2dim->{$N});
   
@@ -245,17 +243,31 @@ sub processSingleRoutine
 
     $typearg = {map { ($_, 1) } grep { $arg{$_} } @typearg};
 
+    my %optional;
+
     if ($opts{'use-stack-manyblocks'})
       {
         my @present = grep { $var2dim->{$_} || $typearg->{$_} } @arg;
         # Allocate target variables with an ACC CREATE
-        my @target;
-        for my $n (grep { ! $arg{$_} } sort (keys (%$var2dim)))
+
+        my (%target, %optional);
+   
+        for my $n (sort (keys (%$var2dim)))
           {
-            push @target, $n
-             if (&F ('./T-decl-stmt[./attribute[string(./attribute-N)="TARGET"]][./EN-decl-LT/EN-decl[string(./EN-N)="?"]]', $n, $dp));
+            my ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(./EN-N)="?"]]', $n, $dp);
+            $target{$n}++ if ((! $arg{$n}) && &F ('./attribute[string(./attribute-N)="TARGET"]', $decl));
+            $optional{$n}++ if (&F ('./attribute[string(./attribute-N)="OPTIONAL"]', $decl));
           }
-        $pragma->insertData ($ep, PRESENT => \@present, CREATE => \@target, IF => ['LDACC']);
+
+        @present = grep { ! $optional{$_} } @present;
+
+        $pragma->insertData ($ep, PRESENT => \@present, CREATE => [grep { ! $arg{$_} } sort keys (%target)], IF => ['LDACC']);
+
+        for my $n (sort keys (%optional))
+          {
+            $pragma->insertData ($ep, PRESENT => [$n], IF => ["LDACC .AND. PRESENT ($n)"]);
+          }
+
       }  
     else
       {
