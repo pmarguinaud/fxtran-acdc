@@ -81,6 +81,11 @@ sub parseDirectives
               $opts{$k} = $v;
             }
 
+          if (grep { (! defined ($_)) || (m/^--/o) } %opts)
+            {
+              %opts = ();
+            }
+
           my ($tag) = ($bdir =~ m/^(\w+)/o);
           my $Tag = $tag; 
 

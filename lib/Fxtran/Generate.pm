@@ -304,24 +304,29 @@ sub semiimplicit
 &click (<< "EOF");
 @options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 stack-method style redim-arguments set-variables 
              suffix-singlecolumn tmp value-attribute version inline-contained checker array-slice-to-address use-bit-repro-intrinsics)}
-  keep-drhook               -- Keep DrHook
-  dummy                     -- Generate a dummy routine (strip all executable code)
-  inlined=s@                -- List of routines to inline
-  inline-comment            -- Add a comment when inlining a routine
-  create-interface          -- Generate an interface file
-  process-interfaces        -- Transform interfaces into single column interfaces (used for MODI MESONH files)
-  no-check-pointers-dims=s@ -- List of pointer variables that should not be checked for their dimensions
-  process-pointers          -- Process pointers (change them to CRAY pointers
+  keep-drhook                  -- Keep DrHook
+  dummy                        -- Generate a dummy routine (strip all executable code)
+  inlined=s@                   -- List of routines to inline
+  inline-comment               -- Add a comment when inlining a routine
+  create-interface             -- Generate an interface file
+  process-interfaces           -- Transform interfaces into single column interfaces (used for MODI MESONH files)
+  no-check-pointers-dims=s@    -- List of pointer variables that should not be checked for their dimensions
+  process-pointers             -- Process pointers (change them to CRAY pointers
+  suffix-singlecolumn-called=s -- Suffix for singlecolumn routines called by routine being processed
 EOF
 sub singlecolumn
 {
   my ($opts, @args) = @_;
 
+  $opts->{'suffix-singlecolumn-called'} ||= $opts->{'suffix-singlecolumn'};
+
   &Fxtran::Util::loadModule ('Fxtran::SingleColumn');
 
   my ($F90) = @args;
 
-  my ($d, $F90out) = &routineToRoutineHead ($F90, 'singlecolumn', $opts);
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'singlecolumn', $opts, qw (-directive ACDC));
+
+  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
 
   $opts->{style}->preProcessForOpenACC ($d, %$opts);
   
