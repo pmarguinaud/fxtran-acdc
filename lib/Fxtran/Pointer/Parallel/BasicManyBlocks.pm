@@ -57,7 +57,7 @@ sub makeParallel
 
   while (my ($n, $s) = each (%$t))
     {
-      if ($s->{isFieldAPI})
+      if ($s->{isFieldAPI} && $s->{blocked})
         {
           $var2dim{$n} = $s->{nd};
         }
