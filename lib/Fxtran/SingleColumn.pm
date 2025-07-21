@@ -205,6 +205,15 @@ sub processSingleRoutine
 {
   my ($pu, %opts) = @_;
 
+  # Process ABORT sections
+
+  for my $abort (&F ('.//abort-section', $pu))
+    {    
+      $_->unbindNode () for ($abort->childNodes ());
+      $abort->appendChild ($_) 
+        for (&s ('CALL ABOR1 ("ERROR: WRONG SETTINGS")'), &t ("\n"));
+    }    
+
   my $find = $opts{find};
 
   my @pointer;
@@ -234,7 +243,7 @@ sub processSingleRoutine
       &Fxtran::Call::addSuffix 
       (
         $pu, 
-        suffix => $opts{'suffix-singlecolumn'}, 
+        suffix => $opts{'suffix-singlecolumn-called'}, 
         match => sub { ! $opts{style}->noComputeRoutine (@_) },
         'merge-interfaces' => $opts{'merge-interfaces'},
       );

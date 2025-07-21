@@ -149,7 +149,7 @@ sub makeBitReproducible
 
           $filename = 'br_' . &basename ($filename);
 
-          my $fh = 'FileHandle'->new (">$filename");
+          $fh = 'FileHandle'->new (">$filename");
 
           $fh->print ($prog->textContent);
 

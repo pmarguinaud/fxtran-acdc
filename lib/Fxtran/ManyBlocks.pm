@@ -29,7 +29,8 @@ sub processSingleSection
   my $kidia_call = $dims->{kidia_call};
   my $kfdia_call = $dims->{kfdia_call};
   my $pointer    = $dims->{pointer} || {};
-  
+  my $optional   = $dims->{optional} || {};
+
   # Make the section single column
   
   &Fxtran::Loop::removeNpromaLoopsInSection
@@ -48,60 +49,79 @@ sub processSingleSection
   
   # JBLK slice for array arguments
   
-  for my $expr (&F ('.//call-stmt/arg-spec/arg/named-E', $par))
+  for my $call (&F ('.//call-stmt', $par))
     {
+      my %seenOptional; # How many times we have seen each optional argument
+      my $CALL = $call->textContent;
 
-
-      my ($N) = &F ('./N', $expr, 1);
-      next unless (my $nd = $var2dim->{$N});
-  
-      my ($rlt) = &F ('./R-LT', $expr);
-      my ($sslt) = &F ('./R-LT/array-R/section-subscript-LT', $expr);
-
-      unless ($sslt)
+      for my $expr (&F ('./arg-spec/arg/named-E', $call))
         {
-          if (($rlt) = &F ('./R-LT', $expr))
+          my ($N) = &F ('./N', $expr, 1);
+          next unless (my $nd = $var2dim->{$N});
+      
+          my ($rlt) = &F ('./R-LT', $expr);
+          my ($sslt) = &F ('./R-LT/array-R/section-subscript-LT', $expr);
+     
+          unless ($sslt)
             {
-              $rlt->unbindNode ();
+              if (($rlt) = &F ('./R-LT', $expr))
+                {
+                  $rlt->unbindNode ();
+                }
+      
+              $rlt = &n ('<R-LT><array-R>(<section-subscript-LT>' . join (', ', ('<section-subscript>:</section-subscript>') x $nd) . '</section-subscript-LT>)</array-R></R-LT>');
+              $expr->appendChild ($rlt);
+     
+              ($sslt) = &F ('./R-LT/array-R/section-subscript-LT', $expr);
             }
-  
-          $rlt = &n ('<R-LT><array-R>(<section-subscript-LT>' . join (', ', ('<section-subscript>:</section-subscript>') x $nd) . '</section-subscript-LT>)</array-R></R-LT>');
-          $expr->appendChild ($rlt);
-
-          ($sslt) = &F ('./R-LT/array-R/section-subscript-LT', $expr);
-        }
-  
-      $sslt->appendChild ($_) for (&t (', '), &n ('<section-subscript><lower-bound>' . &e ('JBLK') . '</lower-bound></section-subscript>'));
-  
-      if ($opts{'array-slice-to-address'})  # Transform array slice to the address of the first element of the slice
-                                            # We assume that the slice is a contiguous chunk of memory
-        {
-          my @ss = &F ('./array-R/section-subscript-LT/section-subscript', $rlt); 
-
-          for my $i (0 .. $#ss-1)
+      
+          $sslt->appendChild ($_) for (&t (', '), &n ('<section-subscript><lower-bound>' . &e ('JBLK') . '</lower-bound></section-subscript>'));
+      
+          if ($opts{'array-slice-to-address'})  # Transform array slice to the address of the first element of the slice
+                                                # We assume that the slice is a contiguous chunk of memory
             {
-              my $ss = $ss[$i];
-  
-              my ($lb) = &F ('./lower-bound', $ss);
-              my ($ub) = &F ('./upper-bound', $ss);
-              my ($dd) = &F ('./text()[string(.)=":"]', $ss);
-  
-              $_->unbindNode () 
-                for ($ss->childNodes ());
-  
-              if ($lb)
+              my @ss = &F ('./array-R/section-subscript-LT/section-subscript', $rlt); 
+     
+              for my $i (0 .. $#ss-1)
                 {
-                  $ss->appendChild ($lb);
+                  my $ss = $ss[$i];
+      
+                  my ($lb) = &F ('./lower-bound', $ss);
+                  my ($ub) = &F ('./upper-bound', $ss);
+                  my ($dd) = &F ('./text()[string(.)=":"]', $ss);
+      
+                  $_->unbindNode () 
+                    for ($ss->childNodes ());
+      
+                  if ($lb)
+                    {
+                      $ss->appendChild ($lb);
+                    }
+                  else
+                    {
+                      $ss->appendChild (&n ('<lower-bound>' . &e ("LBOUND ($N, " . ($i+1) . ")") . '</lower-bound>'));
+                    }
                 }
-              else
+     
+              if ($optional->{$N})
                 {
-                  $ss->appendChild (&n ('<lower-bound>' . &e ("LBOUND ($N, " . ($i+1) . ")") . '</lower-bound>'));
+                  die ("Optional argument `$N' appears more than once in call statement `$CALL'")
+                    if ($seenOptional{$N}++ > 1);
+
+                  my $EXPR = $expr->textContent;
+                  my ($if) = &Fxtran::parse (fragment => << "EOF", fopts => [qw (-construct-tag)]);
+IF (PRESENT ($N)) THEN
+${N}_PTR => $EXPR
+ELSE
+${N}_PTR => NULL ()
+ENDIF
+EOF
+                  $expr->replaceNode (&e ("${N}_PTR"));
+
+                  $call->parentNode->insertBefore ($_, $call) for ($if, &t ("\n"));
                 }
             }
-
         }
-
-
     }
   
   # Move section contents into a DO loop over KLON
@@ -215,6 +235,15 @@ sub processSingleRoutine
 {
   my ($pu, %opts) = @_;
 
+  # Process ABORT sections
+
+  for my $abort (&F ('.//abort-section', $pu))
+    {    
+      $_->unbindNode () for ($abort->childNodes ());
+      $abort->appendChild ($_) 
+        for (&s ('CALL ABOR1 ("ERROR: WRONG SETTINGS")'), &t ("\n"));
+    }    
+
   my $find = $opts{find};
 
   my $KGPBLKS = 'KGPBLKS';
@@ -245,17 +274,31 @@ sub processSingleRoutine
 
     $typearg = {map { ($_, 1) } grep { $arg{$_} } @typearg};
 
+    my %optional;
+
     if ($opts{'use-stack-manyblocks'})
       {
         my @present = grep { $var2dim->{$_} || $typearg->{$_} } @arg;
         # Allocate target variables with an ACC CREATE
-        my @target;
-        for my $n (grep { ! $arg{$_} } sort (keys (%$var2dim)))
+
+        my (%target, %optional);
+   
+        for my $n (sort (keys (%$var2dim)))
           {
-            push @target, $n
-             if (&F ('./T-decl-stmt[./attribute[string(./attribute-N)="TARGET"]][./EN-decl-LT/EN-decl[string(./EN-N)="?"]]', $n, $dp));
+            my ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(./EN-N)="?"]]', $n, $dp);
+            $target{$n}++ if ((! $arg{$n}) && &F ('./attribute[string(./attribute-N)="TARGET"]', $decl));
+            $optional{$n}++ if (&F ('./attribute[string(./attribute-N)="OPTIONAL"]', $decl));
           }
-        $pragma->insertData ($ep, PRESENT => \@present, CREATE => \@target, IF => ['LDACC']);
+
+        @present = grep { ! $optional{$_} } @present;
+
+        $pragma->insertData ($ep, PRESENT => \@present, CREATE => [grep { ! $arg{$_} } sort keys (%target)], IF => ['LDACC']);
+
+        for my $n (sort keys (%optional))
+          {
+            $pragma->insertData ($ep, PRESENT => [$n], IF => ["LDACC .AND. PRESENT ($n)"]);
+          }
+
       }  
     else
       {
@@ -268,21 +311,33 @@ sub processSingleRoutine
 
   }
   
-
-  # Find pointers
+  # Find pointers 
+  # Find optional arguments 
+  # - add target attribute 
+  # - add a pointer scalar variable V_PTR; we will use that to access slices of arrays
   
-  my %pointer;
+  my (%pointer, %optional);
 
-  for my $n (keys (%$var2dim))
+  for my $n (sort keys (%$var2dim))
     {
-      $pointer{$n} = 1
-        if (&F ('./T-decl-stmt[./attribute[string(./attribute-N)="POINTER"]][./EN-decl-LT/EN-decl[string(./EN-N)="?"]]', $n, $dp));
+      my ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(./EN-N)="?"]]', $n, $dp);
+      $pointer{$n} = 1 if (&F ('./attribute[string(./attribute-N)="POINTER"]', $decl));
+      if (my ($optional) = &F ('./attribute[string(./attribute-N)="OPTIONAL"]', $decl))
+        {
+          $optional{$n} = 1;
+          unless (&F ('./attribute[string(./attribute-N)="TARGET"]', $decl))
+            {
+              $decl->insertAfter ($_, $optional) for (&n ('<attribute><attribute-N>TARGET</attribute-N></attribute>'), &t (', '));
+            }
+          my ($ts) = &F ('./_T-spec_/ANY-T-spec', $decl, 1);
+          &Fxtran::Decl::declare ($pu, "$ts, POINTER :: ${n}_PTR");
+        }
     }
 
   my %dims = (kgpblks => 'KGPBLKS', jlon => $style->jlon (), kidia => $style->kidia (), 
               kfdia => $style->kfdia (), nproma => $style->getActualNproma ($pu),
               kidia_call => $style->kidia (), kfdia_call => $style->kfdia (),
-              pointer => \%pointer);
+              pointer => \%pointer, optional => \%optional);
 
   # Parallel sections
 

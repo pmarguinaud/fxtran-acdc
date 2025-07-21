@@ -19,40 +19,55 @@ use Fxtran::Include;
 use Fxtran::Canonic;
 use Fxtran::Directive;
 use Fxtran::Inline;
+use Fxtran::Finder;
+use Fxtran::Util;
 
 use click;
 
 sub variableDependencies
 {
-  my ($pu, $n) = @_;
+  my ($pu, $n, %opts) = @_;
 
   my ($up) = &F ('./specification-part/use-part', $pu);
   my ($dp) = &F ('./specification-part/declaration-part', $pu);
 
-  my ($decl, $use, $include);
+  my ($decl, $use, $include, @n, $intrinsic);
 
-  ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string (EN-N)="?"]]', $n, $dp);
+  # Declaration
 
-  if (! $decl)
-    {
-      ($use) = &F ('./use-stmt[./rename-LT/rename[string(use-N)="?"]]', $n, $up);
-    }
-
-  if ((! $decl) && (! $use))
-    {
-      ($include) = &F ('./include[string(filename)="?" or string(filename)="?"]', lc ($n) . '.h', lc ($n) . '.intfb.h', $dp);
-    }
-
-  my @n;
-
-  if ($decl)
+  if (($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string (EN-N)="?"]]', $n, $dp))
     {
       @n = grep { $_ ne $n } &uniq (&F ('.//n', $decl, 1));
+      goto FOUND;
     }
 
-  my $stmt = ($decl or $use or $include);
+  # Imported from use
+  goto FOUND if (($use) = &F ('./use-stmt[./rename-LT/rename[string(use-N)="?"]]', $n, $up));
 
-  my $intrinsic;
+  # Interface 
+  goto FOUND if (($include) = &F ('./include[string(filename)="?" or string(filename)="?"]', lc ($n) . '.h', lc ($n) . '.intfb.h', $dp));
+
+  # Statement function from include file
+  if ($n =~ m/^F/o) 
+    {
+      my $find = $opts{find};
+      for my $inc (&F ('./include[contains(string(filename),".func.h")]', $dp))
+        {
+          my ($file) = &F ('./filename', $inc, 2);
+          $file = $find->resolve (file => $file);
+          my $text = uc (&Fxtran::Util::slurp ($file));
+
+          if (index ($text, $n) >= 0)
+            {
+              $include = $inc;
+              goto FOUND;
+            }
+        }
+    }
+
+FOUND:
+
+  my $stmt = ($decl or $use or $include);
 
   unless ($stmt)
     {
@@ -71,6 +86,7 @@ sub variableDependencies
 sub getVariables
 {
   my $pu = shift;
+  my %opts = @_;
 
   my @n_expr = &F ('.//named-E/N/n', $pu, 1); my %n_expr; $n_expr{$_}++ for (@n_expr);
   my @n_rename = &F ('.//rename', $pu, 1); 
@@ -81,7 +97,7 @@ sub getVariables
   
   for my $n (@n)
     {
-      $var{$n} = &variableDependencies ($pu, $n);
+      $var{$n} = &variableDependencies ($pu, $n, %opts);
       $var{$n}{count} = $n_expr{$n} if (exists $n_expr{$n}); # Number of occurences of symbol in $pu
     }
 
@@ -386,6 +402,8 @@ sub outline1
   &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 5000));
   &fxtran::setOptions (qw (Statement -line-length 5000));
   
+  $opts->{find} = 'Fxtran::Finder'->new ();
+
   my ($F90) = @args;
   
   my $d = &Fxtran::parse (location => $F90, fopts => [qw (-construct-tag -no-include -line-length 500 -directive ACDC -canonic)], dir => $opts->{tmp});
@@ -407,7 +425,7 @@ sub outline1
   
   my ($puName) = &F ('./subroutine-stmt/subroutine-N', $pu, 1);
   
-  my $vars = &Fxtran::Outline1::getVariables ($pu);
+  my $vars = &Fxtran::Outline1::getVariables ($pu, %$opts);
   
   my @par = &F ('.//parallel-section', $d);
   
