@@ -33,8 +33,8 @@ double __internal_exp_kernel(double x, int scale);
 double __internal_expm1_kernel(double x);
 double log1p(double);
 double log(double);
-double LogGamma(double);
-double Gamma(double);
+double log_gamma(double);
+double gamma(double);
 
 /********************
  * HELPER FUNCTIONS *
@@ -941,8 +941,14 @@ double gamma
 
 	const double gamma_const = 0.577215664901532860606512090; // Euler's gamma constant
 
+//original version
+//    if (x < 0.001)
+//        return 1.0/(x*(1.0 + gamma_const*x));
     if (x < 0.001)
-        return 1.0/(x*(1.0 + gamma_const*x));
+    {
+        double interm= __BITREPFMA(gamma_const,x,1.0);
+        return 1.0/(x*interm);
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Second interval: [0.001, 12)
@@ -969,7 +975,7 @@ double gamma
         }
 
         // numerator coefficients for approximation over the interval (1,2)
-        static const double p[] =
+        const double p[] =
         {
             -1.71618513886549492533811E+0,
              2.47656508055759199108314E+1,
@@ -982,7 +988,7 @@ double gamma
         };
 
         // denominator coefficients for approximation over the interval (1,2)
-        static const double q[] =
+        const double q[] =
         {
             -3.08402300119738975254353E+1,
              3.15350626979604161529144E+2,
@@ -1031,15 +1037,15 @@ double gamma
     if (x > 171.624)
     {
 		// Correct answer too large to display. Force +infinity.
-		double temp = DBL_MAX;
+		double temp = std::numeric_limits<double>::max();
 		return temp*2.0;
     }
 
-    return exp(loggamma(x));
+    return exp(log_gamma(x));
 }
 
 #pragma acc routine seq
-double loggamma
+double log_gamma
 (
     double x    // x must be positive
 )
@@ -1059,7 +1065,7 @@ double loggamma
     // For error analysis, see Whittiker and Watson
     // A Course in Modern Analysis (1927), page 252
 
-    static const double c[8] =
+    const double c[8] =
     {
 		 1.0/12.0,
 		-1.0/360.0,
@@ -1081,7 +1087,11 @@ double loggamma
     double series = sum/x;
 
     static const double halfLogTwoPi = 0.91893853320467274178032973640562;
-    double loggamma = (x - 0.5)*log(x) - x + halfLogTwoPi + series;    
+    double loggamma ;
+        loggamma = (x - 0.5)*log(x) ;
+        loggamma = loggamma - x ;
+        loggamma = loggamma + halfLogTwoPi ;
+        loggamma = loggamma + series;    
 	return loggamma;
 }
 
@@ -1126,5 +1136,5 @@ double br_erf  (double x) { return bitrep::erf  (x); }
 #pragma acc routine seq
 double br_gamma  (double x) { return bitrep::gamma  (x); }
 #pragma acc routine seq
-double br_loggamma  (double x) { return bitrep::loggamma  (x); }
+double br_log_gamma  (double x) { return bitrep::log_gamma  (x); }
 }
