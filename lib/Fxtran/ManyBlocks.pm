@@ -355,7 +355,7 @@ sub processSingleRoutine
     $pu,
     suffix => $opts{'suffix-manyblocks'},
     'merge-interfaces' => $opts{'merge-interfaces'},
-    match => sub { my $proc = shift; ! (($proc =~ m/$opts{'suffix-singlecolumn'}$/i) or ($proc eq 'ABOR1')) },
+    match => sub { my $proc = shift; ! (($proc =~ m/$opts{'suffix-singlecolumn'}$/i) or ($proc eq 'ABOR1') or ($proc eq 'GETENV')) },
   );
 
   # Add KGPLKS argument to manyblock routines + add LDACC argument
