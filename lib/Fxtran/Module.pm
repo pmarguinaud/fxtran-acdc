@@ -28,7 +28,7 @@ sub rename
 {
   my ($d, $sub) = @_; 
 
-  my $d = &getProgramUnit ($d);
+  $d = &getProgramUnit ($d);
 
   my @name = (
                &F ('./module-stmt/module-N/N/n/text()', $d),

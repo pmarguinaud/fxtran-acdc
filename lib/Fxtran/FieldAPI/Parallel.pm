@@ -19,8 +19,8 @@ use Fxtran::Ref;
 use Fxtran::Decl;
 use Fxtran::Subroutine;
 use Fxtran::FieldAPI;
-use OpenMP;
-use OpenACC;
+use Fxtran::Pragma::OpenMP;
+use Fxtran::Pragma::OpenACC;
 use Fxtran::Call;
 use Fxtran::Associate;
 use Fxtran::Directive;
@@ -63,7 +63,7 @@ sub wrapArrays
   my $suffix = $args{suffix};
   my $copywipe = $args{copyWipeTemporaries};
 
-  my %args = map { ($_->textContent, $_) } &F ('.//subroutine-stmt/dummy-arg-LT/arg-N/N/n/text()', $d);
+  %args = map { ($_->textContent, $_) } &F ('.//subroutine-stmt/dummy-arg-LT/arg-N/N/n/text()', $d);
 
   my $noexec = &Fxtran::Scope::getNoExec ($d);
 
@@ -228,7 +228,7 @@ sub makeBlockViewSection
     }
   $loop .= "ENDDO\n";
 
-  my ($loop) = &Fxtran::parse (fragment => $loop);
+  ($loop) = &Fxtran::parse (fragment => $loop);
 
   my ($enddo) = &F ('.//end-do-stmt', $loop);
   my $p = $enddo->parentNode;
@@ -309,7 +309,7 @@ sub makeBlockFieldAPISection
   $loop .= "CALL YDCPG_BNDS%UPDATE_VIEW (BLOCK_INDEX=IBL)\n";
   $loop .= "ENDDO\n";
   
-  my ($loop) = &Fxtran::parse (fragment => $loop);
+  ($loop) = &Fxtran::parse (fragment => $loop);
   
   my ($enddo) = &F ('.//end-do-stmt', $loop);
   my $p = $enddo->parentNode;
@@ -701,7 +701,7 @@ sub makeSingleColumnFieldAPISection
   $loop .= "ENDDO\n";
   $loop .= "ENDDO\n";
   
-  my ($loop) = &Fxtran::parse (fragment => $loop);
+  ($loop) = &Fxtran::parse (fragment => $loop);
   my ($loop_jlon) = &F ('./do-construct', $loop);
   
   my ($enddo) = &F ('.//end-do-stmt', $loop);
@@ -727,7 +727,7 @@ sub makeSingleColumnFieldAPISection
   
   # Insert OpenMP directive
   
-  my $PTR = $what eq 'host' ? 'PTR' : 'DEVPTR';
+  $PTR = $what eq 'host' ? 'PTR' : 'DEVPTR';
 
   my $directive = lc ($para->getAttribute ('directive') || 'openmp');
 

@@ -858,9 +858,6 @@ sub processTypes
             {
               my $method = $methods->{$methodName};
 
-              my $sub;
- 
-             
               my $sub = $opts->{'numbered-submodules'}
                        ? $mod . '_' . $count . '_smod'
                        : $mod . '_' . $type->{name} . '_' . $methodName . '_smod'; 

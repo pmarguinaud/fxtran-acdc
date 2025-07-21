@@ -1,0 +1,39 @@
+#!/usr/bin/perl -w
+
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
+use Data::Dumper;
+use File::Find;
+use File::Spec;
+use Cwd;
+
+use FindBin qw ($Bin);
+use lib "$Bin/../lib";
+
+use strict;
+
+use Fxtran::Common;
+use Fxtran::Bt;
+
+my $lib = "$Bin/../lib";
+
+$ENV{PERL5LIB} = "$lib:$ENV{PERL5LIB}";
+
+&find ({wanted => sub 
+{
+  return unless (-f (my $pm = $File::Find::name));
+  $pm = 'File::Spec'->abs2rel ($pm, $lib);
+  $pm =~ s/\.pm$//o;
+  $pm =~ s,/,::,go;
+
+  system ('perl', '-w', -e => "use $pm") 
+   and die ("Loading $pm failed");
+
+}, no_chdir => 1}, $lib);
+
+
+
