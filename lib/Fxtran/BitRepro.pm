@@ -1,5 +1,7 @@
 package Fxtran::BitRepro;
 
+use Data::Dumper;
+
 use strict;
 
 use Fxtran::Intrinsic;
@@ -7,63 +9,6 @@ use Fxtran::Call;
 use Fxtran::Subroutine;
 use Fxtran::Module;
 use Fxtran;
-
-sub addParens
-{
-  my $expr = shift;
-  my $par = &n ('<parens-E/>');
-  my $p = $expr->parentNode;
-  $p->replaceChild ($par, $expr);
-  $par->appendChild ($_) for (&t ('('), $expr, &t (')'));
-}
-
-sub wrapMinusWithParens
-{
-  my $expr = shift;
-  
-  my ($e1) = &F ('./E-1/ANY-E', $expr);
-  my ($e2) = &F ('./E-2/ANY-E', $expr);
-
-  return unless ($e1 && $e2);
-
-  my $sum = &e ('s1+s2'); my ($s1) = &F ('./E-1', $sum); my ($s2) = &F ('./E-2', $sum); 
-
-  my $min = &e ('-m'); my ($m) = &F ('./E-1', $min);
-  
-  $min->replaceChild ($m, $e2);
-
-  $sum->replaceChild ($s1, $e1);
-
-  $sum->replaceChild ($s2, $min);
-
-  $expr->replaceChild ($sum, $expr);
-}
-
-sub reorderPlusExpr
-{
-  my $expr = shift;
-
-  my $p = $expr->parentNode;
-  return unless (($p->nodeName eq 'op-E') && &F ('./op[string(.)="+"]', $p));
-  my ($e1, $op, $e2, $e3) = $p->childNodes (); 
-  return unless ($expr->unique_key eq $e2->unique_key);
-  ($e2, $op, $e3) = $expr->childNodes (); 
-
-  #            p                                        p
-  #            |                                        |
-  #      +-----+------expr          ->      expr--------+-----+
-  #      |              |                     |               |            
-  #      e1       +-----+-----+         +-----+-----+         e3
-  #               |           |         |           |
-  #               e2          e3        e1          e2
-  
-  $p->replaceChild ($expr, $e1);
-  $p->appendChild ($e3);
-  $expr->appendChild ($e2);
-  $expr->insertBefore ($e1, $op);
-}
-
-
 
 sub makeBitReproducible
 {
@@ -104,9 +49,64 @@ sub processSingleModule
 
 }
 
+sub traverseAdditionSubstractionExpr
+{
+  my $expr = shift;
+
+  my ($e1, $e2) = &F ('./ANY-E', $expr);
+  my ($op) = &F ('./op', $expr);
+
+  return ($expr) unless ($e1 && $op && $e2);
+
+  my $ops = $op->textContent;
+
+  return ($expr) unless (($ops eq '+') || ($ops eq '-'));
+
+  return (&traverseAdditionSubstractionExpr ($e1), $op, &traverseAdditionSubstractionExpr ($e2));
+}
+
+sub addBitReproParens
+{
+  my $s = shift;
+
+
+  for my $expr (&F ('.//op-E[(string(./op)="+" or string (./op)="-") and count (./ANY-E)=2][not(parent::op-E[string(./op)="+" or string (./op)="-"])]', $s))
+    {
+      my @o = &traverseAdditionSubstractionExpr ($expr);
+  
+      my $e = shift (@o);
+  
+      while (my ($op, $e2) = splice (@o, 0, 2))
+        {
+          my $s = &n ('<op-E/>');
+          $s->appendChild ($_) for ($e, $op, $e2);
+  
+          if (@o)
+            {
+              my $p = &n ('<parens-E/>');
+              $p->appendChild ($_) for (&t ('('), $s, &t (')'));
+              $e = $p;
+            }
+          else
+            {
+              $e = $s;
+            }
+        }
+  
+      $expr->replaceNode ($e);
+    }
+
+
+}
+
 sub processSingleRoutine
 {
   my ($pu, %opts) = @_;
+
+my $dbg = $pu->textContent =~ m/computes the non-conservative variables/goms;
+
+print &Dumper ([$pu->toString]) if ($dbg);
+
 
   &Fxtran::Intrinsic::makeBitReproducible ($pu, %opts);
 
@@ -114,18 +114,7 @@ sub processSingleRoutine
 
   if ($opts{'use-bit-repro-parens'})
     {
-      for my $expr (&F ('.//op-E[string(./op)="-"]', $ep))
-        {
-          &wrapMinusWithParens ($expr);
-        }
-      for my $expr (&F ('.//op-E[string(./op)="+"]', $ep))
-        {
-          &reorderPlusExpr ($expr);
-        }
-      for my $expr (&F ('.//op-E[string(./op)="+"]', $ep))
-        {
-          &addParens ($expr);
-        }
+      &addBitReproParens ($ep);
     }
 
   &Fxtran::Call::addSuffix 
