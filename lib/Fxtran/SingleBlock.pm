@@ -165,6 +165,7 @@ EOF
       my $proc = shift; 
 
       return if ($proc eq 'ABOR1');
+      return if ($proc eq 'MXMAOPTR');
 
       if ($opts{'suffix-singlecolumn'})
         {
@@ -176,7 +177,6 @@ EOF
           my $nn = $s->nodeName;
           return if ($nn eq 'parallel-section');
           return if ($nn eq 'horizontal-section');
-          return if ($nn eq 'MXMAOPTR');
         }
 
       return 1;

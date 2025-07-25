@@ -11,10 +11,18 @@ sub processSingleRoutine
 {
   my ($pu, %opts) = @_;
 
-print $opts{style}, "\n";
-
   &Fxtran::SingleBlock::processSingleRoutine 
     ($pu, %opts, 'suffix-singleblock' => '_SINGLEBLOCK'); 
+
+
+  for my $hor (&F ('.//horizontal-section', $pu))
+    {
+      for my $call (&F ('.//call-stmt', $hor))
+        {
+          my ($argspec) = &F ('./arg-spec', $call); 
+          $argspec->appendChild ($_) for (&t (','), &n ('<arg><arg-N n="LDACC"><k>LDACC</k></arg-N>=' . &e ('LDACC') . '</arg>'));
+        }
+    }
 
 }
 
