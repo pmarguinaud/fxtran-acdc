@@ -48,7 +48,7 @@ $opts{include} = [split (m/,/o, $opts{include})];
 
 my @sys = qw (NVTX OMP_LIB CUDAFOR IEEE_ARITHMETIC ISO_C_BINDING OPENACC ECCODES CUBLAS ISO_FORTRAN_ENV);
 my @extern_mod = qw (YOMHOOK MPL_MODULE PARKIND1 OML_MOD EC_LUN MPL_MPIF MPL_MODULE MPL_BARRIER_MOD FIELD_MODULE 
-                     FIELD_FACTORY_MODULE FIELD_ACCESS_MODULE ABOR1_ACC_MOD STACK_MOD);
+                     FIELD_FACTORY_MODULE FIELD_ACCESS_MODULE ABOR1_ACC_MOD STACK_MOD FXTRAN_ACDC_GEMM_MOD);
 my @extern_inc = qw (setup_trans.h setup_trans0.h inv_trans.h gath_grid.h gath_spec.h dist_spec.h abor1.intfb.h stack.h);
 
 for my $mod (@extern_mod)
@@ -212,7 +212,7 @@ ifeq (\$(BUILD), )
 BUILD=.
 endif
 
-all: boot exe
+all: exe
 
 EOF
 
@@ -301,7 +301,7 @@ for my $F90 (@F90)
       }
 
     $fh->print (<< "EOF");
-$obj: \$(SRC)/$f90 @deps
+$obj: boot \$(SRC)/$f90 @deps
 	\$(FC) -o $obj -c \$(SRC)/$f90
 
 EOF
@@ -329,7 +329,7 @@ for my $C (<$opts{SRC}/*.c>)
     my $obj = &obj ($C);
     my $c = &basename ($C);
     $fh->print (<< "EOF");
-$obj: \$(SRC)/$c
+$obj: boot \$(SRC)/$c
 	\$(CC) -o $obj -c \$(SRC)/$c
 EOF
     push @obj, $obj;
@@ -343,7 +343,7 @@ for my $prg (@prg)
     my $exe = &exe ($prg);
     my $obj = &obj ($prg);
     $fh->print (<< "EOF");
-$exe: $obj @obj
+$exe: boot $obj @obj
 	\$(FC) -o $exe $obj @obj \$(LIBS)
 
 EOF
