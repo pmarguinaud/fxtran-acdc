@@ -171,8 +171,9 @@ EOF
     section => $do_jlon,
     suffix => $opts{'suffix-singlecolumn'},
     'merge-interfaces' => $opts{'merge-interfaces'},
+    match => sub { my $proc = shift; $proc->textContent ne 'ABOR1' },
   );
-  
+
   # Move loop over NPROMA into a loop over the blocks
   
   my ($do_jblk) = &fxtran::parse (fragment => << "EOF");
@@ -226,6 +227,12 @@ EOF
           $do_jblk, PRIVATE => ['JBLK'], VECTOR_LENGTH => [$nproma], ($LDACC ne '.TRUE.' ? (IF => [$LDACC]) : ()),
           $opts{'use-stack-manyblocks'} ? (PRESENT => \@pointer) : ()
         );
+    }
+
+
+  for my $abor1 (&F ('.//call-stmt/procedure-designator/named-E/N/n/text()[string(.)="ABOR1"]', $do_jlon))
+    {
+      $abor1->setData ('ABOR1_ACC');
     }
 
   return $do_jlon;
@@ -355,7 +362,7 @@ sub processSingleRoutine
     $pu,
     suffix => $opts{'suffix-manyblocks'},
     'merge-interfaces' => $opts{'merge-interfaces'},
-    match => sub { my $proc = shift; ! (($proc =~ m/$opts{'suffix-singlecolumn'}$/i) or ($proc eq 'ABOR1') or ($proc eq 'GETENV')) },
+    match => sub { my $proc = shift; ! (($proc =~ m/$opts{'suffix-singlecolumn'}$/i) or ($proc eq 'ABOR1') or ($proc eq 'ABOR1_ACC') or ($proc eq 'GETENV')) },
   );
 
   # Add KGPLKS argument to manyblock routines + add LDACC argument
@@ -486,6 +493,8 @@ NPROMA:
 
   &stackAllocateTemporaries ($pu, $var2dim, %opts)
     if ($opts{'use-stack-manyblocks'});
+
+  &Fxtran::Decl::use ($pu, 'USE ABOR1_ACC_MOD');
 }
 
 sub stackAllocateTemporaries
