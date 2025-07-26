@@ -13,6 +13,7 @@ use Fxtran::Pragma;
 use Fxtran::Finder;
 use Fxtran::Style;
 use Fxtran::Decl;
+use Fxtran::Dimension;
 use Fxtran;
 
 sub processSingleSection
@@ -242,6 +243,11 @@ sub processSingleRoutine
 {
   my ($pu, %opts) = @_;
 
+  if (%{ $opts{'fuse-outer-dimension-names'} })
+    {
+      &Fxtran::Dimension::fuseOuterDimensions ($pu, %opts);
+    }
+
   # Process ABORT sections
 
   for my $abort (&F ('.//abort-section', $pu))
@@ -381,7 +387,8 @@ sub processSingleRoutine
 
       for my $expr (&F ('./arg/named-E', $argspec))
         {
-          my ($N) = &F ('./N', $expr);
+          my ($N) = &F ('./N', $expr, 1);
+          next unless ($var2dim->{$N});
           if (my ($sslt) = &F ('./R-LT/array-R/section-subscript-LT', $expr))
             {
               $sslt->appendChild ($_) for (&t (','), &n ('<section-subscript>:</section-subscript>'));

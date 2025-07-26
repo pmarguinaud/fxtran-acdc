@@ -474,6 +474,7 @@ sub singleblock
   drhooktonvtx                    -- Change DrHook calls into NVTX calls
   inlined=s@                      -- List of routines to inline
   create-interface                -- Generate an interface file
+  fuse-outer-dimension-names=s%   -- Fuse outer dimensions
 EOF
 sub manyblocks
 {
