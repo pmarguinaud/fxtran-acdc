@@ -132,7 +132,7 @@ my %options= do
   suffix-manyblocks=s       -- Suffix for many blocks routines                                                                              --  _MANYBLOCKS
   ydcpg_opts                -- Change KIDIA, KFDIA -> YDCPG_OPTS, YDCPG_BNDS
   checker                   -- Sanity checks, produce a report
-  suffix-semiimplicit=s     -- Suffix for semi-implicit  routines                                                                           --  _SEMIIMPLICIT
+  suffix-semiimplicit=s     -- Suffix for semi-implicit  routines                                                                           --  _SINGLEBLOCK
   base                      -- Base directory for file search                                                                               -- .
   array-slice-to-address    -- Pass addresses of first array element instead of array slices
   use-stack-manyblocks      -- Use stack allocation for manyblocks routines
@@ -673,7 +673,7 @@ sub methods
 
 &click (<< "EOF");
 @options{qw (dir pragma tmp merge-interfaces suffix-singlecolumn suffix-singleblock suffix-pointerparallel suffix-manyblocks suffix-bitrepro
-             use-stack-manyblocks ydcpg_opts cycle)}
+             use-stack-manyblocks ydcpg_opts cycle suffix-semiimplicit)}
 EOF
 sub interface
 {
@@ -701,7 +701,7 @@ sub interface
 
   &Fxtran::Util::loadModule ('Fxtran::Generate::Interface');
 
-  my @method = qw (singlecolumn singleblock pointerparallel manyblocks bitrepro);
+  my @method = qw (singlecolumn singleblock pointerparallel manyblocks bitrepro semiimplicit);
 
   for my $method (@method)
     {
