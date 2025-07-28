@@ -377,6 +377,7 @@ sub singlecolumn
   use-acpy                        -- Avoid pointer aliasing using ACPY
   use-bcpy                        -- Avoid pointer aliasing using BCPY
   parallelmethod-section          -- Embed parallelmethod information in binary
+  create-interface                -- Generate an interface file
 EOF
 sub pointerparallel
 {
@@ -419,6 +420,11 @@ sub pointerparallel
     {
       &Fxtran::Util::loadModule ('Fxtran::Generate::ParallelMethod');
       &Fxtran::Generate::ParallelMethod::generateCCode ($d, $opts);
+    }
+
+  if ($opts->{'create-interface'})
+    {
+      $opts->{style}->generateInterface ($F90out, %$opts);
     }
 }
 

@@ -25,12 +25,13 @@ sub processSingleSection
   my $KGPBLKS    = $dims->{kgpblks};
   my $nproma     = $dims->{nproma};
   my $jlon       = $dims->{jlon};
-  my $kidia      = $dims->{kidia};
-  my $kfdia      = $dims->{kfdia};
-  my $kidia_call = $dims->{kidia_call};
-  my $kfdia_call = $dims->{kfdia_call};
-  my $pointer    = $dims->{pointer} || {};
-  my $optional   = $dims->{optional} || {};
+  my $kidia      = $dims->{kidia};          # KIDIA to be used in manyblocks kernels
+  my $kfdia      = $dims->{kfdia};          # KFDIA to be used in manyblocks kernels
+  my $kidia_call = $dims->{kidia_call};     # KIDIA to be used in OpenACC kernels
+  my $kfdia_call = $dims->{kfdia_call};     # KFDIA to be used in OpenACC kernels
+  my $pointer    = $dims->{pointer}  || {}; # Variable is NPROMA with pointer attribute
+  my $optional   = $dims->{optional} || {}; # Variable is NPROMA with optional attribute
+  my $argument   = $dims->{argument} || {}; # Variable is argument
 
   # Make the section single column
   
@@ -204,7 +205,7 @@ EOF
         {
           $type{$n}++;
         }
-      else
+      elsif (! $argument->{$n}) # Arguments cannot be PRIVATE
         {
           my $p = $expr->parentNode;
           $priv{$n}++ if (($p->nodeName eq 'E-1') || ($p->nodeName eq 'do-V'));
@@ -278,20 +279,23 @@ sub processSingleRoutine
   my $var2dim = &Fxtran::Loop::getVarToDim ($pu, style => $style);
   my $typearg = {};
   
+
+  my %argument;
+
   {
     # Derived types, assume they are present on the device
     my @typearg = &F ('./T-decl-stmt[./_T-spec_/derived-T-spec]/EN-decl-LT/EN-decl/EN-N', $dp, 1);
 
-    my @arg = &F ('./subroutine-stmt/dummy-arg-LT/arg-N', $pu, 1);
-    my %arg = map { ($_, 1) } @arg;
+    my @argument = &F ('./subroutine-stmt/dummy-arg-LT/arg-N', $pu, 1);
+    %argument = map { ($_, 1) } @argument;
 
-    $typearg = {map { ($_, 1) } grep { $arg{$_} } @typearg};
+    $typearg = {map { ($_, 1) } grep { $argument{$_} } @typearg};
 
     my %optional;
 
     if ($opts{'use-stack-manyblocks'})
       {
-        my @present = grep { $var2dim->{$_} || $typearg->{$_} } @arg;
+        my @present = grep { $var2dim->{$_} || $typearg->{$_} } @argument;
         # Allocate target variables with an ACC CREATE
 
         my (%target, %optional);
@@ -299,13 +303,13 @@ sub processSingleRoutine
         for my $n (sort (keys (%$var2dim)))
           {
             my ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(./EN-N)="?"]]', $n, $dp);
-            $target{$n}++ if ((! $arg{$n}) && &F ('./attribute[string(./attribute-N)="TARGET"]', $decl));
+            $target{$n}++ if ((! $argument{$n}) && &F ('./attribute[string(./attribute-N)="TARGET"]', $decl));
             $optional{$n}++ if (&F ('./attribute[string(./attribute-N)="OPTIONAL"]', $decl));
           }
 
         @present = grep { ! $optional{$_} } @present;
 
-        $pragma->insertData ($ep, PRESENT => \@present, CREATE => [grep { ! $arg{$_} } sort keys (%target)], IF => ['LDACC']);
+        $pragma->insertData ($ep, PRESENT => \@present, CREATE => [grep { ! $argument{$_} } sort keys (%target)], IF => ['LDACC']);
 
         for my $n (sort keys (%optional))
           {
@@ -315,8 +319,8 @@ sub processSingleRoutine
       }  
     else
       {
-        my @present = grep { $var2dim->{$_} || $typearg->{$_} } @arg;
-        my @create = grep { ! $arg{$_} } sort (keys (%$var2dim));
+        my @present = grep { $var2dim->{$_} || $typearg->{$_} } @argument;
+        my @create = grep { ! $argument{$_} } sort (keys (%$var2dim));
        
         # Create local arrays, assume argument arrays are on the device
         $pragma->insertData ($ep, PRESENT => \@present, CREATE => \@create, IF => ['LDACC']);
@@ -350,7 +354,7 @@ sub processSingleRoutine
   my %dims = (kgpblks => 'KGPBLKS', jlon => $style->jlon (), kidia => $style->kidia (), 
               kfdia => $style->kfdia (), nproma => $style->getActualNproma ($pu),
               kidia_call => $style->kidia (), kfdia_call => $style->kfdia (),
-              pointer => \%pointer, optional => \%optional);
+              pointer => \%pointer, optional => \%optional, argument => \%argument);
 
   # Parallel sections
 
