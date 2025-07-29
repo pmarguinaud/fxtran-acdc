@@ -481,6 +481,7 @@ sub singleblock
   inlined=s@                      -- List of routines to inline
   create-interface                -- Generate an interface file
   fuse-outer-dimension-names=s%   -- Fuse outer dimensions
+  not-present-types=s@            -- List of derived types not present on the device
 EOF
 sub manyblocks
 {

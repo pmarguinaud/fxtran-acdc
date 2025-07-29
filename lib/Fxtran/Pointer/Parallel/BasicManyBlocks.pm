@@ -14,6 +14,7 @@ use Fxtran::Pointer::Parallel;
 use Fxtran;
 use Fxtran::Message;
 use Fxtran::ManyBlocks;
+use Fxtran::ACPY;
 
 sub makeParallel
 {
@@ -85,6 +86,7 @@ sub makeParallel
         {
           $present{$n}++ if ($var2dim{$n} || $typearg{$n});
         }
+
     }
 
   my ($comp) = &F ('./comp', $par1);
@@ -138,6 +140,14 @@ sub makeParallel
 
       $argspec->appendChild ($_) for (&t (', '), &n ('<arg><arg-N><k>KGPBLKS</k></arg-N>=' . &e ($KGPBLKS) . '</arg>'));
 
+    }
+
+  for my $par (@par)
+    {
+      &Fxtran::ACPY::useAcpy ($par, %opts) 
+        if ($opts{'use-acpy'});
+      &Fxtran::ACPY::useBcpy ($par, %opts) 
+        if ($opts{'use-bcpy'});
     }
 
   return $par1;

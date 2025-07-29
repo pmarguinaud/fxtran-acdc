@@ -279,23 +279,29 @@ sub processSingleRoutine
   my $var2dim = &Fxtran::Loop::getVarToDim ($pu, style => $style);
   my $typearg = {};
   
+  my %notpresentttype = map { ($_, 1) } @{ $opts{'not-present-types'} }; # Types not present on the device
 
   my %argument;
 
   {
-    # Derived types, assume they are present on the device
-    my @typearg = &F ('./T-decl-stmt[./_T-spec_/derived-T-spec]/EN-decl-LT/EN-decl/EN-N', $dp, 1);
-
     my @argument = &F ('./subroutine-stmt/dummy-arg-LT/arg-N', $pu, 1);
     %argument = map { ($_, 1) } @argument;
 
-    $typearg = {map { ($_, 1) } grep { $argument{$_} } @typearg};
+    # Derived types, assume they are present on the device, except for those in %notpresentttype
+    my @typearg = &F ('./T-decl-stmt[./_T-spec_/derived-T-spec]/EN-decl-LT/EN-decl/EN-N', $dp, 1);
+    for my $decl (&F ('./T-decl-stmt[./_T-spec_/derived-T-spec]', $dp))
+      {
+        my ($N) = &F ('./EN-decl-LT/EN-decl/EN-N', $decl, 1);
+        my ($ts) = &F ('./_T-spec_/derived-T-spec/T-N', $decl, 1);
+        $typearg->{$N} = $ts if ($argument{$N});
+      }
 
     my %optional;
 
     if ($opts{'use-stack-manyblocks'})
       {
-        my @present = grep { $var2dim->{$_} || $typearg->{$_} } @argument;
+        my @present = grep { $var2dim->{$_} || ($typearg->{$_} && (! $notpresentttype{$typearg->{$_}})) } @argument;
+
         # Allocate target variables with an ACC CREATE
 
         my (%target, %optional);
@@ -365,7 +371,8 @@ sub processSingleRoutine
       &processSingleSection ($pu, $par, $var2dim, $typearg, \%dims, 'LDACC', %opts);
     }
   
-  # Add single block suffix to routines not called from within parallel sections
+  # Add many block suffix to routines not called from within parallel sections
+  # TODO : Improve this mechanism
 
   &Fxtran::Call::addSuffix 
   (
