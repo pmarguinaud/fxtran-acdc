@@ -179,7 +179,8 @@ sub routineToRoutineHead
   
   $opts->{find} = 'Fxtran::Finder'->new (files => $opts->{files}, base => $opts->{base}, I => $opts->{I});
   
-  &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 512));
+  &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 1024));
+  &fxtran::setOptions (qw (Statement -line-length 1024));
   
   my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -canonic), @fopts], dir => $opts->{tmp});
 
@@ -475,7 +476,7 @@ sub singleblock
 }
 
 &click (<< "EOF");
-@options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 stack-method style 
+@options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 stack-method style inline-contained
              suffix-singlecolumn suffix-manyblocks version checker array-slice-to-address use-stack-manyblocks)}
   drhooktonvtx                    -- Change DrHook calls into NVTX calls
   inlined=s@                      -- List of routines to inline

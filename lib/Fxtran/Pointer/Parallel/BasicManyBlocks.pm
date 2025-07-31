@@ -21,7 +21,8 @@ sub makeParallel
   shift;
   my ($pu, $par1, $t, %opts) = @_;
 
-  my $style = $opts{style};
+  my $style = $par1->getAttribute ('style');
+  $style = $style ? 'Fxtran::Style'->new (style => $style) : $opts{style};
 
   my @nproma = $style->nproma (); my %nproma = map { ($_, 1) } @nproma;
 
@@ -103,12 +104,26 @@ sub makeParallel
   my $LDACC = $opts{acc} ? &e ('.TRUE.') : &e ('.FALSE.');
   my $YDOFFSET = &e ('YLOFFSET');
 
+  my $KFDIA = "MIN ($KLON, $KGPTOT - ($KGPBLKS - 1) * $KLON)";
+
   for my $call (&F ('.//call-stmt', $comp))
     {
       my ($proc) = &F ('./procedure-designator/named-E/N/n/text()', $call);
 
       next if ($proc->textContent eq 'ABOR1');
       next if ($proc =~ m/$opts{'suffix-singlecolumn'}$/i);
+
+      if (my $it = $style->customIterator ())
+        {
+          my $it1 = $style->customIteratorCopy ();
+          $call->parentNode->insertBefore ($_, $call) for (&s ("$it1 = $it"), &t ("\n"));
+          my $kfdia = &e ($style->kfdia ());
+          for (&F ('./N/n/text()[string(.)="?"]', $it, $kfdia))
+            {
+              $_->setData ($it1);
+            }
+          $call->parentNode->insertBefore ($_, $call) for (&s ($kfdia->textContent . " = $KFDIA"), &t ("\n"));
+        }
 
       $proc->setData ($proc->textContent . $opts{'suffix-manyblocks'});
       my ($argspec) = &F ('./arg-spec', $call);
@@ -129,8 +144,7 @@ sub makeParallel
 
           if ($argt eq 'YDCPG_BNDS%KFDIA')
             {
-              my $kfdia = "MIN ($KLON, $KGPTOT - ($KGPBLKS - 1) * $KLON)";
-              $arg->replaceNode (&e ($kfdia));
+              $arg->replaceNode (&e ($KFDIA));
             }
           elsif ($n && $var2dim{$n} && (my ($sslt) = &F ('.//array-R/section-subscript-LT', $arg)))
             {

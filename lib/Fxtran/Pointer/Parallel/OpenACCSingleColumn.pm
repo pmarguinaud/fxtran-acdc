@@ -158,7 +158,6 @@ EOF
 
     }
 
-
   for my $N (&F ('.//named-E[R-LT/array-R/section-subscript-LT[string(section-subscript[1])=":"]]/N', $do))
     {
       next unless ($t->{$N->textContent}{isFieldAPI});    # Skip non-NPROMA stuff

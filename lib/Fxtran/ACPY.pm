@@ -78,9 +78,13 @@ sub useBcpy
       $E1 = $E1->textContent;
       $E2 = $E2->textContent;
 
-      $acpy->replaceNode (&s ("CALL BCPY ($jlon, " . 
+      my $call = "CALL BCPY ($jlon, " . 
             join (', ', map { "SIZE ($E1, $_)" } (1 .. 1 + scalar (@dd1))) .  ", $E1" . ', ' .
-            join (', ', map { "SIZE ($E2, $_)" } (1 .. 1 + scalar (@dd2))) .  ", $E2" . ')'));
+            join (', ', map { "SIZE ($E2, $_)" } (1 .. 1 + scalar (@dd2))) .  ", $E2" . ')';
+
+      $call = &s ($call);
+
+      $acpy->replaceNode ($call);
     }
 }
 
