@@ -2,7 +2,6 @@
 #define _STACK_N
 
 USE ABOR1_ACC_MOD
-USE PARKIND1, ONLY : JPRB
 
 #ifndef __INTEL_COMPILER
 #define stack_init(ydstack, ibl, nbl, ...) STACK (0, 0, 0, 0); CALL STACK_INIT (ydstack, YSTACK, ibl, nbl, ##__VA_ARGS__)
@@ -13,8 +12,6 @@ USE PARKIND1, ONLY : JPRB
 #define assoc(p,q) IP_##p##_ = LOC(q)
 
 #define nullptr(p) IP_##p##_ = 0
-
-#define alloc(n) IP_##n##_=YLSTACK%L;YLSTACK%L=YLSTACK%L+MAX(JPRB,KIND(n))*SIZE(n,KIND=8);IF(YLSTACK%L>YLSTACK%U)CALL ABOR1_ACC(__FILE__)
 
 #define stack_alloc(n) CALL STACK_ALLOC (YLSTACK, IP_##n##_, SIZE (n, KIND=8), KIND (n), __FILE__, __LINE__)
 
