@@ -158,11 +158,18 @@ sub processSingleRoutine
     }
   
   &Fxtran::Subroutine::rename ($pu, sub { return $_[0] . uc ($opts{'suffix-pointerparallel'}) });
-  
+
   # Add modules
   
-  my @use = qw (FIELD_MODULE FIELD_FACTORY_MODULE FIELD_ACCESS_MODULE YOMPARALLELMETHOD STACK_MOD YOMHOOK);
-  
+  my @use = qw (FIELD_MODULE FIELD_FACTORY_MODULE FIELD_ACCESS_MODULE YOMPARALLELMETHOD STACK_MOD YOMHOOK PARKIND1);
+ 
+  my ($up) = &F ('./specification-part/use-part', $pu);
+
+  for (&F ('./use-stmt[string(module-N)="PARKIND1"]', $up))
+    {
+      $_->unbindNode ();
+    }
+
   if ($opts{'use-acpy'} || $opts{'use-bcpy'})
     {
       push @use, 'ACPY_MOD';
