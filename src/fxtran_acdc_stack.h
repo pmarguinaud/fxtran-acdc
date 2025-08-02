@@ -1,7 +1,7 @@
 #ifndef _STACK_N
 #define _STACK_N
 
-USE FXTRAN_ABORT_MOD
+USE FXTRAN_ACDC_ABORT_MOD
 
 #ifdef __INTEL_COMPILER
 #define fxtran_acdc_stack_init(ydstack, ibl, nbl, ...) FXTRAN_ACDC_STACK (0, 0, 0, 0); CALL FXTRAN_ACDC_STACK_INIT (ydstack, YFXTRAN_ACDC_STACK, ibl, nbl, ##__VA_ARGS__)
