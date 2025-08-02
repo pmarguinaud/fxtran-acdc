@@ -367,11 +367,11 @@ sub processSingleRoutine
         }
     }
   
-  # include stack.h
+  # include fxtran_acdc_stack.h
   
   my ($implicit) = &F ('.//implicit-none-stmt', $pu);
   
-  $implicit->parentNode->insertBefore (&n ('<include>#include "<filename>stack.h</filename>"</include>'), $implicit);
+  $implicit->parentNode->insertBefore (&n ('<include>#include "<filename>fxtran_acdc_stack.h</filename>"</include>'), $implicit);
   $implicit->parentNode->insertBefore (&t ("\n"), $implicit);
 
 }

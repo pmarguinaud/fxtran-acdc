@@ -25,7 +25,7 @@ sub removeUnusedIncludes
       my ($filename) = &F ('./filename', $include, 2); 
       my $name = $filename;
       next if ($name =~ m/\.func\.h$/o);
-      next if ($name eq 'stack.h');
+      next if ($name eq 'fxtran_acdc_stack.h');
       for ($name)
         {
            s/\.intfb\.h$//o;
