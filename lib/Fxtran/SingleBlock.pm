@@ -191,10 +191,10 @@ EOF
   $implicit->parentNode->insertBefore (&t ("\n"), $implicit);
  
   &Fxtran::Decl::declare ($pu, 
-                          'TYPE (STACK) :: YLSTACK',
+                          'TYPE (FXTRAN_ACDC_STACK) :: YLSTACK',
                           'INTEGER :: ' . $jlon);
 
-  &Fxtran::Decl::use ($pu, 'USE STACK_MOD');
+  &Fxtran::Decl::use ($pu, 'USE FXTRAN_ACDC_STACK_MOD');
 
   
   my ($arglist) = &F ('./dummy-arg-LT', $pu->firstChild);

@@ -64,7 +64,7 @@ sub arraySliceToAddress
       
       my ($t) = &F ('./_T-spec_', $stmt, 1);
   
-      my $temp = &s ("temp ($t, ${n}_PTR, " . $as->textContent . ")");
+      my $temp = &s ("fxtran_acdc_temp ($t, ${n}_PTR, " . $as->textContent . ")");
   
       $dp->insertAfter ($_, $last)
         for ($temp, &t ("\n"));
@@ -79,9 +79,9 @@ sub arraySliceToAddress
         {
           ($assoc) = &fxtran::parse (fragment => << "EOF", fopts => [qw (-construct-tag)]);
 IF (PRESENT ($n)) THEN
-assoc (${n}_PTR, ${n})
+fxtran_acdc_assoc (${n}_PTR, ${n})
 ELSE
-nullptr (${n}_PTR)
+fxtran_acdc_nullptr (${n}_PTR)
 ENDIF
 EOF
 
@@ -90,7 +90,7 @@ EOF
         }
       else
         {
-          $assoc = &s ("assoc (${n}_PTR, ${n})");
+          $assoc = &s ("fxtran_acdc_assoc (${n}_PTR, ${n})");
         }
   
       $ep->insertBefore ($_, $ep->firstChild) 
@@ -266,7 +266,7 @@ sub processSingleRoutine
       &Fxtran::Interface::intfbBody ($pu->ownerDocument ());
       my ($end) = &F ('./end-subroutine-stmt', $pu);  
       my $ep = &n ('<execution-part/>');
-      my $abort = &s ('CALL ABOR1_ACC ("ERROR : WRONG SETTINGS")');
+      my $abort = &s ('CALL FXTRAN_ACDC_ABORT ("ERROR : WRONG SETTINGS")');
       $ep->appendChild ($abort);
       $end->parentNode->insertBefore ($_, $end) for ($ep, &t ("\n"));
     }

@@ -234,7 +234,7 @@ EOF
 
   for my $abor1 (&F ('.//call-stmt/procedure-designator/named-E/N/n/text()[string(.)="ABOR1"]', $do_jlon))
     {
-      $abor1->setData ('ABOR1_ACC');
+      $abor1->setData ('FXTRAN_ACDC_ABORT');
     }
 
   return $do_jlon;
@@ -379,7 +379,7 @@ sub processSingleRoutine
     $pu,
     suffix => $opts{'suffix-manyblocks'},
     'merge-interfaces' => $opts{'merge-interfaces'},
-    match => sub { my $proc = shift; ! (($proc =~ m/$opts{'suffix-singlecolumn'}$/i) or ($proc eq 'ABOR1') or ($proc eq 'ABOR1_ACC') or ($proc eq 'GETENV')) },
+    match => sub { my $proc = shift; ! (($proc =~ m/$opts{'suffix-singlecolumn'}$/i) or ($proc eq 'ABOR1') or ($proc eq 'FXTRAN_ACDC_ABORT') or ($proc eq 'GETENV')) },
   );
 
   # Add KGPLKS argument to manyblock routines + add LDACC argument
@@ -423,7 +423,7 @@ sub processSingleRoutine
 
     if ($opts{'use-stack-manyblocks'})
       {
-        $dp->insertAfter ($_, $decl) for (&s ("TYPE (STACK), INTENT (IN) :: YDOFFSET"), &t ("\n"));
+        $dp->insertAfter ($_, $decl) for (&s ("TYPE (FXTRAN_ACDC_STACK), INTENT (IN) :: YDOFFSET"), &t ("\n"));
         $dal->appendChild ($_) for (&t (", "), &n ("<arg-N>YDOFFSET</arg-N>"));
       }
   }
@@ -436,10 +436,10 @@ sub processSingleRoutine
   $implicit->parentNode->insertBefore (&t ("\n"), $implicit);
  
 
-  &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLSTACK0') if ($opts{'stack-method'});
-  &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLSTACK');
-  &Fxtran::Decl::declare ($pu, 'TYPE (STACK) :: YLOFFSET') if ($opts{'use-stack-manyblocks'});
-  &Fxtran::Decl::use ($pu, 'USE STACK_MOD');
+  &Fxtran::Decl::declare ($pu, 'TYPE (FXTRAN_ACDC_STACK) :: YLSTACK0') if ($opts{'stack-method'});
+  &Fxtran::Decl::declare ($pu, 'TYPE (FXTRAN_ACDC_STACK) :: YLSTACK');
+  &Fxtran::Decl::declare ($pu, 'TYPE (FXTRAN_ACDC_STACK) :: YLOFFSET') if ($opts{'use-stack-manyblocks'});
+  &Fxtran::Decl::use ($pu, 'USE FXTRAN_ACDC_STACK_MOD');
 
   # Add extra dimensions to all nproma arrays + make all array spec implicit
 
@@ -512,7 +512,7 @@ NPROMA:
   &stackAllocateTemporaries ($pu, $var2dim, %opts)
     if ($opts{'use-stack-manyblocks'});
 
-  &Fxtran::Decl::use ($pu, 'USE ABOR1_ACC_MOD');
+  &Fxtran::Decl::use ($pu, 'USE FXTRAN_ACDC_ABORT_MOD');
 }
 
 sub stackAllocateTemporaries
@@ -549,12 +549,12 @@ sub stackAllocateTemporaries
       next unless ($var2dim->{$n});
       my ($ts) = &F ('./_T-spec_', $decl, 1);
       my ($as) = &F ('./array-spec', $en_decl, 1);
-      $decl->replaceNode (&t ("temp ($ts, $n, $as)"));
+      $decl->replaceNode (&t ("fxtran_acdc_temp ($ts, $n, $as)"));
 
 
       if ($opts{'stack-method'})
         {
-          $ep->insertBefore ($_, $ep->firstChild) for (&t ("\n"), &s ("stack_alloc ($n)"));
+          $ep->insertBefore ($_, $ep->firstChild) for (&t ("\n"), &s ("fxtran_acdc_stack_alloc ($n)"));
         }
       else
         {
@@ -581,7 +581,7 @@ EOF
   if ($opts{'stack-method'})
     {
       # Before allocations : initialize YLSTACK, using YSTACK and YDOFFSET
-      for my $x (&t ("\n"), &s ("YLSTACK0 = YLSTACK"), &t ("\n"), &s ("YLSTACK = stack_init (YLSTACK, 1, 1, YDOFFSET)"))
+      for my $x (&t ("\n"), &s ("YLSTACK0 = YLSTACK"), &t ("\n"), &s ("YLSTACK = fxtran_acdc_stack_init (YLSTACK, 1, 1, YDOFFSET)"))
         {
           $ep->insertBefore ($x, $ep->firstChild);
         }
@@ -601,8 +601,8 @@ EOF
       for my $size (4, 8)
         {
      
-          for my $x (&t ("\n"), &s ("YLSTACK%L${size} = stack_l${size}_base (YSTACK, 1, 1, YDOFFSET)"),
-                     &t ("\n"), &s ("YLSTACK%U${size} = stack_u${size}_base (YSTACK, 1, 1, YDOFFSET)"))
+          for my $x (&t ("\n"), &s ("YLSTACK%L${size} = fxtran_acdc_stack_l${size}_base (YSTACK, 1, 1, YDOFFSET)"),
+                     &t ("\n"), &s ("YLSTACK%U${size} = fxtran_acdc_stack_u${size}_base (YSTACK, 1, 1, YDOFFSET)"))
             {
               $ep->insertBefore ($x, $ep->firstChild);
             }
@@ -614,8 +614,8 @@ EOF
       # After allocations, initialize YLOFFSET
      
       $ep->insertAfter ($_, $C) 
-         for (&t ("\n"), &s ("YLOFFSET%L8 = YLSTACK%L8 - stack_l8_base (YSTACK, 1, 1, YDOFFSET) + YDOFFSET%L8"),
-              &t ("\n"), &s ("YLOFFSET%L4 = YLSTACK%L4 - stack_l4_base (YSTACK, 1, 1, YDOFFSET) + YDOFFSET%L4"));
+         for (&t ("\n"), &s ("YLOFFSET%L8 = YLSTACK%L8 - fxtran_acdc_stack_l8_base (YSTACK, 1, 1, YDOFFSET) + YDOFFSET%L8"),
+              &t ("\n"), &s ("YLOFFSET%L4 = YLSTACK%L4 - fxtran_acdc_stack_l4_base (YSTACK, 1, 1, YDOFFSET) + YDOFFSET%L4"));
      
       $C->unbindNode ();
     }

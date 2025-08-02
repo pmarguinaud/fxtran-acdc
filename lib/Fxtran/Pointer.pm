@@ -70,12 +70,12 @@ sub handleAssociations
       for my $assoc (@assoc)
         {
           my ($pointee) = &F ('./E-2/named-E/N', $assoc, 1);
-          $assoc->replaceNode (&s ("assoc ($pointer, $pointee)"));
+          $assoc->replaceNode (&s ("fxtran_acdc_assoc ($pointer, $pointee)"));
         }
       my @nullify = &F ('.//nullify-stmt[./arg-spec/arg/named-E[string(N)="?"]]', $pointer, $ep);
       for my $nullify (@nullify)
         {
-          $nullify->replaceNode (&s ("nullptr ($pointer)"));
+          $nullify->replaceNode (&s ("fxtran_acdc_nullptr ($pointer)"));
         }
     }
 }

@@ -30,7 +30,7 @@ sub useABOR1_ACC
 
   for my $abor1 (@abor1)
     {
-      $abor1->setData ('ABOR1_ACC');
+      $abor1->setData ('FXTRAN_ACDC_ABORT');
     }
 
   if ($dp)
@@ -92,7 +92,7 @@ sub changePRINT_MSGintoPRINT
 
       if ($arg[0]->textContent eq 'NVERB_FATAL')
         {
-          $print_msg->replaceNode (&s ("CALL ABOR1_ACC (" . $mess->textContent . ")"));
+          $print_msg->replaceNode (&s ("CALL FXTRAN_ACDC_ABORT (" . $mess->textContent . ")"));
         }
       else
         {
