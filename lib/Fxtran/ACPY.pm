@@ -41,7 +41,7 @@ sub useAcpy
       $lb1[0]->replaceNode (&n ('<section-subscript>:</section-subscript>'));
       $lb2[0]->replaceNode (&n ('<section-subscript>:</section-subscript>'));
 
-      $acpy->replaceNode (&s ("CALL ACPY ($jlon, " . $E1->textContent . ', ' . $E2->textContent . ')'));
+      $acpy->replaceNode (&s ("CALL FXTRAN_ACDC_ARRAY_COPY ($jlon, " . $E1->textContent . ', ' . $E2->textContent . ')'));
     }
 }
 
@@ -78,7 +78,7 @@ sub useBcpy
       $E1 = $E1->textContent;
       $E2 = $E2->textContent;
 
-      my $call = "CALL BCPY ($jlon, " . 
+      my $call = "CALL FXTRAN_ACDC_ARRAY_COPY ($jlon, " . 
             join (', ', map { "SIZE ($E1, $_)" } (1 .. 1 + scalar (@dd1))) .  ", $E1" . ', ' .
             join (', ', map { "SIZE ($E2, $_)" } (1 .. 1 + scalar (@dd2))) .  ", $E2" . ')';
 

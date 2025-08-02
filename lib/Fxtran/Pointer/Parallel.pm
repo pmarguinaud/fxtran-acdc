@@ -113,7 +113,7 @@ EOF
         }
       
       my ($cond) = &F ('./ANY-stmt/condition-E/ANY-E', $block);
-      $cond->replaceNode (&e ("LPARALLELMETHOD ('$target','$NAME:$name')"));
+      $cond->replaceNode (&e ("FXTRAN_ACDC_LPARALLELMETHOD ('$target','$NAME:$name')"));
 
       my ($C) = &F ('./C', $block);
 
@@ -161,7 +161,7 @@ sub processSingleRoutine
 
   # Add modules
   
-  my @use = qw (FIELD_MODULE FIELD_FACTORY_MODULE FIELD_ACCESS_MODULE YOMPARALLELMETHOD STACK_MOD YOMHOOK PARKIND1);
+  my @use = qw (FIELD_MODULE FIELD_FACTORY_MODULE FIELD_ACCESS_MODULE FXTRAN_ACDC_PARALLELMETHOD_MOD STACK_MOD YOMHOOK PARKIND1);
  
   my ($up) = &F ('./specification-part/use-part', $pu);
 
@@ -172,7 +172,7 @@ sub processSingleRoutine
 
   if ($opts{'use-acpy'} || $opts{'use-bcpy'})
     {
-      push @use, 'ACPY_MOD';
+      push @use, 'FXTRAN_ACDC_ARRAY_COPY_MOD';
     }
   
   &Fxtran::Decl::use ($pu, map { "USE $_" } @use);
@@ -899,7 +899,7 @@ EOF
   if ($POST{synchost}) 
     {
       my ($if_construct) = &fxtran::parse (fragment => << "EOF");
-IF (LSYNCHOST ('$NAME')) THEN
+IF (FXTRAN_ACDC_LSYNCHOST ('$NAME')) THEN
 ENDIF
 EOF
       $par->insertAfter ($if_construct, $loop);

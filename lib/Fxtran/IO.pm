@@ -610,7 +610,7 @@ sub processTypes1
             }
         }
 
-      $USE{crc64} .= "USE CRC64_INTRINSIC, ONLY : FCRC64 => CRC64\n";
+      $USE{crc64} .= "USE FXTRAN_ACDC_CRC64_INTRINSIC, ONLY : FCRC64 => FXTRAN_ACDC_CRC64\n";
 
       for (values (%USE), values (%DECL))
         {
