@@ -54,22 +54,22 @@ sub makeBitReproducibleSection
       my ($n) = &F ('./N/n/text()', $expr);
       my $t = $n->textContent;
       next unless ($BR{$t});
-      $n->setData ("BR_$t");
-      $brlist->{"BR_$t"} = 1;
+      $n->setData ("FXTRAN_ACDC_BR_$t");
+      $brlist->{"FXTRAN_ACDC_BR_$t"} = 1;
       $count++;
     }
 
   for my $expr (&F ('.//op-E[string(./op)="**"]', $s))
     {
       my ($op1, $op2) = &F ('./ANY-E', $expr);
-      my $e = &n ('<named-E><N><n>BR_POW</n></N>' 
+      my $e = &n ('<named-E><N><n>FXTRAN_ACDC_BR_POW</n></N>' 
                 . '<R-LT><function-R>(<element-LT>'
                 . join (', ', map { '<element>' . $_ . '</element>' } ($op1, $op2))
                 . '</element-LT>)</function-R></R-LT></named-E>');
 
       $expr->replaceNode ($e);
 
-      $brlist->{'BR_POW'} = 1;
+      $brlist->{'FXTRAN_ACDC_BR_POW'} = 1;
       $count++;
     }
 
@@ -161,7 +161,7 @@ sub makeBitReproducible
 
   if ((%$brlist) && (! $opts{contained}))
     {
-      &Fxtran::Decl::use ($pu, 'USE BR_INTRINSICS, ONLY : ' . join (', ', sort keys (%$brlist)));
+      &Fxtran::Decl::use ($pu, 'USE FXTRAN_ACDC_BR_INTRINSICS, ONLY : ' . join (', ', sort keys (%$brlist)));
     }
 
 }

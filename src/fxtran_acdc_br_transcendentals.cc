@@ -14,7 +14,7 @@
 # define __BITREPFMA(a,b,c) (a*b + c)
 #endif
 
-namespace bitrep
+namespace fxtran_acdc_br
 {
 
 /*************
@@ -1096,45 +1096,45 @@ double log_gamma
 }
 
 
-} // End of namespace bitrep
+} // End of namespace fxtran_acdc_br
 
 // Implement C interface
 extern "C"
 {
 #pragma acc routine seq
-double br_sin  (double x) { return bitrep::sin  (x); }
+double fxtran_acdc_br_sin  (double x) { return fxtran_acdc_br::sin  (x); }
 #pragma acc routine seq
-double br_cos  (double x) { return bitrep::cos  (x); }
+double fxtran_acdc_br_cos  (double x) { return fxtran_acdc_br::cos  (x); }
 #pragma acc routine seq
-double br_tan  (double x) { return bitrep::tan  (x); }
+double fxtran_acdc_br_tan  (double x) { return fxtran_acdc_br::tan  (x); }
 #pragma acc routine seq
-double br_asin (double x) { return bitrep::asin (x); }
+double fxtran_acdc_br_asin (double x) { return fxtran_acdc_br::asin (x); }
 #pragma acc routine seq
-double br_acos (double x) { return bitrep::acos (x); }
+double fxtran_acdc_br_acos (double x) { return fxtran_acdc_br::acos (x); }
 #pragma acc routine seq
-double br_atan (double x) { return bitrep::atan (x); }
+double fxtran_acdc_br_atan (double x) { return fxtran_acdc_br::atan (x); }
 #pragma acc routine seq
-double br_sinh (double x) { return bitrep::sinh (x); }
+double fxtran_acdc_br_sinh (double x) { return fxtran_acdc_br::sinh (x); }
 #pragma acc routine seq
-double br_cosh (double x) { return bitrep::cosh (x); }
+double fxtran_acdc_br_cosh (double x) { return fxtran_acdc_br::cosh (x); }
 #pragma acc routine seq
-double br_tanh (double x) { return bitrep::tanh (x); }
+double fxtran_acdc_br_tanh (double x) { return fxtran_acdc_br::tanh (x); }
 #pragma acc routine seq
-double br_asinh(double x) { return bitrep::asinh(x); }
+double fxtran_acdc_br_asinh(double x) { return fxtran_acdc_br::asinh(x); }
 #pragma acc routine seq
-double br_acosh(double x) { return bitrep::acosh(x); }
+double fxtran_acdc_br_acosh(double x) { return fxtran_acdc_br::acosh(x); }
 #pragma acc routine seq
-double br_atanh(double x) { return bitrep::atanh(x); }
+double fxtran_acdc_br_atanh(double x) { return fxtran_acdc_br::atanh(x); }
 #pragma acc routine seq
-double br_log  (double x) { return bitrep::log  (x); }
+double fxtran_acdc_br_log  (double x) { return fxtran_acdc_br::log  (x); }
 #pragma acc routine seq
-double br_log1p(double x) { return bitrep::log1p(x); }
+double fxtran_acdc_br_log1p(double x) { return fxtran_acdc_br::log1p(x); }
 #pragma acc routine seq
-double br_exp  (double x) { return bitrep::exp  (x); }
+double fxtran_acdc_br_exp  (double x) { return fxtran_acdc_br::exp  (x); }
 #pragma acc routine seq
-double br_erf  (double x) { return bitrep::erf  (x); }
+double fxtran_acdc_br_erf  (double x) { return fxtran_acdc_br::erf  (x); }
 #pragma acc routine seq
-double br_gamma  (double x) { return bitrep::gamma  (x); }
+double fxtran_acdc_br_gamma  (double x) { return fxtran_acdc_br::gamma  (x); }
 #pragma acc routine seq
-double br_log_gamma  (double x) { return bitrep::log_gamma  (x); }
+double fxtran_acdc_br_log_gamma  (double x) { return fxtran_acdc_br::log_gamma  (x); }
 }
