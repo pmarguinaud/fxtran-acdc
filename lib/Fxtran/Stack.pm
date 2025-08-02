@@ -154,7 +154,7 @@ sub addStack
 
   $declOfLastArg = $declOfYDSTACK;
 
-  for my $n (&n ("<include>#include &quot;<filename>fxtran_acdc_stack.h</filename>&quot;</include>"), &s ("USE STACK_MOD"), &s ("USE FXTRAN_ACDC_ABORT_MOD"))
+  for my $n (&n ("<include>#include &quot;<filename>fxtran_acdc_stack.h</filename>&quot;</include>"), &s ("USE FXTRAN_ACDC_STACK_MOD"), &s ("USE FXTRAN_ACDC_ABORT_MOD"))
     {
       $up->appendChild (&t ("\n"));
       $up->appendChild ($n);
