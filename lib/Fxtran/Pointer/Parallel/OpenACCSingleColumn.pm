@@ -208,7 +208,7 @@ EOF
   $opts{pragma}->insertParallelLoopGang ($do_jblk, 
                                          PRIVATE => ['JBLK'], 
                                          COPYIN => \@copyin,
-                                         PRESENT => [@NPROMA, @const, 'YSTACK'], 
+                                         PRESENT => [@NPROMA, @const, 'YFXTRAN_ACDC_STACK'], 
                                          VECTOR_LENGTH => ['YDCPG_OPTS%KLON']);
 
   &Fxtran::Print::useABOR1_ACC ($do_jlon);

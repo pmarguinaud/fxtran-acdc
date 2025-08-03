@@ -284,6 +284,7 @@ sub indent
     {
       my $name = $stmt->nodeName;
       next if ($name eq 'broken-stmt'); 
+      next if ($stmt->textContent =~ m/fxtran_acdc_stack/o);
 
       if ($name eq 'implicit-none-stmt')
         {

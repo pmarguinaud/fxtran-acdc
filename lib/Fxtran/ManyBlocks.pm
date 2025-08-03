@@ -560,9 +560,9 @@ sub stackAllocateTemporaries
         {
           my ($if) = &fxtran::parse (fragment => << "EOF");
 IF (KIND ($n) == 8) THEN
-  alloc8 ($n)
+  fxtran_acdc_alloc8 ($n)
 ELSEIF (KIND ($n) == 4) THEN
-  alloc4 ($n)
+  fxtran_acdc_alloc4 ($n)
 ELSE
   STOP 1
 ENDIF
@@ -601,8 +601,8 @@ EOF
       for my $size (4, 8)
         {
      
-          for my $x (&t ("\n"), &s ("YLSTACK%L${size} = fxtran_acdc_stack_l${size}_base (YSTACK, 1, 1, YDOFFSET)"),
-                     &t ("\n"), &s ("YLSTACK%U${size} = fxtran_acdc_stack_u${size}_base (YSTACK, 1, 1, YDOFFSET)"))
+          for my $x (&t ("\n"), &s ("YLSTACK%L${size} = fxtran_acdc_stack_l${size}_base (YFXTRAN_ACDC_STACK, 1, 1, YDOFFSET)"),
+                     &t ("\n"), &s ("YLSTACK%U${size} = fxtran_acdc_stack_u${size}_base (YFXTRAN_ACDC_STACK, 1, 1, YDOFFSET)"))
             {
               $ep->insertBefore ($x, $ep->firstChild);
             }
@@ -614,8 +614,8 @@ EOF
       # After allocations, initialize YLOFFSET
      
       $ep->insertAfter ($_, $C) 
-         for (&t ("\n"), &s ("YLOFFSET%L8 = YLSTACK%L8 - fxtran_acdc_stack_l8_base (YSTACK, 1, 1, YDOFFSET) + YDOFFSET%L8"),
-              &t ("\n"), &s ("YLOFFSET%L4 = YLSTACK%L4 - fxtran_acdc_stack_l4_base (YSTACK, 1, 1, YDOFFSET) + YDOFFSET%L4"));
+         for (&t ("\n"), &s ("YLOFFSET%L8 = YLSTACK%L8 - fxtran_acdc_stack_l8_base (YFXTRAN_ACDC_STACK, 1, 1, YDOFFSET) + YDOFFSET%L8"),
+              &t ("\n"), &s ("YLOFFSET%L4 = YLSTACK%L4 - fxtran_acdc_stack_l4_base (YFXTRAN_ACDC_STACK, 1, 1, YDOFFSET) + YDOFFSET%L4"));
      
       $C->unbindNode ();
     }

@@ -31,17 +31,17 @@ sub iniStackSingleBlock
         {
           for my $size (4, 8)
             {
-              $do_jlon->insertAfter (&s ("YLSTACK%U${size} = fxtran_acdc_stack_u${size} (YSTACK, 1, 1)"), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&s ("YLSTACK%U${size} = fxtran_acdc_stack_u${size} (YFXTRAN_ACDC_STACK, 1, 1)"), $do_jlon->firstChild);
               $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
-              $do_jlon->insertAfter (&s ("YLSTACK%L${size} = fxtran_acdc_stack_l${size} (YSTACK, 1, 1)"), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&s ("YLSTACK%L${size} = fxtran_acdc_stack_l${size} (YFXTRAN_ACDC_STACK, 1, 1)"), $do_jlon->firstChild);
               $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
             }
         }
       else
         {
-          $do_jlon->insertAfter (&s ("YLSTACK%U = fxtran_acdc_stack_u (YSTACK, 1, 1)"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&s ("YLSTACK%U = fxtran_acdc_stack_u (YFXTRAN_ACDC_STACK, 1, 1)"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&s ("YLSTACK%L = fxtran_acdc_stack_l (YSTACK, 1, 1)"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&s ("YLSTACK%L = fxtran_acdc_stack_l (YFXTRAN_ACDC_STACK, 1, 1)"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
         }
     }
@@ -69,18 +69,18 @@ sub iniStackManyBlocks
           for my $size (4, 8)
             {
               my $base = $YDOFFSET ? '_base' : ''; my $ydoffset = $YDOFFSET ? ", $YDOFFSET" : "";
-              $do_jlon->insertAfter (&s ("YLSTACK%U${size} = fxtran_acdc_stack_u${size}${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS$ydoffset)"), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&s ("YLSTACK%U${size} = fxtran_acdc_stack_u${size}${base} (YFXTRAN_ACDC_STACK, (JBLK-$JBLKMIN)+1, $KGPBLKS$ydoffset)"), $do_jlon->firstChild);
               $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
-              $do_jlon->insertAfter (&s ("YLSTACK%L${size} = fxtran_acdc_stack_l${size}${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS$ydoffset)"), $do_jlon->firstChild);
+              $do_jlon->insertAfter (&s ("YLSTACK%L${size} = fxtran_acdc_stack_l${size}${base} (YFXTRAN_ACDC_STACK, (JBLK-$JBLKMIN)+1, $KGPBLKS$ydoffset)"), $do_jlon->firstChild);
               $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
             }
         }
       else
         {
           my $base = $YDOFFSET ? '_base' : ''; my $ydoffset = $YDOFFSET ? ", $YDOFFSET" : "";
-          $do_jlon->insertAfter (&s ("YLSTACK%U = fxtran_acdc_stack_u${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS$ydoffset)"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&s ("YLSTACK%U = fxtran_acdc_stack_u${base} (YFXTRAN_ACDC_STACK, (JBLK-$JBLKMIN)+1, $KGPBLKS$ydoffset)"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
-          $do_jlon->insertAfter (&s ("YLSTACK%L = fxtran_acdc_stack_l${base} (YSTACK, (JBLK-$JBLKMIN)+1, $KGPBLKS$ydoffset)"), $do_jlon->firstChild);
+          $do_jlon->insertAfter (&s ("YLSTACK%L = fxtran_acdc_stack_l${base} (YFXTRAN_ACDC_STACK, (JBLK-$JBLKMIN)+1, $KGPBLKS$ydoffset)"), $do_jlon->firstChild);
           $do_jlon->insertAfter (&t ("\n"), $do_jlon->firstChild);
         }
     }
@@ -193,9 +193,9 @@ sub addStack
                 {
                   my ($if) = &fxtran::parse (fragment => << "EOF");
 IF (KIND ($n) == 8) THEN
-  alloc8 ($n)
+  fxtran_acdc_alloc8 ($n)
 ELSEIF (KIND ($n) == 4) THEN
-  alloc4 ($n)
+  fxtran_acdc_alloc4 ($n)
 ELSE
   STOP 1
 ENDIF
@@ -205,7 +205,7 @@ EOF
                }
              else
                {
-                 $ep->insertBefore (&t ("\nalloc ($n)\n"), $ep->firstChild);
+                 $ep->insertBefore (&t ("\nfxtran_acdc_alloc ($n)\n"), $ep->firstChild);
                }
 
               $needYLSTACK++;
