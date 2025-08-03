@@ -15,8 +15,8 @@ USE FXTRAN_ACDC_ABORT_MOD
 
 #define fxtran_acdc_stack_alloc(n) CALL FXTRAN_ACDC_STACK_ALLOC (YLSTACK, IP_##n##_, SIZE (n, KIND=8), KIND (n), __FILE__, __LINE__)
 
-#define fxtran_acdc_alloc4(n) IP_##n##_=YLSTACK%L4;YLSTACK%L4=YLSTACK%L4+4*SIZE(n,KIND=8);IF(YLSTACK%L4>YLSTACK%U4)CALL FXTRAN_ABORT(__FILE__)
-#define fxtran_acdc_alloc8(n) IP_##n##_=YLSTACK%L8;YLSTACK%L8=YLSTACK%L8+8*SIZE(n,KIND=8);IF(YLSTACK%L8>YLSTACK%U8)CALL FXTRAN_ABORT(__FILE__)
+#define fxtran_acdc_alloc4(n) IP_##n##_=YLSTACK%L4;YLSTACK%L4=YLSTACK%L4+4*SIZE(n,KIND=8);IF(YLSTACK%L4>YLSTACK%U4)CALL FXTRAN_ACDC_ABORT(__FILE__)
+#define fxtran_acdc_alloc8(n) IP_##n##_=YLSTACK%L8;YLSTACK%L8=YLSTACK%L8+8*SIZE(n,KIND=8);IF(YLSTACK%L8>YLSTACK%U8)CALL FXTRAN_ACDC_ABORT(__FILE__)
 
 #define fxtran_acdc_malign(p,k) ((((p)+(k)-1)/(k)) * (k))
 
