@@ -6,9 +6,9 @@ USE MODEL_PHYSICS_MF_MOD,ONLY:MODEL_PHYSICS_MF_TYPE
 USE PARKIND1,ONLY:JPIM, JPRB, JPRD
 
 USE YOMCST,ONLY:TCST
-#include "stack.h"
-USE STACK_MOD
-USE ABOR1_ACC_MOD
+#include "fxtran_acdc_stack.h"
+USE FXTRAN_ACDC_STACK_MOD
+USE FXTRAN_ACDC_ABORT_MOD
 
 IMPLICIT NONE
 
@@ -35,8 +35,8 @@ REAL (KIND=JPRB), INTENT (IN)::PVRLDI (KLON)
 REAL (KIND=JPRB), INTENT (OUT)::PSTRDU (KLON, 0:KLEV)
 REAL (KIND=JPRB), INTENT (OUT)::PSTRDV (KLON, 0:KLEV)
 REAL (KIND=JPRB), INTENT (OUT)::PRAPTRAJ (KLON, 0:KLEV)
-TYPE(STACK), INTENT (IN) :: YDSTACK
-TYPE(STACK) :: YLSTACK
+TYPE(FXTRAN_ACDC_STACK), INTENT (IN) :: YDSTACK
+TYPE(FXTRAN_ACDC_STACK) :: YLSTACK
 REAL (KIND=JPRB)::ZZCV 
 REAL (KIND=JPRB)::ZZCU 
 REAL (KIND=JPRB)::ZZCR 
@@ -65,13 +65,13 @@ REAL (KIND=JPRB)::ZOBST
 REAL (KIND=JPRB)::ZFACS 
 REAL (KIND=JPRB)::ZDS2 
 REAL (KIND=JPRB)::ZDS1 
-temp (REAL (KIND=JPRB), ZWGHT, (KLON, 0:KLEV))
-temp (REAL (KIND=JPRB), ZV, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZU, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZRAPP, (KLON, 0:KLEV))
-temp (REAL (KIND=JPRB), ZPOID, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZNFNO, (KLON, 0:KLEV))
-temp (REAL (KIND=JPRB), ZIPOI, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZWGHT, (KLON, 0:KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZV, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZU, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZRAPP, (KLON, 0:KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZPOID, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZNFNO, (KLON, 0:KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZIPOI, (KLON, KLEV))
 INTEGER (KIND=JPIM)::JLON
 INTEGER (KIND=JPIM)::JLEV
 INTEGER (KIND=JPIM)::ITOP
@@ -125,63 +125,63 @@ YLSTACK = YDSTACK
 
 
 IF (KIND (ZWGHT) == 8) THEN
-    alloc8 (ZWGHT)
+    fxtran_acdc_alloc8 (ZWGHT)
 ELSEIF (KIND (ZWGHT) == 4) THEN
-    alloc4 (ZWGHT)
+    fxtran_acdc_alloc4 (ZWGHT)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZV) == 8) THEN
-    alloc8 (ZV)
+    fxtran_acdc_alloc8 (ZV)
 ELSEIF (KIND (ZV) == 4) THEN
-    alloc4 (ZV)
+    fxtran_acdc_alloc4 (ZV)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZU) == 8) THEN
-    alloc8 (ZU)
+    fxtran_acdc_alloc8 (ZU)
 ELSEIF (KIND (ZU) == 4) THEN
-    alloc4 (ZU)
+    fxtran_acdc_alloc4 (ZU)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZRAPP) == 8) THEN
-    alloc8 (ZRAPP)
+    fxtran_acdc_alloc8 (ZRAPP)
 ELSEIF (KIND (ZRAPP) == 4) THEN
-    alloc4 (ZRAPP)
+    fxtran_acdc_alloc4 (ZRAPP)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZPOID) == 8) THEN
-    alloc8 (ZPOID)
+    fxtran_acdc_alloc8 (ZPOID)
 ELSEIF (KIND (ZPOID) == 4) THEN
-    alloc4 (ZPOID)
+    fxtran_acdc_alloc4 (ZPOID)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZNFNO) == 8) THEN
-    alloc8 (ZNFNO)
+    fxtran_acdc_alloc8 (ZNFNO)
 ELSEIF (KIND (ZNFNO) == 4) THEN
-    alloc4 (ZNFNO)
+    fxtran_acdc_alloc4 (ZNFNO)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZIPOI) == 8) THEN
-    alloc8 (ZIPOI)
+    fxtran_acdc_alloc8 (ZIPOI)
 ELSEIF (KIND (ZIPOI) == 4) THEN
-    alloc4 (ZIPOI)
+    fxtran_acdc_alloc4 (ZIPOI)
 ELSE
     STOP 1
 ENDIF

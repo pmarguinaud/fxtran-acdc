@@ -11,9 +11,9 @@ SUBROUTINE THL_RT_FROM_TH_R_MF_OPENACC (D, CST, KRR, KRRL, KRRI, PTH, PR, PEXN, 
 USE MODD_DIMPHYEX,ONLY:DIMPHYEX_T
 USE MODD_CST,ONLY:CST_T
 
-#include "stack.h"
-USE STACK_MOD
-USE ABOR1_ACC_MOD
+#include "fxtran_acdc_stack.h"
+USE FXTRAN_ACDC_STACK_MOD
+USE FXTRAN_ACDC_ABORT_MOD
 
 IMPLICIT NONE
 
@@ -27,12 +27,12 @@ REAL, INTENT (IN)::PR(D%NIJT, D%NKT, KRR)
 REAL, INTENT (IN)::PEXN(D%NIJT, D%NKT)
 REAL, INTENT (OUT)::PTHL(D%NIJT, D%NKT)
 REAL, INTENT (OUT)::PRT(D%NIJT, D%NKT)
-TYPE(STACK), INTENT (IN) :: YDSTACK
-TYPE(STACK) :: YLSTACK
-temp (REAL, ZT, (D%NIJT, D%NKT))
-temp (REAL, ZCP, (D%NIJT, D%NKT))
-temp (REAL, ZLSOCPEXN, (D%NIJT, D%NKT))
-temp (REAL, ZLVOCPEXN, (D%NIJT, D%NKT))
+TYPE(FXTRAN_ACDC_STACK), INTENT (IN) :: YDSTACK
+TYPE(FXTRAN_ACDC_STACK) :: YLSTACK
+fxtran_acdc_temp (REAL, ZT, (D%NIJT, D%NKT))
+fxtran_acdc_temp (REAL, ZCP, (D%NIJT, D%NKT))
+fxtran_acdc_temp (REAL, ZLSOCPEXN, (D%NIJT, D%NKT))
+fxtran_acdc_temp (REAL, ZLVOCPEXN, (D%NIJT, D%NKT))
 INTEGER::JK
 INTEGER::JI
 INTEGER::JRR
@@ -46,36 +46,36 @@ YLSTACK = YDSTACK
 
 
 IF (KIND (ZT) == 8) THEN
-    alloc8 (ZT)
+    fxtran_acdc_alloc8 (ZT)
 ELSEIF (KIND (ZT) == 4) THEN
-    alloc4 (ZT)
+    fxtran_acdc_alloc4 (ZT)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZCP) == 8) THEN
-    alloc8 (ZCP)
+    fxtran_acdc_alloc8 (ZCP)
 ELSEIF (KIND (ZCP) == 4) THEN
-    alloc4 (ZCP)
+    fxtran_acdc_alloc4 (ZCP)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLSOCPEXN) == 8) THEN
-    alloc8 (ZLSOCPEXN)
+    fxtran_acdc_alloc8 (ZLSOCPEXN)
 ELSEIF (KIND (ZLSOCPEXN) == 4) THEN
-    alloc4 (ZLSOCPEXN)
+    fxtran_acdc_alloc4 (ZLSOCPEXN)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLVOCPEXN) == 8) THEN
-    alloc8 (ZLVOCPEXN)
+    fxtran_acdc_alloc8 (ZLVOCPEXN)
 ELSEIF (KIND (ZLVOCPEXN) == 4) THEN
-    alloc4 (ZLVOCPEXN)
+    fxtran_acdc_alloc4 (ZLVOCPEXN)
 ELSE
     STOP 1
 ENDIF

@@ -6,9 +6,9 @@ USE PARKIND1,ONLY:JPIM, JPRB
 
 USE YOMPHY2,ONLY:TPHY2
 USE YOMCST,ONLY:TCST
-#include "stack.h"
-USE STACK_MOD
-USE ABOR1_ACC_MOD
+#include "fxtran_acdc_stack.h"
+USE FXTRAN_ACDC_STACK_MOD
+USE FXTRAN_ACDC_ABORT_MOD
 
 IMPLICIT NONE
 
@@ -43,12 +43,12 @@ REAL (KIND=JPRB), INTENT (IN)::PFCCQN (KLON, 0:KLEV)
 REAL (KIND=JPRB), INTENT (INOUT)::PFCSQL (KLON, 0:KLEV)
 REAL (KIND=JPRB), INTENT (INOUT)::PFCSQN (KLON, 0:KLEV)
 REAL (KIND=JPRB), INTENT (INOUT)::PFCQNG (KLON, 0:KLEV)
-TYPE(STACK), INTENT (IN) :: YDSTACK
-TYPE(STACK) :: YLSTACK
-temp (REAL (KIND=JPRB), ZFCQNG, (KLON, 0:KLEV))
-temp (REAL (KIND=JPRB), ZGSDPDT, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZQI, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZQL, (KLON, KLEV))
+TYPE(FXTRAN_ACDC_STACK), INTENT (IN) :: YDSTACK
+TYPE(FXTRAN_ACDC_STACK) :: YLSTACK
+fxtran_acdc_temp (REAL (KIND=JPRB), ZFCQNG, (KLON, 0:KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZGSDPDT, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZQI, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZQL, (KLON, KLEV))
 REAL (KIND=JPRB)::ZQICORP 
 REAL (KIND=JPRB)::ZQLCORP 
 REAL (KIND=JPRB)::ZQCORP
@@ -62,36 +62,36 @@ YLSTACK = YDSTACK
 
 
 IF (KIND (ZFCQNG) == 8) THEN
-    alloc8 (ZFCQNG)
+    fxtran_acdc_alloc8 (ZFCQNG)
 ELSEIF (KIND (ZFCQNG) == 4) THEN
-    alloc4 (ZFCQNG)
+    fxtran_acdc_alloc4 (ZFCQNG)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZGSDPDT) == 8) THEN
-    alloc8 (ZGSDPDT)
+    fxtran_acdc_alloc8 (ZGSDPDT)
 ELSEIF (KIND (ZGSDPDT) == 4) THEN
-    alloc4 (ZGSDPDT)
+    fxtran_acdc_alloc4 (ZGSDPDT)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZQI) == 8) THEN
-    alloc8 (ZQI)
+    fxtran_acdc_alloc8 (ZQI)
 ELSEIF (KIND (ZQI) == 4) THEN
-    alloc4 (ZQI)
+    fxtran_acdc_alloc4 (ZQI)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZQL) == 8) THEN
-    alloc8 (ZQL)
+    fxtran_acdc_alloc8 (ZQL)
 ELSEIF (KIND (ZQL) == 4) THEN
-    alloc4 (ZQL)
+    fxtran_acdc_alloc4 (ZQL)
 ELSE
     STOP 1
 ENDIF

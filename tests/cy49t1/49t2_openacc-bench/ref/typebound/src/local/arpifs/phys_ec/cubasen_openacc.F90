@@ -13,9 +13,9 @@ USE YOECLDP,ONLY:TECLDP
 USE YOETHF,ONLY:TTHF
 USE SPP_MOD,ONLY:TSPP_CONFIG
 USE SPP_GEN_MOD,ONLY:SPP_PERT
-#include "stack.h"
-USE STACK_MOD
-USE ABOR1_ACC_MOD
+#include "fxtran_acdc_stack.h"
+USE FXTRAN_ACDC_STACK_MOD
+USE FXTRAN_ACDC_ABORT_MOD
 
 IMPLICIT NONE
 
@@ -60,10 +60,10 @@ INTEGER (KIND=JPIM), INTENT (OUT)::KBOTSC (KLON)
 INTEGER (KIND=JPIM), INTENT (OUT)::KCTOP (KLON)
 INTEGER (KIND=JPIM), INTENT (OUT)::KDPL (KLON)
 REAL (KIND=JPRB), INTENT (OUT)::PCAPE (KLON)
-TYPE(STACK), INTENT (IN) :: YDSTACK
-TYPE(STACK) :: YLSTACK
+TYPE(FXTRAN_ACDC_STACK), INTENT (IN) :: YDSTACK
+TYPE(FXTRAN_ACDC_STACK) :: YLSTACK
 INTEGER (KIND=JPIM)::IDPL 
-temp (INTEGER (KIND=JPIM), ILAB, (KLON, KLEV))
+fxtran_acdc_temp (INTEGER (KIND=JPIM), ILAB, (KLON, KLEV))
 INTEGER (KIND=JPIM)::IBOTSC 
 INTEGER (KIND=JPIM)::ICBOT 
 INTEGER (KIND=JPIM)::ICTOP 
@@ -88,21 +88,21 @@ INTEGER (KIND=JPIM)::IS
 INTEGER (KIND=JPIM)::IK
 INTEGER (KIND=JPIM)::IPENTSTPC1
 INTEGER (KIND=JPIM)::IPENTRORG
-temp (REAL (KIND=JPRB), ZWU2H, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZBUOH, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZSUH, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZQENH, (KLON, KLEV+1))
-temp (REAL (KIND=JPRB), ZSENH, (KLON, KLEV+1))
-temp (REAL (KIND=JPRB), ZS, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZWU2H, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZBUOH, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZSUH, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZQENH, (KLON, KLEV+1))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZSENH, (KLON, KLEV+1))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZS, (KLON, KLEV))
 REAL (KIND=JPRB)::ZPH 
 REAL (KIND=JPRB)::ZQOLD 
 REAL (KIND=JPRB)::ZMIX 
 REAL (KIND=JPRB)::ZCBASE 
 REAL (KIND=JPRB)::ZDZ 
-temp (REAL (KIND=JPRB), ZTU, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZQU, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLU, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZCAPE, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZTU, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZQU, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLU, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZCAPE, (KLON, KLEV))
 REAL (KIND=JPRB)::ZBUOF
 REAL (KIND=JPRB)::ZRHO
 REAL (KIND=JPRB)::ZKHVFL
@@ -169,99 +169,99 @@ YLSTACK = YDSTACK
 
 
 IF (KIND (ILAB) == 8) THEN
-    alloc8 (ILAB)
+    fxtran_acdc_alloc8 (ILAB)
 ELSEIF (KIND (ILAB) == 4) THEN
-    alloc4 (ILAB)
+    fxtran_acdc_alloc4 (ILAB)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZWU2H) == 8) THEN
-    alloc8 (ZWU2H)
+    fxtran_acdc_alloc8 (ZWU2H)
 ELSEIF (KIND (ZWU2H) == 4) THEN
-    alloc4 (ZWU2H)
+    fxtran_acdc_alloc4 (ZWU2H)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZBUOH) == 8) THEN
-    alloc8 (ZBUOH)
+    fxtran_acdc_alloc8 (ZBUOH)
 ELSEIF (KIND (ZBUOH) == 4) THEN
-    alloc4 (ZBUOH)
+    fxtran_acdc_alloc4 (ZBUOH)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZSUH) == 8) THEN
-    alloc8 (ZSUH)
+    fxtran_acdc_alloc8 (ZSUH)
 ELSEIF (KIND (ZSUH) == 4) THEN
-    alloc4 (ZSUH)
+    fxtran_acdc_alloc4 (ZSUH)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZQENH) == 8) THEN
-    alloc8 (ZQENH)
+    fxtran_acdc_alloc8 (ZQENH)
 ELSEIF (KIND (ZQENH) == 4) THEN
-    alloc4 (ZQENH)
+    fxtran_acdc_alloc4 (ZQENH)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZSENH) == 8) THEN
-    alloc8 (ZSENH)
+    fxtran_acdc_alloc8 (ZSENH)
 ELSEIF (KIND (ZSENH) == 4) THEN
-    alloc4 (ZSENH)
+    fxtran_acdc_alloc4 (ZSENH)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZS) == 8) THEN
-    alloc8 (ZS)
+    fxtran_acdc_alloc8 (ZS)
 ELSEIF (KIND (ZS) == 4) THEN
-    alloc4 (ZS)
+    fxtran_acdc_alloc4 (ZS)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZTU) == 8) THEN
-    alloc8 (ZTU)
+    fxtran_acdc_alloc8 (ZTU)
 ELSEIF (KIND (ZTU) == 4) THEN
-    alloc4 (ZTU)
+    fxtran_acdc_alloc4 (ZTU)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZQU) == 8) THEN
-    alloc8 (ZQU)
+    fxtran_acdc_alloc8 (ZQU)
 ELSEIF (KIND (ZQU) == 4) THEN
-    alloc4 (ZQU)
+    fxtran_acdc_alloc4 (ZQU)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLU) == 8) THEN
-    alloc8 (ZLU)
+    fxtran_acdc_alloc8 (ZLU)
 ELSEIF (KIND (ZLU) == 4) THEN
-    alloc4 (ZLU)
+    fxtran_acdc_alloc4 (ZLU)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZCAPE) == 8) THEN
-    alloc8 (ZCAPE)
+    fxtran_acdc_alloc8 (ZCAPE)
 ELSEIF (KIND (ZCAPE) == 4) THEN
-    alloc4 (ZCAPE)
+    fxtran_acdc_alloc4 (ZCAPE)
 ELSE
     STOP 1
 ENDIF

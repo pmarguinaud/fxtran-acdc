@@ -7,9 +7,9 @@ USE PARKIND1,ONLY:JPIM, JPRB
 USE YOMCST,ONLY:TCST
 USE YOMVERT,ONLY:TVAB
 USE YOMCVER,ONLY:TCVER
-#include "stack.h"
-USE STACK_MOD
-USE ABOR1_ACC_MOD
+#include "fxtran_acdc_stack.h"
+USE FXTRAN_ACDC_STACK_MOD
+USE FXTRAN_ACDC_ABORT_MOD
 
 IMPLICIT NONE
 
@@ -34,8 +34,8 @@ REAL (KIND=JPRB), INTENT (OUT), OPTIONAL, TARGET::PRDELP (KPROMA, KFLEV)
 REAL (KIND=JPRB), INTENT (OUT), OPTIONAL, TARGET::PLNPR (KPROMA, KFLEV)
 REAL (KIND=JPRB), INTENT (OUT), OPTIONAL, TARGET::PDELP (KPROMA, KFLEV)
 REAL (KIND=JPRB), INTENT (OUT), OPTIONAL, TARGET::PRPP (KPROMA, KFLEV)
-TYPE(STACK), INTENT (IN) :: YDSTACK
-TYPE(STACK) :: YLSTACK
+TYPE(FXTRAN_ACDC_STACK), INTENT (IN) :: YDSTACK
+TYPE(FXTRAN_ACDC_STACK) :: YLSTACK
 REAL (KIND=JPRB), INTENT (OUT), OPTIONAL, TARGET::PRPRE (KPROMA, KFLEV)
 REAL (KIND=JPRB), INTENT (OUT), OPTIONAL, TARGET::PRTGR (KPROMA, KFLEV)
 INTEGER (KIND=JPIM)::JROF
@@ -50,20 +50,20 @@ LOGICAL::LLDELP
 REAL (KIND=JPRB)::ZPRE 
 REAL (KIND=JPRB)::ZCOUNT 
 REAL (KIND=JPRB)::ZSUM
-temp (REAL (KIND=JPRB), ZZALPH, (KPROMA, KFLEV))
-temp (REAL (KIND=JPRB), ZZRDELP, (KPROMA, KFLEV))
-temp (REAL (KIND=JPRB), ZZLNPR, (KPROMA, KFLEV))
-temp (REAL (KIND=JPRB), ZZDELP, (KPROMA, KFLEV))
-temp (REAL (KIND=JPRB), ZZRPP, (KPROMA, KFLEV))
-temp (REAL (KIND=JPRB), ZZRPRE, (KPROMA, KFLEV))
-temp (REAL (KIND=JPRB), ZZRTGR, (KPROMA, KFLEV))
-temp (REAL (KIND=JPRB), ZRPP, (KPROMA, KFLEV))
-temp (REAL (KIND=JPRB), ZRPRE, (KPROMA, KFLEV))
-temp (REAL (KIND=JPRB), ZRTGR, (KPROMA, KFLEV))
-temp (REAL (KIND=JPRB), ZALPH, (KPROMA, KFLEV))
-temp (REAL (KIND=JPRB), ZRDELP, (KPROMA, KFLEV))
-temp (REAL (KIND=JPRB), ZLNPR, (KPROMA, KFLEV))
-temp (REAL (KIND=JPRB), ZDELP, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZZALPH, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZZRDELP, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZZLNPR, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZZDELP, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZZRPP, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZZRPRE, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZZRTGR, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZRPP, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZRPRE, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZRTGR, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZALPH, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZRDELP, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLNPR, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZDELP, (KPROMA, KFLEV))
 
 
 YLSTACK = YDSTACK
@@ -71,63 +71,63 @@ YLSTACK = YDSTACK
 
 
 IF (KIND (ZZALPH) == 8) THEN
-    alloc8 (ZZALPH)
+    fxtran_acdc_alloc8 (ZZALPH)
 ELSEIF (KIND (ZZALPH) == 4) THEN
-    alloc4 (ZZALPH)
+    fxtran_acdc_alloc4 (ZZALPH)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZZRDELP) == 8) THEN
-    alloc8 (ZZRDELP)
+    fxtran_acdc_alloc8 (ZZRDELP)
 ELSEIF (KIND (ZZRDELP) == 4) THEN
-    alloc4 (ZZRDELP)
+    fxtran_acdc_alloc4 (ZZRDELP)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZZLNPR) == 8) THEN
-    alloc8 (ZZLNPR)
+    fxtran_acdc_alloc8 (ZZLNPR)
 ELSEIF (KIND (ZZLNPR) == 4) THEN
-    alloc4 (ZZLNPR)
+    fxtran_acdc_alloc4 (ZZLNPR)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZZDELP) == 8) THEN
-    alloc8 (ZZDELP)
+    fxtran_acdc_alloc8 (ZZDELP)
 ELSEIF (KIND (ZZDELP) == 4) THEN
-    alloc4 (ZZDELP)
+    fxtran_acdc_alloc4 (ZZDELP)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZZRPP) == 8) THEN
-    alloc8 (ZZRPP)
+    fxtran_acdc_alloc8 (ZZRPP)
 ELSEIF (KIND (ZZRPP) == 4) THEN
-    alloc4 (ZZRPP)
+    fxtran_acdc_alloc4 (ZZRPP)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZZRPRE) == 8) THEN
-    alloc8 (ZZRPRE)
+    fxtran_acdc_alloc8 (ZZRPRE)
 ELSEIF (KIND (ZZRPRE) == 4) THEN
-    alloc4 (ZZRPRE)
+    fxtran_acdc_alloc4 (ZZRPRE)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZZRTGR) == 8) THEN
-    alloc8 (ZZRTGR)
+    fxtran_acdc_alloc8 (ZZRTGR)
 ELSEIF (KIND (ZZRTGR) == 4) THEN
-    alloc4 (ZZRTGR)
+    fxtran_acdc_alloc4 (ZZRTGR)
 ELSE
     STOP 1
 ENDIF
@@ -169,13 +169,13 @@ IF (LLXYB) THEN
     LLALPHA=LLALPHA.OR.YDCVER%NDLNPR==1.OR.YDCVER%NDLNPR==2.OR..NOT.YDCVER%LAPRXPK
   ENDIF
 
-  assoc (ZDELP, PDELP)
-  assoc (ZLNPR, PLNPR)
-  assoc (ZRDELP, PRDELP)
-  assoc (ZALPH, PALPH)
-  assoc (ZRTGR, PRTGR)
-  assoc (ZRPRE, PRPRE)
-  assoc (ZRPP, PRPP)
+  fxtran_acdc_assoc (ZDELP, PDELP)
+  fxtran_acdc_assoc (ZLNPR, PLNPR)
+  fxtran_acdc_assoc (ZRDELP, PRDELP)
+  fxtran_acdc_assoc (ZALPH, PALPH)
+  fxtran_acdc_assoc (ZRTGR, PRTGR)
+  fxtran_acdc_assoc (ZRPRE, PRPRE)
+  fxtran_acdc_assoc (ZRPP, PRPP)
 ELSE
   LLDELP=.FALSE.
   LLRTGR=.FALSE.
@@ -183,13 +183,13 @@ ELSE
   LLALPHA=PRESENT (PRESF).AND.(YDCVER%NDLNPR==1.OR.YDCVER%NDLNPR==2.OR..NOT.YDCVER%LAPRXPK)
 
   IF (LLALPHA) THEN
-    assoc (ZDELP, ZZDELP)
-    assoc (ZLNPR, ZZLNPR)
-    assoc (ZRDELP, ZZRDELP)
-    assoc (ZALPH, ZZALPH)
-    assoc (ZRTGR, ZZRTGR)
-    assoc (ZRPRE, ZZRPRE)
-    assoc (ZRPP, ZZRPP)
+    fxtran_acdc_assoc (ZDELP, ZZDELP)
+    fxtran_acdc_assoc (ZLNPR, ZZLNPR)
+    fxtran_acdc_assoc (ZRDELP, ZZRDELP)
+    fxtran_acdc_assoc (ZALPH, ZZALPH)
+    fxtran_acdc_assoc (ZRTGR, ZZRTGR)
+    fxtran_acdc_assoc (ZRPRE, ZZRPRE)
+    fxtran_acdc_assoc (ZRPP, ZZRPP)
   ENDIF
 
 ENDIF

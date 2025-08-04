@@ -9,11 +9,12 @@ USE YOECUMF,ONLY:TECUMF
 USE SPP_MOD,ONLY:TSPP_CONFIG
 USE YOMPERTPAR,ONLY:TPERTPAR
 USE SPP_GEN_MOD,ONLY:SPP_PERT
-#include "stack.h"
-USE STACK_MOD
-USE ABOR1_ACC_MOD
+#include "fxtran_acdc_stack.h"
+USE FXTRAN_ACDC_STACK_MOD
+USE FXTRAN_ACDC_ABORT_MOD
 
 IMPLICIT NONE
+
 
 TYPE (TCST), INTENT (IN)::YDCST
 TYPE (TECUMF), INTENT (IN)::YDECUMF
@@ -44,13 +45,13 @@ REAL (KIND=JPRB), INTENT (IN)::PVD (KLON, KLEV)
 REAL (KIND=JPRB), INTENT (IN)::PGP2DSPP (KLON, YDSPP_CONFIG%SM%NRFTOTAL)
 REAL (KIND=JPRB), INTENT (INOUT)::PTENU (KLON, KLEV)
 REAL (KIND=JPRB), INTENT (INOUT)::PTENV (KLON, KLEV)
-TYPE(STACK), INTENT (IN) :: YDSTACK
-TYPE(STACK) :: YLSTACK
+TYPE(FXTRAN_ACDC_STACK), INTENT (IN) :: YDSTACK
+TYPE(FXTRAN_ACDC_STACK) :: YLSTACK
 REAL (KIND=JPRB)::ZADVW 
-temp (REAL (KIND=JPRB), ZMFDV, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZMFUV, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZMFDU, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZMFUU, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZMFDV, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZMFUV, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZMFDU, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZMFUU, (KLON, KLEV))
 INTEGER (KIND=JPIM)::JL
 INTEGER (KIND=JPIM)::JK
 INTEGER (KIND=JPIM)::IKB
@@ -80,13 +81,13 @@ REAL (KIND=JPRB)::ZXV
 REAL (KIND=JPRB)::ZXU
 REAL (KIND=JPRB)::ZRDV
 REAL (KIND=JPRB)::ZRDU
-temp (REAL (KIND=JPRB), ZDP, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZDVDT, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZDUDT, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZR2, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZR1, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZB, (KLON, KLEV))
-temp (LOGICAL, LLCUMBAS, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZDP, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZDVDT, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZDUDT, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZR2, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZR1, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZB, (KLON, KLEV))
+fxtran_acdc_temp (LOGICAL, LLCUMBAS, (KLON, KLEV))
 LOGICAL::LLPPAR_CUDUV
 LOGICAL::LLPERT_CUDUDVS
 LOGICAL::LLPERT_CUDUDV
@@ -98,99 +99,99 @@ YLSTACK = YDSTACK
 
 
 IF (KIND (ZMFDV) == 8) THEN
-    alloc8 (ZMFDV)
+    fxtran_acdc_alloc8 (ZMFDV)
 ELSEIF (KIND (ZMFDV) == 4) THEN
-    alloc4 (ZMFDV)
+    fxtran_acdc_alloc4 (ZMFDV)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZMFUV) == 8) THEN
-    alloc8 (ZMFUV)
+    fxtran_acdc_alloc8 (ZMFUV)
 ELSEIF (KIND (ZMFUV) == 4) THEN
-    alloc4 (ZMFUV)
+    fxtran_acdc_alloc4 (ZMFUV)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZMFDU) == 8) THEN
-    alloc8 (ZMFDU)
+    fxtran_acdc_alloc8 (ZMFDU)
 ELSEIF (KIND (ZMFDU) == 4) THEN
-    alloc4 (ZMFDU)
+    fxtran_acdc_alloc4 (ZMFDU)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZMFUU) == 8) THEN
-    alloc8 (ZMFUU)
+    fxtran_acdc_alloc8 (ZMFUU)
 ELSEIF (KIND (ZMFUU) == 4) THEN
-    alloc4 (ZMFUU)
+    fxtran_acdc_alloc4 (ZMFUU)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZDP) == 8) THEN
-    alloc8 (ZDP)
+    fxtran_acdc_alloc8 (ZDP)
 ELSEIF (KIND (ZDP) == 4) THEN
-    alloc4 (ZDP)
+    fxtran_acdc_alloc4 (ZDP)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZDVDT) == 8) THEN
-    alloc8 (ZDVDT)
+    fxtran_acdc_alloc8 (ZDVDT)
 ELSEIF (KIND (ZDVDT) == 4) THEN
-    alloc4 (ZDVDT)
+    fxtran_acdc_alloc4 (ZDVDT)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZDUDT) == 8) THEN
-    alloc8 (ZDUDT)
+    fxtran_acdc_alloc8 (ZDUDT)
 ELSEIF (KIND (ZDUDT) == 4) THEN
-    alloc4 (ZDUDT)
+    fxtran_acdc_alloc4 (ZDUDT)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZR2) == 8) THEN
-    alloc8 (ZR2)
+    fxtran_acdc_alloc8 (ZR2)
 ELSEIF (KIND (ZR2) == 4) THEN
-    alloc4 (ZR2)
+    fxtran_acdc_alloc4 (ZR2)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZR1) == 8) THEN
-    alloc8 (ZR1)
+    fxtran_acdc_alloc8 (ZR1)
 ELSEIF (KIND (ZR1) == 4) THEN
-    alloc4 (ZR1)
+    fxtran_acdc_alloc4 (ZR1)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZB) == 8) THEN
-    alloc8 (ZB)
+    fxtran_acdc_alloc8 (ZB)
 ELSEIF (KIND (ZB) == 4) THEN
-    alloc4 (ZB)
+    fxtran_acdc_alloc4 (ZB)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (LLCUMBAS) == 8) THEN
-    alloc8 (LLCUMBAS)
+    fxtran_acdc_alloc8 (LLCUMBAS)
 ELSEIF (KIND (LLCUMBAS) == 4) THEN
-    alloc4 (LLCUMBAS)
+    fxtran_acdc_alloc4 (LLCUMBAS)
 ELSE
     STOP 1
 ENDIF

@@ -7,9 +7,9 @@ USE PARKIND1,ONLY:JPIM, JPRB
 USE YOMCST,ONLY:TCST
 USE YOMPHY0,ONLY:TPHY0
 USE YOMPHY2,ONLY:TPHY2
-#include "stack.h"
-USE STACK_MOD
-USE ABOR1_ACC_MOD
+#include "fxtran_acdc_stack.h"
+USE FXTRAN_ACDC_STACK_MOD
+USE FXTRAN_ACDC_ABORT_MOD
 
 IMPLICIT NONE
 
@@ -33,14 +33,14 @@ REAL (KIND=JPRB), INTENT (OUT)::PCLPH (KLON)
 REAL (KIND=JPRB), INTENT (OUT)::PVEIN (KLON)
 REAL (KIND=JPRB), INTENT (OUT)::PUGST (KLON)
 REAL (KIND=JPRB), INTENT (OUT)::PVGST (KLON)
-TYPE(STACK), INTENT (IN) :: YDSTACK
-TYPE(STACK) :: YLSTACK
-temp (REAL (KIND=JPRB), ZTHETAVS, (KLON, KLEV+1))
-temp (REAL (KIND=JPRB), ZV, (KLON, KLEV+1))
-temp (REAL (KIND=JPRB), ZU, (KLON, KLEV+1))
+TYPE(FXTRAN_ACDC_STACK), INTENT (IN) :: YDSTACK
+TYPE(FXTRAN_ACDC_STACK) :: YLSTACK
+fxtran_acdc_temp (REAL (KIND=JPRB), ZTHETAVS, (KLON, KLEV+1))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZV, (KLON, KLEV+1))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZU, (KLON, KLEV+1))
 REAL (KIND=JPRB)::ZLCH_PREV 
-temp (REAL (KIND=JPRB), ZPHI, (KLON, KLEV+1))
-temp (REAL (KIND=JPRB), ZTHETAV, (KLON, KLEV+1))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZPHI, (KLON, KLEV+1))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZTHETAV, (KLON, KLEV+1))
 REAL (KIND=JPRB)::ZX_PREV 
 REAL (KIND=JPRB)::ZINT 
 REAL (KIND=JPRB)::ZCLPV 
@@ -70,45 +70,45 @@ YLSTACK = YDSTACK
 
 
 IF (KIND (ZTHETAVS) == 8) THEN
-    alloc8 (ZTHETAVS)
+    fxtran_acdc_alloc8 (ZTHETAVS)
 ELSEIF (KIND (ZTHETAVS) == 4) THEN
-    alloc4 (ZTHETAVS)
+    fxtran_acdc_alloc4 (ZTHETAVS)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZV) == 8) THEN
-    alloc8 (ZV)
+    fxtran_acdc_alloc8 (ZV)
 ELSEIF (KIND (ZV) == 4) THEN
-    alloc4 (ZV)
+    fxtran_acdc_alloc4 (ZV)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZU) == 8) THEN
-    alloc8 (ZU)
+    fxtran_acdc_alloc8 (ZU)
 ELSEIF (KIND (ZU) == 4) THEN
-    alloc4 (ZU)
+    fxtran_acdc_alloc4 (ZU)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZPHI) == 8) THEN
-    alloc8 (ZPHI)
+    fxtran_acdc_alloc8 (ZPHI)
 ELSEIF (KIND (ZPHI) == 4) THEN
-    alloc4 (ZPHI)
+    fxtran_acdc_alloc4 (ZPHI)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZTHETAV) == 8) THEN
-    alloc8 (ZTHETAV)
+    fxtran_acdc_alloc8 (ZTHETAV)
 ELSEIF (KIND (ZTHETAV) == 4) THEN
-    alloc4 (ZTHETAV)
+    fxtran_acdc_alloc4 (ZTHETAV)
 ELSE
     STOP 1
 ENDIF

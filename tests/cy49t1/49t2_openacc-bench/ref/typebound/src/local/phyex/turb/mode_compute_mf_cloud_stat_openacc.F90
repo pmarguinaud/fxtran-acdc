@@ -16,9 +16,9 @@ USE MODD_TURB_N,ONLY:TURB_T
 USE MODI_SHUMAN_MF_OPENACC,ONLY:MZF_MF_OPENACC, MZM_MF_OPENACC, GZ_M_W_MF_OPENACC
 USE MODE_COMPUTE_FUNCTION_THERMO_MF_OPENACC,ONLY:COMPUTE_FUNCTION_THERMO_MF_OPENACC
 
-#include "stack.h"
-USE STACK_MOD
-USE ABOR1_ACC_MOD
+#include "fxtran_acdc_stack.h"
+USE FXTRAN_ACDC_STACK_MOD
+USE FXTRAN_ACDC_ABORT_MOD
 
 IMPLICIT NONE
 
@@ -42,16 +42,16 @@ REAL, INTENT (IN)::PEMF(D%NIJT, D%NKT)
 REAL, INTENT (IN)::PRT_UP(D%NIJT, D%NKT)
 REAL, INTENT (IN)::PTHL_UP(D%NIJT, D%NKT)
 REAL, INTENT (OUT)::PSIGMF(D%NIJT, D%NKT)
-TYPE(STACK), INTENT (IN) :: YDSTACK
-TYPE(STACK) :: YLSTACK
-temp (REAL, ZFLXZ3, (D%NIJT, D%NKT))
-temp (REAL, ZFLXZ2, (D%NIJT, D%NKT))
-temp (REAL, ZFLXZ, (D%NIJT, D%NKT))
-temp (REAL, ZT, (D%NIJT, D%NKT))
-temp (REAL, ZATHETA, (D%NIJT, D%NKT))
-temp (REAL, ZAMOIST, (D%NIJT, D%NKT))
-temp (REAL, ZWK2, (D%NIJT, D%NKT))
-temp (REAL, ZWK, (D%NIJT, D%NKT))
+TYPE(FXTRAN_ACDC_STACK), INTENT (IN) :: YDSTACK
+TYPE(FXTRAN_ACDC_STACK) :: YLSTACK
+fxtran_acdc_temp (REAL, ZFLXZ3, (D%NIJT, D%NKT))
+fxtran_acdc_temp (REAL, ZFLXZ2, (D%NIJT, D%NKT))
+fxtran_acdc_temp (REAL, ZFLXZ, (D%NIJT, D%NKT))
+fxtran_acdc_temp (REAL, ZT, (D%NIJT, D%NKT))
+fxtran_acdc_temp (REAL, ZATHETA, (D%NIJT, D%NKT))
+fxtran_acdc_temp (REAL, ZAMOIST, (D%NIJT, D%NKT))
+fxtran_acdc_temp (REAL, ZWK2, (D%NIJT, D%NKT))
+fxtran_acdc_temp (REAL, ZWK, (D%NIJT, D%NKT))
 INTEGER::JK
 INTEGER::JI
 INTEGER::IIJE
@@ -64,72 +64,72 @@ YLSTACK = YDSTACK
 
 
 IF (KIND (ZFLXZ3) == 8) THEN
-    alloc8 (ZFLXZ3)
+    fxtran_acdc_alloc8 (ZFLXZ3)
 ELSEIF (KIND (ZFLXZ3) == 4) THEN
-    alloc4 (ZFLXZ3)
+    fxtran_acdc_alloc4 (ZFLXZ3)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZFLXZ2) == 8) THEN
-    alloc8 (ZFLXZ2)
+    fxtran_acdc_alloc8 (ZFLXZ2)
 ELSEIF (KIND (ZFLXZ2) == 4) THEN
-    alloc4 (ZFLXZ2)
+    fxtran_acdc_alloc4 (ZFLXZ2)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZFLXZ) == 8) THEN
-    alloc8 (ZFLXZ)
+    fxtran_acdc_alloc8 (ZFLXZ)
 ELSEIF (KIND (ZFLXZ) == 4) THEN
-    alloc4 (ZFLXZ)
+    fxtran_acdc_alloc4 (ZFLXZ)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZT) == 8) THEN
-    alloc8 (ZT)
+    fxtran_acdc_alloc8 (ZT)
 ELSEIF (KIND (ZT) == 4) THEN
-    alloc4 (ZT)
+    fxtran_acdc_alloc4 (ZT)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZATHETA) == 8) THEN
-    alloc8 (ZATHETA)
+    fxtran_acdc_alloc8 (ZATHETA)
 ELSEIF (KIND (ZATHETA) == 4) THEN
-    alloc4 (ZATHETA)
+    fxtran_acdc_alloc4 (ZATHETA)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZAMOIST) == 8) THEN
-    alloc8 (ZAMOIST)
+    fxtran_acdc_alloc8 (ZAMOIST)
 ELSEIF (KIND (ZAMOIST) == 4) THEN
-    alloc4 (ZAMOIST)
+    fxtran_acdc_alloc4 (ZAMOIST)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZWK2) == 8) THEN
-    alloc8 (ZWK2)
+    fxtran_acdc_alloc8 (ZWK2)
 ELSEIF (KIND (ZWK2) == 4) THEN
-    alloc4 (ZWK2)
+    fxtran_acdc_alloc4 (ZWK2)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZWK) == 8) THEN
-    alloc8 (ZWK)
+    fxtran_acdc_alloc8 (ZWK)
 ELSEIF (KIND (ZWK) == 4) THEN
-    alloc4 (ZWK)
+    fxtran_acdc_alloc4 (ZWK)
 ELSE
     STOP 1
 ENDIF

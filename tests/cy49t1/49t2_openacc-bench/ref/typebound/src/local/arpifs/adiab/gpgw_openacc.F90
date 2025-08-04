@@ -4,9 +4,9 @@ SUBROUTINE GPGW_OPENACC (YDGEOMETRY, LDNHDYN, KFLEV, KPROMA, KST, KEND, LDGWF, L
 USE GEOMETRY_MOD,ONLY:GEOMETRY
 USE PARKIND1,ONLY:JPIM, JPRB
 
-#include "stack.h"
-USE STACK_MOD
-USE ABOR1_ACC_MOD
+#include "fxtran_acdc_stack.h"
+USE FXTRAN_ACDC_STACK_MOD
+USE FXTRAN_ACDC_ABORT_MOD
 
 IMPLICIT NONE
 
@@ -33,14 +33,14 @@ LOGICAL, INTENT (IN), OPTIONAL::LDVFE
 REAL (KIND=JPRB), INTENT (IN), OPTIONAL::PRNHPPI (KPROMA, KFLEV)
 REAL (KIND=JPRB), INTENT (IN), OPTIONAL::PTAUD_NL
 REAL (KIND=JPRB), INTENT (OUT), OPTIONAL, TARGET::PGDW (KPROMA, KFLEV)
-TYPE(STACK), INTENT (IN) :: YDSTACK
-TYPE(STACK) :: YLSTACK
+TYPE(FXTRAN_ACDC_STACK), INTENT (IN) :: YDSTACK
+TYPE(FXTRAN_ACDC_STACK) :: YLSTACK
 INTEGER (KIND=JPIM)::JROF
 INTEGER (KIND=JPIM)::JLEV
-temp (REAL (KIND=JPRB), ZGDW0, (KPROMA, KFLEV))
-temp (REAL (KIND=JPRB), ZIN, (KPROMA, 0:KFLEV+1))
-temp (REAL (KIND=JPRB), ZGDW, (KPROMA, KFLEV))
-temp (REAL (KIND=JPRB), ZRNHPPI, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZGDW0, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZIN, (KPROMA, 0:KFLEV+1))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZGDW, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZRNHPPI, (KPROMA, KFLEV))
 REAL (KIND=JPRB)::ZNHPPI
 LOGICAL::LLVFE
 
@@ -52,27 +52,27 @@ YLSTACK = YDSTACK
 
 
 IF (KIND (ZGDW0) == 8) THEN
-    alloc8 (ZGDW0)
+    fxtran_acdc_alloc8 (ZGDW0)
 ELSEIF (KIND (ZGDW0) == 4) THEN
-    alloc4 (ZGDW0)
+    fxtran_acdc_alloc4 (ZGDW0)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZIN) == 8) THEN
-    alloc8 (ZIN)
+    fxtran_acdc_alloc8 (ZIN)
 ELSEIF (KIND (ZIN) == 4) THEN
-    alloc4 (ZIN)
+    fxtran_acdc_alloc4 (ZIN)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZRNHPPI) == 8) THEN
-    alloc8 (ZRNHPPI)
+    fxtran_acdc_alloc8 (ZRNHPPI)
 ELSEIF (KIND (ZRNHPPI) == 4) THEN
-    alloc4 (ZRNHPPI)
+    fxtran_acdc_alloc4 (ZRNHPPI)
 ELSE
     STOP 1
 ENDIF
@@ -91,9 +91,9 @@ ENDIF
 
 
 IF (LLVFE.AND.PRESENT (PGDW)) THEN
-  assoc (ZGDW, PGDW)
+  fxtran_acdc_assoc (ZGDW, PGDW)
 ELSE
-  assoc (ZGDW, ZGDW0)
+  fxtran_acdc_assoc (ZGDW, ZGDW0)
 ENDIF
 
 PGWH (JROF, KFLEV)=PUS (JROF)*POROGL (JROF)+PVS (JROF)*POROGM (JROF)
@@ -178,7 +178,7 @@ ELSE
     IF (LDGWF) THEN
 
       IF (LDGDWI)  THEN
-        CALL ABOR1_ACC (' GPGW: compute "Gw" at full levels: case not coded')
+        CALL FXTRAN_ACDC_ABORT (' GPGW: compute "Gw" at full levels: case not coded')
       ENDIF
 
 
@@ -207,7 +207,7 @@ ELSE
     IF (LDGWF) THEN
 
       IF (LDGDWI)  THEN
-        CALL ABOR1_ACC (' GPGW: compute "Gw" at full levels: case not coded')
+        CALL FXTRAN_ACDC_ABORT (' GPGW: compute "Gw" at full levels: case not coded')
       ENDIF
 
 

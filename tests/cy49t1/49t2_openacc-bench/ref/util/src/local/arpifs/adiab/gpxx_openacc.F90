@@ -4,9 +4,9 @@ SUBROUTINE GPXX_OPENACC (YDGEOMETRY, KFLEV, KPROMA, KST, KEND, PHIHL, PHIHM, PHI
 USE PARKIND1,ONLY:JPIM, JPRB, JPRD
 
 USE GEOMETRY_MOD,ONLY:GEOMETRY
-#include "stack.h"
-USE STACK_MOD
-USE ABOR1_ACC_MOD
+#include "fxtran_acdc_stack.h"
+USE FXTRAN_ACDC_STACK_MOD
+USE FXTRAN_ACDC_ABORT_MOD
 
 IMPLICIT NONE
 
@@ -31,15 +31,15 @@ REAL (KIND=JPRB), INTENT (OUT)::PX (KPROMA, KFLEV)
 REAL (KIND=JPRB), INTENT (IN), OPTIONAL::PNHPPI (KPROMA, KFLEV)
 REAL (KIND=JPRB), INTENT (IN), OPTIONAL::PTAUX_NL
 LOGICAL, INTENT (IN), OPTIONAL::LDVFE
-TYPE(STACK), INTENT (IN) :: YDSTACK
-TYPE(STACK) :: YLSTACK
+TYPE(FXTRAN_ACDC_STACK), INTENT (IN) :: YDSTACK
+TYPE(FXTRAN_ACDC_STACK) :: YLSTACK
 INTEGER (KIND=JPIM)::JROF
 INTEGER (KIND=JPIM)::JLEV
-temp (REAL (KIND=JPRB), ZDUF, (KPROMA, KFLEV))
-temp (REAL (KIND=JPRB), ZDVF, (KPROMA, KFLEV))
-temp (REAL (KIND=JPRB), ZF, (KPROMA, 0:KFLEV+1))
-temp (REAL (KIND=JPRB), ZUVH, (KPROMA, 0:KFLEV))
-temp (REAL (KIND=JPRB), ZNHPPI, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZDUF, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZDVF, (KPROMA, KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZF, (KPROMA, 0:KFLEV+1))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZUVH, (KPROMA, 0:KFLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZNHPPI, (KPROMA, KFLEV))
 LOGICAL::LLVFE
 
 #include "verdisint_openacc.intfb.h"
@@ -49,45 +49,45 @@ YLSTACK = YDSTACK
 
 
 IF (KIND (ZDUF) == 8) THEN
-    alloc8 (ZDUF)
+    fxtran_acdc_alloc8 (ZDUF)
 ELSEIF (KIND (ZDUF) == 4) THEN
-    alloc4 (ZDUF)
+    fxtran_acdc_alloc4 (ZDUF)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZDVF) == 8) THEN
-    alloc8 (ZDVF)
+    fxtran_acdc_alloc8 (ZDVF)
 ELSEIF (KIND (ZDVF) == 4) THEN
-    alloc4 (ZDVF)
+    fxtran_acdc_alloc4 (ZDVF)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZF) == 8) THEN
-    alloc8 (ZF)
+    fxtran_acdc_alloc8 (ZF)
 ELSEIF (KIND (ZF) == 4) THEN
-    alloc4 (ZF)
+    fxtran_acdc_alloc4 (ZF)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZUVH) == 8) THEN
-    alloc8 (ZUVH)
+    fxtran_acdc_alloc8 (ZUVH)
 ELSEIF (KIND (ZUVH) == 4) THEN
-    alloc4 (ZUVH)
+    fxtran_acdc_alloc4 (ZUVH)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZNHPPI) == 8) THEN
-    alloc8 (ZNHPPI)
+    fxtran_acdc_alloc8 (ZNHPPI)
 ELSEIF (KIND (ZNHPPI) == 4) THEN
-    alloc4 (ZNHPPI)
+    fxtran_acdc_alloc4 (ZNHPPI)
 ELSE
     STOP 1
 ENDIF

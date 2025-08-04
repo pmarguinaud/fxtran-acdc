@@ -8,9 +8,9 @@ USE YOMPHY2,ONLY:TPHY2
 USE YOMTOPH,ONLY:TTOPH
 USE YOMCST,ONLY:TCST
 USE YOMSTA,ONLY:TSTA
-#include "stack.h"
-USE STACK_MOD
-USE ABOR1_ACC_MOD
+#include "fxtran_acdc_stack.h"
+USE FXTRAN_ACDC_STACK_MOD
+USE FXTRAN_ACDC_ABORT_MOD
 
 IMPLICIT NONE
 
@@ -34,12 +34,12 @@ REAL (KIND=JPRB), INTENT (OUT)::PFRMH (KLON, 0:KLEV)
 REAL (KIND=JPRB), INTENT (OUT)::PFRMQ (KLON, 0:KLEV)
 REAL (KIND=JPRB), INTENT (OUT)::PSTRMU (KLON, 0:KLEV)
 REAL (KIND=JPRB), INTENT (OUT)::PSTRMV (KLON, 0:KLEV)
-TYPE(STACK), INTENT (IN) :: YDSTACK
-TYPE(STACK) :: YLSTACK
-temp (REAL (KIND=JPRB), ZTENQ, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZTENT, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZTENV, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZTENU, (KLON, KLEV))
+TYPE(FXTRAN_ACDC_STACK), INTENT (IN) :: YDSTACK
+TYPE(FXTRAN_ACDC_STACK) :: YLSTACK
+fxtran_acdc_temp (REAL (KIND=JPRB), ZTENQ, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZTENT, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZTENV, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZTENU, (KLON, KLEV))
 INTEGER (KIND=JPIM)::JLON
 INTEGER (KIND=JPIM)::JLEV
 REAL (KIND=JPRB)::ZUNMAL
@@ -52,36 +52,36 @@ YLSTACK = YDSTACK
 
 
 IF (KIND (ZTENQ) == 8) THEN
-    alloc8 (ZTENQ)
+    fxtran_acdc_alloc8 (ZTENQ)
 ELSEIF (KIND (ZTENQ) == 4) THEN
-    alloc4 (ZTENQ)
+    fxtran_acdc_alloc4 (ZTENQ)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZTENT) == 8) THEN
-    alloc8 (ZTENT)
+    fxtran_acdc_alloc8 (ZTENT)
 ELSEIF (KIND (ZTENT) == 4) THEN
-    alloc4 (ZTENT)
+    fxtran_acdc_alloc4 (ZTENT)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZTENV) == 8) THEN
-    alloc8 (ZTENV)
+    fxtran_acdc_alloc8 (ZTENV)
 ELSEIF (KIND (ZTENV) == 4) THEN
-    alloc4 (ZTENV)
+    fxtran_acdc_alloc4 (ZTENV)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZTENU) == 8) THEN
-    alloc8 (ZTENU)
+    fxtran_acdc_alloc8 (ZTENU)
 ELSEIF (KIND (ZTENU) == 4) THEN
-    alloc4 (ZTENU)
+    fxtran_acdc_alloc4 (ZTENU)
 ELSE
     STOP 1
 ENDIF

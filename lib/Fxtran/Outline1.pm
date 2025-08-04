@@ -183,7 +183,7 @@ sub outline
   
   $doSelect->($_) for (@nn);
   
-  @nn = sort { $VAR->{$a}{rank} <=> $VAR->{$b}{rank} } keys (%nn);
+  @nn = sort { ($VAR->{$a}{rank} <=> $VAR->{$b}{rank}) || ($a cmp $b) } keys (%nn);
 
   # Select statements for outlining
   

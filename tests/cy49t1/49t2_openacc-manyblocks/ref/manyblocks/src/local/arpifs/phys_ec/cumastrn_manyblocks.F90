@@ -18,9 +18,9 @@ USE YOETHF,ONLY:TTHF
 USE SPP_MOD,ONLY:TSPP_CONFIG
 USE SPP_GEN_MOD,ONLY:SPP_PERT
 USE YOMPERTPAR,ONLY:TPERTPAR
-USE STACK_MOD
-USE ABOR1_ACC_MOD
-#include "stack.h"
+USE FXTRAN_ACDC_STACK_MOD
+USE FXTRAN_ACDC_ABORT_MOD
+#include "fxtran_acdc_stack.h"
 
 IMPLICIT NONE
 
@@ -228,7 +228,7 @@ REAL (KIND=JPRB)::ZMFS (KLON,KGPBLKS)
 #include "cuinin.intfb.h"
 #include "cuctracer.intfb.h"
 #include "fcttre.func.h"
-TYPE (STACK) :: YLSTACK
+TYPE (FXTRAN_ACDC_STACK) :: YLSTACK
 INTEGER :: JBLK
 
 !$ACC DATA &
@@ -298,10 +298,10 @@ DO JBLK = 1, KGPBLKS
   
 
   DO JL = KIDIA, MERGE (KLON, KFDIA, JBLK < KGPBLKS)
-    YLSTACK%L8 = stack_l8 (YSTACK, (JBLK-1)+1, KGPBLKS)
-    YLSTACK%U8 = stack_u8 (YSTACK, (JBLK-1)+1, KGPBLKS)
-    YLSTACK%L4 = stack_l4 (YSTACK, (JBLK-1)+1, KGPBLKS)
-    YLSTACK%U4 = stack_u4 (YSTACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%L8 = fxtran_acdc_stack_l8 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%U8 = fxtran_acdc_stack_u8 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%L4 = fxtran_acdc_stack_l4 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%U4 = fxtran_acdc_stack_u4 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
     
     
     PCAPE (JL, JBLK)=0.0_JPRB
@@ -553,10 +553,10 @@ DO JBLK = 1, KGPBLKS
   
 
   DO JL = KIDIA, MERGE (KLON, KFDIA, JBLK < KGPBLKS)
-    YLSTACK%L8 = stack_l8 (YSTACK, (JBLK-1)+1, KGPBLKS)
-    YLSTACK%U8 = stack_u8 (YSTACK, (JBLK-1)+1, KGPBLKS)
-    YLSTACK%L4 = stack_l4 (YSTACK, (JBLK-1)+1, KGPBLKS)
-    YLSTACK%U4 = stack_u4 (YSTACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%L8 = fxtran_acdc_stack_l8 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%U8 = fxtran_acdc_stack_u8 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%L4 = fxtran_acdc_stack_l4 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%U4 = fxtran_acdc_stack_u4 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
 
     
 
@@ -1096,10 +1096,10 @@ DO JBLK = 1, KGPBLKS
   
 
   DO JL = KIDIA, MERGE (KLON, KFDIA, JBLK < KGPBLKS)
-    YLSTACK%L8 = stack_l8 (YSTACK, (JBLK-1)+1, KGPBLKS)
-    YLSTACK%U8 = stack_u8 (YSTACK, (JBLK-1)+1, KGPBLKS)
-    YLSTACK%L4 = stack_l4 (YSTACK, (JBLK-1)+1, KGPBLKS)
-    YLSTACK%U4 = stack_u4 (YSTACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%L8 = fxtran_acdc_stack_l8 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%U8 = fxtran_acdc_stack_u8 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%L4 = fxtran_acdc_stack_l4 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%U4 = fxtran_acdc_stack_u4 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
 
     
 
@@ -1276,10 +1276,10 @@ DO JBLK = 1, KGPBLKS
   
 
   DO JL = KIDIA, MERGE (KLON, KFDIA, JBLK < KGPBLKS)
-    YLSTACK%L8 = stack_l8 (YSTACK, (JBLK-1)+1, KGPBLKS)
-    YLSTACK%U8 = stack_u8 (YSTACK, (JBLK-1)+1, KGPBLKS)
-    YLSTACK%L4 = stack_l4 (YSTACK, (JBLK-1)+1, KGPBLKS)
-    YLSTACK%U4 = stack_u4 (YSTACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%L8 = fxtran_acdc_stack_l8 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%U8 = fxtran_acdc_stack_u8 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%L4 = fxtran_acdc_stack_l4 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%U4 = fxtran_acdc_stack_u4 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
 
     
 
@@ -1349,10 +1349,10 @@ DO JBLK = 1, KGPBLKS
   
 
   DO JL = KIDIA, MERGE (KLON, KFDIA, JBLK < KGPBLKS)
-    YLSTACK%L8 = stack_l8 (YSTACK, (JBLK-1)+1, KGPBLKS)
-    YLSTACK%U8 = stack_u8 (YSTACK, (JBLK-1)+1, KGPBLKS)
-    YLSTACK%L4 = stack_l4 (YSTACK, (JBLK-1)+1, KGPBLKS)
-    YLSTACK%U4 = stack_u4 (YSTACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%L8 = fxtran_acdc_stack_l8 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%U8 = fxtran_acdc_stack_u8 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%L4 = fxtran_acdc_stack_l4 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
+    YLSTACK%U4 = fxtran_acdc_stack_u4 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
 
     
 
@@ -1632,10 +1632,10 @@ IF (YDML_PHY_EC%YREPHY%LMFTRAC.AND.KTRAC>0) THEN
     
 
     DO JL = KIDIA, MERGE (KLON, KFDIA, JBLK < KGPBLKS)
-      YLSTACK%L8 = stack_l8 (YSTACK, (JBLK-1)+1, KGPBLKS)
-      YLSTACK%U8 = stack_u8 (YSTACK, (JBLK-1)+1, KGPBLKS)
-      YLSTACK%L4 = stack_l4 (YSTACK, (JBLK-1)+1, KGPBLKS)
-      YLSTACK%U4 = stack_u4 (YSTACK, (JBLK-1)+1, KGPBLKS)
+      YLSTACK%L8 = fxtran_acdc_stack_l8 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
+      YLSTACK%U8 = fxtran_acdc_stack_u8 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
+      YLSTACK%L4 = fxtran_acdc_stack_l4 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
+      YLSTACK%U4 = fxtran_acdc_stack_u4 (YFXTRAN_ACDC_STACK, (JBLK-1)+1, KGPBLKS)
 
       
 

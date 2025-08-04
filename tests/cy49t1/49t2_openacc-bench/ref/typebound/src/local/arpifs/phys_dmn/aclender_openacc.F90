@@ -7,9 +7,9 @@ USE PARKIND1,ONLY:JPIM, JPRB
 USE YOMCST,ONLY:TCST
 USE YOMPHY,ONLY:TPHY
 USE YOMPHY0,ONLY:TPHY0
-#include "stack.h"
-USE STACK_MOD
-USE ABOR1_ACC_MOD
+#include "fxtran_acdc_stack.h"
+USE FXTRAN_ACDC_STACK_MOD
+USE FXTRAN_ACDC_ABORT_MOD
 
 IMPLICIT NONE
 
@@ -40,8 +40,8 @@ REAL (KIND=JPRB), INTENT (IN)::PGZ0 (KLON)
 REAL (KIND=JPRB), INTENT (OUT)::PLEND (KLON, KLEV)
 REAL (KIND=JPRB), INTENT (OUT)::PUSLE (KLON, KLEV)
 REAL (KIND=JPRB), INTENT (OUT)::PPHI3 (KLON, KLEV)
-TYPE(STACK), INTENT (IN) :: YDSTACK
-TYPE(STACK) :: YLSTACK
+TYPE(FXTRAN_ACDC_STACK), INTENT (IN) :: YDSTACK
+TYPE(FXTRAN_ACDC_STACK) :: YLSTACK
 INTEGER (KIND=JPIM)::JLON
 INTEGER (KIND=JPIM)::JLEV
 REAL (KIND=JPRB)::ZLINF
@@ -74,44 +74,44 @@ REAL (KIND=JPRB)::ZC3H_CLOUD
 REAL (KIND=JPRB)::ZC3H_CLEAR
 REAL (KIND=JPRB)::ZC3M_CLOUD
 REAL (KIND=JPRB)::ZC3M_CLEAR
-temp (REAL (KIND=JPRB), ZDCIS, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZDTH2, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZDTH, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZRI, (KLON, 0:KLEV))
-temp (REAL (KIND=JPRB), ZTHETAVL, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZFH_CLOUD, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZFH_CLEAR, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZFM_CLOUD, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZFM_CLEAR, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLUPH_CLOUD, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLUPH_CLEAR, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLUPM_CLOUD, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLUPM_CLEAR, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLDNH_CLOUD, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLDNH_CLEAR, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLDNM_CLOUD, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLDNM_CLEAR, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLSH_CLOUD, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLSH_CLEAR, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLSM_CLOUD, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLSM_CLEAR, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLINTH_CLOUD, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLINTH_CLEAR, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLINTM_CLOUD, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLINTM_CLEAR, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLENDH_CLEAR, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLENDM_CLEAR, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLENDH_CLOUD, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLENDM_CLOUD, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLENDMM, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZTHETA, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLENDH, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLENDM, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZRIF, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZNN_CLOUD, (KLON, 0:KLEV))
-temp (REAL (KIND=JPRB), ZNN_CLEAR, (KLON, 0:KLEV))
-temp (REAL (KIND=JPRB), ZGLMINF, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLMIN, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZDCIS, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZDTH2, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZDTH, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZRI, (KLON, 0:KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZTHETAVL, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZFH_CLOUD, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZFH_CLEAR, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZFM_CLOUD, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZFM_CLEAR, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLUPH_CLOUD, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLUPH_CLEAR, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLUPM_CLOUD, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLUPM_CLEAR, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLDNH_CLOUD, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLDNH_CLEAR, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLDNM_CLOUD, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLDNM_CLEAR, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLSH_CLOUD, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLSH_CLEAR, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLSM_CLOUD, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLSM_CLEAR, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLINTH_CLOUD, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLINTH_CLEAR, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLINTM_CLOUD, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLINTM_CLEAR, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLENDH_CLEAR, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLENDM_CLEAR, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLENDH_CLOUD, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLENDM_CLOUD, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLENDMM, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZTHETA, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLENDH, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLENDM, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZRIF, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZNN_CLOUD, (KLON, 0:KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZNN_CLEAR, (KLON, 0:KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZGLMINF, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLMIN, (KLON, KLEV))
 REAL (KIND=JPRB)::ZDQL2
 REAL (KIND=JPRB)::ZDQL1
 REAL (KIND=JPRB)::ZNEIGE
@@ -122,19 +122,19 @@ REAL (KIND=JPRB)::ZQVSH1
 REAL (KIND=JPRB)::ZLOG
 REAL (KIND=JPRB)::ZTDERI
 REAL (KIND=JPRB)::ZTJ
-temp (REAL (KIND=JPRB), ZQVS, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZLH, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZCPH, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZRH, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZQL, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZQV, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZTHUC, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZTHDC, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZTHU, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZTHD, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZQSEUIL, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZRIF2, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZRI2, (KLON, 0:KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZQVS, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZLH, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZCPH, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZRH, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZQL, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZQV, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZTHUC, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZTHDC, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZTHU, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZTHD, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZQSEUIL, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZRIF2, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZRI2, (KLON, 0:KLEV))
 REAL (KIND=JPRB)::ZGZTOPCVP 
 REAL (KIND=JPRB)::ZGZBOTCVP 
 REAL (KIND=JPRB)::ZGZTOP 
@@ -176,13 +176,13 @@ REAL (KIND=JPRB)::ZTHETAH
 REAL (KIND=JPRB)::ZLSCPEH
 REAL (KIND=JPRB)::ZQSLTLH
 REAL (KIND=JPRB)::ZTH
-temp (REAL (KIND=JPRB), ZDELTQH, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZAA, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZIGMAS_CLEAR, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZIGMAS_CLOUD, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZQVL, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZNEBI, (KLON, KLEV))
-temp (REAL (KIND=JPRB), ZNEB, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZDELTQH, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZAA, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZIGMAS_CLEAR, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZIGMAS_CLOUD, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZQVL, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZNEBI, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZNEB, (KLON, KLEV))
 REAL (KIND=JPRB)::ZOFFSET
 REAL (KIND=JPRB)::ZRIH
 REAL (KIND=JPRB)::ZZN1D
@@ -195,7 +195,7 @@ REAL (KIND=JPRB)::ZGZLCVPDN
 REAL (KIND=JPRB)::ZGZLCVPUP
 REAL (KIND=JPRB)::ZPHI3I
 REAL (KIND=JPRB)::ZPHI3MAX
-temp (REAL (KIND=JPRB), ZG2LD2, (KLON, KLEV))
+fxtran_acdc_temp (REAL (KIND=JPRB), ZG2LD2, (KLON, KLEV))
 INTEGER (KIND=JPIM)::JN
 INTEGER (KIND=JPIM)::INQ1
 
@@ -206,531 +206,531 @@ YLSTACK = YDSTACK
 
 
 IF (KIND (ZDCIS) == 8) THEN
-    alloc8 (ZDCIS)
+    fxtran_acdc_alloc8 (ZDCIS)
 ELSEIF (KIND (ZDCIS) == 4) THEN
-    alloc4 (ZDCIS)
+    fxtran_acdc_alloc4 (ZDCIS)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZDTH2) == 8) THEN
-    alloc8 (ZDTH2)
+    fxtran_acdc_alloc8 (ZDTH2)
 ELSEIF (KIND (ZDTH2) == 4) THEN
-    alloc4 (ZDTH2)
+    fxtran_acdc_alloc4 (ZDTH2)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZDTH) == 8) THEN
-    alloc8 (ZDTH)
+    fxtran_acdc_alloc8 (ZDTH)
 ELSEIF (KIND (ZDTH) == 4) THEN
-    alloc4 (ZDTH)
+    fxtran_acdc_alloc4 (ZDTH)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZRI) == 8) THEN
-    alloc8 (ZRI)
+    fxtran_acdc_alloc8 (ZRI)
 ELSEIF (KIND (ZRI) == 4) THEN
-    alloc4 (ZRI)
+    fxtran_acdc_alloc4 (ZRI)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZTHETAVL) == 8) THEN
-    alloc8 (ZTHETAVL)
+    fxtran_acdc_alloc8 (ZTHETAVL)
 ELSEIF (KIND (ZTHETAVL) == 4) THEN
-    alloc4 (ZTHETAVL)
+    fxtran_acdc_alloc4 (ZTHETAVL)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZFH_CLOUD) == 8) THEN
-    alloc8 (ZFH_CLOUD)
+    fxtran_acdc_alloc8 (ZFH_CLOUD)
 ELSEIF (KIND (ZFH_CLOUD) == 4) THEN
-    alloc4 (ZFH_CLOUD)
+    fxtran_acdc_alloc4 (ZFH_CLOUD)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZFH_CLEAR) == 8) THEN
-    alloc8 (ZFH_CLEAR)
+    fxtran_acdc_alloc8 (ZFH_CLEAR)
 ELSEIF (KIND (ZFH_CLEAR) == 4) THEN
-    alloc4 (ZFH_CLEAR)
+    fxtran_acdc_alloc4 (ZFH_CLEAR)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZFM_CLOUD) == 8) THEN
-    alloc8 (ZFM_CLOUD)
+    fxtran_acdc_alloc8 (ZFM_CLOUD)
 ELSEIF (KIND (ZFM_CLOUD) == 4) THEN
-    alloc4 (ZFM_CLOUD)
+    fxtran_acdc_alloc4 (ZFM_CLOUD)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZFM_CLEAR) == 8) THEN
-    alloc8 (ZFM_CLEAR)
+    fxtran_acdc_alloc8 (ZFM_CLEAR)
 ELSEIF (KIND (ZFM_CLEAR) == 4) THEN
-    alloc4 (ZFM_CLEAR)
+    fxtran_acdc_alloc4 (ZFM_CLEAR)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLUPH_CLOUD) == 8) THEN
-    alloc8 (ZLUPH_CLOUD)
+    fxtran_acdc_alloc8 (ZLUPH_CLOUD)
 ELSEIF (KIND (ZLUPH_CLOUD) == 4) THEN
-    alloc4 (ZLUPH_CLOUD)
+    fxtran_acdc_alloc4 (ZLUPH_CLOUD)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLUPH_CLEAR) == 8) THEN
-    alloc8 (ZLUPH_CLEAR)
+    fxtran_acdc_alloc8 (ZLUPH_CLEAR)
 ELSEIF (KIND (ZLUPH_CLEAR) == 4) THEN
-    alloc4 (ZLUPH_CLEAR)
+    fxtran_acdc_alloc4 (ZLUPH_CLEAR)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLUPM_CLOUD) == 8) THEN
-    alloc8 (ZLUPM_CLOUD)
+    fxtran_acdc_alloc8 (ZLUPM_CLOUD)
 ELSEIF (KIND (ZLUPM_CLOUD) == 4) THEN
-    alloc4 (ZLUPM_CLOUD)
+    fxtran_acdc_alloc4 (ZLUPM_CLOUD)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLUPM_CLEAR) == 8) THEN
-    alloc8 (ZLUPM_CLEAR)
+    fxtran_acdc_alloc8 (ZLUPM_CLEAR)
 ELSEIF (KIND (ZLUPM_CLEAR) == 4) THEN
-    alloc4 (ZLUPM_CLEAR)
+    fxtran_acdc_alloc4 (ZLUPM_CLEAR)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLDNH_CLOUD) == 8) THEN
-    alloc8 (ZLDNH_CLOUD)
+    fxtran_acdc_alloc8 (ZLDNH_CLOUD)
 ELSEIF (KIND (ZLDNH_CLOUD) == 4) THEN
-    alloc4 (ZLDNH_CLOUD)
+    fxtran_acdc_alloc4 (ZLDNH_CLOUD)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLDNH_CLEAR) == 8) THEN
-    alloc8 (ZLDNH_CLEAR)
+    fxtran_acdc_alloc8 (ZLDNH_CLEAR)
 ELSEIF (KIND (ZLDNH_CLEAR) == 4) THEN
-    alloc4 (ZLDNH_CLEAR)
+    fxtran_acdc_alloc4 (ZLDNH_CLEAR)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLDNM_CLOUD) == 8) THEN
-    alloc8 (ZLDNM_CLOUD)
+    fxtran_acdc_alloc8 (ZLDNM_CLOUD)
 ELSEIF (KIND (ZLDNM_CLOUD) == 4) THEN
-    alloc4 (ZLDNM_CLOUD)
+    fxtran_acdc_alloc4 (ZLDNM_CLOUD)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLDNM_CLEAR) == 8) THEN
-    alloc8 (ZLDNM_CLEAR)
+    fxtran_acdc_alloc8 (ZLDNM_CLEAR)
 ELSEIF (KIND (ZLDNM_CLEAR) == 4) THEN
-    alloc4 (ZLDNM_CLEAR)
+    fxtran_acdc_alloc4 (ZLDNM_CLEAR)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLSH_CLOUD) == 8) THEN
-    alloc8 (ZLSH_CLOUD)
+    fxtran_acdc_alloc8 (ZLSH_CLOUD)
 ELSEIF (KIND (ZLSH_CLOUD) == 4) THEN
-    alloc4 (ZLSH_CLOUD)
+    fxtran_acdc_alloc4 (ZLSH_CLOUD)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLSH_CLEAR) == 8) THEN
-    alloc8 (ZLSH_CLEAR)
+    fxtran_acdc_alloc8 (ZLSH_CLEAR)
 ELSEIF (KIND (ZLSH_CLEAR) == 4) THEN
-    alloc4 (ZLSH_CLEAR)
+    fxtran_acdc_alloc4 (ZLSH_CLEAR)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLSM_CLOUD) == 8) THEN
-    alloc8 (ZLSM_CLOUD)
+    fxtran_acdc_alloc8 (ZLSM_CLOUD)
 ELSEIF (KIND (ZLSM_CLOUD) == 4) THEN
-    alloc4 (ZLSM_CLOUD)
+    fxtran_acdc_alloc4 (ZLSM_CLOUD)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLSM_CLEAR) == 8) THEN
-    alloc8 (ZLSM_CLEAR)
+    fxtran_acdc_alloc8 (ZLSM_CLEAR)
 ELSEIF (KIND (ZLSM_CLEAR) == 4) THEN
-    alloc4 (ZLSM_CLEAR)
+    fxtran_acdc_alloc4 (ZLSM_CLEAR)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLINTH_CLOUD) == 8) THEN
-    alloc8 (ZLINTH_CLOUD)
+    fxtran_acdc_alloc8 (ZLINTH_CLOUD)
 ELSEIF (KIND (ZLINTH_CLOUD) == 4) THEN
-    alloc4 (ZLINTH_CLOUD)
+    fxtran_acdc_alloc4 (ZLINTH_CLOUD)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLINTH_CLEAR) == 8) THEN
-    alloc8 (ZLINTH_CLEAR)
+    fxtran_acdc_alloc8 (ZLINTH_CLEAR)
 ELSEIF (KIND (ZLINTH_CLEAR) == 4) THEN
-    alloc4 (ZLINTH_CLEAR)
+    fxtran_acdc_alloc4 (ZLINTH_CLEAR)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLINTM_CLOUD) == 8) THEN
-    alloc8 (ZLINTM_CLOUD)
+    fxtran_acdc_alloc8 (ZLINTM_CLOUD)
 ELSEIF (KIND (ZLINTM_CLOUD) == 4) THEN
-    alloc4 (ZLINTM_CLOUD)
+    fxtran_acdc_alloc4 (ZLINTM_CLOUD)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLINTM_CLEAR) == 8) THEN
-    alloc8 (ZLINTM_CLEAR)
+    fxtran_acdc_alloc8 (ZLINTM_CLEAR)
 ELSEIF (KIND (ZLINTM_CLEAR) == 4) THEN
-    alloc4 (ZLINTM_CLEAR)
+    fxtran_acdc_alloc4 (ZLINTM_CLEAR)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLENDH_CLEAR) == 8) THEN
-    alloc8 (ZLENDH_CLEAR)
+    fxtran_acdc_alloc8 (ZLENDH_CLEAR)
 ELSEIF (KIND (ZLENDH_CLEAR) == 4) THEN
-    alloc4 (ZLENDH_CLEAR)
+    fxtran_acdc_alloc4 (ZLENDH_CLEAR)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLENDM_CLEAR) == 8) THEN
-    alloc8 (ZLENDM_CLEAR)
+    fxtran_acdc_alloc8 (ZLENDM_CLEAR)
 ELSEIF (KIND (ZLENDM_CLEAR) == 4) THEN
-    alloc4 (ZLENDM_CLEAR)
+    fxtran_acdc_alloc4 (ZLENDM_CLEAR)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLENDH_CLOUD) == 8) THEN
-    alloc8 (ZLENDH_CLOUD)
+    fxtran_acdc_alloc8 (ZLENDH_CLOUD)
 ELSEIF (KIND (ZLENDH_CLOUD) == 4) THEN
-    alloc4 (ZLENDH_CLOUD)
+    fxtran_acdc_alloc4 (ZLENDH_CLOUD)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLENDM_CLOUD) == 8) THEN
-    alloc8 (ZLENDM_CLOUD)
+    fxtran_acdc_alloc8 (ZLENDM_CLOUD)
 ELSEIF (KIND (ZLENDM_CLOUD) == 4) THEN
-    alloc4 (ZLENDM_CLOUD)
+    fxtran_acdc_alloc4 (ZLENDM_CLOUD)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLENDMM) == 8) THEN
-    alloc8 (ZLENDMM)
+    fxtran_acdc_alloc8 (ZLENDMM)
 ELSEIF (KIND (ZLENDMM) == 4) THEN
-    alloc4 (ZLENDMM)
+    fxtran_acdc_alloc4 (ZLENDMM)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZTHETA) == 8) THEN
-    alloc8 (ZTHETA)
+    fxtran_acdc_alloc8 (ZTHETA)
 ELSEIF (KIND (ZTHETA) == 4) THEN
-    alloc4 (ZTHETA)
+    fxtran_acdc_alloc4 (ZTHETA)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLENDH) == 8) THEN
-    alloc8 (ZLENDH)
+    fxtran_acdc_alloc8 (ZLENDH)
 ELSEIF (KIND (ZLENDH) == 4) THEN
-    alloc4 (ZLENDH)
+    fxtran_acdc_alloc4 (ZLENDH)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLENDM) == 8) THEN
-    alloc8 (ZLENDM)
+    fxtran_acdc_alloc8 (ZLENDM)
 ELSEIF (KIND (ZLENDM) == 4) THEN
-    alloc4 (ZLENDM)
+    fxtran_acdc_alloc4 (ZLENDM)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZRIF) == 8) THEN
-    alloc8 (ZRIF)
+    fxtran_acdc_alloc8 (ZRIF)
 ELSEIF (KIND (ZRIF) == 4) THEN
-    alloc4 (ZRIF)
+    fxtran_acdc_alloc4 (ZRIF)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZNN_CLOUD) == 8) THEN
-    alloc8 (ZNN_CLOUD)
+    fxtran_acdc_alloc8 (ZNN_CLOUD)
 ELSEIF (KIND (ZNN_CLOUD) == 4) THEN
-    alloc4 (ZNN_CLOUD)
+    fxtran_acdc_alloc4 (ZNN_CLOUD)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZNN_CLEAR) == 8) THEN
-    alloc8 (ZNN_CLEAR)
+    fxtran_acdc_alloc8 (ZNN_CLEAR)
 ELSEIF (KIND (ZNN_CLEAR) == 4) THEN
-    alloc4 (ZNN_CLEAR)
+    fxtran_acdc_alloc4 (ZNN_CLEAR)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZGLMINF) == 8) THEN
-    alloc8 (ZGLMINF)
+    fxtran_acdc_alloc8 (ZGLMINF)
 ELSEIF (KIND (ZGLMINF) == 4) THEN
-    alloc4 (ZGLMINF)
+    fxtran_acdc_alloc4 (ZGLMINF)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLMIN) == 8) THEN
-    alloc8 (ZLMIN)
+    fxtran_acdc_alloc8 (ZLMIN)
 ELSEIF (KIND (ZLMIN) == 4) THEN
-    alloc4 (ZLMIN)
+    fxtran_acdc_alloc4 (ZLMIN)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZQVS) == 8) THEN
-    alloc8 (ZQVS)
+    fxtran_acdc_alloc8 (ZQVS)
 ELSEIF (KIND (ZQVS) == 4) THEN
-    alloc4 (ZQVS)
+    fxtran_acdc_alloc4 (ZQVS)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZLH) == 8) THEN
-    alloc8 (ZLH)
+    fxtran_acdc_alloc8 (ZLH)
 ELSEIF (KIND (ZLH) == 4) THEN
-    alloc4 (ZLH)
+    fxtran_acdc_alloc4 (ZLH)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZCPH) == 8) THEN
-    alloc8 (ZCPH)
+    fxtran_acdc_alloc8 (ZCPH)
 ELSEIF (KIND (ZCPH) == 4) THEN
-    alloc4 (ZCPH)
+    fxtran_acdc_alloc4 (ZCPH)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZRH) == 8) THEN
-    alloc8 (ZRH)
+    fxtran_acdc_alloc8 (ZRH)
 ELSEIF (KIND (ZRH) == 4) THEN
-    alloc4 (ZRH)
+    fxtran_acdc_alloc4 (ZRH)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZQL) == 8) THEN
-    alloc8 (ZQL)
+    fxtran_acdc_alloc8 (ZQL)
 ELSEIF (KIND (ZQL) == 4) THEN
-    alloc4 (ZQL)
+    fxtran_acdc_alloc4 (ZQL)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZQV) == 8) THEN
-    alloc8 (ZQV)
+    fxtran_acdc_alloc8 (ZQV)
 ELSEIF (KIND (ZQV) == 4) THEN
-    alloc4 (ZQV)
+    fxtran_acdc_alloc4 (ZQV)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZTHUC) == 8) THEN
-    alloc8 (ZTHUC)
+    fxtran_acdc_alloc8 (ZTHUC)
 ELSEIF (KIND (ZTHUC) == 4) THEN
-    alloc4 (ZTHUC)
+    fxtran_acdc_alloc4 (ZTHUC)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZTHDC) == 8) THEN
-    alloc8 (ZTHDC)
+    fxtran_acdc_alloc8 (ZTHDC)
 ELSEIF (KIND (ZTHDC) == 4) THEN
-    alloc4 (ZTHDC)
+    fxtran_acdc_alloc4 (ZTHDC)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZTHU) == 8) THEN
-    alloc8 (ZTHU)
+    fxtran_acdc_alloc8 (ZTHU)
 ELSEIF (KIND (ZTHU) == 4) THEN
-    alloc4 (ZTHU)
+    fxtran_acdc_alloc4 (ZTHU)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZTHD) == 8) THEN
-    alloc8 (ZTHD)
+    fxtran_acdc_alloc8 (ZTHD)
 ELSEIF (KIND (ZTHD) == 4) THEN
-    alloc4 (ZTHD)
+    fxtran_acdc_alloc4 (ZTHD)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZQSEUIL) == 8) THEN
-    alloc8 (ZQSEUIL)
+    fxtran_acdc_alloc8 (ZQSEUIL)
 ELSEIF (KIND (ZQSEUIL) == 4) THEN
-    alloc4 (ZQSEUIL)
+    fxtran_acdc_alloc4 (ZQSEUIL)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZRIF2) == 8) THEN
-    alloc8 (ZRIF2)
+    fxtran_acdc_alloc8 (ZRIF2)
 ELSEIF (KIND (ZRIF2) == 4) THEN
-    alloc4 (ZRIF2)
+    fxtran_acdc_alloc4 (ZRIF2)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZRI2) == 8) THEN
-    alloc8 (ZRI2)
+    fxtran_acdc_alloc8 (ZRI2)
 ELSEIF (KIND (ZRI2) == 4) THEN
-    alloc4 (ZRI2)
+    fxtran_acdc_alloc4 (ZRI2)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZDELTQH) == 8) THEN
-    alloc8 (ZDELTQH)
+    fxtran_acdc_alloc8 (ZDELTQH)
 ELSEIF (KIND (ZDELTQH) == 4) THEN
-    alloc4 (ZDELTQH)
+    fxtran_acdc_alloc4 (ZDELTQH)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZAA) == 8) THEN
-    alloc8 (ZAA)
+    fxtran_acdc_alloc8 (ZAA)
 ELSEIF (KIND (ZAA) == 4) THEN
-    alloc4 (ZAA)
+    fxtran_acdc_alloc4 (ZAA)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZIGMAS_CLEAR) == 8) THEN
-    alloc8 (ZIGMAS_CLEAR)
+    fxtran_acdc_alloc8 (ZIGMAS_CLEAR)
 ELSEIF (KIND (ZIGMAS_CLEAR) == 4) THEN
-    alloc4 (ZIGMAS_CLEAR)
+    fxtran_acdc_alloc4 (ZIGMAS_CLEAR)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZIGMAS_CLOUD) == 8) THEN
-    alloc8 (ZIGMAS_CLOUD)
+    fxtran_acdc_alloc8 (ZIGMAS_CLOUD)
 ELSEIF (KIND (ZIGMAS_CLOUD) == 4) THEN
-    alloc4 (ZIGMAS_CLOUD)
+    fxtran_acdc_alloc4 (ZIGMAS_CLOUD)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZQVL) == 8) THEN
-    alloc8 (ZQVL)
+    fxtran_acdc_alloc8 (ZQVL)
 ELSEIF (KIND (ZQVL) == 4) THEN
-    alloc4 (ZQVL)
+    fxtran_acdc_alloc4 (ZQVL)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZNEBI) == 8) THEN
-    alloc8 (ZNEBI)
+    fxtran_acdc_alloc8 (ZNEBI)
 ELSEIF (KIND (ZNEBI) == 4) THEN
-    alloc4 (ZNEBI)
+    fxtran_acdc_alloc4 (ZNEBI)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZNEB) == 8) THEN
-    alloc8 (ZNEB)
+    fxtran_acdc_alloc8 (ZNEB)
 ELSEIF (KIND (ZNEB) == 4) THEN
-    alloc4 (ZNEB)
+    fxtran_acdc_alloc4 (ZNEB)
 ELSE
     STOP 1
 ENDIF
 
 
 IF (KIND (ZG2LD2) == 8) THEN
-    alloc8 (ZG2LD2)
+    fxtran_acdc_alloc8 (ZG2LD2)
 ELSEIF (KIND (ZG2LD2) == 4) THEN
-    alloc4 (ZG2LD2)
+    fxtran_acdc_alloc4 (ZG2LD2)
 ELSE
     STOP 1
 ENDIF

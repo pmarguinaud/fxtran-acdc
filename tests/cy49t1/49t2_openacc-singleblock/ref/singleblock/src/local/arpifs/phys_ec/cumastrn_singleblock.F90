@@ -18,8 +18,8 @@ USE YOETHF,ONLY:TTHF
 USE SPP_MOD,ONLY:TSPP_CONFIG
 USE SPP_GEN_MOD,ONLY:SPP_PERT
 USE YOMPERTPAR,ONLY:TPERTPAR
-USE STACK_MOD
-#include "stack.h"
+USE FXTRAN_ACDC_STACK_MOD
+#include "fxtran_acdc_stack.h"
 
 IMPLICIT NONE
 
@@ -226,7 +226,7 @@ REAL (KIND=JPRB)::ZMFS (KLON)
 #include "cuinin.intfb.h"
 #include "cuctracer.intfb.h"
 #include "fcttre.func.h"
-TYPE (STACK) :: YLSTACK
+TYPE (FXTRAN_ACDC_STACK) :: YLSTACK
 
 !$ACC DATA &
 !$ACC&CREATE (ICTOP0, IDPL, IDTOP, ILAB, LLDCUM, LLDDRAF, LLDDRAF3, LLO2, LLSCVFLAG, &
@@ -277,10 +277,10 @@ LLPERT_RTAU=.FALSE.
 
 
 DO JL = KIDIA, KFDIA
-  YLSTACK%L8 = stack_l8 (YSTACK, 1, 1)
-  YLSTACK%U8 = stack_u8 (YSTACK, 1, 1)
-  YLSTACK%L4 = stack_l4 (YSTACK, 1, 1)
-  YLSTACK%U4 = stack_u4 (YSTACK, 1, 1)
+  YLSTACK%L8 = fxtran_acdc_stack_l8 (YFXTRAN_ACDC_STACK, 1, 1)
+  YLSTACK%U8 = fxtran_acdc_stack_u8 (YFXTRAN_ACDC_STACK, 1, 1)
+  YLSTACK%L4 = fxtran_acdc_stack_l4 (YFXTRAN_ACDC_STACK, 1, 1)
+  YLSTACK%U4 = fxtran_acdc_stack_u4 (YFXTRAN_ACDC_STACK, 1, 1)
   
   
   PCAPE (JL)=0.0_JPRB
@@ -485,10 +485,10 @@ ENDDO
 
 
 DO JL = KIDIA, KFDIA
-  YLSTACK%L8 = stack_l8 (YSTACK, 1, 1)
-  YLSTACK%U8 = stack_u8 (YSTACK, 1, 1)
-  YLSTACK%L4 = stack_l4 (YSTACK, 1, 1)
-  YLSTACK%U4 = stack_u4 (YSTACK, 1, 1)
+  YLSTACK%L8 = fxtran_acdc_stack_l8 (YFXTRAN_ACDC_STACK, 1, 1)
+  YLSTACK%U8 = fxtran_acdc_stack_u8 (YFXTRAN_ACDC_STACK, 1, 1)
+  YLSTACK%L4 = fxtran_acdc_stack_l4 (YFXTRAN_ACDC_STACK, 1, 1)
+  YLSTACK%U4 = fxtran_acdc_stack_u4 (YFXTRAN_ACDC_STACK, 1, 1)
 
   
 
@@ -953,10 +953,10 @@ ITOPM2=2
 
 
 DO JL = KIDIA, KFDIA
-  YLSTACK%L8 = stack_l8 (YSTACK, 1, 1)
-  YLSTACK%U8 = stack_u8 (YSTACK, 1, 1)
-  YLSTACK%L4 = stack_l4 (YSTACK, 1, 1)
-  YLSTACK%U4 = stack_u4 (YSTACK, 1, 1)
+  YLSTACK%L8 = fxtran_acdc_stack_l8 (YFXTRAN_ACDC_STACK, 1, 1)
+  YLSTACK%U8 = fxtran_acdc_stack_u8 (YFXTRAN_ACDC_STACK, 1, 1)
+  YLSTACK%L4 = fxtran_acdc_stack_l4 (YFXTRAN_ACDC_STACK, 1, 1)
+  YLSTACK%U4 = fxtran_acdc_stack_u4 (YFXTRAN_ACDC_STACK, 1, 1)
 
   
 
@@ -1105,10 +1105,10 @@ ENDDO
 
 
 DO JL = KIDIA, KFDIA
-  YLSTACK%L8 = stack_l8 (YSTACK, 1, 1)
-  YLSTACK%U8 = stack_u8 (YSTACK, 1, 1)
-  YLSTACK%L4 = stack_l4 (YSTACK, 1, 1)
-  YLSTACK%U4 = stack_u4 (YSTACK, 1, 1)
+  YLSTACK%L8 = fxtran_acdc_stack_l8 (YFXTRAN_ACDC_STACK, 1, 1)
+  YLSTACK%U8 = fxtran_acdc_stack_u8 (YFXTRAN_ACDC_STACK, 1, 1)
+  YLSTACK%L4 = fxtran_acdc_stack_l4 (YFXTRAN_ACDC_STACK, 1, 1)
+  YLSTACK%U4 = fxtran_acdc_stack_u4 (YFXTRAN_ACDC_STACK, 1, 1)
 
   
 
@@ -1164,10 +1164,10 @@ ENDDO
 
 
 DO JL = KIDIA, KFDIA
-  YLSTACK%L8 = stack_l8 (YSTACK, 1, 1)
-  YLSTACK%U8 = stack_u8 (YSTACK, 1, 1)
-  YLSTACK%L4 = stack_l4 (YSTACK, 1, 1)
-  YLSTACK%U4 = stack_u4 (YSTACK, 1, 1)
+  YLSTACK%L8 = fxtran_acdc_stack_l8 (YFXTRAN_ACDC_STACK, 1, 1)
+  YLSTACK%U8 = fxtran_acdc_stack_u8 (YFXTRAN_ACDC_STACK, 1, 1)
+  YLSTACK%L4 = fxtran_acdc_stack_l4 (YFXTRAN_ACDC_STACK, 1, 1)
+  YLSTACK%U4 = fxtran_acdc_stack_u4 (YFXTRAN_ACDC_STACK, 1, 1)
 
   
 
@@ -1423,10 +1423,10 @@ IF (YDML_PHY_EC%YREPHY%LMFTRAC.AND.KTRAC>0) THEN
   
 
   DO JL = KIDIA, KFDIA
-    YLSTACK%L8 = stack_l8 (YSTACK, 1, 1)
-    YLSTACK%U8 = stack_u8 (YSTACK, 1, 1)
-    YLSTACK%L4 = stack_l4 (YSTACK, 1, 1)
-    YLSTACK%U4 = stack_u4 (YSTACK, 1, 1)
+    YLSTACK%L8 = fxtran_acdc_stack_l8 (YFXTRAN_ACDC_STACK, 1, 1)
+    YLSTACK%U8 = fxtran_acdc_stack_u8 (YFXTRAN_ACDC_STACK, 1, 1)
+    YLSTACK%L4 = fxtran_acdc_stack_l4 (YFXTRAN_ACDC_STACK, 1, 1)
+    YLSTACK%U4 = fxtran_acdc_stack_u4 (YFXTRAN_ACDC_STACK, 1, 1)
 
     
 
