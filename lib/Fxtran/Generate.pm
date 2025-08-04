@@ -163,7 +163,12 @@ sub routineToRoutineHead
       &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
     }
 
-  (my $F90out = $F90) =~ s{.F90$}{lc ($opts->{"suffix-$method"}) . '.F90'}eo;
+  my $F90out = $F90;
+
+  if ($opts->{"suffix-$method"})
+    {
+      $F90out =~ s{.F90$}{lc ($opts->{"suffix-$method"}) . '.F90'}eo;
+    }
   
   $F90out = 'File::Spec'->catpath ('', $opts->{dir}, &basename ($F90out));
   
@@ -195,7 +200,6 @@ sub routineToRoutineHead
       &Fxtran::Util::loadModule ('Fxtran::Generate::Checker');
       'Fxtran::Generate::Checker'->$method ($d, %$opts)
     }
-
 
   if ((scalar (@{ $opts->{inlined} || [] }) || $opts->{'inline-contained'}) && (! $opts->{dummy}))
     {
@@ -744,6 +748,43 @@ sub bitrepro
   my ($d, $F90out) = &routineToRoutineHead ($F90, 'bitrepro', $opts);
 
   &Fxtran::BitRepro::makeBitReproducible ($d, %$opts);
+
+  &routineToRoutineTail ($F90out, $d, $opts);
+}
+
+&click (<< "EOF");
+@options{qw (tmp cycle dir)}
+EOF
+sub toplevel
+{
+  my ($opts, @args) = @_;
+
+  my ($F90) = @args;
+
+ if (&dirname ($F90) eq $opts->{dir})
+   {
+     die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
+   }
+
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'toplevel', $opts, qw (-openmp -directive ACDC));
+
+  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
+
+  &Fxtran::Util::loadModule ('Fxtran::TopLevel');
+
+  for my $pu (&F ('./object/file/program-unit', $d))
+    {
+      my $stmt = $pu->firstChild;
+      (my $kind = $stmt->nodeName) =~ s/-stmt$//o;
+      if ($kind eq 'subroutine')
+        {
+          &Fxtran::TopLevel::processSingleRoutine ($pu, %$opts);
+        }
+      else
+        {
+          die;
+        }
+    }
 
   &routineToRoutineTail ($F90out, $d, $opts);
 }
