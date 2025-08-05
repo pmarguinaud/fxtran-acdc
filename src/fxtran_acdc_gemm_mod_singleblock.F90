@@ -45,6 +45,7 @@ ENDIF
 
 IF (TRANSA /= 'N') STOP 1
 IF (TRANSB /= 'T') STOP 1
+IF (KIDIA /= 1) STOP 1
 
 IF (LLSIMPLE_DGEMM) THEN
 
@@ -70,21 +71,16 @@ ELSE
 
    !$ACC DATA PRESENT(A,B,C)
    !$ACC HOST_DATA USE_DEVICE(A,B,C)
-   CALL CUBLASDGEMM ('N','T', M, N, K, ALPHA, A(KIDIA,1), LDA, B(1,1),&
-                    & LDB, BETA, C(KIDIA,1), LDC)
+   CALL CUBLASDGEMM ('N','T', M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
    !$ACC END HOST_DATA
    !$ACC END DATA
    !$ACC WAIT
 
  ELSE
-
-   CALL DGEMM ('N','T', M, N, K, ALPHA, A(KIDIA,1), LDA, B(1,1),&
-              & LDB, BETA, C(KIDIA,1), LDC)
-
+   CALL DGEMM ('N','T', M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
  ENDIF
 #else
- CALL DGEMM ('N','T', M, N, K, ALPHA, A(KIDIA,1), LDA, B(1,1),&
-            & LDB, BETA, C(KIDIA,1), LDC)
+ CALL DGEMM ('N','T', M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
 #endif
 ENDIF
 

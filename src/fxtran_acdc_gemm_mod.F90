@@ -39,6 +39,7 @@ ENDIF
 
 IF (TRANSA /= 'N') STOP 1
 IF (TRANSB /= 'T') STOP 1
+IF (KIDIA /= 1) STOP 1
 
 IF (LLSIMPLE_DGEMM) THEN
 
@@ -58,8 +59,7 @@ IF (LLSIMPLE_DGEMM) THEN
 
 ELSE
 
-  CALL DGEMM ('N','T', M, N, K, ALPHA, A(KIDIA,1), LDA, B(1,1), LDB,&
-             & BETA, C(KIDIA,1), LDC)
+  CALL DGEMM ('N','T', M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
 
 ENDIF
 
