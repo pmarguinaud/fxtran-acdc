@@ -8,14 +8,14 @@ PUBLIC :: FXTRAN_ACDC_GEMM
 
 CONTAINS
 
-SUBROUTINE FXTRAN_ACDC_GEMM (KIDIA, KFDIA, TRANSA, TRANSB, M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC, LDDONE)
+SUBROUTINE FXTRAN_ACDC_GEMM (KIDIA, KFDIA, TRANSA, TRANSB, M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC, LDDONE )
                                 ! VERINT
 INTEGER     :: KIDIA
 INTEGER     :: KFDIA
 CHARACTER*1 :: TRANSA           ! 'N'
 CHARACTER*1 :: TRANSB           ! 'T'
 INTEGER     :: M                ! KPROMA
-INTEGER     :: N                ! KLEVOUT-1   
+INTEGER     :: N                ! KLEVOUT-1 if verder/verint, 1 if verints  
 INTEGER     :: K                ! KLEVIN
 REAL*8      :: ALPHA            ! 1.0_JPRD
 REAL*8      :: A (LDA, *)       ! ZIN
@@ -58,7 +58,8 @@ IF (LLSIMPLE_DGEMM) THEN
 
 ELSE
 
-  CALL DGEMM ('N', 'T', M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
+  CALL DGEMM ('N','T', M, N, K, ALPHA, A(KIDIA,1), LDA, B(1,1), LDB,&
+             & BETA, C(KIDIA,1), LDC)
 
 ENDIF
 
