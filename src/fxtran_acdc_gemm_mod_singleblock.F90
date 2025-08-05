@@ -1,9 +1,5 @@
 MODULE FXTRAN_ACDC_GEMM_MOD_SINGLEBLOCK
 
-#if defined(_OPENACC) && (__NVCOMPILER==1)
-USE CUBLAS
-#endif
-
 IMPLICIT NONE
 
 PRIVATE
@@ -14,6 +10,11 @@ CONTAINS
 
 SUBROUTINE FXTRAN_ACDC_GEMM_SINGLEBLOCK (KIDIA, KFDIA, TRANSA, TRANSB, M, N, K, ALPHA, A, &
                                        & LDA, B, LDB, BETA, C, LDC, LDDONE, LDACC )
+
+#ifdef _CUDA
+USE CUBLAS
+#endif
+
                                 ! VERINT
 INTEGER     :: KIDIA
 INTEGER     :: KFDIA
@@ -66,21 +67,21 @@ IF (LLSIMPLE_DGEMM) THEN
 
 ELSE
 
-#if defined(_OPENACC) && (__NVCOMPILER==1)
- IF (LDACC) THEN
-
-   !$ACC DATA PRESENT(A,B,C)
-   !$ACC HOST_DATA USE_DEVICE(A,B,C)
-   CALL CUBLASDGEMM ('N','T', M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
-   !$ACC END HOST_DATA
-   !$ACC END DATA
-   !$ACC WAIT
-
- ELSE
-   CALL DGEMM ('N','T', M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
- ENDIF
+#ifdef _OPENACC
+  IF (LDACC) THEN
+  
+    !$ACC DATA PRESENT(A,B,C)
+    !$ACC HOST_DATA USE_DEVICE(A,B,C)
+    CALL CUBLASDGEMM ('N','T', M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
+    !$ACC END HOST_DATA
+    !$ACC END DATA
+    !$ACC WAIT
+  
+  ELSE
+    CALL DGEMM ('N','T', M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
+  ENDIF
 #else
- CALL DGEMM ('N','T', M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
+  CALL DGEMM ('N','T', M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
 #endif
 ENDIF
 
