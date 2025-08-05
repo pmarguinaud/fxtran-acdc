@@ -48,7 +48,7 @@ $opts{include} = [split (m/,/o, $opts{include})];
 
 my @sys = qw (NVTX OMP_LIB CUDAFOR IEEE_ARITHMETIC ISO_C_BINDING OPENACC ECCODES CUBLAS ISO_FORTRAN_ENV);
 my @extern_mod = qw (YOMHOOK MPL_MODULE PARKIND1 OML_MOD EC_LUN MPL_MPIF MPL_MODULE MPL_BARRIER_MOD FIELD_MODULE 
-                     FIELD_FACTORY_MODULE FIELD_ACCESS_MODULE ABOR1_ACC_MOD STACK_MOD FXTRAN_ACDC_GEMM_MOD FXTRAN_ACDC_GEMV_T_MOD);
+                     FIELD_FACTORY_MODULE FIELD_ACCESS_MODULE STACK_MOD);
 my @extern_inc = qw (setup_trans.h setup_trans0.h inv_trans.h gath_grid.h gath_spec.h dist_spec.h abor1.intfb.h stack.h);
 
 for my $mod (@extern_mod)
@@ -87,7 +87,7 @@ sub deps
       my ($sub) = ($code =~ m/SUBMODULE\s*\(s*(\w+)\s*\)/goms); $sub = uc ($sub) if ($sub);
 
       my @inc = ($code =~ m/\n\s*#include\s+"(.*?)"/goms);
-      @inc = grep { ! $extern_inc{$_} } @inc;
+      @inc = grep { (! $extern_inc{$_}) && (! m/^fxtran_acdc_/o) } @inc;
 
       my @use = map { uc ($_) } 
                 (($code =~ m/\n\s*use\s+(\w+)/gomis), 
@@ -95,7 +95,7 @@ sub deps
 
       push @use, $sub if ($sub);
 
-      @use = sort grep { ! $sys{uc ($_)} } @use;  
+      @use = sort grep { (! $sys{uc ($_)}) && (! m/^FXTRAN_ACDC_/o) } @use;  
 
       my @mod = map { lc ($_) . '.mod' } @use; 
 
