@@ -14,6 +14,7 @@ use Fxtran::Finder;
 use Fxtran::Style;
 use Fxtran::Decl;
 use Fxtran::Dimension;
+use Fxtran::Module;
 use Fxtran;
 
 sub processSingleSection
@@ -621,6 +622,28 @@ EOF
     }
 
 
+}
+
+sub processSingleModule
+{
+  my ($pu, %opts) = @_;
+
+  my @pu = &F ('./program-unit', $pu);
+
+  &Fxtran::Module::addSuffix ($pu, $opts{'suffix-manyblocks'});
+
+  for my $pu (@pu)
+    {
+      my ($stmt) = &F ('./ANY-stmt', $pu);
+      if ($stmt->nodeName eq 'subroutine-stmt')
+        {
+          &Fxtran::ManyBlocks::processSingleRoutine ($pu, %opts);
+        }
+      else
+        {
+          die ("Unexpected program unit " . $stmt->nodeName);
+        }
+    }
 }
 
 1;

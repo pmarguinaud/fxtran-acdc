@@ -502,7 +502,19 @@ sub manyblocks
   
   for my $pu (@pu)
     {
-      &Fxtran::ManyBlocks::processSingleRoutine ($pu, %$opts);
+      my ($stmt) = &F ('./ANY-stmt', $pu);
+      if ($stmt->nodeName eq 'subroutine-stmt')
+        {
+          &Fxtran::ManyBlocks::processSingleRoutine ($pu, %$opts);
+        }
+      elsif ($stmt->nodeName eq 'module-stmt')
+        {
+          &Fxtran::ManyBlocks::processSingleModule ($pu, %$opts);
+        }
+      else
+        {
+          die ("Unexpected program unit " . $stmt->nodeName);
+        }
     }
   
   @pu = &F ('./object/file/program-unit', $d);
@@ -514,7 +526,7 @@ sub manyblocks
           &Fxtran::NVTX::drHookToNVTX ($pu);
         }
     }
-  
+
   &routineToRoutineTail ($F90out, $d, $opts);
 
   if ($opts->{'create-interface'})
