@@ -496,6 +496,8 @@ sub manyblocks
 
   &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
   
+  $opts->{style}->preProcessForOpenACC ($d, %$opts);
+  
   my @pu = &F ('./object/file/program-unit', $d);
 
   my $NAME = uc (&basename ($F90out, qw (.F90)));
