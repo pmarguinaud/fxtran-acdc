@@ -1142,6 +1142,8 @@ sub setupLocalFields
 
   my ($doc, $t, $hook_suffix, $gpumemstat) = @_;
 
+  &Fxtran::Decl::use ($doc, 'USE FXTRAN_ACDC_GPUMEM_MOD');
+
   my @drhook = &F ('.//if-stmt[.//call-stmt[string(.//procedure-designator)="DR_HOOK"]]', $doc);
   @drhook = @drhook[0,-1];
 
@@ -1155,7 +1157,7 @@ sub setupLocalFields
   $p1->insertAfter (&t ("\n"), $drhook1);
 
 
-  $p2->insertBefore (&t ("\nCALL GPUMEMSTAT (__FILE__, __LINE__, \"END\")\n\n"), $drhook2) if ($gpumemstat);
+  $p2->insertBefore (&t ("\nCALL FXTRAN_ACDC_GPUMEMSTAT (__FILE__, __LINE__, \"END\")\n\n"), $drhook2) if ($gpumemstat);
   $p2->insertBefore (&s ("IF (LHOOK) CALL DR_HOOK ('DELETE_TEMPORARIES$hook_suffix',0,ZHOOK_HANDLE_FIELD_API)"), $drhook2);
   $p2->insertBefore (&t ("\n"), $drhook2);
 
@@ -1201,7 +1203,7 @@ sub setupLocalFields
 
   $p1->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('CREATE_TEMPORARIES$hook_suffix',0,ZHOOK_HANDLE_FIELD_API)"), $drhook1);
   $p1->insertAfter (&t ("\n"), $drhook1);
-  $p1->insertAfter (&t ("\n\nCALL GPUMEMSTAT (__FILE__, __LINE__, \"BEGIN\")\n\n"), $drhook1) if ($gpumemstat);
+  $p1->insertAfter (&t ("\n\nCALL FXTRAN_ACDC_GPUMEMSTAT (__FILE__, __LINE__, \"BEGIN\")\n\n"), $drhook1) if ($gpumemstat);
 
   $p2->insertBefore (&s ("IF (LHOOK) CALL DR_HOOK ('DELETE_TEMPORARIES$hook_suffix',1,ZHOOK_HANDLE_FIELD_API)"), $drhook2);
   $p2->insertBefore (&t ("\n"), $drhook2);
