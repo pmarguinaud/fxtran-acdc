@@ -45,10 +45,16 @@ sub getNoExec
   my @prev = &F ('preceding::*', $exec);
 
   my $prev;
+
   for my $p (reverse (@prev))
     {
       next if ($p->nodeName eq '#text');
       next if ($p->nodeName eq 'C');
+      if ($p->nodeName eq 'ACDC-directive')
+        {
+          next if ($p->textContent =~ m/^PARALLEL/o);
+        }
+      next if ($p->nodeName eq 'ACDC');
       $prev = $p;
       last;
     }
