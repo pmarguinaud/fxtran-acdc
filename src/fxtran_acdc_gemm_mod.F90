@@ -67,7 +67,8 @@ IF (LLSIMPLE_DGEMM) THEN
 
 ELSE
 
-  CALL DGEMM ('N','T', M, N, K, ALPHA, A (1, 1), LDA, B (1, 1), LDB, BETA, C (1, 1), LDC)
+! CALL DGEMM ('N','T', M, N, K, ALPHA, A (1, 1), LDA, B (1, 1), LDB, BETA, C (1, 1), LDC)
+  CALL DGEMM ('N','T', KFDIA-KIDIA+1, N, K, ALPHA, A (1, 1), LDA, B (1, 1), LDB, BETA, C (1, 1), LDC)
 
 ENDIF
 
