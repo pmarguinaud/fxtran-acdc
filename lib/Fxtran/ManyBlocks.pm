@@ -101,11 +101,20 @@ sub createParallelSections
   
   my @par = &F ('.//parallel-section', $ep);
   
-  for (my $i = 0; $i < scalar (@par)-1; $i++)
+  PAR : for (my $i = 0; $i < scalar (@par)-1; $i++)
     {
-      my @count0 = &F ('.//ANY-stmt', $par[$i+0]);
-      my @count1 = &F ('.//ANY-stmt', $par[$i+1]);
-      next if (scalar (@count0) + scalar (@count1) > $opts{'max-statements-per-parallel'});
+      my @stmt0 = &F ('.//ANY-stmt', $par[$i+0]);
+      my @stmt1 = &F ('.//ANY-stmt', $par[$i+1]);
+
+      for (@stmt0, @stmt1)
+        {
+          next PAR if ($_->nodeName eq 'call-stmt');
+        }
+
+      my $count0 = scalar (@stmt0);
+      my $count1 = scalar (@stmt1);
+
+      next if ($count0 + $count1 > $opts{'max-statements-per-parallel'});
 
       if ($mergeParallel->($par[$i+0], $par[$i+1]))
         {
