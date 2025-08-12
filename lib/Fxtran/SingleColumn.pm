@@ -214,6 +214,13 @@ sub processSingleRoutine
         for (&s ('CALL ABOR1 ("ERROR: WRONG SETTINGS")'), &t ("\n"));
     }    
 
+  # Process SKIP sections
+
+  for my $skip (&F ('.//skip-section', $pu))
+    {    
+      $skip->unbindNode ();
+    }    
+
   my $find = $opts{find};
 
   my @pointer;
