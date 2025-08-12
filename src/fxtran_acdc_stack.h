@@ -3,7 +3,7 @@
 
 USE FXTRAN_ACDC_ABORT_MOD
 
-#ifdef __INTEL_COMPILER
+#ifdef __PGI
 #define fxtran_acdc_stack_init(ydstack, ibl, nbl, ...) FXTRAN_ACDC_STACK (0, 0, 0, 0); CALL FXTRAN_ACDC_STACK_INIT (ydstack, YFXTRAN_ACDC_STACK, ibl, nbl, ##__VA_ARGS__)
 #endif
 
