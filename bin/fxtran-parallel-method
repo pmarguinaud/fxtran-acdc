@@ -1,0 +1,5 @@
+
+
+objcopy --dump-section  .parallelmethod.OPENACCSINGLECOLUMN=OPENACCSINGLECOLUMN.txt  build/bin/MASTERODB
+
+

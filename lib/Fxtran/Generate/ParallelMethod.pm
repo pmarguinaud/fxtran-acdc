@@ -1,5 +1,7 @@
 package Fxtran::Generate::ParallelMethod;
 
+use Data::Dumper;
+
 use strict;
 
 sub generateCCode
@@ -8,8 +10,8 @@ sub generateCCode
 
   my %section2method;
   
-  my @method = ($d->textContent =~ m/LPARALLELMETHOD\s*\('([^']+)'\s*,\s*'([^']+)'\s*\)/goms);
-  
+  my @method = ($d->textContent =~ m/\bFXTRAN_ACDC_LPARALLELMETHOD\s*\('([^']+)'\s*,\s*'([^']+)'\s*\)/goms);
+
   while (my ($method, $section) = splice (@method, 0, 2)) 
     {   
       for ($method, $section)
@@ -19,12 +21,13 @@ sub generateCCode
         }
       $section2method{$section}{$method} = 1;
     }   
-  
+
   my $fh = 'FileHandle'->new (">$opts->{dir}/parallelmethod.c");
   
-  for my $METHOD (qw (OPENMP OPENMPSINGLECOLUMN OPENACCSINGLECOLUMN))
+  for my $METHOD (qw (OPENMP OPENMPSINGLECOLUMN OPENACCSINGLECOLUMN PARALLEL))
     {
-      $fh->printf ('static const char %s [] __attribute__ ((section (".parallelmethod.%s"))) = ""' . "\n", $METHOD, $METHOD);
+      $fh->printf ('static const char %s [] __attribute__ ((section (".fxtran.parallelmethod.%s"))) = ""' . "\n", $METHOD, $METHOD);
+
       for my $section (sort keys (%section2method))
         {
           my @method = ($METHOD);
@@ -34,11 +37,14 @@ sub generateCCode
   
           push @method, ('OPENMP', 'UPDATEVIEW');
   
+          unshift (@method, 'HOSTMANYBLOCKS')    if ($METHOD =~ m/^OPENMPSINGLECOLUMN/o);
+          unshift (@method, 'OPENACCMANYBLOCKS') if ($METHOD =~ m/^OPENACC/o);
+
           for my $method (@method)
             {
               if ($section2method{$section}{$method})
                 {
-                  $fh->printf ('"%-40s %s\\n"', $method, $section);
+                  $fh->printf ('"%-40s %86s\\n"', $method, $section);
                   $fh->print ("\n");
                   last;
                 }
@@ -48,6 +54,7 @@ sub generateCCode
     }
   
   $fh->close ();
+
 }
 
 1;

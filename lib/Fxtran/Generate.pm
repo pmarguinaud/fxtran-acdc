@@ -756,6 +756,8 @@ sub bitrepro
 
 &click (<< "EOF");
 @options{qw (tmp cycle dir)}
+  switch=s                  -- Set this variable to true if the parallel mode is enabled
+  parallelmethod-section    -- Embed parallelmethod information in binary
 EOF
 sub toplevel
 {
@@ -789,6 +791,13 @@ sub toplevel
     }
 
   &routineToRoutineTail ($F90out, $d, $opts);
+
+  if ($opts->{'parallelmethod-section'})
+    {
+      &Fxtran::Util::loadModule ('Fxtran::Generate::ParallelMethod');
+      &Fxtran::Generate::ParallelMethod::generateCCode ($d, $opts);
+    }
+
 }
 
 1;
