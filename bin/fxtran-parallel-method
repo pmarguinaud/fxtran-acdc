@@ -1,5 +1,33 @@
+#!/usr/bin/env perl
 
+use warnings;
 
-objcopy --dump-section  .parallelmethod.OPENACCSINGLECOLUMN=OPENACCSINGLECOLUMN.txt  build/bin/MASTERODB
+use Data::Dumper;
+
+use strict;
+
+my $bin = shift;
+
+my @s;
+
+for my $line (split (m/\n/o, `objdump -h $bin`))
+  {
+    if ($line =~ m/^\s*\d+\s*(\S+)/o)
+      {
+        push @s, $1;
+      }
+  }
+
+for my $s (@s)
+  {
+    if ($s =~ m/^\.fxtran\.parallelmethod\.(\w+)$/o)
+      {
+        my $method = $1;
+        my @cmd = ('objcopy', '--dump-section',  "$s=$method", $bin);
+        system (@cmd)
+          and die ("Command `@cmd' failed\n");
+      }
+  }
+
 
 
