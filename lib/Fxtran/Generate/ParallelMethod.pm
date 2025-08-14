@@ -35,7 +35,7 @@ sub generateCCode
           push @method, ('OPENMPMETHOD')             if ($METHOD =~ m/^OPENMP/o);
           push @method, ('OPENACCMETHOD', 'OPENACC') if ($METHOD =~ m/^OPENACC/o);
   
-          push @method, ('OPENMP', 'UPDATEVIEW');
+          push @method, ('OPENMP', 'UPDATEVIEW') if ($METHOD ne 'PARALLEL');
   
           unshift (@method, 'HOSTMANYBLOCKS')    if ($METHOD =~ m/^OPENMPSINGLECOLUMN/o);
           unshift (@method, 'OPENACCMANYBLOCKS') if ($METHOD =~ m/^OPENACC/o);

@@ -23,7 +23,7 @@ for my $s (@s)
     if ($s =~ m/^\.fxtran\.acdc\.parallelmethod\.(\w+)$/o)
       {
         my $method = $1;
-        my @cmd = ('objcopy', '--dump-section',  "$s=$method", $bin);
+        my @cmd = ('objcopy', '--dump-section',  "$s=fxtran.acdc.parallelmethod.$method.txt", $bin);
         system (@cmd)
           and die ("Command `@cmd' failed\n");
       }
