@@ -26,7 +26,7 @@ sub generateCCode
   
   for my $METHOD (qw (OPENMP OPENMPSINGLECOLUMN OPENACCSINGLECOLUMN PARALLEL))
     {
-      $fh->printf ('static const char %s [] __attribute__ ((section (".fxtran.parallelmethod.%s"))) = ""' . "\n", $METHOD, $METHOD);
+      $fh->printf ('static const char %s [] __attribute__ ((section (".fxtran.acdc.parallelmethod.%s"))) = ""' . "\n", $METHOD, $METHOD);
 
       for my $section (sort keys (%section2method))
         {

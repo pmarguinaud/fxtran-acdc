@@ -20,7 +20,7 @@ for my $line (split (m/\n/o, `objdump -h $bin`))
 
 for my $s (@s)
   {
-    if ($s =~ m/^\.fxtran\.parallelmethod\.(\w+)$/o)
+    if ($s =~ m/^\.fxtran\.acdc\.parallelmethod\.(\w+)$/o)
       {
         my $method = $1;
         my @cmd = ('objcopy', '--dump-section',  "$s=$method", $bin);
