@@ -262,6 +262,8 @@ sub routineToRoutineTail
   inline-comment            -- Add a comment when inlining a routine
   create-interface          -- Generate an interface file
   openmptoparallel          -- Transform OpenMP parallel sections into ACDC parallel sections
+  max-statements-per-parallel=s   -- Maximum number of statements per parallel section
+  parallel-iterator-list=s@       -- List of iterators for generating parallel sections (add to JLON, JLEV)
 EOF
 sub semiimplicit
 {
@@ -439,6 +441,8 @@ sub pointerparallel
   drhooktonvtx                    -- Change DrHook calls into NVTX calls
   inlined=s@                      -- List of routines to inline
   openmptoparallel                -- Transform OpenMP parallel sections into ACDC parallel sections
+  max-statements-per-parallel=s   -- Maximum number of statements per parallel section
+  parallel-iterator-list=s@       -- List of iterators for generating parallel sections (add to JLON, JLEV)
 EOF
 sub singleblock
 {

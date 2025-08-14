@@ -17,6 +17,11 @@ sub jlon
   return 'JSP';
 }
 
+sub jlev
+{
+  return 'JLEV';
+}
+
 sub kidia
 {
   return 'KSTA';

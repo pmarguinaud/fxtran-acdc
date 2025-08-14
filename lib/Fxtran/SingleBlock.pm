@@ -13,6 +13,7 @@ use Fxtran::Pragma;
 use Fxtran::Finder;
 use Fxtran::Style;
 use Fxtran::Decl;
+use Fxtran::DetectParallel;
 use Fxtran;
 
 sub processSingleRoutine
@@ -43,6 +44,7 @@ sub processSingleRoutine
 
   my $var2dim = &Fxtran::Loop::getVarToDim ($pu, style => $style);
   
+  &Fxtran::DetectParallel::createParallelSections ($pu, $var2dim, %opts) if ($opts{'max-statements-per-parallel'});
 
   my %pointer;
 
