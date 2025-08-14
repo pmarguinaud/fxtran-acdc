@@ -303,7 +303,7 @@ for my $F90 (@F90)
       }
 
     $fh->print (<< "EOF");
-$obj: boot \$(SRC)/$f90 @deps
+$obj: \$(BOOT) \$(SRC)/$f90 @deps
 	\$(FC) -o $obj -c \$(SRC)/$f90
 
 EOF
@@ -331,7 +331,7 @@ for my $C (<$opts{SRC}/*.c>)
     my $obj = &obj ($C);
     my $c = &basename ($C);
     $fh->print (<< "EOF");
-$obj: boot \$(SRC)/$c
+$obj: \$(BOOT) \$(SRC)/$c
 	\$(CC) -o $obj -c \$(SRC)/$c
 EOF
     push @obj, $obj;
@@ -345,7 +345,7 @@ for my $prg (@prg)
     my $exe = &exe ($prg);
     my $obj = &obj ($prg);
     $fh->print (<< "EOF");
-$exe: boot $obj @obj
+$exe: \$(BOOT) $obj @obj
 	\$(FC) -o $exe $obj @obj \$(LIBS)
 
 EOF
