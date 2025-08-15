@@ -3,6 +3,7 @@
 use warnings;
 
 use Data::Dumper;
+use FileHandle;
 
 use strict;
 
@@ -23,9 +24,17 @@ for my $s (@s)
     if ($s =~ m/^\.fxtran\.acdc\.parallelmethod\.(\w+)$/o)
       {
         my $method = $1;
-        my @cmd = ('objcopy', '--dump-section',  "$s=fxtran.acdc.parallelmethod.$method.txt", $bin);
+
+        my $f = "fxtran.acdc.parallelmethod.$method.txt";
+
+        my @cmd = ('objcopy', '--dump-section',  "$s=$f", $bin);
         system (@cmd)
           and die ("Command `@cmd' failed\n");
+
+        my $data = do { my $fh = 'FileHandle'->new ("<$f"); local $/ = undef; <$fh> };
+        $data =~ s/\0//goms;
+
+        'FileHandle'->new (">$f")->print ($data);
       }
   }
 
