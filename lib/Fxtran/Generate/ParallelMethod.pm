@@ -24,18 +24,18 @@ sub generateCCode
 
   my $fh = 'FileHandle'->new (">$opts->{dir}/parallelmethod.c");
   
-  for my $METHOD (qw (OPENMP OPENMPSINGLECOLUMN OPENACCSINGLECOLUMN PARALLEL))
+  for my $METHOD (qw (OPENMP OPENMPSINGLECOLUMN OPENACCSINGLECOLUMN))
     {
       $fh->printf ('static const char %s [] __attribute__ ((section (".fxtran.acdc.parallelmethod.%s"))) = ""' . "\n", $METHOD, $METHOD);
 
       for my $section (sort keys (%section2method))
         {
-          my @method = ($METHOD);
+          my @method = ($METHOD, 'PARALLEL');
   
           push @method, ('OPENMPMETHOD')             if ($METHOD =~ m/^OPENMP/o);
           push @method, ('OPENACCMETHOD', 'OPENACC') if ($METHOD =~ m/^OPENACC/o);
   
-          push @method, ('OPENMP', 'UPDATEVIEW') if ($METHOD ne 'PARALLEL');
+          push @method, ('OPENMP', 'UPDATEVIEW');
   
           unshift (@method, 'HOSTMANYBLOCKS')    if ($METHOD =~ m/^OPENMPSINGLECOLUMN/o);
           unshift (@method, 'OPENACCMANYBLOCKS') if ($METHOD =~ m/^OPENACC/o);

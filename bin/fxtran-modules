@@ -2,38 +2,42 @@
 
 use warnings;
 
-use strict;
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
+use Data::Dumper;
+use File::Find;
+use File::Spec;
+use Cwd;
 
 use FindBin qw ($Bin);
+use lib "$Bin/../lib";
 
-use File::Find;
+use strict;
 
-my @skip = qw (Fxtran::FieldAPI::Parallel);
+use Fxtran::Common;
+use Fxtran::Bt;
 
-sub wanted
+my $lib = "$Bin/../lib";
+
+$ENV{PERL5LIB} = "$lib:$ENV{PERL5LIB}";
+
+&find ({wanted => sub 
 {
-  my $f = $File::Find::name;
-
-  return unless ((-f $f) && ($f =~ m/\.pm$/o));
-
-  my $pm = $f;
-
-  for ($pm)
-    {
-      s,^\.\/,,o;
-      s,/,::,go;
-      s/\.pm$//o;
-    }
-
-  return if (grep { $_ eq $pm } @skip);
-
+  return unless (-f (my $pm = $File::Find::name));
+  $pm = 'File::Spec'->abs2rel ($pm, $lib);
+  $pm =~ s/\.pm$//o;
+  $pm =~ s,/,::,go;
+ 
   print "$pm\n";
-  
-  system ("perl -e ' use Fxtran::Common; use $pm '")
-    and die ("Cannot load $pm\n");
-}
 
-chdir ("$Bin/../lib");
+  system ('perl', '-w', -e => "use $pm") 
+   and die ("Loading $pm failed");
 
-&find ({wanted => \&wanted, no_chdir => 1}, '.');
+}, no_chdir => 1}, $lib);
+
+
 
