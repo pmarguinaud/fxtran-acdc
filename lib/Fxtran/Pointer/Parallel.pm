@@ -810,6 +810,45 @@ sub makeParallel
   my %POST = map { ($_, 1) } grep { $_ } @$POST;
 
   my $FILTER = $par->getAttribute ('filter');
+
+  if ($FILTER)
+    {
+
+# Remove the IF condition in this case :
+#
+#  IF (ANY(LLTRIG1(:))) THEN
+#  
+#     CALL SHALLOW_CONVECTION_PART2_SELECT &
+#     & (YDCVP_SHAL, YDCVPEXT, YDCST_MNH, D, YDNSV, YDCONVPAR,                     &
+#     & IKICE, LSETTADJ, OTADJS, ZPABS, ZZZ, ZT, ZRV, ZRC, ZRI,                    &
+#     & LLOCHTRANS, I_KCH1, ZSHAL_ZCH1, ZRDOCP, ZTHT, ZSTHV, ZSTHES, ISDPL, ISPBL, &
+#     & ISLCL, ZSTHLCL, ZSTLCL, ZSRVLCL, ZSWLCL, ZSZLCL, ZSTHVELCL, LLTRIG1,       &
+#     & ZZUMF, ZTTEN, ZRVTEN, ZRCTEN, ZRITEN, ICLTOPS, ICLBASS, ZSHAL_ZCH1TENS,    &   
+#     & COUNT(LLTRIG1(D%NIB:D%NIE)))
+#  
+#  ENDIF
+
+      for my $if_construct (&F ('.//if-construct[./if-block/if-then-stmt[./condition-E/named-E[string(N)="?"]]]', $FILTER, $par))
+        {
+          my @block = &F ('./if-block', $if_construct);
+
+          die ("Multiple blocks in filter") if (scalar (@block) > 1);
+
+          my @node = &F ('./node()', $block[0]);
+
+          pop (@node); shift (@node); # Remove IF (...) THEN & ENDIF
+
+          # Drop if construct
+
+          for (@node)
+            {
+              $if_construct->parent->insertBefore ($_, $if_construct);
+            }
+
+          $if_construct->unbindNode ();
+        }
+    }
+
   my $SUBROUTINE = $FILTER && $par->getAttribute ('subroutine');
 
   if ($SUBROUTINE)
