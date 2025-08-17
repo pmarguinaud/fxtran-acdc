@@ -26,7 +26,7 @@ sub processSingleRoutine
 {
   my ($pu, %opts) = @_;
 
-  &Fxtran::Decl::use ($pu, "USE FXTRAN_ACDC_PARALLELMETHOD_MOD");
+  &Fxtran::Decl::use ($pu, "USE FXTRAN_ACDC_PARALLELMETHOD_MOD", "USE FXTRAN_ACDC_STACK_MOD");
 
   my ($dp) = &F ('./specification-part/declaration-part', $pu);
   my ($ep) = &F ('./execution-part', $pu);
@@ -47,6 +47,9 @@ sub processSingleRoutine
           my ($proc) = &F ('./procedure-designator/named-E/N/n/text()', $call);
           $proc->setData ($proc->textContent . '_PARALLEL');
         }
+
+      $par->insertBefore ($_, $par->firstChild) for (&t ("\n"), &s ("CALL YFXTRAN_ACDC_STACK%INIT (YDCPG_OPTS%KLON, YDCPG_OPTS%KFLEVG, YDCPG_OPTS%KGPBLKS)"), &t ("\n"));
+      $par->appendChild ($_) for (&t ("\n"), &s ("CALL YFXTRAN_ACDC_STACK%FINAL ()"), &t ("\n"));
     }
 
   my %name2type;
