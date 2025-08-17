@@ -22,7 +22,7 @@ sub includeExtension
 sub noComputeRoutine
 {
   shift;
-  return 1 if ($_[0] =~ m/^(?:ABOR1|DR_HOOK)$/o);
+  return 1 if ($_[0] =~ m/^(?:ABOR1|DR_HOOK|PCRC)$/o);
 }
 
 sub handleMessages

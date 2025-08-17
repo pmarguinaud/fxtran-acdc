@@ -188,6 +188,7 @@ EOF
     {
       my ($proc) = &F ('./procedure-designator/named-E/N/n/text()', $call);
       next if ($proc eq 'ABOR1');
+      next if ($proc eq 'PCRC');
       $proc->setData ($proc->textContent . $opts{'suffix-singlecolumn'});
       my ($argspec) = &F ('./arg-spec', $call);
       $argspec->appendChild (&t (','));

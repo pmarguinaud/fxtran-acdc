@@ -272,7 +272,8 @@ sub processSingleRoutine
               . '[not(string(procedure-designator)="DR_HOOK")]'  # Skip DR_HOOK calls
               . '[not(string(procedure-designator)="ABOR1")]'    # Skip ABOR1 calls
               . '[not(string(procedure-designator)="ABORT")]'    # Skip ABORT calls
-              . '[not(string(procedure-designator)="GETENV")]'   # Skip ABORT calls
+              . '[not(string(procedure-designator)="PCRC")]'     # Skip PCRC calls
+              . '[not(string(procedure-designator)="GETENV")]'   # Skip GETENV calls
               . '[not(procedure-designator/named-E/R-LT)]'       # Skip objects calling methods
               . '[not(ancestor::serial-section)]', $pu);          # Skip calls in serial sections
   
@@ -1054,7 +1055,7 @@ sub addExtraIndex
 
 sub callParallelRoutine
 {
-# Process CALL statement outside PARALLEL sections
+# Process CALL statement outside PARALLEL sections
 # Replace NPROMA array arguments by field descriptor arguments; no array section allowed
 
   my ($call, $t, $types) = @_;

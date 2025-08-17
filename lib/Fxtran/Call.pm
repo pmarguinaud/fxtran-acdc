@@ -107,6 +107,11 @@ sub getArgumentIntent
 
   my ($proc) = &F ('./procedure-designator', $call, 1);
 
+  if ($proc eq 'PCRC')
+    {
+      return 'IN';
+    }
+
   my $intf = &Fxtran::Subroutine::getInterface ($proc, $find);
 
   my ($stmt) = &F ('.//program-unit/subroutine-stmt[string(subroutine-N)="?"]', $proc, $intf);
