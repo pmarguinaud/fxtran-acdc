@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <gnu/lib-names.h>
 
 void fxtran_acdc_field_api_stat_ (long * device_cur, long * device_max)
 {
