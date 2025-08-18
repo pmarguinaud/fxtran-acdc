@@ -1,5 +1,11 @@
 MODULE FXTRAN_ACDC_CRC64_INTRINSIC_MOD
 
+!
+! Copyright 2025 Meteo-France
+! All rights reserved
+! philippe.marguinaud@meteo.fr
+!
+
 IMPLICIT NONE
 
 INTEGER, PARAMETER :: JPIM = 4, JPRM = 4, JPRD = 8, JPIB = 8, JPLM = 4

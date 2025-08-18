@@ -1,5 +1,11 @@
 MODULE FXTRAN_ACDC_GEMM_MOD_MANYBLOCKS
 
+!
+! Copyright 2025 Meteo-France
+! All rights reserved
+! philippe.marguinaud@meteo.fr
+!
+
 PRIVATE
 PUBLIC :: FXTRAN_ACDC_GEMM_MANYBLOCKS
 

@@ -1,5 +1,11 @@
 MODULE FXTRAN_ACDC_GEMV_MOD_OPENACC
 
+!
+! Copyright 2025 Meteo-France
+! All rights reserved
+! philippe.marguinaud@meteo.fr
+!
+
 IMPLICIT NONE
 
 PRIVATE

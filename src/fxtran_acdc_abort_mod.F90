@@ -1,5 +1,11 @@
 MODULE FXTRAN_ACDC_ABORT_MOD
 
+!
+! Copyright 2025 Meteo-France
+! All rights reserved
+! philippe.marguinaud@meteo.fr
+!
+
 CONTAINS
 
 SUBROUTINE FXTRAN_ACDC_ABORT (CDMESS)

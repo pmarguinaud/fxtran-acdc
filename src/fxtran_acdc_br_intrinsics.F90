@@ -1,5 +1,11 @@
 MODULE FXTRAN_ACDC_BR_INTRINSICS
 
+!
+! Copyright 2025 Meteo-France
+! All rights reserved
+! philippe.marguinaud@meteo.fr
+!
+
 USE, INTRINSIC :: ISO_C_BINDING
 
 IMPLICIT NONE

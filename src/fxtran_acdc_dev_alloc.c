@@ -5,6 +5,12 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
+/*
+ * Copyright 2025 Meteo-France
+ * All rights reserved
+ * philippe.marguinaud@meteo.fr
+ */
+
 static void (*dev_malloc) (size_t, void **) = NULL;
 static void (*dev_free) (void *) = NULL;
 

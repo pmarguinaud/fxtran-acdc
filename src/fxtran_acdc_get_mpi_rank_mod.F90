@@ -1,5 +1,11 @@
 MODULE FXTRAN_ACDC_GET_MPI_RANK_MOD
 
+!
+! Copyright 2025 Meteo-France
+! All rights reserved
+! philippe.marguinaud@meteo.fr
+!
+
 IMPLICIT NONE
 
 CONTAINS

@@ -14,6 +14,12 @@
 #include <accel.h>
 #endif
 
+/*
+ * Copyright 2025 Meteo-France
+ * All rights reserved
+ * philippe.marguinaud@meteo.fr
+ */
+
 static int runCommand (const char * fmt, ...)
 {
   char command[512];

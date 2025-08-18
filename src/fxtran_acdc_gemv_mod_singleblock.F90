@@ -1,5 +1,11 @@
 MODULE FXTRAN_ACDC_GEMV_MOD_SINGLEBLOCK
 
+!
+! Copyright 2025 Meteo-France
+! All rights reserved
+! philippe.marguinaud@meteo.fr
+!
+
 #if defined(_OPENACC) && (__NVCOMPILER==1)
 USE CUBLAS
 #endif

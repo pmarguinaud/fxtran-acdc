@@ -1,5 +1,11 @@
 MODULE FXTRAN_ACDC_STACK_MOD
 
+!
+! Copyright 2025 Meteo-France
+! All rights reserved
+! philippe.marguinaud@meteo.fr
+!
+
 IMPLICIT NONE
 
 INTEGER, PARAMETER :: JPIA = 8, JPIB = 8
@@ -171,6 +177,8 @@ ELSE
   CALL GETENV ('FXTRAN_ACDC_STACKSIZE8', CLENV)
   IF (CLENV /= '') READ (CLENV, *) ISIZE8
 ENDIF
+
+WRITE (0, *) " ISIZE4 = ", ISIZE4, " ISIZE8 = ", ISIZE8
 
 SELF%IALIGN = 8
 

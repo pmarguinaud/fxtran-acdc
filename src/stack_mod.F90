@@ -1,5 +1,11 @@
 MODULE STACK_MOD
 
+!
+! Copyright 2025 Meteo-France
+! All rights reserved
+! philippe.marguinaud@meteo.fr
+!
+
 USE FXTRAN_ACDC_STACK_MOD, ONLY : STACK => FXTRAN_ACDC_STACK, &
 & YSTACK => YFXTRAN_ACDC_STACK, STACK_INIT => FXTRAN_ACDC_STACK_INIT, &
 & STACK_ALLOC => FXTRAN_ACDC_STACK_ALLOC, OPERATOR (+), OPERATOR (-)

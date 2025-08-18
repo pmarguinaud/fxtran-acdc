@@ -1,5 +1,11 @@
 MODULE FXTRAN_ACDC_DEV_MALLOC_MOD
 
+!
+! Copyright 2025 Meteo-France
+! All rights reserved
+! philippe.marguinaud@meteo.fr
+!
+
 USE ISO_C_BINDING
 
 IMPLICIT NONE

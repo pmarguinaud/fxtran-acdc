@@ -1,5 +1,11 @@
 MODULE FXTRAN_ACDC_ARRAY_COPY_MOD
 
+!
+! Copyright 2025 Meteo-France
+! All rights reserved
+! philippe.marguinaud@meteo.fr
+!
+
 IMPLICIT NONE
 
 INTEGER, PARAMETER :: JPRM = 4, JPRD = 8, JPIM = 4

@@ -16,6 +16,12 @@
 
 #define OPENACC_BIND_TXT "openacc_bind.txt"
 
+/*
+ * Copyright 2025 Meteo-France
+ * All rights reserved
+ * philippe.marguinaud@meteo.fr
+ */
+
 static int DEVNUM = -1;
 static int MPIRANK = -1;
 

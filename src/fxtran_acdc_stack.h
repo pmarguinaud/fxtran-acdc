@@ -1,6 +1,12 @@
 #ifndef _STACK_N
 #define _STACK_N
 
+!
+! Copyright 2025 Meteo-France
+! All rights reserved
+! philippe.marguinaud@meteo.fr
+!
+
 USE FXTRAN_ACDC_ABORT_MOD
 
 #ifdef __PGI

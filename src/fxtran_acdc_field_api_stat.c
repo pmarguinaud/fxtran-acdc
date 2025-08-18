@@ -5,6 +5,12 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
+/*
+ * Copyright 2025 Meteo-France
+ * All rights reserved
+ * philippe.marguinaud@meteo.fr
+ */
+
 void fxtran_acdc_field_api_stat_ (long * device_cur, long * device_max)
 {
   void * h = NULL;
