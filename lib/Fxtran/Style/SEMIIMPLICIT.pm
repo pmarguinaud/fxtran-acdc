@@ -1,5 +1,11 @@
 package Fxtran::Style::SEMIIMPLICIT;
 
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
 use Data::Dumper;
 
 use base qw (Fxtran::Style::IAL);

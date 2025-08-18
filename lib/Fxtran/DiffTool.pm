@@ -1,5 +1,11 @@
 package Fxtran::DiffTool;
 
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
 use strict;
 
 sub diff

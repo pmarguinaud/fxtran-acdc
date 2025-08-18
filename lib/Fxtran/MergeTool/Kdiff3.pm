@@ -1,5 +1,11 @@
 package Fxtran::MergeTool::Kdiff3;
 
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
 use base qw (Fxtran::MergeTool);
 
 use strict;

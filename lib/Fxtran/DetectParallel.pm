@@ -1,5 +1,11 @@
 package Fxtran::DetectParallel;
 
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
 use Data::Dumper;
 
 use strict;

@@ -1,5 +1,11 @@
 package Fxtran::Interface;
 
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
 use File::Basename;
 use FileHandle;
 use Data::Dumper;

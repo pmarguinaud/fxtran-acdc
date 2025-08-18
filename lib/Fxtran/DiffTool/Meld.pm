@@ -1,5 +1,11 @@
 package Fxtran::DiffTool::Meld;
 
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
 use base qw (Fxtran::DiffTool);
 
 use strict;

@@ -1,5 +1,11 @@
 package Fxtran::Formatter::regular;
 
+#
+# Copyright 2025 Meteo-France
+# All rights reserved
+# philippe.marguinaud@meteo.fr
+#
+
 use base qw (Fxtran::Formatter);
 
 use strict;
