@@ -20,6 +20,8 @@ SUBROUTINE FXTRAN_ACDC_GEMM_OPENACC (KIDIA, KFDIA, TRANSA, TRANSB, M, N, K, ALPH
 !$acc routine seq
 
 USE FXTRAN_ACDC_STACK_MOD
+USE FXTRAN_ACDC_ABORT_MOD
+
                                              ! VERINT
 INTEGER                  :: KIDIA
 INTEGER                  :: KFDIA
@@ -41,18 +43,17 @@ TYPE (FXTRAN_ACDC_STACK) :: YDSTACK
 
 INTEGER :: JM, JN, JK
 
-IF (TRANSA /= 'N') STOP 1
-IF (TRANSB /= 'T') STOP 1
-IF (KIDIA /= 1) STOP 1
+IF (TRANSA /= 'N') CALL FXTRAN_ACDC_ABORT ('FXTRAN_ACDC_GEMM: TRANSA /= N')
+IF (TRANSB /= 'T') CALL FXTRAN_ACDC_ABORT ('FXTRAN_ACDC_GEMM: TRANSB /= T')
 
-DO JM = KIDIA, KFDIA
+JM = KIDIA
+
+DO JN = 1, N
+  C (JM, JN) = 0.
+ENDDO
+DO JK = 1, K
   DO JN = 1, N
-    C (JM, JN) = 0.
-  ENDDO
-  DO JK = 1, K
-    DO JN = 1, N
-      C (JM, JN) = C (JM, JN) + B (JN, JK) * A (JM, JK)
-    ENDDO
+    C (JM, JN) = C (JM, JN) + B (JN, JK) * A (JM, JK)
   ENDDO
 ENDDO
 
