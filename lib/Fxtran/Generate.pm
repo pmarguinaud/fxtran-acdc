@@ -759,7 +759,7 @@ sub bitrepro
 }
 
 &click (<< "EOF");
-@options{qw (tmp cycle dir)}
+@options{qw (tmp cycle dir suffix-pointerparallel types-constant-dir types-fieldapi-dir method-prefix)}
   switch=s                  -- Set this variable to true if the parallel mode is enabled
   parallelmethod-section    -- Embed parallelmethod information in binary
 EOF
@@ -767,16 +767,21 @@ sub toplevel
 {
   my ($opts, @args) = @_;
 
+  &Fxtran::Util::loadModule ('Fxtran::Pointer::Parallel');
+  &Fxtran::Util::loadModule ('Fxtran::IO::Link');
+
   my ($F90) = @args;
 
- if (&dirname ($F90) eq $opts->{dir})
-   {
-     die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
-   }
+  if (&dirname ($F90) eq $opts->{dir})
+    {
+      die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
+    }
 
   my ($d, $F90out) = &routineToRoutineHead ($F90, 'toplevel', $opts, qw (-openmp -directive ACDC));
 
   &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
+
+  my $linkTypes = &Fxtran::IO::Link::link ('types-fieldapi-dir' => $opts->{'types-fieldapi-dir'});
 
   &Fxtran::Util::loadModule ('Fxtran::TopLevel');
 
@@ -786,7 +791,7 @@ sub toplevel
       (my $kind = $stmt->nodeName) =~ s/-stmt$//o;
       if ($kind eq 'subroutine')
         {
-          &Fxtran::TopLevel::processSingleRoutine ($pu, %$opts);
+          &Fxtran::TopLevel::processSingleRoutine ($pu, %$opts, 'types-field-api' => $linkTypes);
         }
       else
         {

@@ -32,30 +32,79 @@ sub processSingleRoutine
 {
   my ($pu, %opts) = @_;
 
+  my $types = $opts{'types-field-api'};
+
   &Fxtran::Decl::use ($pu, "USE FXTRAN_ACDC_PARALLELMETHOD_MOD", "USE FXTRAN_ACDC_STACK_MOD");
 
   my ($dp) = &F ('./specification-part/declaration-part', $pu);
   my ($ep) = &F ('./execution-part', $pu);
 
+  my ($NAME) = &F ('./subroutine-stmt/subroutine-N', $pu, 1);
+
   if (my $switch = $opts{switch})
     {
       if (my ($E2) = &F ('./a-stmt[./E-1/named-E[string(N)="?"]]/E-2/ANY-E', $switch, $ep))
         {
-          my ($name) = &F ('./subroutine-stmt/subroutine-N', $pu, 1);
-          $E2->replaceNode (&e ("FXTRAN_ACDC_LPARALLELMETHOD ('PARALLEL','$name')"));
+          $E2->replaceNode (&e ("FXTRAN_ACDC_LPARALLELMETHOD ('PARALLEL','$NAME')"));
         }
     }
 
   for my $par (&F ('.//parallel-section', $pu))
     {
+      my %type;
+
       for my $call (&F ('.//call-stmt', $par))
         {
           my ($proc) = &F ('./procedure-designator/named-E/N/n/text()', $call);
           $proc->setData ($proc->textContent . '_PARALLEL');
+
+          my @arg = &F ('./arg-spec/arg/named-E/N', $call, 1);
+
+          my %sync2type;
+
+          for my $arg (@arg)
+            {
+              next unless (my ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $arg, $dp));
+
+              # Skip local variables (these will be destroyed)
+
+              next unless (&F ('./attribute[string(attribute-N)="INTENT"]', $decl));
+
+              # Skip non structure variables
+
+              next unless (my ($tn) = &F ('./_T-spec_/derived-T-spec/T-N', $decl, 1));
+
+              # Keep only variables with Field API content
+
+              next unless ($types->{'update-view'}{$tn});
+
+              $type{$tn}++;
+
+              $sync2type{$arg} = $tn;
+            }
+
+          my ($if) = &Fxtran::parse (fragment => << "EOF");
+IF (FXTRAN_ACDC_LSYNCHOST ('$NAME')) THEN
+ENDIF
+EOF
+
+          my ($if_block) = &F ('./if-block', $if);
+
+          for my $sync (sort keys (%sync2type))
+            {
+              my $method = ($sync2type{$sync} =~ m/^FIELD_\w+_ARRAY/o) ? 'HOST' : "$opts{'method-prefix'}HOST";
+              $if_block->insertBefore ($_, $if_block->lastChild) for (&s ("CALL $method ($sync)"), &t ("\n"));
+            }
+
+          $call->parentNode->insertAfter ($_, $call) for ($if, &t ("\n"));
         }
+ 
+      &Fxtran::Decl::use ($pu, map { "USE UTIL_${_}_MOD" } grep { !/^FIELD_\w+_ARRAY/o } sort keys (%type));
+      &Fxtran::Decl::use ($pu, "USE FIELD_ARRAY_UTIL_MODULE");
 
       $par->insertBefore ($_, $par->firstChild) for (&t ("\n"), &s ("CALL YFXTRAN_ACDC_STACK%INIT (YDCPG_OPTS%KLON, YDCPG_OPTS%KFLEVG, YDCPG_OPTS%KGPBLKS)"), &t ("\n"));
       $par->appendChild ($_) for (&t ("\n"), &s ("CALL YFXTRAN_ACDC_STACK%FINAL ()"), &t ("\n"));
+
     }
 
   my %name2type;
