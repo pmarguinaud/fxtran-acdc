@@ -104,10 +104,61 @@ sub processList
   $queue->flush ();
 }
 
-my $cwd = &cwd ();
+
+sub test
+{
+  my %opts = @_;
+
+  my $cwd = &cwd ();
+  
+  local $ENV{TMPDIR}      = "$cwd/tmp";
+  local $ENV{TARGET_PACK} = $cwd;
+  
+  my @mod = &getLines ("list.mod");
+  my @src = &getLines ("list.src");
+  my @int = &getLines ("list.int");
+  
+  my @type = map { m/^fxtran-(\w+)\.conf$/o; $1 } <fxtran-*.conf>;
+  
+  my $queue = 'queue'->new (threads => $opts{threads}, verbose => $opts{verbose});
+  
+  for my $type (@type)
+    {
+      my $config = "fxtran-$type.conf";
+  
+      for my $d (qw (types-fieldapi types-constant src/local hub/local))
+        {
+          &rmtree ($d) if (-d $d);
+        }
+  
+      &processList ({queue => $queue, config => $config, method => 'processIntf', %opts}, @int);
+      &processList ({queue => $queue, config => $config, method => 'processFile', %opts}, @mod);
+      &processList ({queue => $queue, config => $config, method => 'processFile', %opts}, @src);
+  
+      &rmtree ("run/$type");
+      &mkpath ("run/$type") or die;
+  
+      for my $dir (qw (hub src))
+        {
+          &mkpath ("run/$type/$dir") or die;
+  
+          if (-d "$dir/local")
+            {
+              &move ("$dir/local", "run/$type/$dir/local") 
+                or die ("Cannot move `$dir/local' into `run/$type/$dir/local'");
+            }
+          if ((-d "ref/$type/$dir/local") && (-d "run/$type/$dir/local"))
+            {
+              &runCommand (qw (diff -B -w -x *.F90.xml -r), "ref/$type/$dir/local", "run/$type/$dir/local");
+            }
+        }
+  
+    }
+
+}
 
 my %opts = (threads => 4);
-my @opts_f = qw (help);
+my @opts_f = qw (all help);
 my @opts_s = qw (threads);
 
 &GetOptions
@@ -116,47 +167,27 @@ my @opts_s = qw (threads);
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
 
-$ENV{TMPDIR}      = "$cwd/tmp";
-$ENV{TARGET_PACK} = $cwd;
-
-my @mod = &getLines ("list.mod");
-my @src = &getLines ("list.src");
-my @int = &getLines ("list.int");
-
-my @type = map { m/^fxtran-(\w+)\.conf$/o; $1 } <fxtran-*.conf>;
-
-my $queue = 'queue'->new (threads => $opts{threads}, verbose => $opts{verbose});
-
-for my $type (@type)
+if ($opts{all})
   {
-    my $config = "fxtran-$type.conf";
-
-    for my $d (qw (types-fieldapi types-constant src/local hub/local))
+    my $cwd = &cwd ();
+    chdir ("$Bin/../tests");
+    for my $test (grep { -d } <*>)
       {
-        &rmtree ($d) if (-d $d);
+
+print "test=$test\n";
+
+        chdir ("$Bin/../tests/$test");
+
+system ('pwd');
+
+        &test (%opts);
       }
-
-    &processList ({queue => $queue, config => $config, method => 'processIntf', %opts}, @int);
-    &processList ({queue => $queue, config => $config, method => 'processFile', %opts}, @mod);
-    &processList ({queue => $queue, config => $config, method => 'processFile', %opts}, @src);
-
-    &rmtree ("run/$type");
-    &mkpath ("run/$type") or die;
-
-    for my $dir (qw (hub src))
-      {
-        &mkpath ("run/$type/$dir") or die;
-
-        if (-d "$dir/local")
-          {
-            &move ("$dir/local", "run/$type/$dir/local") 
-              or die ("Cannot move `$dir/local' into `run/$type/$dir/local'");
-          }
-        if ((-d "ref/$type/$dir/local") && (-d "run/$type/$dir/local"))
-          {
-            &runCommand (qw (diff -B -w -x *.F90.xml -r), "ref/$type/$dir/local", "run/$type/$dir/local");
-          }
-      }
-
+    chdir ($cwd);
   }
+else
+  {
+    &test (%opts);
+  }
+
+
 
