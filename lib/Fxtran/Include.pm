@@ -72,6 +72,7 @@ sub loadContainedIncludes
   my %opts = @_;
 
   my $find = $opts{find};
+  my @fopts = @{ $opts{fopts} || [] };
 
   my @include = &F ('.//include-stmt[preceding-sibling::contains-stmt', $d);
   for my $include (@include)
@@ -90,7 +91,7 @@ sub loadContainedIncludes
       $filename or die ("Cannot find include file `$f'");
 
       my $text = do { local $/ = undef; my $fh = 'FileHandle'->new ("<$filename"); <$fh> };
-      my $di = &Fxtran::parse (string => $text, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]);
+      my $di = &Fxtran::parse (string => $text, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include), @fopts]);
 
       &Fxtran::Canonic::makeCanonic ($di, %opts);
 

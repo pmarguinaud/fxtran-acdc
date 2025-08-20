@@ -199,7 +199,7 @@ sub routineToRoutineHead
 
   if ((scalar (@{ $opts->{inlined} || [] }) || $opts->{'inline-contained'}) && (! $opts->{dummy}))
     {
-      &Fxtran::Include::loadContainedIncludes ($d, %$opts)
+      &Fxtran::Include::loadContainedIncludes ($d, %$opts, fopts => \@fopts)
         if ($opts->{'inline-contained'});
 
       my $find = $opts->{find};
@@ -236,6 +236,7 @@ sub routineToRoutineHead
         }
     }
   
+
   return ($d, $F90out);
 }
 
