@@ -29,8 +29,19 @@ use Fxtran::F90Compiler;
 use Fxtran::Util;
 use Fxtran::PATH;
 
+sub slurp
+{
+  my $f = shift;
+# die ("File `$f' was not found") unless (-f $f);
+  local $/ = undef; 
+  my $fh = 'FileHandle'->new ("<$f"); 
+  return '' unless ($fh);
+  my $data = <$fh>;
+  return $data;
+}
+
 my %opts = qw (prefix .);
-my @opts_s = qw (prefix F90 CC CXX);
+my @opts_s = qw (prefix F90 CC CXX ecbuild-build-type);
 my @opts_f = qw (help);
 
 &GetOptions
@@ -49,17 +60,79 @@ if ($opts{help})
     exit (0);
   }
 
-for my $comp (qw (F90 CC CXX))
+my ($f90compiler, @f90flags);
+my ($ccompiler  , @cflags  );
+my ($cxxcompiler, @cxxflags);
+
+if ($opts{'ecbuild-build-type'})
   {
-    next unless ($opts{$comp});
-    $opts{$comp} = [split (m/\s+/o, $opts{$comp})];
+    @opts{qw (F90 CC CXX)} = @ENV{qw (F90 CC CXX)};
+
+    my $toolchain = $ENV{ECBUILD_TOOLCHAIN} || './toolchain.cmake';
+    die ("Cannot find ecbuild toolchain") unless (-f $toolchain);
+
+    $toolchain = 'File::Spec'->rel2abs ($toolchain);
+    
+    my $cwd = &cwd ();
+
+    my $dir = 'File::Temp'->newdir ();
+
+    chdir ($dir);
+
+    'FileHandle'->new ('>CMakeLists.txt')->print (<< "EOF");
+cmake_minimum_required (VERSION 3.28)
+
+project (fxtran-boot)
+
+include ($toolchain)
+
+get_cmake_property (vars VARIABLES)
+
+make_directory ("variables")
+
+foreach (var \${vars})
+  file (WRITE "variables/\${var}" "\${\${var}}")
+endforeach ()
+
+EOF
+
+    system ('cmake', '.') and die ("cmake configuration failed");
+
+    my %flags;
+
+    for my $lang (qw (CXX C Fortran))
+      {
+        $flags{$lang} = [];
+        for my $prefix (qw (OpenMP OpenACC ECBUILD))
+          {
+            push @{ $flags{$lang} }, split (m/\s+/o, &slurp ("variables/${prefix}_${lang}_FLAGS"));
+          }
+        push @{ $flags{$lang} },  split (m/\s+/o, &slurp ("variables/ECBUILD_${lang}_FLAGS_$opts{'ecbuild-build-type'}"));
+      }
+
+    chdir ($cwd);
+
+    ($f90compiler, @f90flags) = ($opts{F90}, @{ $flags{Fortran} });
+    ($ccompiler,   @cflags  ) = ($opts{CC},  @{ $flags{C}       });
+    ($cxxcompiler, @cxxflags) = ($opts{CXX}, @{ $flags{CXX}     });
+
+  }
+else
+  {
+
+    ($f90compiler, @f90flags) = $opts{F90} ? @{ $opts{F90} } : @ARGV;
+    ($ccompiler  , @cflags  ) = @{ $opts{CC} || [] };
+    ($cxxcompiler, @cxxflags) = @{ $opts{CXX} || [] };
+
+    for my $comp (qw (F90 CC CXX))
+      {
+        next unless ($opts{$comp});
+        $opts{$comp} = [split (m/\s+/o, $opts{$comp})];
+      }
+
   }
 
 $opts{prefix} = 'File::Spec'->rel2abs ($opts{prefix});
-
-my ($f90compiler, @f90flags) = $opts{F90} ? @{ $opts{F90} } : @ARGV;
-my ($ccompiler,   @cflags)   = @{ $opts{CC} || [] };
-my ($cxxcompiler, @cxxflags) = @{ $opts{CXX} || [] };
 
 @f90flags = grep { $_ ne '-c' } @f90flags;
 @cflags   = grep { $_ ne '-c' } @cflags;
