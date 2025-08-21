@@ -76,7 +76,7 @@ sub processSingleRoutine
 
               # Keep only variables with Field API content
 
-              next unless ($types->{'update-view'}{$tn});
+              next unless ($types->{'types'}{$tn});
 
               $type{$tn}++;
 
