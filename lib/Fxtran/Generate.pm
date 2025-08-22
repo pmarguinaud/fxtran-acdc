@@ -191,7 +191,8 @@ sub routineToRoutineHead
 
   &Fxtran::Canonic::makeCanonic ($d, %$opts);
 
-  $opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d);
+  die ("Could not figure out style for file $F90")
+    unless ($opts->{style} = 'Fxtran::Style'->new (%$opts, document => $d));
 
   $opts->{pragma} = 'Fxtran::Pragma'->new (%$opts);
 

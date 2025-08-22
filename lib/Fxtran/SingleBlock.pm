@@ -174,6 +174,7 @@ EOF
 
       return if ($proc eq 'ABOR1');
       return if ($proc eq 'MXMAOPTR');
+      return if ($proc eq 'GSTATS');
 
       if ($opts{'suffix-singlecolumn'})
         {
