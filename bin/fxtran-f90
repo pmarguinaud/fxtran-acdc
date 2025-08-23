@@ -80,7 +80,63 @@ libraries are compiled using C<fxtran-boot>.
 
 =back
 
-=head1 EXAMPLE
+Options passed to C<fxtran-f90> must be followed by a double hyphen (C<-->); then the
+compiler path followed by the compiler options and files to be processed must be passed
+to C<fxtran-f90>.
+
+=head1 EXAMPLES
+
+=head2 DIRECTIVE INSTRUMENTED FILE
+
+  SUBROUTINE ACTKE ( YDCST, YDLDDH, YDMDDH, YDML_PHY_MF, KIDIA, KFDIA, KLON, KTDIAT, KTDIAN, KLEV,      &
+  & PAPHI, PAPHIF, PAPRS, PAPRSF, PDELP, PR, PT, PU, PV, PQ, PQICONV,  PQLCONV, PLSCPE, PCD, PCH, PGZ0, &
+  & PTS, PQS, PQICE, PQLI, PECT, PPRODTH,  PNLAB, PNLABCVP, PKTROV, PKQROV, PKQLROV, PKUROV, PXTROV,    &
+  & PXUROV, PNBVNO,  PNEBS, PQCS, PNEBS0, PQCS0, PCOEFN, PFECT, PFECTI, PECT1, PTPRDY, PEDR,  YDDDH)
+  
+  !$ACDC singlecolumn 
+  
+  USE MODEL_PHYSICS_MF_MOD , ONLY : MODEL_PHYSICS_MF_TYPE
+  ...
+  USE DDH_MIX              , ONLY : ADD_FIELD_3D, TYP_DDH, NEW_ADD_FIELD_3D
+  
+  IMPLICIT NONE
+  
+  TYPE(TCST)                  ,INTENT(IN)     :: YDCST
+  TYPE(TLDDH)                 ,INTENT(IN)     :: YDLDDH
+  ...
+  INTEGER(KIND=JPIM)          ,INTENT(IN)     :: KLEV 
+  REAL(KIND=JPRB)             ,INTENT(IN)     :: PAPHI(KLON,0:KLEV)
+  REAL(KIND=JPRB)             ,INTENT(IN)     :: PAPHIF(KLON,KLEV)
+  REAL(KIND=JPRB)             ,INTENT(IN)     :: PAPRS(KLON,0:KLEV)
+
+This routine will be processed using the singlecolumn method. C<fxtran-f90> must be invoked as follows:
+
+  $ ls -l actke.F90
+  -rw-r--r-- 1 marguina algo 15619  Aug  23 20:14 actke.F90
+  $ fxtran-f90 --dryrun -- f90 -c actke.F90
+  $ ls -l actke_openacc.F90
+  -rw-r--r-- 1 marguina algo 9580  Aug  23 20:17 actke_openacc.F90
+
+The file C<actke_openacc.F90> has been created by the singlecolumn method of the C<Fxtran::Generate> module.
+
+
+=head2 INTERFACE GENERATION
+
+We use the same file as in the previous example:
+
+  $ fxtran-f90 --method interface --dryrun -- f90 -c actke.F90
+  $ ls -l actke.intfb.h
+  -rw-r--r-- 1 marguina algo 3984  Aug  23 20:19 actke.intfb.h
+
+F<actke.intfb.h> contains the interface of the routine F<actke.F90>.
+
+We can ask to generate the interface of F<actke_openacc.F90>:
+
+  $ fxtran-f90 --merge-interfaces --method interface --dryrun -- f90 -c actke.F90
+  $ ls -l actke.intfb.h
+  -rw-r--r-- 1 marguina algo 7278 Aug 23 20:21 actke.intfb.h
+
+F<actke.intfb.h> now contains both the interface of F<actke.F90> and of F<actke_openacc.F90>.
 
 =head1 SEE ALSO
 
