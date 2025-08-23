@@ -207,10 +207,13 @@ EOF
 
   
   my ($arglist) = &F ('./dummy-arg-LT', $pu->firstChild);
-  $arglist->appendChild ($_) for (&t (', '), &n ('<arg-N><N><n>LDACC</n></N></arg-N>'));
-  my @decl = &F ('./T-decl-stmt[./attribute[string(attribute-N)="INTENT"]]', $dp);
-  
-  $dp->insertAfter ($_, $decl[-1]) for (&s ("LOGICAL, INTENT (IN) :: LDACC"), &t ("\n"));
+
+  unless (&F ('./arg-N[string(.)="LDACC"]', $arglist))
+    {
+      $arglist->appendChild ($_) for (&t (', '), &n ('<arg-N><N><n>LDACC</n></N></arg-N>'));
+      my @decl = &F ('./T-decl-stmt[./attribute[string(attribute-N)="INTENT"]]', $dp);
+      $dp->insertAfter ($_, $decl[-1]) for (&s ("LOGICAL, INTENT (IN) :: LDACC"), &t ("\n"));
+     }
 
   for my $call (&F ('.//call-stmt', $pu))
     {
