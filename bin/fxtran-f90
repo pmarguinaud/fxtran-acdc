@@ -44,7 +44,7 @@ source code.
 
 =item --debug
 
-Do not remove intermediate files.
+Do not remove intermediate files and temporary directories.
 
 =item --package
 
@@ -52,14 +52,14 @@ Package used for generation (defaults to C<Fxtran::Generate>).
 
 =item --method
 
-Foce a transformation method; the default is to read the transformation method
+Force a transformation method; the default is to read the transformation method
 from the FORTRAN source code (this should be an ACDC directive).
 
 =item --config
 
 Read options from a config file. Please note that options passed before --config are 
 superseded by options from the configuration file. Likewise, options from the configuration
-file are overriden by options passed after the configuration file.
+file are overridden by options passed after the configuration file.
 
 =item --user-directory-in
 
@@ -79,9 +79,8 @@ libraries are compiled using C<fxtran-boot>.
 
 =back
 
-Options passed to C<fxtran-f90> must be followed by a double hyphen (C<-->); then the
-compiler path followed by the compiler options and files to be processed must be passed
-to C<fxtran-f90>.
+Options passed to C<fxtran-f90> must be followed by a double hyphen (C<-->); then come the
+compiler name followed by the compiler options and files to be processed.
 
 Note that C<fxtran-f90> will pass fxtran-acdc libraries and includes to the compiler, and will define 
 the following macros:

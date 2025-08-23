@@ -1,5 +1,65 @@
 #!/usr/bin/env perl 
 
+=head1 NAME
+
+fxtran-boot
+
+=head1 SYNOPSIS
+
+  $ fxtran-boot \
+     --prefix <path-to-fxtran-acdc-installation> \
+     --F90 "FORTRAN compiler & options" \
+     --CC "C compiler & options" \
+     --CXX "C++ compiler & options"
+
+or (ecbuild/cmake environment):
+
+  $ fxtran-boot \
+     --prefix <path-to-fxtran-acdc-installation> \
+     --ecbuild-build-type BIT
+
+=head1 DESCRIPTION
+
+C<fxtran-boot> compiles and install the fxtran-acdc libraries. Compilers and
+their options may be passed directly as options, or inferred from the C<ecbuild>
+environment.
+
+=head1 OPTIONS
+
+=over 4
+
+=item --prefix
+
+Directory where fxtran-acdc libraries and headers should be installed.
+
+=item --F90
+
+FORTRAN compiler and options.
+
+=item --CC
+
+C compiler and options.
+
+=item --CXX
+
+C++ compiler and options.
+
+=item --ecbuild-build-type
+
+C<ecbuild> build type (similar to cmake build type).
+
+=back
+
+=head1 SEE ALSO
+
+fxtran-f90, ecbuild, Fxtran::F90Compiler
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=cut
+
 use warnings;
 
 #
