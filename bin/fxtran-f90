@@ -1,6 +1,5 @@
 #!/usr/bin/env perl 
 
-
 =head1 NAME
 
 fxtran-f90
@@ -84,6 +83,25 @@ Options passed to C<fxtran-f90> must be followed by a double hyphen (C<-->); the
 compiler path followed by the compiler options and files to be processed must be passed
 to C<fxtran-f90>.
 
+Note that C<fxtran-f90> will pass fxtran-acdc libraries and includes to the compiler, and will define 
+the following macros:
+
+=over 4
+
+=item 
+
+C<FXTRAN_ACDC>
+
+=item 
+
+C<FXTRAN_FILE>
+
+=item 
+
+C<FXTRAN_LINE>
+
+=back
+
 =head1 EXAMPLES
 
 =head2 DIRECTIVE INSTRUMENTED FILE
@@ -140,7 +158,7 @@ F<actke.intfb.h> now contains both the interface of F<actke.F90> and of F<actke_
 
 =head1 SEE ALSO
 
-fxtran, fxtran-gen, fxtran-boot, FORTRAN, XML
+fxtran, fxtran-gen, fxtran-boot, FORTRAN, XML, Fxtran::F90Compiler
 
 =head1 AUTHOR
 
