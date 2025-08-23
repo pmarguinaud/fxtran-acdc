@@ -1,0 +1,84 @@
+#!/usr/bin/env perl
+
+use warnings;
+
+use Pod::Markdown;
+use FileHandle;
+use File::Path;
+use Data::Dumper;
+
+use strict;
+
+sub desc
+{
+  my $file = shift;
+
+  my $pod = '';
+
+  my $fhin = 'FileHandle'->new ("<$file");
+  
+  my $on = 0;
+  
+  while (my $line = <$fhin>)
+    {
+      if ($line =~ m/^=head1 DESCRIPTION/o)
+        {
+          $on = 1;
+          $line = "=pod\n";
+        }
+      elsif ($on && ($line =~ m/^=head1/o))
+       {
+          $on = 0;
+       }
+  
+      $pod .= $line if ($on);
+    }
+  
+  $pod .= "\n=cut\n";
+
+  return $pod;
+}
+
+my $fh = 'FileHandle'->new ('>README.md');
+
+$fh->print (<< "EOF");
+# Adaptation des Codes à Divers Calculateurs
+
+![](./images/ACDC.png)
+
+EOF
+
+for my $f (qw (fxtran-f90 fxtran-boot))
+  {
+    my $md = "doc/$f.md";
+
+    $fh->print (<< "EOF");
+
+# [$f ...](./$md)
+
+EOF
+
+    my $pod = &desc ("bin/$f");
+
+    my ($pp, $markdown);
+
+    $pp = 'Pod::Markdown'->new ();
+    $pp->output_string (\$markdown);
+    $pp->parse_string_document ($pod);
+
+#   print &Dumper ([$pod, $markdown]);
+
+    $fh->print ($markdown);
+
+    $pp = 'Pod::Markdown'->new ();
+    $pp->output_string (\$markdown);
+    $pp->parse_file ("bin/$f");
+
+#   print &Dumper (\$markdown);
+
+    'FileHandle'->new (">doc/$f.md")->print ($markdown);
+
+  }
+
+$fh->close ();
+
