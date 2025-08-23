@@ -157,7 +157,7 @@ F<actke.intfb.h> now contains both the interface of F<actke.F90> and of F<actke_
 
 =head1 SEE ALSO
 
-fxtran, fxtran-gen, fxtran-boot, FORTRAN, XML, Fxtran::F90Compiler
+fxtran, L<fxtran-gen>, L<fxtran-boot>, FORTRAN, XML, L<Fxtran::F90Compiler>
 
 =head1 AUTHOR
 
