@@ -1,5 +1,97 @@
 #!/usr/bin/env perl 
 
+
+=head1 NAME
+
+fxtran-f90
+
+=head1 SYNOPSIS
+
+  $ fxtran-f90 --config fxtran.conf [.. fxtran generation options ..] -- pgf90 [.. PGI options ..] file.F90
+
+=head1 DESCRIPTION
+
+C<fxtran-f90> is compiler wrapper performing the following tasks:
+
+=over 4
+
+=item 
+
+Apply some transformations on user-written source code and generate FORTRAN source code ready 
+for GPU accelerators.
+
+=item
+
+Compile the original code and code produced at previous step.
+
+=item 
+
+Link all objects into a single one.
+
+=back
+
+C<fxtran-f90> relies on C<fxtran> for parsing and transforming FORTRAN source code.
+
+=head1 OPTIONS
+
+C<fxtran-f90> accepts all options of C<fxtran-gen>, and the following options:
+
+=over 4
+
+=item --dryrun 
+
+Transform the code, dump the result into files, but does not compile the produced
+source code.
+
+=item --debug
+
+Do not remove intermediate files.
+
+=item --package
+
+Package used for generation (defaults to C<Fxtran::Generate>).
+
+=item --method
+
+Foce a transformation method; the default is to read the transformation method
+from the FORTRAN source code (this should be an ACDC directive).
+
+=item --config
+
+Read options from a config file. Please note that options passed before --config are 
+superseded by options from the configuration file. Likewise, options from the configuration
+file are overriden by options passed after the configuration file.
+
+=item --user-directory-in
+
+This option takes a directory name as input. If a transformation produces a file and 
+this file exists in this directory (provided by C<--user-directory-in>), then the file
+from this directory is compiled. This is used for debugging.
+
+=item --user-directory-out
+
+This option takes a directory name where results from transformations are written. This
+allows for inspection of generated source code by the user.
+
+=item --prefix
+
+This option takes a directory name where fxtran-acdc libraries and headers are installed. These
+libraries are compiled using C<fxtran-boot>.
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO
+
+fxtran, fxtran-gen, fxtran-boot, FORTRAN, XML
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=cut
+
 use warnings;
 
 #
