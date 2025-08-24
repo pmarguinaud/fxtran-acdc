@@ -48,7 +48,7 @@ $fh->print (<< "EOF");
 
 EOF
 
-for my $f (qw (fxtran-f90 fxtran-boot))
+for my $f (qw (fxtran-f90 fxtran-boot fxtran-gen fxtran-fix fxtran-makemaker))
   {
     my $md = "doc/$f.md";
 

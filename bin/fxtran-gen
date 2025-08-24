@@ -1,5 +1,38 @@
 #!/usr/bin/env perl 
 
+=head1 NAME
+
+fxtran-gen
+
+=head1 SYNOPSIS
+
+  $ fxtran-gen Fxtran::Generate singlecolumn [.. options for singlecolumn ..] file.F90
+
+or (generation module defaults to C<Fxtran::Generate>):
+
+  $ fxtran-gen singlecolumn [.. options for singlecolumn ..] file.F90
+
+=head1 DESCRIPTION
+
+C<fxtran-gen> is a C<click> frontend to C<Fxtran::Generate> and other generation modules. It
+is invoked by C<fxtran-f90> to transform FORTRAN source code.
+
+The first argument of fxtran-gen is the name of the generation module (this should be 
+a clickable module), but this argument is optional and defaults to C<Fxtran::Generate>. Then
+comes the method to be invoked, followed by its options and arguments.
+
+See C<Fxtran::Generate> for the details of methods and options accepted by C<fxtran-gen>.
+
+=head1 SEE ALSO
+
+L<click>, L<Fxtran::Generate>, L<fxtran-f90>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=cut
+
 use warnings;
 
 #
