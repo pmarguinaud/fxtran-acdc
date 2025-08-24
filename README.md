@@ -68,7 +68,3 @@ When invoked, `fxtran-makemaker` will:
 
 The user is expected to provide a file named `Makefile.inc` which contains
 the compiler name and options.
-
-# [click ...](./doc/click.md)
-
-

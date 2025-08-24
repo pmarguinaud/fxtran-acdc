@@ -64,26 +64,28 @@ for my $perl (qw (fxtran-f90 fxtran-boot fxtran-gen fxtran-fix fxtran-makemaker 
         die unless (-f $f);
       }
 
-    my $md = $perl;
-    $md = "doc/$md.md";
+    my ($pp, $markdown);
 
-    $fh->print (<< "EOF");
+    if ($f =~ m/^bin/o)
+      {
+        my $md = $perl;
+        $md = "doc/$md.md";
+
+        $fh->print (<< "EOF");
 
 # [$perl ...](./$md)
 
 EOF
 
-    my $pod = $f =~ m/^bin/o ? &desc ($f) : '';
-
-    my ($pp, $markdown);
-
-    $pp = 'Pod::Markdown'->new ();
-    $pp->output_string (\$markdown);
-    $pp->parse_string_document ($pod);
+       my $pod = $f =~ m/^bin/o ? &desc ($f) : '';
+       $pp = 'Pod::Markdown'->new ();
+       $pp->output_string (\$markdown);
+       $pp->parse_string_document ($pod);
+       $fh->print ($markdown);
+     }
 
 #   print &Dumper ([$pod, $markdown]);
 
-    $fh->print ($markdown);
 
     $pp = 'Pod::Markdown'->new 
     ( 
