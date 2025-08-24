@@ -1,5 +1,18 @@
 package Fxtran::Generate;
 
+=head1 NAME
+
+Fxtran::Generate
+
+=head1 DESCRIPTION
+
+This module contains entry points for source code transformation and generation methods.
+
+=head1 METHODS
+
+=cut
+
+
 #
 # Copyright 2025 Meteo-France
 # All rights reserved
@@ -269,6 +282,19 @@ EOF
 sub semiimplicit
 {
   my ($opts, @args) = @_;
+
+=head2 semiimplicit
+
+This is the method for transforming top-level semi-implicit routines such as F<spcsi.F90> (hydrostatic)
+and F<spnhsi.F90> (non-hydrostatic).
+
+The principle is to transform all zones with parallelism (C<DO JSP>) into OpenACC or OpenMP kernels. Vertical operator
+routines are supposed to be transformed with the singleblock method and called from F<spcsi.F90> or F<spnhsi.F90>.
+
+Horizontal operators are supposed to be flagged with C<!$ACDC HORIZONTAL> directives; the accelerated code for these
+routines is supposed to be enabled by passing an extra argument C<LDACC=.TRUE.> to the original horizontal routine.
+
+=cut
 
   &Fxtran::Util::loadModule ('Fxtran::SemiImplicit');
 
@@ -809,5 +835,15 @@ sub toplevel
     }
 
 }
+
+=head1 SEE ALSO
+
+L<fxtran-f90>, L<fxtran-gen>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=cut
 
 1;
