@@ -1,5 +1,28 @@
 package Fxtran::SemiImplicit;
 
+=head1 NAME
+
+Fxtran::SemiImplicit
+
+=head1 DESCRIPTION
+
+This transformation relies mostly on the C<Fxtran::SingleBlock> transformation.
+
+After applying the singleblock transformation, horizontal sections 
+(marked with C<!$ACDC HORIZONTAL>) are
+scanned and call to routines implementing horizontal operators are added
+the C<LDACC=LDACC> optional argument.
+
+=head1 SEE ALSO
+
+L<Fxtran::SingleBlock>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=cut
+
 #
 # Copyright 2025 Meteo-France
 # All rights reserved
