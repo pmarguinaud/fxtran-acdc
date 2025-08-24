@@ -70,9 +70,14 @@ EOF
 
     $fh->print ($markdown);
 
-    $pp = 'Pod::Markdown'->new ();
+    $pp = 'Pod::Markdown'->new 
+    ( 
+      perldoc_url_prefix => '',
+    );
     $pp->output_string (\$markdown);
     $pp->parse_file ("bin/$f");
+
+    $markdown =~ s/\]\((\S+)\)/\]\($1.md\)/goms;
 
 #   print &Dumper (\$markdown);
 
