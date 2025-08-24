@@ -1,14 +1,3 @@
-`fxtran-makemaker` is a simple `Makefile` generator for external test
-cases build with `fxtran-f90`. 
-
-When invoked, `fxtran-makemaker` will:
-
-- Generate include files for subroutines.
-- Scan source code and detect dependencies.
-- Write a `Makefile` to compile the code.
-
-The user is expected to provide a file named `Makefile.inc` which contains
-the compiler name and options.
 # NAME
 
 fxtran-makemaker

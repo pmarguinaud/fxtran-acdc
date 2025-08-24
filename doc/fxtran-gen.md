@@ -1,11 +1,3 @@
-`fxtran-gen` is a `click` frontend to `Fxtran::Generate` and other generation modules. It
-is invoked by `fxtran-f90` to transform FORTRAN source code.
-
-The first argument of fxtran-gen is the name of the generation module (this should be 
-a clickable module), but this argument is optional and defaults to `Fxtran::Generate`. Then
-comes the method to be invoked, followed by its options and arguments.
-
-See `Fxtran::Generate` for the details of methods and options accepted by `fxtran-gen`.
 # NAME
 
 fxtran-gen

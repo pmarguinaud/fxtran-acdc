@@ -88,6 +88,7 @@ EOF
 
 #   print &Dumper ([$pod, $markdown]);
 
+    $markdown = '';
 
     $pp = 'Pod::Markdown'->new 
     ( 
