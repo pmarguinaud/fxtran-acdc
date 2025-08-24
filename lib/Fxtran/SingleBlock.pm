@@ -1,5 +1,168 @@
 package Fxtran::SingleBlock;
 
+=head1 NAME
+
+Fxtran::SingleBlock
+
+=head1 DESCRIPTION
+
+This transformation takes a C<NPROMA> routine as input, and produces
+a routine which processes a single block (the interface of the routine
+is not changed). The result routine will execute on CPU and spawn 
+OpenACC kernels; one kernel per loop on the C<NPROMA> dimension
+or on the vertical dimension. Loop on other dimensions can also be included in 
+kernels (as long as they contain some loops on the C<NPROMA> dimension).
+
+C<NPROMA> array arguments and derived type arguments (such as C<YDMODEL>) are
+supposed to be on the device when the result routine is invoked.
+
+OpenACC kernels can be merged, using a number of statements heuristic.
+
+The singleblock transformation is compatible with the singlecolumn transformation
+(ie OpenACC kernels can contain calls to singlecolumn routines).
+
+=head1 EXAMPLE
+
+The following routine:
+
+  SUBROUTINE SIGAM (YDCST,YDGEOMETRY,YDDYN,KLON,KLEV,KIDIA,KFDIA,PD,PT,PSP)
+
+  USE GEOMETRY_MOD , ONLY : GEOMETRY
+  USE PARKIND1     , ONLY : JPIM, JPRB
+  USE YOMHOOK      , ONLY : LHOOK, DR_HOOK, JPHOOK
+  USE YOMCST       , ONLY : TCST
+  USE YOMDYN       , ONLY : TDYN
+  
+  IMPLICIT NONE
+  
+  TYPE(TCST)        ,INTENT(IN)    :: YDCST            ! constant data
+  TYPE(GEOMETRY)    ,INTENT(IN)    :: YDGEOMETRY       ! constant data
+  TYPE(TDYN)        ,INTENT(IN)    :: YDDYN            ! constant data
+  INTEGER(KIND=JPIM),INTENT(IN)    :: KLEV             ! scalar argument
+  INTEGER(KIND=JPIM),INTENT(IN)    :: KLON             ! scalar argument
+  INTEGER(KIND=JPIM),INTENT(IN)    :: KIDIA            ! scalar argument
+  INTEGER(KIND=JPIM),INTENT(IN)    :: KFDIA            ! scalar argument
+  REAL(KIND=JPRB)   ,INTENT(OUT)   :: PD(KLON,KLEV)    ! NPROMA data
+  REAL(KIND=JPRB)   ,INTENT(IN)    :: PT(KLON,KLEV)    ! NPROMA data
+  REAL(KIND=JPRB)   ,INTENT(IN)    :: PSP(KLON)        ! NPROMA data
+  
+  REAL(KIND=JPRB) :: ZSPHI(KLON,0:KLEV+1)              ! NPROMA temporary data
+  REAL(KIND=JPRB) :: ZOUT(KLON,KLEV)                   ! NPROMA temporary data
+  
+  REAL(KIND=JPRB) :: ZSPHIX(KLON)                      ! NPROMA temporary data
+  INTEGER(KIND=JPIM) :: JLEV, JLON
+  CHARACTER(LEN=4):: CLOPER
+
+  CLOPER='IBOT'
+  IF (YDCVER%LVFE_COMPATIBLE) CLOPER='INTG'
+
+  !$OMP PARALLEL PRIVATE(JLEV,JLON)
+  !$OMP DO SCHEDULE(STATIC) 
+    DO JLEV=1,KLEV
+      DO JLON=KIDIA,KFDIA
+        ZSPHI(JLON,JLEV)=-YDCST%RD*PT(JLON,JLEV)*SILNPR(JLEV)*YDVETA%VFE_RDETAH(JLEV)     ! NPROMA calculations
+      ENDDO
+    ENDDO
+  !$OMP END DO
+  !$OMP END PARALLEL
+  
+    ZSPHI(KIDIA:KFDIA,0)=0.0_JPRB                                                         ! NPROMA calculations
+    ZSPHI(KIDIA:KFDIA,KLEV+1)=0.0_JPRB                                                    ! NPROMA calculations
+
+    CALL VERDISINT(YDVFE,YDCVER,CLOPER,'11',KLON,KIDIA,KFDIA,KLEV,ZSPHI,ZOUT,KCHUNK=YDGEOMETRY%YRDIM%NPROMA) ! call to another NPROMA routine
+  
+  !$OMP PARALLEL PRIVATE(JLEV,JLON)
+  !$OMP DO SCHEDULE(STATIC) 
+    DO JLEV=1,KLEV
+      DO JLON=KIDIA,KFDIA
+        PD(JLON,JLEV)=ZOUT(JLON,JLEV)+PSP(JLON)*SIRPRG                                    ! NPROMA calculations
+      ENDDO
+    ENDDO
+  !$OMP END DO
+  !$OMP END PARALLEL
+
+is transformed to:
+
+  SUBROUTINE SIGAM_SINGLEBLOCK (YDCST, YDGEOMETRY, YDDYN&
+  &, KLON, KLEV, KIDIA, KFDIA, PD, PT, PSP, LDACC)                ! Routine interface is not changed, except for the extra LDACC argument
+
+  USE GEOMETRY_MOD,ONLY:GEOMETRY
+  USE PARKIND1,ONLY:JPIM, JPRB
+  USE YOMHOOK,ONLY:LHOOK, DR_HOOK, JPHOOK
+  USE YOMCST,ONLY:TCST
+  USE YOMDYN,ONLY:TDYN
+  USE FXTRAN_ACDC_STACK_MOD
+  #include "fxtran_acdc_stack.h"
+  
+  IMPLICIT NONE
+  
+  TYPE (TCST), INTENT (IN)::YDCST
+  TYPE (GEOMETRY), INTENT (IN)::YDGEOMETRY
+  TYPE (TDYN), INTENT (IN)::YDDYN
+  INTEGER (KIND=JPIM), INTENT (IN)::KLEV
+  INTEGER (KIND=JPIM), INTENT (IN)::KLON
+  INTEGER (KIND=JPIM), INTENT (IN)::KIDIA
+  INTEGER (KIND=JPIM), INTENT (IN)::KFDIA
+  REAL (KIND=JPRB), INTENT (OUT)::PD (KLON, KLEV)
+  REAL (KIND=JPRB), INTENT (IN)::PT (KLON, KLEV)
+  REAL (KIND=JPRB), INTENT (IN)::PSP (KLON)
+  LOGICAL, INTENT (IN) :: LDACC
+  REAL (KIND=JPRB)::ZSPHI (KLON, 0:KLEV+1)
+  REAL (KIND=JPRB)::ZOUT (KLON, KLEV)
+  REAL (KIND=JPRB)::ZSPHIX (KLON)
+  INTEGER (KIND=JPIM)::JLON
+  INTEGER (KIND=JPIM)::JLEV
+  CHARACTER (LEN=4)::CLOPER
+  REAL (KIND=JPHOOK)::ZHOOK_HANDLE
+  #include "verdisint.intfb.h"
+  TYPE (FXTRAN_ACDC_STACK) :: YLSTACK
+  
+  !$ACC DATA &
+  !$ACC&CREATE (ZOUT, ZSPHI, ZSPHIX) &                   ! Create NPROMA temporary data
+  !$ACC&IF (LDACC) &
+  !$ACC&PRESENT (PD, PSP, PT, YDCST, YDDYN, YDGEOMETRY)  ! State arguments are on device
+  
+  IF (LHOOK) CALL DR_HOOK ('SIGAM_SINGLEBLOCK', 0, ZHOOK_HANDLE)
+  
+  IF (YDGEOMETRY%YRVERT_GEOM%YRCVER%LVERTFE) THEN
+    CLOPER='IBOT'
+  
+    IF (YDGEOMETRY%YRVERT_GEOM%YRCVER%LVFE_COMPATIBLE)  THEN
+      CLOPER='INTG'
+    ENDIF
+    
+    !$ACC PARALLEL LOOP GANG VECTOR &   ! OpenACC kernel (active if LDACC is true)
+    !$ACC&IF (LDACC) &
+    !$ACC&PRIVATE (JLEV, JLON) 
+
+    DO JLON = KIDIA, KFDIA              ! loop switch (analog to single column)
+      DO JLEV=1, KLEV
+        ZSPHI (JLON, JLEV)=-YDCST%RD*PT (JLON, JLEV)*YDDYN%SILNPR&
+        &(JLEV)*YDGEOMETRY%YRVERT_GEOM%YRVETA%VFE_RDETAH (JLEV)
+      ENDDO
+      ZSPHI (JLON, 0)=0.0_JPRB          ! Single line array syntax merged with previous kernel
+      ZSPHI (JLON, KLEV+1)=0.0_JPRB     ! Single line array syntax merged with previous kernel
+    ENDDO
+    
+    CALL VERDISINT_SINGLEBLOCK (YDGEOMETRY%YRVERT_GEOM%YRVFE, YDGEOMETRY%YRVERT_GEOM%YRCVER, CLOPER&  ! Call to another singleblock routine
+    &,'11', KLON, KIDIA, KFDIA, KLEV, ZSPHI, ZOUT, KCHUNK=YDGEOMETRY%YRDIM%NPROMA, LDACC=LDACC)
+    
+    !$ACC PARALLEL LOOP GANG VECTOR &   ! OpenACC kernel
+    !$ACC&IF (LDACC) &
+    !$ACC&PRIVATE (JLEV, JLON) 
+  
+    DO JLON = KIDIA, KFDIA
+      DO JLEV=1, KLEV
+        PD (JLON, JLEV)=ZOUT (JLON, JLEV)+PSP (JLON)*YDDYN%SIRPRG
+      ENDDO
+    ENDDO
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=cut
+
 #
 # Copyright 2025 Meteo-France
 # All rights reserved
