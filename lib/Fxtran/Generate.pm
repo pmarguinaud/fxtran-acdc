@@ -294,6 +294,8 @@ routines are supposed to be transformed with the singleblock method and called f
 Horizontal operators are supposed to be flagged with C<!$ACDC HORIZONTAL> directives; the accelerated code for these
 routines is supposed to be enabled by passing an extra argument C<LDACC=.TRUE.> to the original horizontal routine.
 
+See L<Fxtran::SemiImplicit> for more details.
+
 =cut
 
   &Fxtran::Util::loadModule ('Fxtran::SemiImplicit');
@@ -345,7 +347,7 @@ routines is supposed to be enabled by passing an extra argument C<LDACC=.TRUE.> 
   create-interface             -- Generate an interface file
   process-interfaces           -- Transform interfaces into single column interfaces (used for MODI MESONH files)
   no-check-pointers-dims=s@    -- List of pointer variables that should not be checked for their dimensions
-  process-pointers             -- Process pointers (change them to CRAY pointers
+  process-pointers             -- Process pointers (change them to CRAY pointers)
   suffix-singlecolumn-called=s -- Suffix for singlecolumn routines called by routine being processed
 EOF
 sub singlecolumn
@@ -354,7 +356,8 @@ sub singlecolumn
 
 =head2 singlecolumn
 
-This is the method used to transform a full routine into its single-column version, ready for accelerators:
+This is the method used to transform a full vector routine (ie processing a full C<NPROMA> block) 
+into its single-column version, ready for accelerators:
 
 This involves the following steps:
 
@@ -373,7 +376,13 @@ Set the iterator C<JLON> (resp. C<JROF>) to C<KIDIA> (resp. C<KST>).
 Allocate temporary arrays in a pre-allocated a stack (C<YDSTACK>). These arrays are shared
 by all threads belonging to the same warp.
 
+=item
+
+Insert an OpenACC C<!$acc routine seq>) directive.
+
 =back
+
+See L<Fxtran::SingleColumn> for more details.
 
 =cut
 
@@ -442,6 +451,35 @@ sub pointerparallel
 {
   my ($opts, @args) = @_;
 
+=head2 pointerparallel
+
+This method transforms a vector routine (processing a single C<NPROMA> block) into a parallel routines, that is,
+a routine containing many OpenMP/OpenACC kernels.
+
+=over 4
+
+=item
+
+C<!$ACDC PARALLEL> sections are searched.
+
+=item
+
+Each section, depending on the user-provided options, may be transformed into the one or many of the following 
+kernels: OpenMP, OpenMPSingleColumn, OpenACCSingleColumn
+
+The selection of the kernel variant is chosen at run time.
+
+=item
+
+Some instrumentation may be added: measurement of GPU memory, synchronisation of data on the host 
+after each kernel.
+
+=back
+
+See L<Fxtran::Pointer::Parallel> for more details.
+
+=cut
+
   &Fxtran::Util::loadModule ('Fxtran::Pointer::Parallel');
   &Fxtran::Util::loadModule ('Fxtran::IO::Link');
 
@@ -499,6 +537,18 @@ EOF
 sub singleblock
 {
   my ($opts, @args) = @_;
+
+=head2 singleblock
+
+This transforms a vector routine (processing a single C<NPROMA> block) into a routine where each
+loop on the C<NPROMA> dimension is transformed into an OpenACC kernel.
+
+Arguments (C<NPROMA> arrays and structure holding constant data such as C<YDMODEL>) 
+are supposed to be present on the device when the generated routine is called. 
+
+See L<Fxtran::SingleBlock> for more details.
+
+=cut
 
   &Fxtran::Util::loadModule ('Fxtran::SingleBlock');
 
