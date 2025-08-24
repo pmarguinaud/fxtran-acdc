@@ -6,6 +6,7 @@ use Pod::Markdown;
 use FileHandle;
 use File::Path;
 use Data::Dumper;
+use File::Basename;
 
 use strict;
 
@@ -48,17 +49,31 @@ $fh->print (<< "EOF");
 
 EOF
 
-for my $f (qw (fxtran-f90 fxtran-boot fxtran-gen fxtran-fix fxtran-makemaker))
+for my $perl (qw (fxtran-f90 fxtran-boot fxtran-gen fxtran-fix fxtran-makemaker click))
   {
-    my $md = "doc/$f.md";
+    my $f;
+
+    if (-f "bin/$perl")
+      {
+        $f = "bin/$perl";
+      }
+    else
+      {
+        ($f = $perl) =~ s,::,/,go;
+        $f = "lib/$f.pm";
+        die unless (-f $f);
+      }
+
+    my $md = $perl;
+    $md = "doc/$md.md";
 
     $fh->print (<< "EOF");
 
-# [$f ...](./$md)
+# [$perl ...](./$md)
 
 EOF
 
-    my $pod = &desc ("bin/$f");
+    my $pod = $f =~ m/^bin/o ? &desc ($f) : '';
 
     my ($pp, $markdown);
 
@@ -75,13 +90,13 @@ EOF
       perldoc_url_prefix => '',
     );
     $pp->output_string (\$markdown);
-    $pp->parse_file ("bin/$f");
+    $pp->parse_file ($f);
 
     $markdown =~ s/\]\((\S+)\)/\]\($1.md\)/goms;
 
 #   print &Dumper (\$markdown);
 
-    'FileHandle'->new (">doc/$f.md")->print ($markdown);
+    'FileHandle'->new (">doc/$perl.md")->print ($markdown);
 
   }
 
