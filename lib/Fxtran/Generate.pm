@@ -541,7 +541,8 @@ sub singleblock
 =head2 singleblock
 
 This transforms a vector routine (processing a single C<NPROMA> block) into a routine where each
-loop on the C<NPROMA> dimension is transformed into an OpenACC kernel.
+loop on the C<NPROMA> dimension is transformed into an OpenACC kernel. The result of the 
+transformation is a routine which runs on the CPU, but spawns several kernels on the device.
 
 Arguments (C<NPROMA> arrays and structure holding constant data such as C<YDMODEL>) 
 are supposed to be present on the device when the generated routine is called. 
@@ -600,6 +601,24 @@ sub manyblocks
 {
   my ($opts, @args) = @_;
 
+=head2 manyblocks
+
+This method transform vector routines (processing a single C<NPROMA> block) into routines 
+processing several C<NPROMA> blocks. The result of the transformation is a routine which 
+executes on the CPU, but spawns OpenACC kernels. This method can be combined with the
+singlecolumn method (ie OpenACC kernels can contain calls to singlecolumn routines).
+
+Argument arrays and data structures containing constant data are supposed to be present 
+on the device when the result routine is called.
+
+Note that passing arrays with several blocks implies that routine dummy argument arrays
+be declared with implicit shapes, as sometimes, actual arguments arrays are array sections,
+and we cannot have the compiler creating array copies.
+
+See L<Fxtran::ManyBlocks> for more details.
+
+=cut
+
   &Fxtran::Util::loadModule ('Fxtran::ManyBlocks');
 
   my ($F90) = @args;
@@ -656,6 +675,42 @@ sub methods
   use List::MoreUtils qw (uniq);
 
   my ($opts, @args) = @_;
+
+=head2 methods
+
+This method creates method for handling data structures (FORTRAN derived types).
+
+These methods are:
+
+=over 4
+
+=item SAVE
+
+Serialize data structure to a file. This is usefull for creating standalone 
+test cases.
+
+=item LOAD
+
+Read back a data structure from a file.
+
+=item CRC64
+
+Compute a checksum from a data structure; this is usefull to see whether a data
+structure has changed over time.
+
+=item COPY
+
+Create and copy the data structure contents to the device.
+
+=item WIPE
+
+Delete the data structure from the device.
+
+=back
+
+See L<Fxtran::IO> for more details.
+
+=cut
 
   &Fxtran::Util::loadModule ('Fxtran::IO');
   &Fxtran::Util::loadModule ('Fxtran::FieldAPI::Register');
@@ -800,6 +855,25 @@ sub interface
 {
   my ($opts, @args) = @_;
 
+=head2 interface
+
+This method create interface blocks for the original routine and the routines that can be obtained
+by transforming this routine. 
+
+For instance, if the routine to be transformed contains the following directives:
+
+  SUBROUTINE SIGAM (...)
+
+  !$ACDC singlecolumn
+  !$ACDC singleblock
+
+Then this method will create interfaces for C<SIGAM>, C<SIGAM_SINGLECOLUMN>, C<SIGAM_SINGLEBLOCK>. 
+These interfaces will be written to the same file if the option C<merge-interfaces> is enabled.
+
+See C<Fxtran::Interface> for more details.
+
+=cut
+
   my ($F90) = @args;
 
   my $ext = '.intfb.h';
@@ -847,6 +921,15 @@ sub bitrepro
 {
   my ($opts, @args) = @_;
 
+=head2 bitrepro
+
+This routine transforms the current routine into a routine where architecture dependant
+intrinsics (C<SIN>, C<EXP>, etc.) are replaced by portable versions of these functions.
+
+See F<Fxtran::BitRepro> for more details.
+
+=cut
+
   &Fxtran::Util::loadModule ('Fxtran::BitRepro');
 
   my ($F90) = @args;
@@ -868,6 +951,100 @@ EOF
 sub toplevel
 {
   my ($opts, @args) = @_;
+
+=head2 toplevel
+
+This method transforms a routine several C<NPROMA> blocks. Sections delimited by
+C<!$ACDC PARALLEL> directives are searched and call statements inside these
+section are replaced by calls to parallel versions.
+
+For instance:
+
+  !$ACDC PARALLEL {
+
+    CALL CPG (YDGEO, YLCPG_BNDS, YDCPG_OPTS, YDFORCESPPT, YLCPG_TND, YLCPG_SL1AUX, YDCPG_SL2, YLCPG_MISC, YDGPAR, &
+      & YLCPG_PHY0, YLCPG_PHY9, YLMF_PHYS, YDHGRAD, YLCPG_DDH, YLCPG_DYN0, YLCPG_DYN9, YDMF_PHYS_SURF, YDVARS, &
+      & YDGEOMVARS, YDXFU, YDCFU, YDMODEL, YDFIELDS, YDTRC, YDRADF, YDA_GFLSLP, YLA_SAVTEND, YDCPG_DDH_TND, YDPGTERM, &
+      & YDA_GFLPC, YDA_GFLPT, YLA_ISETTLOFF, YDSLHD, YDCPG_SL1, YDA_EXTRA, YDDDH, YDTDDH, YDA_RSAVEDP, YDA_PWRL9, &
+      & YDA_ZGEO0, YDA_ZRCP0, YDA_ZPRE0F, YDA_ZCTY0, LDWITH_MGRIDS, YDPHYSMWAVE)
+
+  !$ACDC }
+
+yields:
+
+    CALL CPG_PARALLEL (YDGEO, YLCPG_BNDS, YDCPG_OPTS, YDFORCESPPT, YLCPG_TND, YLCPG_SL1AUX, YDCPG_SL2, YLCPG_MISC, YDGPAR, &
+      & YLCPG_PHY0, YLCPG_PHY9, YLMF_PHYS, YDHGRAD, YLCPG_DDH, YLCPG_DYN0, YLCPG_DYN9, YDMF_PHYS_SURF, YDVARS, &
+      & YDGEOMVARS, YDXFU, YDCFU, YDMODEL, YDFIELDS, YDTRC, YDRADF, YDA_GFLSLP, YLA_SAVTEND, YDCPG_DDH_TND, YDPGTERM, &
+      & YDA_GFLPC, YDA_GFLPT, YLA_ISETTLOFF, YDSLHD, YDCPG_SL1, YDA_EXTRA, YDDDH, YDTDDH, YDA_RSAVEDP, YDA_PWRL9, &
+      & YDA_ZGEO0, YDA_ZRCP0, YDA_ZPRE0F, YDA_ZCTY0, LDWITH_MGRIDS, YDPHYSMWAVE)
+
+Moreover, constructs such as:
+
+  !$ACDC COPY, IF=LLPARALLEL {
+  
+  LLPERSISTENT = LLPARALLEL
+  
+  CALL YLCPG_DYN0%INIT (0_JPIM, YDFIELDS%REGISTRY, NLEV=NFLEVG, PERSISTENT=LLPERSISTENT, &
+                      & YDDYNA=YDMODEL%YRML_DYN%YRDYNA)
+  
+  CALL YLCPG_PHY0%INIT (0_JPIM, YDFIELDS%REGISTRY, NLEV=NFLEVG, LDMF_PHYS=LMPHYS.OR.LSIMPH, &
+                      & PERSISTENT=LLPERSISTENT)
+  
+  ...
+  
+  !$ACDC }
+
+and:
+
+  !$ACDC WIPE, IF=LLPARALLEL {
+
+  CALL YLCPG_TND%FINAL
+  CALL YLCPG_DDH%FINAL
+
+  ...
+
+  !$ACDC }
+
+are replaced by:
+  
+  LLPERSISTENT=LLPARALLEL
+  CALL YLCPG_DYN0%INIT (0_JPIM, YDFIELDS%REGISTRY, NLEV=YDGEOMETRY%YRDIMV&
+  &%NFLEVG, PERSISTENT=LLPERSISTENT, YDDYNA=YDMODEL%YRML_DYN%YRDYNA)
+  
+  IF (LLPARALLEL) THEN
+    CALL ACDC_COPY (YLCPG_DYN0)
+  ENDIF
+  
+  CALL YLCPG_PHY0%INIT (0_JPIM, YDFIELDS%REGISTRY, NLEV=YDGEOMETRY%YRDIMV%NFLEVG, LDMF_PHYS=YDMODEL&
+  &%YRML_PHY_MF%YRPHY%LMPHYS.OR.YDMODEL%YRML_PHY_MF%YRSIMPHL%LSIMPH, PERSISTENT=LLPERSISTENT)
+  
+  IF (LLPARALLEL) THEN
+    CALL ACDC_COPY (YLCPG_PHY0)
+  ENDIF
+
+and:
+
+  IF (LLPARALLEL) THEN
+    CALL ACDC_WIPE (YLCPG_TND)
+  ENDIF
+
+  CALL YLCPG_TND%FINAL
+
+  IF (LLPARALLEL) THEN
+    CALL ACDC_WIPE (YLCPG_DDH)
+  ENDIF
+
+  CALL YLCPG_DDH%FINAL
+
+This allows for copying data structures after initalizing them, and removing them from
+the device before deleting them.
+
+Eventually, note that the result of the transformation is compiled B<IN PLACE>
+of the original routine.
+
+See L<Fxtran::TopLevel> for more details.
+
+=cut
 
   &Fxtran::Util::loadModule ('Fxtran::Pointer::Parallel');
   &Fxtran::Util::loadModule ('Fxtran::IO::Link');
