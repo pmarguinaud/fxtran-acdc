@@ -352,6 +352,31 @@ sub singlecolumn
 {
   my ($opts, @args) = @_;
 
+=head2 singlecolumn
+
+This is the method used to transform a full routine into its single-column version, ready for accelerators:
+
+This involves the following steps:
+
+=over 4
+
+=item
+
+Remove all loops on the C<NPROMA> (aka C<KLON> dimension).
+
+=item
+
+Set the iterator C<JLON> (resp. C<JROF>) to C<KIDIA> (resp. C<KST>).
+
+=item 
+
+Allocate temporary arrays in a pre-allocated a stack (C<YDSTACK>). These arrays are shared
+by all threads belonging to the same warp.
+
+=back
+
+=cut
+
   $opts->{'suffix-singlecolumn-called'} ||= $opts->{'suffix-singlecolumn'};
 
   &Fxtran::Util::loadModule ('Fxtran::SingleColumn');
