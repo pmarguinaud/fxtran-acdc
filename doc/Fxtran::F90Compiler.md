@@ -16,7 +16,7 @@ the current directory. Dependencies between FORTRAN files are detected.
 A `Makefile` is generated and the compilation run with make if
 several files have to be compiled.
 
-# run
+## run
 
 This function compiles files passed as arguments, using the specified compilers. Named options are:
 

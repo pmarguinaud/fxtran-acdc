@@ -65,7 +65,7 @@ sub run
 {
   my %args = @_;
 
-=head1 run
+=head2 run
 
 This function compiles files passed as arguments, using the specified compilers. Named options are:
 
