@@ -14,9 +14,21 @@ fxtran-mergetool
 
 Wrap kdiff3, meld or vimdiff. Expand the following FORTRAN statetemnts before calling merge utilities:
 
-- call
-- associate
-- subroutine
+=over 4
+
+=item
+
+call
+
+=item
+
+associate
+
+=item
+
+subroutine
+
+=back
 
 Repack after merging.
 
