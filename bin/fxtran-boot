@@ -52,7 +52,7 @@ C<ecbuild> build type (similar to cmake build type).
 
 =head1 SEE ALSO
 
-fxtran-f90, ecbuild, Fxtran::F90Compiler
+L<fxtran-f90>, ecbuild, L<Fxtran::F90Compiler>
 
 =head1 AUTHOR
 

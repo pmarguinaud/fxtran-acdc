@@ -51,7 +51,7 @@ EOF
 
 for my $perl (qw (fxtran-f90 fxtran-boot fxtran-gen fxtran-fix fxtran-makemaker 
                   click Fxtran::Generate Fxtran::SemiImplicit Fxtran::SingleColumn
-                  Fxtran::SingleBlock))
+                  Fxtran::SingleBlock Fxtran::F90Compiler))
   {
     my $f;
 

@@ -46,7 +46,7 @@ environment.
 
 # SEE ALSO
 
-fxtran-f90, ecbuild, Fxtran::F90Compiler
+[fxtran-f90](fxtran-f90.md), ecbuild, [Fxtran::F90Compiler](Fxtran%3A%3AF90Compiler.md)
 
 # AUTHOR
 

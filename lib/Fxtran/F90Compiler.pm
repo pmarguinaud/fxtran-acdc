@@ -1,5 +1,18 @@
 package Fxtran::F90Compiler;
 
+=head1 NAME
+
+Fxtran::F90Compiler
+
+=head1 DESCRIPTION
+
+The purpose of this module is to provide utilities to wrap the 
+compiler and compile sets of files.
+
+=head1 PUBLIC FUNCTIONS
+
+=cut
+
 #
 # Copyright 2025 Meteo-France
 # All rights reserved
@@ -15,6 +28,128 @@ use File::Copy;
 use strict;
 
 use Fxtran::Util;
+
+sub compile
+{
+  my %args = @_;
+
+=head2 compile
+
+This function compiles FORTRAN and C files which are present in
+the current directory. Dependencies between FORTRAN files are detected.
+A F<Makefile> is generated and the compilation run with make if
+several files have to be compiled.
+
+=cut
+
+  my @f90flags = @{ $args{f90flags} };
+  my ($obj, $lib, $f90compiler) = @args{qw (obj lib f90compiler)};
+  my $opts = $args{opts};
+
+  my @F90 = <*.F90>;
+  my @C = <*.c>;
+
+  &Fxtran::F90Compiler::run 
+  (
+    f90compiler => $f90compiler, 
+    f90flags    => \@f90flags, 
+    lib         => $lib, 
+    obj         => $obj, 
+    F90         => \@F90, 
+    C           => \@C,
+    %$opts 
+  );
+}
+
+sub run
+{
+  my %args = @_;
+
+=head1 run
+
+This function compiles files passed as arguments, using the specified compilers. Named options are:
+
+=over 4
+
+=item F90
+
+list of FORTRAN files
+
+=item C
+
+list of C files.
+
+=item CXX
+
+list of C++ files.
+
+=item dryrun
+
+Stop the process just before compilation.
+
+=item user-directory-in
+
+Substitute files to be compiled with files from this directory. Used for debugging.
+
+=item user-directory-out
+
+Save files from current directory (mostly generated code) into this directory.
+
+=back
+
+=cut
+
+  if (my $dir = $args{'user-directory-in'})
+    {
+      for my $f (<*.F90>, <*.h>)
+        {
+          if (-f "$dir/$f")
+            {
+              unlink ($f);
+              print "Take $dir/$f\n";
+              &copy ("$dir/$f", $f);
+            }
+        }
+    }
+
+  if (my $dir = $args{'user-directory-out'})
+    { 
+      (-d $dir) or &mkpath ($dir);
+      for my $f (<*.F90>, <*.h>)
+        {
+          &copy ($f, "$dir/$f");
+        }
+    }
+
+  return if ($args{dryrun});
+
+  if (my $dir = $args{'user-directory-out'})
+    { 
+      for my $F90 (@{ $args{F90} || [] })
+        {
+          if (-f "$dir/$F90")
+            {
+              $F90 = "$dir/$F90";
+            }
+        }
+    }
+
+  my @F90 = @{ $args{F90} || [] };
+  my @C   = @{ $args{C}   || [] };
+  my @CXX = @{ $args{CXX} || [] };
+
+  if ((scalar (@F90) == 1) && (scalar (@C) == 0) && (scalar (@CXX) == 0))
+    {
+      my $f90compiler = $args{f90compiler};
+      my @f90flags = @{ $args{f90flags} };
+      my $obj = $args{obj};
+      &Fxtran::Util::runCommand (cmd => [$f90compiler, @f90flags, ($obj ? (-o => $obj) : ()), @F90], %args);
+    }
+  else
+    {
+      &make (%args);
+    }
+}
 
 sub slurp
 {
@@ -198,62 +333,6 @@ EOF
   &Fxtran::Util::runCommand (cmd => ['make', -j => 4], %args);
 }
 
-sub run
-{
-  my %args = @_;
-
-  if (my $dir = $args{'user-directory-in'})
-    {
-      for my $f (<*.F90>, <*.h>)
-        {
-          if (-f "$dir/$f")
-            {
-              unlink ($f);
-              print "Take $dir/$f\n";
-              &copy ("$dir/$f", $f);
-            }
-        }
-    }
-
-  if (my $dir = $args{'user-directory-out'})
-    { 
-      (-d $dir) or &mkpath ($dir);
-      for my $f (<*.F90>, <*.h>)
-        {
-          &copy ($f, "$dir/$f");
-        }
-    }
-
-  return if ($args{dryrun});
-
-  if (my $dir = $args{'user-directory-out'})
-    { 
-      for my $F90 (@{ $args{F90} || [] })
-        {
-          if (-f "$dir/$F90")
-            {
-              $F90 = "$dir/$F90";
-            }
-        }
-    }
-
-  my @F90 = @{ $args{F90} || [] };
-  my @C   = @{ $args{C}   || [] };
-  my @CXX = @{ $args{CXX} || [] };
-
-  if ((scalar (@F90) == 1) && (scalar (@C) == 0) && (scalar (@CXX) == 0))
-    {
-      my $f90compiler = $args{f90compiler};
-      my @f90flags = @{ $args{f90flags} };
-      my $obj = $args{obj};
-      &Fxtran::Util::runCommand (cmd => [$f90compiler, @f90flags, ($obj ? (-o => $obj) : ()), @F90], %args);
-    }
-  else
-    {
-      &make (%args);
-    }
-}
-
 sub concatenateSource
 {
   my %args = @_;
@@ -284,27 +363,10 @@ sub concatenateSource
   );
 }
 
-sub compile
-{
-  my %args = @_;
-
-  my @f90flags = @{ $args{f90flags} };
-  my ($obj, $lib, $f90compiler) = @args{qw (obj lib f90compiler)};
-  my $opts = $args{opts};
-
-  my @F90 = <*.F90>;
-  my @C = <*.c>;
-
-  &Fxtran::F90Compiler::run 
-  (
-    f90compiler => $f90compiler, 
-    f90flags    => \@f90flags, 
-    lib         => $lib, 
-    obj         => $obj, 
-    F90         => \@F90, 
-    C           => \@C,
-    %$opts 
-  );
-}
-
 1;
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=cut
