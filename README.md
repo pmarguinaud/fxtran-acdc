@@ -3,6 +3,12 @@
 ![](./images/ACDC.png)
 
 
+# [fxtran-boot ...](./doc/fxtran-boot.md)
+
+`fxtran-boot` compiles and install the fxtran-acdc libraries. Compilers and
+their options may be passed directly as options, or inferred from the `ecbuild`
+environment.
+
 # [fxtran-f90 ...](./doc/fxtran-f90.md)
 
 `fxtran-f90` is compiler wrapper performing the following tasks:
@@ -13,23 +19,6 @@ for GPU accelerators.
 - Link all objects into a single one.
 
 `fxtran-f90` relies on `fxtran` for parsing and transforming FORTRAN source code.
-
-# [fxtran-boot ...](./doc/fxtran-boot.md)
-
-`fxtran-boot` compiles and install the fxtran-acdc libraries. Compilers and
-their options may be passed directly as options, or inferred from the `ecbuild`
-environment.
-
-# [fxtran-gen ...](./doc/fxtran-gen.md)
-
-`fxtran-gen` is a `click` frontend to `Fxtran::Generate` and other generation modules. It
-is invoked by `fxtran-f90` to transform FORTRAN source code.
-
-The first argument of fxtran-gen is the name of the generation module (this should be 
-a clickable module), but this argument is optional and defaults to `Fxtran::Generate`. Then
-comes the method to be invoked, followed by its options and arguments.
-
-See `Fxtran::Generate` for the details of methods and options accepted by `fxtran-gen`.
 
 # [fxtran-fix ...](./doc/fxtran-fix.md)
 
@@ -55,6 +44,17 @@ When the user is done with editing/debugging, he has to exit the shell; `fxtran-
 will then attempt to compile the code once more and return control to the 
 build system.
 
+# [fxtran-gen ...](./doc/fxtran-gen.md)
+
+`fxtran-gen` is a `click` frontend to `Fxtran::Generate` and other generation modules. It
+is invoked by `fxtran-f90` to transform FORTRAN source code.
+
+The first argument of fxtran-gen is the name of the generation module (this should be 
+a clickable module), but this argument is optional and defaults to `Fxtran::Generate`. Then
+comes the method to be invoked, followed by its options and arguments.
+
+See `Fxtran::Generate` for the details of methods and options accepted by `fxtran-gen`.
+
 # [fxtran-makemaker ...](./doc/fxtran-makemaker.md)
 
 `fxtran-makemaker` is a simple `Makefile` generator for external test
@@ -68,3 +68,13 @@ When invoked, `fxtran-makemaker` will:
 
 The user is expected to provide a file named `Makefile.inc` which contains
 the compiler name and options.
+
+# [fxtran-mergetool ...](./doc/fxtran-mergetool.md)
+
+Wrap kdiff3, meld or vimdiff. Expand the following FORTRAN statetemnts before calling merge utilities:
+
+\- call
+\- associate
+\- subroutine
+
+Repack after merging.

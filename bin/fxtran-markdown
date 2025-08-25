@@ -7,8 +7,18 @@ use FileHandle;
 use File::Path;
 use Data::Dumper;
 use File::Basename;
+use File::Find;
+use File::Basename;
+use File::Spec;
+use FindBin qw ($Bin);
 
 use strict;
+
+sub slurp
+{
+  my $f = shift;
+  return do { local $/ = undef; my $fh = 'FileHandle'->new ("<$f"); <$fh> };
+}
 
 sub desc
 {
@@ -49,9 +59,36 @@ $fh->print (<< "EOF");
 
 EOF
 
-for my $perl (qw (fxtran-f90 fxtran-boot fxtran-gen fxtran-fix fxtran-makemaker 
-                  click Fxtran::Generate Fxtran::SemiImplicit Fxtran::SingleColumn
-                  Fxtran::SingleBlock Fxtran::F90Compiler queue))
+my @perl;
+
+for my $bin (<$Bin/fxtran-*>)
+  {
+    push @perl, &basename ($bin) 
+      if (&slurp ($bin) =~ m/\n=head1/goms);
+  }
+
+&find ({wanted => sub
+{
+  my $f = $File::Find::name;
+
+  return unless ($f =~ m/\.pm$/o);
+
+  return unless (&slurp ($f) =~ m/\n=head1/goms);
+
+  my $pm = 'File::Spec'->abs2rel ($f, "$Bin/../lib");
+ 
+  for ($pm)
+    {
+      s/\.pm$//o;
+      s,/,::,go;
+    }
+ 
+  push @perl, $pm;
+
+}, no_chdir => 1}, "$Bin/../lib");
+
+
+for my $perl (@perl)
   {
     my $f;
 
