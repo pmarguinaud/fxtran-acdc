@@ -1,5 +1,51 @@
 package queue;
 
+=head1 NAME
+
+queue
+
+=head1 SYNOPSIS
+
+  # Create a queue object with 4 working threads
+  my $queue = 'queue'->new (threads => 4, verbose => 1);
+
+  for my $file (@lst)
+    {
+      # Invoke process method of 'main' on argument list
+      $queue->append (['main', 'process', [file => $file, %opts]]); 
+    }
+  
+  # Wait for all tasks to complete
+  $queue->flush ();
+
+=head1 DESCRIPTION
+
+This class wraps the C<Thread::Queue> class and manages a gang of threads. The user
+can then submit tasks to the queue; tasks may either be:
+
+=over 4
+
+=item 
+
+A package name followed by a method name, followed by a reference on a list containing
+arguments.
+
+=item
+
+A list of character strings; this will be executed with C<system>.
+
+=back
+
+=head1 SEE ALSO
+
+threads, Thread::Queue
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=cut
+
 use threads;
 use Thread::Queue;
 use Data::Dumper;
@@ -107,7 +153,6 @@ sub flush
        {
          $self->{queue}->enqueue ($x);
        }
-
 
       my $c = 1;
       for my $t (@{ $self->{tasks} })
