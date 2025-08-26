@@ -8,7 +8,7 @@ fxtran-mergetool
 
 # DESCRIPTION
 
-Wrap kdiff3, meld or vimdiff. Expand the following FORTRAN statetemnts before calling merge utilities:
+Wrap kdiff3, meld or vimdiff. Expand the following FORTRAN statements before calling merge utilities:
 
 - call
 - associate
