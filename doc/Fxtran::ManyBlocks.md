@@ -190,6 +190,13 @@ is transformed into:
     
     ENDDO
 
+# MORE EXAMPLES
+
+See for instance
+[test](../tests/49t2_openacc-manyblocks-auto/src/main/arpifs/phys_ec/cubasen.F90) 
+and
+[test](../tests/49t2_openacc-manyblocks-auto/ref/main/arpifs/phys_ec/cubasen_manyblocks.F90).
+
 # SEE ALSO
 
 [Fxtran::SingleColumn](Fxtran%3A%3ASingleColumn.md), [Fxtran::SingleBlock](Fxtran%3A%3ASingleBlock.md)
