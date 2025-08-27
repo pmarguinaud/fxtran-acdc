@@ -1,5 +1,19 @@
 package Fxtran::DrHook;
 
+=head1 NAME
+
+Fxtran::DrHook
+
+=head1 DESCRIPTION
+
+This module provides utilities to remove DrHook calls.
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=cut
+
 #
 # Copyright 2022 Meteo-France
 # All rights reserved
