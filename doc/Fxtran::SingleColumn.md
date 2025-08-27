@@ -149,6 +149,17 @@ is transformed into:
     
     ENDDO
 
+# MORE EXAMPLES
+
+See for instance:
+
+- [lascaw.F90](../tests/49t2_openacc-bench/src/main/arpifs/interpol/lascaw.F90)
+/
+[lascaw\_openacc.F90](../tests/49t2_openacc-bench/ref/util/src/local/arpifs/interpol/lascaw_openacc.F90)
+- [shallow\_mf.F90](../tests/49t2_openacc-bench/src/main/phyex/turb/shallow_mf.F90)
+/
+[shallow\_mf\_openacc.F90](../tests/49t2_openacc-bench/ref/util/src/local/phyex/turb/shallow_mf_openacc.F90)
+
 # SEE ALSO
 
 [Fxtran::Stack](Fxtran%3A%3AStack.md), [Fxtran::Loop](Fxtran%3A%3ALoop.md), [Fxtran::ReDim](Fxtran%3A%3AReDim.md)

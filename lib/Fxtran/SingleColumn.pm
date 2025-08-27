@@ -151,6 +151,26 @@ is transformed into:
   
   ENDDO
 
+=head1 MORE EXAMPLES
+
+See for instance:
+
+=over 4
+
+=item
+
+L<lascaw.F90|url:../tests/49t2_openacc-bench/src/main/arpifs/interpol/lascaw.F90>
+/
+L<lascaw_openacc.F90|url:../tests/49t2_openacc-bench/ref/util/src/local/arpifs/interpol/lascaw_openacc.F90>
+
+=item
+
+L<shallow_mf.F90|url:../tests/49t2_openacc-bench/src/main/phyex/turb/shallow_mf.F90>
+/
+L<shallow_mf_openacc.F90|url:../tests/49t2_openacc-bench/ref/util/src/local/phyex/turb/shallow_mf_openacc.F90>
+
+=back
+
 =head1 SEE ALSO
 
 L<Fxtran::Stack>, L<Fxtran::Loop>, L<Fxtran::ReDim>
