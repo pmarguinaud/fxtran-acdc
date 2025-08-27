@@ -194,10 +194,23 @@ is transformed into:
 
 =head1 MORE EXAMPLES
 
-See for instance
+See for instance:
+
+=over 4
+
+=item
+
 L<cubasen.F90|url:../tests/49t2_openacc-manyblocks-auto/src/main/arpifs/phys_ec/cubasen.F90> 
-and
+/
 L<cubasen_manyblocks.F90|url:../tests/49t2_openacc-manyblocks-auto/ref/manyblocks/src/local/arpifs/phys_ec/cubasen_manyblocks.F90>.
+
+=item
+
+L<cucalln_mf.F90|url:../tests/49t2_openacc-manyblocks-auto/src/main/arpifs/phys_ec/cucalln_mf.F90> 
+/
+L<cucalln_mf_manyblocks.F90|url:../tests/49t2_openacc-manyblocks-auto/ref/manyblocks/src/local/arpifs/phys_ec/cucalln_mf_manyblocks.F90>.
+
+=back
 
 =head1 SEE ALSO
 

@@ -192,10 +192,14 @@ is transformed into:
 
 # MORE EXAMPLES
 
-See for instance
-[cubasen.F90](../tests/49t2_openacc-manyblocks-auto/src/main/arpifs/phys_ec/cubasen.F90) 
-and
+See for instance:
+
+- [cubasen.F90](../tests/49t2_openacc-manyblocks-auto/src/main/arpifs/phys_ec/cubasen.F90) 
+/
 [cubasen\_manyblocks.F90](../tests/49t2_openacc-manyblocks-auto/ref/manyblocks/src/local/arpifs/phys_ec/cubasen_manyblocks.F90).
+- [cucalln\_mf.F90](../tests/49t2_openacc-manyblocks-auto/src/main/arpifs/phys_ec/cucalln_mf.F90) 
+/
+[cucalln\_mf\_manyblocks.F90](../tests/49t2_openacc-manyblocks-auto/ref/manyblocks/src/local/arpifs/phys_ec/cucalln_mf_manyblocks.F90).
 
 # SEE ALSO
 
