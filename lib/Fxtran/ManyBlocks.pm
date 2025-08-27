@@ -195,9 +195,9 @@ is transformed into:
 =head1 MORE EXAMPLES
 
 See for instance
-L<test|url:../tests/49t2_openacc-manyblocks-auto/src/main/arpifs/phys_ec/cubasen.F90> 
+L<cubasen.F90|url:../tests/49t2_openacc-manyblocks-auto/src/main/arpifs/phys_ec/cubasen.F90> 
 and
-L<test|url:../tests/49t2_openacc-manyblocks-auto/ref/main/arpifs/phys_ec/cubasen_manyblocks.F90>.
+L<cubasen_manyblocks.F90|url:../tests/49t2_openacc-manyblocks-auto/ref/main/arpifs/phys_ec/cubasen_manyblocks.F90>.
 
 =head1 SEE ALSO
 

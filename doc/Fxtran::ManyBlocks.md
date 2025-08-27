@@ -193,9 +193,9 @@ is transformed into:
 # MORE EXAMPLES
 
 See for instance
-[test](../tests/49t2_openacc-manyblocks-auto/src/main/arpifs/phys_ec/cubasen.F90) 
+[cubasen.F90](../tests/49t2_openacc-manyblocks-auto/src/main/arpifs/phys_ec/cubasen.F90) 
 and
-[test](../tests/49t2_openacc-manyblocks-auto/ref/main/arpifs/phys_ec/cubasen_manyblocks.F90).
+[cubasen\_manyblocks.F90](../tests/49t2_openacc-manyblocks-auto/ref/main/arpifs/phys_ec/cubasen_manyblocks.F90).
 
 # SEE ALSO
 
