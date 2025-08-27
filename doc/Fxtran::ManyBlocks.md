@@ -195,7 +195,7 @@ is transformed into:
 See for instance
 [cubasen.F90](../tests/49t2_openacc-manyblocks-auto/src/main/arpifs/phys_ec/cubasen.F90) 
 and
-[cubasen\_manyblocks.F90](../tests/49t2_openacc-manyblocks-auto/ref/main/arpifs/phys_ec/cubasen_manyblocks.F90).
+[cubasen\_manyblocks.F90](../tests/49t2_openacc-manyblocks-auto/ref/manyblocks/src/local/arpifs/phys_ec/cubasen_manyblocks.F90).
 
 # SEE ALSO
 

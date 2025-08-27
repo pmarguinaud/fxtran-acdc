@@ -197,7 +197,7 @@ is transformed into:
 See for instance
 L<cubasen.F90|url:../tests/49t2_openacc-manyblocks-auto/src/main/arpifs/phys_ec/cubasen.F90> 
 and
-L<cubasen_manyblocks.F90|url:../tests/49t2_openacc-manyblocks-auto/ref/main/arpifs/phys_ec/cubasen_manyblocks.F90>.
+L<cubasen_manyblocks.F90|url:../tests/49t2_openacc-manyblocks-auto/ref/manyblocks/src/local/arpifs/phys_ec/cubasen_manyblocks.F90>.
 
 =head1 SEE ALSO
 
