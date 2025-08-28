@@ -22,7 +22,8 @@ number in a well defined order.
 
 =back
 
-The code has to be compiled with the C<-O0> option.
+The generated code has to be compiled with the C<-O0> option, so that results 
+be reproduced between CPU and GPU.
 
 =head1 SEE ALSO
 

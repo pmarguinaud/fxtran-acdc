@@ -11,7 +11,8 @@ when results are compared between the CPU and the GPU; this involves two steps:
 - Adding brackets in additions to force the compiler to add
 number in a well defined order.
 
-The code has to be compiled with the `-O0` option.
+The generated code has to be compiled with the `-O0` option, so that results 
+be reproduced between CPU and GPU.
 
 # SEE ALSO
 
