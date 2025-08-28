@@ -1,6 +1,6 @@
 # NAME
 
-Fxtran::Generate
+[Fxtran::Generate](../lib/Fxtran/Generate.pm)
 
 # DESCRIPTION
 

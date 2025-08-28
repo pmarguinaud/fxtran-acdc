@@ -90,22 +90,22 @@ for my $bin (<$Bin/fxtran-*>)
 
 for my $perl (@perl)
   {
-    my $f;
+    my $file;
 
     if (-f "bin/$perl")
       {
-        $f = "bin/$perl";
+        $file = "bin/$perl";
       }
     else
       {
-        ($f = $perl) =~ s,::,/,go;
-        $f = "lib/$f.pm";
-        die unless (-f $f);
+        ($file = $perl) =~ s,::,/,go;
+        $file = "lib/$file.pm";
+        die unless (-f $file);
       }
 
     my ($pp, $markdown);
 
-    if ($f =~ m/^bin/o)
+    if ($file =~ m/^bin/o)
       {
         my $md = $perl;
         $md = "doc/$md.md";
@@ -116,7 +116,7 @@ for my $perl (@perl)
 
 EOF
 
-       my $pod = $f =~ m/^bin/o ? &desc ($f) : '';
+       my $pod = $file =~ m/^bin/o ? &desc ($file) : '';
        $pp = 'Pod::Markdown'->new ();
        $pp->output_string (\$markdown);
        $pp->parse_string_document ($pod);
@@ -125,14 +125,12 @@ EOF
 
 #   print &Dumper ([$pod, $markdown]);
 
-    $markdown = '';
-
     $pp = 'Pod::Markdown'->new 
     ( 
       perldoc_url_prefix => '',
     );
     $pp->output_string (\$markdown);
-    $pp->parse_file ($f);
+    $pp->parse_file ($file);
 
     $markdown =~ s{\]\((\S+)\)}
     { 
@@ -146,6 +144,8 @@ EOF
         }
       "]($link)" 
     }xegoms;
+
+    $markdown =~ s{# NAME\n\n(\S+)}{# NAME\n\n[$1](../$file)}goms;
 
 #   print &Dumper (\$markdown);
 

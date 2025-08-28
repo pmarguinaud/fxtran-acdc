@@ -1,6 +1,6 @@
 # NAME
 
-Fxtran::SingleColumn
+[Fxtran::SingleColumn](../lib/Fxtran/SingleColumn.pm)
 
 # DESCRIPTION
 

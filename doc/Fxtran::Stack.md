@@ -1,6 +1,6 @@
 # NAME
 
-Fxtran::Stack
+[Fxtran::Stack](../lib/Fxtran/Stack.pm)
 
 # DESCRIPTION
 

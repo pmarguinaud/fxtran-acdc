@@ -1,6 +1,6 @@
 # NAME
 
-Fxtran::SemiImplicit
+[Fxtran::SemiImplicit](../lib/Fxtran/SemiImplicit.pm)
 
 # DESCRIPTION
 

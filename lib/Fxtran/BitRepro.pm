@@ -1,5 +1,40 @@
 package Fxtran::BitRepro;
 
+=head1 NAME
+
+Fxtran::BitRepro
+
+=head1 DESCRIPTION
+
+The purpose of this module is to provide functions to make the code bit-reproducible
+when results are compared between the CPU and the GPU; this involves two steps:
+
+=over 4
+
+=item
+
+Replacing transcendental intrinsics with portable functions.
+
+=item
+
+Adding brackets in additions to force the compiler to add
+number in a well defined order.
+
+=back
+
+The code has to be compiled with the C<-O0> option.
+
+=head1 SEE ALSO
+
+L<fxtran_acdc_br_intrinsics.F90|url:../src/fxtran_acdc_br_intrinsics.F90>,
+L<fxtran_acdc_br_transcendentals.cc|url:../src/fxtran_acdc_br_transcendentals.cc>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=cut
+
 #
 # Copyright 2025 Meteo-France
 # All rights reserved

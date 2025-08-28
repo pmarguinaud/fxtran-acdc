@@ -1,6 +1,6 @@
 # NAME
 
-click
+[click](../lib/click.pm)
 
 # SYNOPSIS
 

@@ -1,6 +1,6 @@
 # NAME
 
-Fxtran::DrHook
+[Fxtran::DrHook](../lib/Fxtran/DrHook.pm)
 
 # DESCRIPTION
 

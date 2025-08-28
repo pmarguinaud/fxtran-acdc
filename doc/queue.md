@@ -1,6 +1,6 @@
 # NAME
 
-queue
+[queue](../lib/queue.pm)
 
 # SYNOPSIS
 

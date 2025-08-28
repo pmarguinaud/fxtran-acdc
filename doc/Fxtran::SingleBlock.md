@@ -1,6 +1,6 @@
 # NAME
 
-Fxtran::SingleBlock
+[Fxtran::SingleBlock](../lib/Fxtran/SingleBlock.pm)
 
 # DESCRIPTION
 

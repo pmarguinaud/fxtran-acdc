@@ -1,6 +1,6 @@
 # NAME
 
-Fxtran::F90Compiler
+[Fxtran::F90Compiler](../lib/Fxtran/F90Compiler.pm)
 
 # DESCRIPTION
 

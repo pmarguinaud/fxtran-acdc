@@ -1,6 +1,14 @@
+`fxtran-f90` is compiler wrapper performing the following tasks:
+
+- Apply some transformations on user-written source code and generate FORTRAN source code ready 
+for GPU accelerators.
+- Compile the original code and code produced at previous step.
+- Link all objects into a single one.
+
+`fxtran-f90` relies on `fxtran` for parsing and transforming FORTRAN source code.
 # NAME
 
-fxtran-f90
+[fxtran-f90](../bin/fxtran-f90)
 
 # SYNOPSIS
 

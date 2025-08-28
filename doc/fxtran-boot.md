@@ -1,6 +1,9 @@
+`fxtran-boot` compiles and install the fxtran-acdc libraries. Compilers and
+their options may be passed directly as options, or inferred from the `ecbuild`
+environment.
 # NAME
 
-fxtran-boot
+[fxtran-boot](../bin/fxtran-boot)
 
 # SYNOPSIS
 

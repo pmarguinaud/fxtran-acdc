@@ -1,6 +1,13 @@
+Wrap kdiff3, meld or vimdiff. Expand the following FORTRAN statements before calling merge utilities:
+
+- call
+- associate
+- subroutine
+
+Repack after merging.
 # NAME
 
-fxtran-mergetool
+[fxtran-mergetool](../bin/fxtran-mergetool)
 
 # SYNOPSIS
 

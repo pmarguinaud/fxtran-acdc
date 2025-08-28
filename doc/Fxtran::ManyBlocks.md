@@ -1,6 +1,6 @@
 # NAME
 
-Fxtran::ManyBlocks
+[Fxtran::ManyBlocks](../lib/Fxtran/ManyBlocks.pm)
 
 # DESCRIPTION
 
