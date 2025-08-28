@@ -1,5 +1,17 @@
 package Fxtran::Construct;
 
+=head1 NAME
+
+Fxtran::Construct
+
+=head1 DESCRIPTION
+
+This module provides functions whose purpose is construct reorganization.
+
+=head1 FUNCTIONS
+
+=cut
+
 #
 # Copyright 2022 Meteo-France
 # All rights reserved
@@ -17,6 +29,21 @@ use Fxtran;
 
 sub changeIfStatementsInIfConstructs
 {
+
+=head2 changeIfStatementsInIfConstructs
+
+Change statements such as:
+
+  IF (LLCOND) CALL SUBR (...)
+
+into:
+
+  IF (LLCOND) THEN
+    CALL SUBR (...)
+  ENDIF
+
+=cut
+
   my $d = shift;
 
   # Change if statements into if constructs
@@ -151,6 +178,40 @@ sub simplify
 sub apply
 {
   my ($d, %c) = @_;
+
+=head2 apply
+
+Replace expressions with constants values, and simplify the code (ie remove
+some C<IF> blocks) when possible.
+
+For instance, a block such as:
+
+  IF (LLCOND1) THEN
+    [ list of statements 1 ]
+  ELSEIF (LLCOND2) THEN
+    [ list of statements 2 ]
+  ELSE
+    [ list of statements 3 ]
+  ENDIF
+
+would become, after forcing C<LLCOND2> to C<.FALSE.>.
+
+  IF (LLCOND1) THEN
+    [ list of statements 1 ]
+  ELSE
+    [ list of statements 3 ]
+  ENDIF
+
+This is achieved by calling C<apply> like this:
+
+  &Fxtran::Construct::apply 
+  (
+    $d,                                 # section to be reorganized
+    '//named-E[string(N)="LLCOND2"]',   # XPath expression for expression matching
+    &e ('.FALSE.),                      # expression to replace matching expressions with
+  );
+
+=cut
 
   while (my ($k, $v) = each (%c))
     {
@@ -341,5 +402,11 @@ sub removeEmptyConstructs
   &removeEmptyIfConstructs ($d);
   &removeEmptyDoConstructs ($d);
 }
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=cut
 
 1;
