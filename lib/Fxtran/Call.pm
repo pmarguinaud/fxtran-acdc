@@ -1,5 +1,17 @@
 package Fxtran::Call;
 
+=head1 NAME
+
+Fxtran::Call
+
+=head1 DESCRIPTION
+
+This package provides functions to work on call statements. 
+
+=head1 FUNCTIONS
+
+=cut
+
 #
 # Copyright 2022 Meteo-France
 # All rights reserved
@@ -16,6 +28,22 @@ use Fxtran::Subroutine;
 sub addSuffix
 {
   my ($pu, %opts) = @_;
+
+=head2 addSuffix
+
+The C<addSuffix> function
+works on a code section, and adds a suffix to the procedure designator of all
+call statements.
+
+Interface includes and interfaces provided by modules are updated accordingly.
+
+Some procedure designators may be excluded from the processing, using the C<match>
+callback, passed as argument. 
+
+Contained subroutines may be excluded from the processing if the argument C<contained>
+is present.
+
+=cut
 
   my ($suffix, $match, $section, $contained) = @opts{qw (suffix match section contained)};
 
@@ -105,6 +133,13 @@ sub getArgumentIntent
 {
   my ($call, $expr, $find) = @_;
 
+=head2 getArgumentIntent
+
+This function returns the argument intent of an expression passed
+as argument to a call statement.
+
+=cut
+
   my ($proc) = &F ('./procedure-designator', $call, 1);
 
   if ($proc eq 'PCRC')
@@ -148,6 +183,12 @@ sub getArgumentIntent
 sub grokIntent
 {
   my ($expr, $pintent, $find) = @_;
+
+=head1 grokIntent
+
+This function finds the intent of an expression (IN or INOUT) in any statement.
+
+=cut
   
   my ($r, $w);
 
@@ -200,5 +241,11 @@ sub grokIntent
   $$pintent ||= 'INOUT';
 
 }
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=cut
 
 1;

@@ -1,5 +1,21 @@
 package Fxtran::Bt;
 
+=head1 NAME
+
+Fxtran::Bt
+
+=head1 DESCRIPTION
+
+This module provides the C<bt> function and uses it to handle C<__WARN__> and
+C<__DIE__> Perl signal. The C<bt> function will then print a stack trace 
+and abort when an error or a warnings is encountered.
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=cut
+
 #
 # Copyright 2022 Meteo-France
 # All rights reserved
