@@ -1,5 +1,25 @@
 package Fxtran::Cycle;
 
+=head1 NAME
+
+Fxtran::Cycle
+
+=head1 DESCRIPTION
+
+The purpose of this module is to apply simplifications
+(ie set some expressions to constant values and simplify
+the code accordingly), these simplifications being cycle 
+dependent.
+
+The C<Fxtran::Cycle::simplify> will invoke the appropriate
+C<Fxtran::CycleNN::simplify> method, using the cycle value.
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=cut
+
 #
 # Copyright 2025 Meteo-France
 # All rights reserved
