@@ -1,5 +1,45 @@
 package Fxtran::Associate;
 
+=head1 NAME
+
+Fxtran::Associate
+
+=head1 DESCRIPTION
+
+This module provides the C<resolveAssociates> function, which replaces associated expressions
+with their contents. All C<ASSOCIATE> blocks are scanned and selectors are replaced 
+by actual expressions in the block.
+
+The main argument of C<resolveAssociates> is an XML node which maps to a FORTRAN entity
+such as a program unit or something smaller like a C<DO> loop or something else.
+
+The C<outer> option allows for processing outer C<ASSOCIATE> blocks (those outside the 
+section we are working with). 
+
+C<ASSOCIATE> constructs are removed when the outer option is not active.
+
+=head1 LIMITATIONS
+
+C<ASSOCIATE> selectors other than named expressions are not supported; for instance:
+
+  ASSOCIATE (X => 1 + 2)
+
+C<ASSOCIATE> selectors mapped to complex slices are not supported; for instance:
+
+  TYPE TT
+    REAL :: X
+  END TYPE
+
+  TYPE (TT) :: YY (N)
+
+  ASSOCIATE (XX => YY%X)
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=cut
+
 #
 # Copyright 2022 Meteo-France
 # All rights reserved

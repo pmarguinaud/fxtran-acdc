@@ -137,7 +137,7 @@ EOF
     $markdown =~ s{\]\((\S+)\)}
     { 
       my $link = $1;
-      if ($link =~ s/^url://o)
+      if (($link =~ s/^url://o) || ($link =~ m/^https:/o))
         {
         }
       else

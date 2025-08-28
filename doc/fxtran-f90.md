@@ -126,7 +126,7 @@ We can ask to generate the interface of `actke_openacc.F90`:
 
 # SEE ALSO
 
-fxtran, [fxtran-gen](fxtran-gen.md), [fxtran-boot](fxtran-boot.md), FORTRAN, XML, [Fxtran::F90Compiler](Fxtran%3A%3AF90Compiler.md)
+[fxtran](https://github.com/pmarguinaud/fxtran), [fxtran-gen](fxtran-gen.md), [fxtran-boot](fxtran-boot.md), FORTRAN, XML, [Fxtran::F90Compiler](Fxtran%3A%3AF90Compiler.md)
 
 # AUTHOR
 
