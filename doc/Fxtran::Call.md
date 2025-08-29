@@ -27,6 +27,9 @@ is present.
 This function returns the argument intent of an expression passed
 as argument to a call statement.
 
+We rely on the `$find` argument of `getArgumentIntent` to find
+the subroutine interface and retrieve the dummy argument intent.
+
 # grokIntent
 
 This function finds the intent of an expression (IN or INOUT) in any statement.

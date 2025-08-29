@@ -138,6 +138,9 @@ sub getArgumentIntent
 This function returns the argument intent of an expression passed
 as argument to a call statement.
 
+We rely on the C<$find> argument of C<getArgumentIntent> to find
+the subroutine interface and retrieve the dummy argument intent.
+
 =cut
 
   my ($proc) = &F ('./procedure-designator', $call, 1);
