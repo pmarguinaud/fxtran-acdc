@@ -348,6 +348,12 @@ sub indent
       next if ($name eq 'broken-stmt'); 
       next if ($stmt->textContent =~ m/fxtran_acdc_stack/o);
 
+      if (($stmt->nodeName eq 'end-subroutine-stmt') && ($stmt->textContent =~ m/^ENDSUBROUTINE/o))
+        {
+          my ($tt, $nn) = $stmt->childNodes;
+          $tt->setData ($nn ? 'END SUBROUTINE ' : 'END SUBROUTINE');
+        }
+
       if ($name eq 'implicit-none-stmt')
         {
           $stmt->parentNode->insertBefore (&t ("\n"), $stmt);
