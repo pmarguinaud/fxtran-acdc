@@ -1,21 +1,41 @@
 package Fxtran::Decl;
 
-#
-# Copyright 2022 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+=head1 NAME
 
+Fxtran::Decl
+
+=head1 DESCRIPTION
+
+This module provides functions for manipulating data declaration.
+
+=head1 FUNCTIONS
+
+=cut
+
+use Data::Dumper;
 
 use strict;
+
 use Fxtran;
 use Fxtran::Scope;
-use Data::Dumper;
 
 sub forceSingleDecl
 {
 
-# Single declaration statement per entity
+=head2 forceSingleDecl
+
+This function transforms statements such as:
+
+  REAL :: X, Y, Z
+
+into:
+
+  REAL :: X
+  REAL :: Y 
+  REAL :: Z
+
+=cut
+
 
   my $d = shift;
 
@@ -46,6 +66,17 @@ sub forceSingleDecl
 
 sub declare
 {
+
+=head2 declare
+
+This routine takes a program unit as argument, and statements to add
+in the declaration part. These statements can be strings or XML nodes. 
+
+Only statements declaring a single entity are accepted. Statements
+redeclaring already declared entities are ignored.
+
+=cut
+
   my $d = shift;
 
   my ($dp) = &F ('./specification-part/declaration-part', $d);
@@ -66,6 +97,16 @@ sub declare
 
 sub use
 {
+
+=head2 use
+
+This routine takes a program unit as argument, and use statements to 
+add in the use part. These statements can be either strings or XML nodes.
+
+Statements importing existing modules are ignored.
+
+=cut
+
   my $d = shift;
 
   my ($up) = &F ('./specification-part/use-part', $d);
@@ -86,6 +127,16 @@ sub use
 
 sub include
 {
+
+=head2 include
+
+This method takes a program unit as argument, and include statements to
+add in the declaration part.
+
+Already included files are not included again.
+
+=cut
+
   my ($d, $include) = @_;
 
   my ($dp) = &F ('./specification-part/declaration-part', $d);
@@ -108,41 +159,21 @@ sub include
     }
 }
 
-sub changeIntent
-{
-  my ($d, %intent) = @_;
-
-  my ($dp) = &F ('./specification-part/declaration-part', $d);
-
-  my @en_decl = &F ('.//EN-decl[' . join (' or ', map { "string(EN-N)='$_'" } sort keys (%intent)) . ']', $dp);
-
-  for my $en_decl (@en_decl)
-    {
-      my ($N) = &F ('./EN-N', $en_decl, 1);
-      my ($stmt) = &Fxtran::stmt ($en_decl);
-      my ($intent) = &F ('.//intent-spec/text()', $stmt); 
-      $intent->setData ($intent{$N});
-    }
-
-}
-
-sub getAttributes
-{
-  my ($stmt, @attr) = @_; 
-
-  my @v; 
-
-  for my $attr (@attr)
-    {   
-      my ($v) = &F ('.//attribute-N[string(.)="?"]', $attr, $stmt);
-      push @v, $v; 
-    }   
-
-  return @v; 
-}
-
 sub addAttributes
 {
+
+=head2 addAttributes
+
+Add attributes to a declaration statement. For instance:
+
+  REAL :: X
+
+can be added a POINTER attribute:
+
+  REAL, POINTER :: X
+
+=cut
+
   my ($stmt, @attr) = @_; 
   my $ts = $stmt->firstChild;
 
@@ -157,6 +188,19 @@ sub addAttributes
 
 sub removeAttributes
 {
+
+=head2 removeAttributes
+
+Remove attributes from a declaration statement. For instance:
+
+  REAL, POINTER :: X
+
+can be removed its POINTER attribute:
+
+  REAL :: X
+
+=cut
+
   my ($stmt, @attr) = @_; 
 
   my @v; 
@@ -172,5 +216,15 @@ sub removeAttributes
   return @v;
 }
 
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2022
+
+=cut
 
 1;

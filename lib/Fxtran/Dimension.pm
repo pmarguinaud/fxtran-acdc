@@ -1,10 +1,16 @@
 package Fxtran::Dimension;
 
-#
-# Copyright 2022 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+=head1 NAME
+
+Fxtran::Dimension
+
+=head1 DESCRIPTION
+
+This module provides functions for manipulating array dimensions.
+
+=head1 FUNCTIONS
+
+=cut
 
 use Data::Dumper;
 
@@ -15,6 +21,19 @@ use Fxtran::Ref;
 
 sub attachArraySpecToEntity
 {
+
+=head2 attachArraySpecToEntity
+
+Transform statements such as:
+
+  REAL, DIMENSION (N) :: X, Y
+
+into:
+
+  REAL :: X (N), Y (N)
+
+=cut
+
   my $d = shift;
 
   # Remove dimension attributes and attach the array spec to entities
@@ -39,6 +58,44 @@ sub attachArraySpecToEntity
 
 sub fuseOuterDimensions
 {
+
+=head2 fuseOuterDimensions
+
+This routine takes as argument a program unit, and a hash whose keys are the
+symbols to process and the values the number of dimensions to fuse.
+
+For instance:
+
+  {
+    Z => 2,
+  }
+
+  REAL :: Z (NPROMA, NFLEVG, NDIM)
+  
+  INTEGER :: JLON, JLEV, JDIM
+
+  DO JDIM = 1, NDIM
+    DO JLEV = 1, NFLEVG
+      DO JLON = 1, NPROMA
+        Z (JLON, JLEV, JDIM) = ...
+      ENDDO
+    ENDDO
+  ENDDO
+
+will yield:
+
+  REAL :: Z (NPROMA, NFLEVG*NDIM)
+
+  DO JDIM = 1, NDIM
+    DO JLEV = 1, NFLEVG
+      DO JLON = 1, NPROMA
+        Z (JLON, 1 + (JLEV-1) + NFLEVG* (JDIM-1)) = ...
+      ENDDO
+    ENDDO
+  ENDDO
+
+=cut
+
   my $pu = shift;
   my %opts = @_;
 
@@ -166,5 +223,14 @@ sub fuseOuterDimensions
   
 }
 
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2022
+
+=cut
 
 1;

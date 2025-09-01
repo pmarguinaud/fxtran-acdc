@@ -1,10 +1,32 @@
 package Fxtran::DetectParallel;
 
-#
-# Copyright 2025 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+=head1 NAME
+
+Fxtran::DetectParallel
+
+=head1 DESCRIPTION
+
+This module provides the routine C<createParallelSections> whose
+purpose is to detect parallel loops (loops on NPROMA), and add
+ACDC parallel sections.
+
+Adjacent parallel sections can be merged if they do not contain
+CALL statements and the number of statements involving calculations
+do not exceed the C<max-statements-per-parallel> argument.
+
+The C<parallel-iterator-list> contain the list of iterators
+of loops that should be included in parallel sections (NPROMA and
+vertical iterators are the default).
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 use Data::Dumper;
 
