@@ -18,13 +18,11 @@ C<Fxtran::CycleNN::simplify> method, using the cycle value.
 
 philippe.marguinaud@meteo.fr
 
-=cut
+=head1 COPYRIGHT
 
-#
-# Copyright 2025 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+Meteo-France 2025
+
+=cut
 
 use strict;
 

@@ -31,15 +31,13 @@ L<click>, L<Fxtran::Generate>, L<fxtran-f90>
 
 philippe.marguinaud@meteo.fr
 
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
 =cut
 
 use warnings;
-
-#
-# Copyright 2025 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
 
 use FindBin qw ($Bin);
 use lib "$Bin/../lib";

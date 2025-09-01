@@ -36,3 +36,7 @@ See `Fxtran::Generate` for the details of methods and options accepted by `fxtra
 # AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

@@ -12,13 +12,6 @@ This module contains entry points for source code transformation and generation 
 
 =cut
 
-
-#
-# Copyright 2025 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
-
 use FileHandle;
 use Data::Dumper;
 use Getopt::Long;
@@ -1095,6 +1088,10 @@ L<fxtran-f90>, L<fxtran-gen>
 =head1 AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
 
 =cut
 

@@ -14,20 +14,17 @@ and abort when an error or a warnings is encountered.
 
 philippe.marguinaud@meteo.fr
 
-=cut
+=head1 COPYRIGHT
 
-#
-# Copyright 2022 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+Meteo-France 2022
+
+=cut
 
 use Data::Dumper;
 use FileHandle;
 use Text::Wrap;
 
 use strict;
-
 
 my %CONTEXT;
 

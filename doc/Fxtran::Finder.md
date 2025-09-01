@@ -27,3 +27,7 @@ We currently provide concrete classes for the following environments:
 # AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

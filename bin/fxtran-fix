@@ -44,6 +44,10 @@ L<fxtran-f90>
 
 philippe.marguinaud@meteo.fr
 
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
 =cut
 
 use warnings;

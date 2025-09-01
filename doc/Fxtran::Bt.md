@@ -11,3 +11,7 @@ and abort when an error or a warnings is encountered.
 # AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2022

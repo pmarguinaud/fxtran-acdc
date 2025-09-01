@@ -47,3 +47,7 @@ This function compiles files passed as arguments, using the specified compilers.
 # AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

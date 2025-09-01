@@ -179,13 +179,11 @@ L<Fxtran::Stack>, L<Fxtran::Loop>, L<Fxtran::ReDim>
 
 philippe.marguinaud@meteo.fr
 
-=cut
+=head1 COPYRIGHT
 
-#
-# Copyright 2022 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+Meteo-France 2022
+
+=cut
 
 use FileHandle;
 use Data::Dumper;

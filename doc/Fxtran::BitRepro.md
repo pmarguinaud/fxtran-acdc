@@ -22,3 +22,7 @@ be reproduced between CPU and GPU.
 # AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

@@ -139,3 +139,7 @@ We can ask to generate the interface of `actke_openacc.F90`:
 # AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

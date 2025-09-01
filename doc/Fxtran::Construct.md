@@ -55,3 +55,7 @@ This is achieved by calling `apply` like this:
 # AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2022

@@ -30,3 +30,7 @@ indents a FORTRAN/XML document.
 # AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2022

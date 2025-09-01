@@ -163,15 +163,13 @@ L<fxtran|https://github.com/pmarguinaud/fxtran>, L<fxtran-gen>, L<fxtran-boot>, 
 
 philippe.marguinaud@meteo.fr
 
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
 =cut
 
 use warnings;
-
-#
-# Copyright 2025 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
 
 use Getopt::Long;
 use FileHandle;

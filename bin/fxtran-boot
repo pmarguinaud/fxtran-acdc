@@ -52,21 +52,19 @@ C<ecbuild> build type (similar to cmake build type).
 
 =head1 SEE ALSO
 
-L<fxtran-f90>, ecbuild, L<Fxtran::F90Compiler>
+L<fxtran-f90>, L<ecbuild|https://github.com/ecmwf/ecbuild>, L<Fxtran::F90Compiler>
 
 =head1 AUTHOR
 
 philippe.marguinaud@meteo.fr
 
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
 =cut
 
 use warnings;
-
-#
-# Copyright 2025 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
 
 use Getopt::Long;
 use FileHandle;

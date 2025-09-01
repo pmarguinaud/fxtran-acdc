@@ -60,18 +60,17 @@ indents a FORTRAN/XML document.
 
 philippe.marguinaud@meteo.fr
 
+=head1 COPYRIGHT
+
+Meteo-France 2022
+
 =cut
 
-#
-# Copyright 2022 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
-
+use Data::Dumper;
 
 use strict;
+
 use Fxtran;
-use Data::Dumper;
 use Fxtran::Intrinsic;
 use Fxtran::Ref;
 use Fxtran::Decl;

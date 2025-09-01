@@ -37,4 +37,8 @@ philippe.marguinaud@meteo.fr
 
 # SEE ALSO
 
-fxtran
+[fxtran](https://github.com/pmarguinaud/fxtran)
+
+# COPYRIGHT
+
+Meteo-France 2025

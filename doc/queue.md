@@ -32,3 +32,7 @@ threads, Thread::Queue
 # AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

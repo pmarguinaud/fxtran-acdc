@@ -46,7 +46,11 @@ philippe.marguinaud@meteo.fr
 
 =head1 SEE ALSO
 
-fxtran
+L<fxtran|https://github.com/pmarguinaud/fxtran>
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
 
 =cut
 

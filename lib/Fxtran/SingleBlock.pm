@@ -161,13 +161,11 @@ is transformed to:
 
 philippe.marguinaud@meteo.fr
 
-=cut
+=head1 COPYRIGHT
 
-#
-# Copyright 2025 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+Meteo-France 2025
+
+=cut
 
 use Data::Dumper;
 

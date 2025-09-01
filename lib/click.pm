@@ -52,18 +52,17 @@ Getopt::Long
 
 philippe.marguinaud@meteo.fr
 
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
 =cut
 
-#
-# Copyright 2025 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
-
-use strict;
 use Data::Dumper;
 use FileHandle;
 use Storable;
+
+use strict;
 
 use base qw (Exporter);
 our @EXPORT = qw (click run);

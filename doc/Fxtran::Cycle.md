@@ -15,3 +15,7 @@ The `Fxtran::Cycle::simplify` will invoke the appropriate
 # AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

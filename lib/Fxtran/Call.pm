@@ -12,12 +12,6 @@ This package provides functions to work on call statements.
 
 =cut
 
-#
-# Copyright 2022 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
-
 use Data::Dumper;
 
 use strict;
@@ -248,6 +242,10 @@ This function finds the intent of an expression (IN or INOUT) in any statement.
 =head1 AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2022
 
 =cut
 

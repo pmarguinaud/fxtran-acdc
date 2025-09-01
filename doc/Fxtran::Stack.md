@@ -61,3 +61,7 @@ You can find examples in all single-column routines; for instance:
 # AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

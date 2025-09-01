@@ -232,3 +232,7 @@ See [Fxtran::TopLevel](Fxtran%3A%3ATopLevel.md) for more details.
 # AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

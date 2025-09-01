@@ -44,6 +44,10 @@ threads, Thread::Queue
 
 philippe.marguinaud@meteo.fr
 
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
 =cut
 
 use threads;

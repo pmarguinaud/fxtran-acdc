@@ -12,16 +12,14 @@ This module provides utilities to remove DrHook calls.
 
 philippe.marguinaud@meteo.fr
 
+=head1 COPYRIGHT
+
+Meteo-France 2022
+
 =cut
 
-#
-# Copyright 2022 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
-
-
 use strict;
+
 use Fxtran;
 
 sub remove

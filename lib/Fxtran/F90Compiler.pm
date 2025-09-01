@@ -13,12 +13,6 @@ compiler and compile sets of files.
 
 =cut
 
-#
-# Copyright 2025 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
-
 use FileHandle;
 use Data::Dumper;
 use File::Basename;
@@ -368,5 +362,9 @@ sub concatenateSource
 =head1 AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
 
 =cut

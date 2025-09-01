@@ -13,12 +13,6 @@ data structures.
 
 =cut
 
-#
-# Copyright 2022 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
-
 use Data::Dumper;
 
 use strict;
@@ -309,6 +303,10 @@ L<actke_openacc.F90|url:../tests/49t2_openacc-bench/ref/util/src/local/arpifs/ph
 =head1 AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
 
 =cut
 

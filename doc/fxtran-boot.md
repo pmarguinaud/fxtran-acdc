@@ -49,8 +49,12 @@ environment.
 
 # SEE ALSO
 
-[fxtran-f90](fxtran-f90.md), ecbuild, [Fxtran::F90Compiler](Fxtran%3A%3AF90Compiler.md)
+[fxtran-f90](fxtran-f90.md), [ecbuild](https://github.com/ecmwf/ecbuild), [Fxtran::F90Compiler](Fxtran%3A%3AF90Compiler.md)
 
 # AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

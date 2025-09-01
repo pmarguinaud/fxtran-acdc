@@ -18,3 +18,7 @@ the `LDACC=LDACC` optional argument.
 # AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

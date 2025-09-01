@@ -12,13 +12,6 @@ This module provides functions whose purpose is construct reorganization.
 
 =cut
 
-#
-# Copyright 2022 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
-
-
 use strict;
 use Fxtran;
 use Data::Dumper;
@@ -406,6 +399,10 @@ sub removeEmptyConstructs
 =head1 AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2022
 
 =cut
 

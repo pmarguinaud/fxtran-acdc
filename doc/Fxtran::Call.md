@@ -37,3 +37,7 @@ This function finds the intent of an expression (IN or INOUT) in any statement.
 # AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2022

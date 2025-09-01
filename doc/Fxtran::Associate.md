@@ -35,3 +35,7 @@ section we are working with).
 # AUTHOR
 
 philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2022
