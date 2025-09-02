@@ -85,13 +85,13 @@ use Fxtran;
 use Fxtran::Interface;
 use Fxtran::PATH;
 
-my %opts = qw (out Makefile include Makefile.inc SRC .);
-my @opts_f = qw (assume-generated-util-modules help);
+my %opts = qw (out Makefile include Makefile.inc SRC . fxtran-extern 1);
+my @opts_f = qw (assume-generated-util-modules fxtran-extern help);
 my @opts_s = qw (out include SRC);
 
 &GetOptions
 (
-  (map { ($_, \$opts{$_}) } @opts_f),
+  (map { ("$_!", \$opts{$_}) } @opts_f),
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
 
@@ -146,15 +146,17 @@ sub deps
       my ($sub) = ($code =~ m/SUBMODULE\s*\(s*(\w+)\s*\)/goms); $sub = uc ($sub) if ($sub);
 
       my @inc = ($code =~ m/\n\s*#include\s+"(.*?)"/goms);
-      @inc = grep { (! $extern_inc{$_}) && (! m/^fxtran_acdc_/o) } @inc;
-
+      @inc = grep { ! $extern_inc{$_} } @inc;
+      @inc = grep { ! m/^fxtran_acdc_/o } @inc if ($opts{'fxtran-extern'});
+      
       my @use = map { uc ($_) } 
                 (($code =~ m/\n\s*use\s+(\w+)/gomis), 
                  ($code =~ m/\n\s*submodule\*s\(\s*(\w+)\s*\)/gomis));
 
       push @use, $sub if ($sub);
 
-      @use = sort grep { (! $sys{uc ($_)}) && (! m/^FXTRAN_ACDC_/o) } @use;  
+      @use = sort grep { ! $sys{uc ($_)} } @use;  
+      @use = sort grep { ! m/^FXTRAN_ACDC_/o } @use if ($opts{'fxtran-extern'});
 
       my @mod = map { lc ($_) . '.mod' } @use; 
 
