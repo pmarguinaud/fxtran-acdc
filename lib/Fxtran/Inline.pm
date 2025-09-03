@@ -1,15 +1,22 @@
 package Fxtran::Inline;
 
-#
-# Copyright 2022 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+=head1 NAME
 
-#
-use strict;
+Fxtran::Inline
+
+=head1 DESCRIPTION
+
+The purpose of this module is to provide functions to inline subroutine calls.
+
+=head1 FUNCTIONS
+
+=cut
+
 use FileHandle;
 use Data::Dumper;
+
+use strict;
+
 use Fxtran;
 use Fxtran::Ref;
 use Fxtran::Decl;
@@ -195,6 +202,11 @@ sub inlineSingleCall
 {
   my ($d1, $d2, $s2, $n2, $call, %opts) = @_;
 
+# d1 is the outer program unit
+# d2 is the program unit being called
+# s2 is the subroutine statement of d2
+# call is the call statement to be inlined
+
   my ($dp1) = &F ('./specification-part/declaration-part', $d1);
   my ($up1) = &F ('./specification-part/use-part', $d1);
   my ($ep1) = &F ('./execution-part', $d1);
@@ -227,16 +239,6 @@ sub inlineSingleCall
           }
       }
   }
-
-=pod
-
-for my $k (sort keys %da2aa)
-  {
-    print " $k => ", $da2aa{$k}->textContent, "\n";
-  }
-print "\n";
-
-=cut
 
   # Replace dummy arguments by actual arguments
   for my $da (@da)
@@ -428,6 +430,9 @@ SKIP:
 
 sub loopElementalSingleCall
 {
+
+# Add loops around a single call to an ELEMENTAL subroutine
+
   my ($d1, $call, %opts) = @_;
 
   my $style = $opts{style};
@@ -576,6 +581,9 @@ sub loopElementalSingleCall
 sub loopElemental
 {
   my ($d1, $n2, %opts) = @_;
+
+# Add appropriate loops around calls around calls of ELEMENTAL subroutines
+
   my @call = &F ('.//call-stmt[string(procedure-designator)="?"]', $n2, $d1);
   for my $call (@call)
     {
@@ -586,6 +594,9 @@ sub loopElemental
 sub inlineContainedSubroutine
 {
   my ($d1, $n2, %opts) = @_;
+
+# d1 is the outer program unit
+# n2 is the name of the contained routine to be inlined
 
   # Fxtran::Subroutine to be inlined
   my ($D2) = &F ('.//program-unit[./subroutine-stmt[./subroutine-N/N/n/text()="?"]]', $n2, $d1);
@@ -607,14 +618,20 @@ sub inlineContainedSubroutine
 
 sub sortContainedSubroutines
 {
-  my @n2 = @_;
 
-  my %ref;
+# CONTAINed subroutines to be inlined have to be sorted
+# we inline first routines which are called by no other
+# subroutine
+
+  my @n2 = @_;  # Text node of subroutine names that we want to inline
+
+  my %ref; # Count how many times a contained routine
+           # calls other contained subroutines
 
   for my $n2 (@n2)
     {
       my @pu = &F ('ancestor::program-unit', $n2);
-      my $pu2 = pop (@pu);
+      my $pu2 = pop (@pu); # pu2 is the program unit of n2
       for my $n (@n2)
         {
           $ref{$n2->textContent}{$n->textContent} = 
@@ -660,6 +677,17 @@ sub sortContainedSubroutines
 
 sub inlineContainedSubroutines
 {
+
+=head2 inlineContainedSubroutines
+
+Inline all routines from the CONTAINS section. Sort these
+routines: inline first routines which are not called by
+any other CONTAINed subroutine.
+
+Remove the CONTAINS statement and the CONTAINed subroutines.
+
+=cut
+
   my ($d1, %opts) = @_;
 
   my @n2 = &F ('./program-unit/subroutine-stmt/subroutine-N/N/n/text()', $d1);
@@ -733,6 +761,13 @@ sub suffixVariables
 
 sub inlineExternalSubroutine
 {
+
+=head2 inlineExternalSubroutine
+
+Inline external subroutine. Suffix inlined routine variables with inlined routine name.
+
+=cut
+
   my ($d1, $d2, %opts) = @_;
 
   my ($dp1) = &F ('./specification-part/declaration-part', $d1);
@@ -745,7 +780,7 @@ sub inlineExternalSubroutine
   my ($dp2) = &F ('./specification-part/declaration-part', $D2);
   my ($ep2) = &F ('./execution-part', $D2);
 
-  # Fxtran::Subroutine calls to be replaced by subroutine contents
+  # Subroutine calls to be replaced by subroutine contents
   my @call = &F ('.//call-stmt[./procedure-designator/named-E/N/n/text()="?"]', $n2, $ep1);
 
   # Record renamed local variables from inlined subroutine
@@ -772,7 +807,12 @@ sub inlineExternalSubroutine
             }
         }
 
-      &inlineSingleCall ($d1, $DD2, $SS2, $n2, $call, %opts, inlineDeclarations => 1, skipDimensionCheck => $opts{skipDimensionCheck});
+      &inlineSingleCall 
+        (
+          $d1, $DD2, $SS2, $n2, $call, %opts, 
+          inlineDeclarations => 1, 
+          skipDimensionCheck => $opts{skipDimensionCheck},
+        );
     }
 
   my %N;
@@ -832,6 +872,16 @@ sub inlineExternalSubroutine
   $include && &removeStmt ($include);
 
 }
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2022
+
+=cut
 
 
 1;
