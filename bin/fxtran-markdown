@@ -11,6 +11,7 @@ use File::Find;
 use File::Basename;
 use File::Spec;
 use FindBin qw ($Bin);
+use lib "$Bin/../lib";
 
 use strict;
 
@@ -105,6 +106,8 @@ for my $perl (@perl)
 
     my ($pp, $markdown);
 
+    my %click;
+
     if ($file =~ m/^bin/o)
       {
         my $md = $perl;
@@ -116,12 +119,26 @@ for my $perl (@perl)
 
 EOF
 
-       my $pod = $file =~ m/^bin/o ? &desc ($file) : '';
-       $pp = 'Pod::Markdown'->new ();
-       $pp->output_string (\$markdown);
-       $pp->parse_string_document ($pod);
-       $fh->print ($markdown);
-     }
+        my $pod = $file =~ m/^bin/o ? &desc ($file) : '';
+        $pp = 'Pod::Markdown'->new ();
+        $pp->output_string (\$markdown);
+        $pp->parse_string_document ($pod);
+        $fh->print ($markdown);
+      }
+    else
+      {
+        use Fxtran::Util;
+        &Fxtran::Util::loadModule ($perl);
+        if ($perl->can ('click') && ($perl ne 'click'))
+          {
+            my @method = 'click'->getMethodList ($perl);
+            for my $method (@method)
+              {
+                my $help = 'click'->getMethodHelpAsString ($perl, $method);
+                $click{$method} = "```\n$help```\n";
+              }
+          }
+      }
 
 #   print &Dumper ([$pod, $markdown]);
 
@@ -146,6 +163,14 @@ EOF
     }xegoms;
 
     $markdown =~ s{# NAME\n\n(\S+)}{# NAME\n\n[$1](../$file)}goms;
+   
+    $markdown =~ s{## (\w+)}
+    {   
+      my $n = $1; 
+      my $md = "## $n"; 
+      $md .= "\n\n$click{$n}" if ($click{$n});  
+      $md
+    }egoms;
 
 #   print &Dumper (\$markdown);
 
