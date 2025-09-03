@@ -123,13 +123,13 @@ their interfaces:
 
 Examples are provided with test data; for instance:
 
-L<apl_arpege.F90|../tests/49t2_openacc-outline1/src/main/arpifs/phys_dmn/apl_arpege.F90>
+L<apl_arpege.F90|url:../tests/49t2_openacc-outline1/src/main/arpifs/phys_dmn/apl_arpege.F90>
 
 and:
 
-L<apl_arpege.F90|../tests/49t2_openacc-outline1/ref/outline1/src/local/arpifs/phys_dmn/apl_arpege.F90>,
-L<apl_arpege_zde2mr.F90|../tests/49t2_openacc-outline1/ref/outline1/src/local/arpifs/phys_dmn/apl_arpege_zde2mr.F90>,
-L<apl_arpege_zbay_qrconv.F90|../tests/49t2_openacc-outline1/ref/outline1/src/local/arpifs/phys_dmn/apl_arpege_zbay_qrconv.F90>,
+L<apl_arpege.F90|url:../tests/49t2_openacc-outline1/ref/outline1/src/local/arpifs/phys_dmn/apl_arpege.F90>,
+L<apl_arpege_zde2mr.F90|url:../tests/49t2_openacc-outline1/ref/outline1/src/local/arpifs/phys_dmn/apl_arpege_zde2mr.F90>,
+L<apl_arpege_zbay_qrconv.F90|url:../tests/49t2_openacc-outline1/ref/outline1/src/local/arpifs/phys_dmn/apl_arpege_zbay_qrconv.F90>,
 etc ...
 
 =head1 AUTHOR
