@@ -110,6 +110,23 @@ sub parseDirectives
       die ("Section " . $_->textContent . " was not closed");
     }
 
+  for my $par (&F ('.//parallel-section', $d))
+    {
+      if (my @par = &F ('ancestor::parallel-section', $par))
+        {
+          push @par, $par;
+
+          my $mess = "Nested parallel sections are not allowed:\n";
+ 
+          for (@par)
+            {
+              $mess .= " - " . $_->textContent . "\n";
+            }
+
+          die ($mess);
+        }
+    }
+
   return @e;
 }
 

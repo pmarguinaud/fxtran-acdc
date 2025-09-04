@@ -210,7 +210,7 @@ sub routineToRoutineHead
 
   if ((scalar (@{ $opts->{inlined} || [] }) || $opts->{'inline-contained'}) && (! $opts->{dummy}))
     {
-      &Fxtran::Include::loadContainedIncludes ($d, %$opts)
+      &Fxtran::Include::loadContainedIncludes ($d, %$opts, fopts => \@fopts)
         if ($opts->{'inline-contained'});
 
       my $find = $opts->{find};
@@ -247,6 +247,7 @@ sub routineToRoutineHead
         }
     }
   
+
   return ($d, $F90out);
 }
 
@@ -620,13 +621,27 @@ See L<Fxtran::ManyBlocks> for more details.
 
   &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
   
+  $opts->{style}->preProcessForOpenACC ($d, %$opts);
+  
   my @pu = &F ('./object/file/program-unit', $d);
 
   my $NAME = uc (&basename ($F90out, qw (.F90)));
   
   for my $pu (@pu)
     {
-      &Fxtran::ManyBlocks::processSingleRoutine ($pu, %$opts);
+      my ($stmt) = &F ('./ANY-stmt', $pu);
+      if ($stmt->nodeName eq 'subroutine-stmt')
+        {
+          &Fxtran::ManyBlocks::processSingleRoutine ($pu, %$opts);
+        }
+      elsif ($stmt->nodeName eq 'module-stmt')
+        {
+          &Fxtran::ManyBlocks::processSingleModule ($pu, %$opts);
+        }
+      else
+        {
+          die ("Unexpected program unit " . $stmt->nodeName);
+        }
     }
   
   @pu = &F ('./object/file/program-unit', $d);
@@ -638,7 +653,7 @@ See L<Fxtran::ManyBlocks> for more details.
           &Fxtran::NVTX::drHookToNVTX ($pu);
         }
     }
-  
+
   &routineToRoutineTail ($F90out, $d, $opts);
 
   if ($opts->{'create-interface'})
