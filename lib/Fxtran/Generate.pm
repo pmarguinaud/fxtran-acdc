@@ -115,36 +115,38 @@ sub changeKidiaToYDCPG_OPTS
 my %options= do
 {
   my $options = << "EOF";
-  cycle=s                   -- Cycle                                                                                                        -- 49
-  dir=s                     -- Dump result in this directory                                                                                -- .
-  only-if-newer             -- Do not update file if unchanged content
-  merge-interfaces          -- Consider that single column interfaces and regular interfaces are in the same include file
-  pragma=s                  -- Pragma (OpenACC or OpenMP)                                                                                   -- OpenACC
-  stack84                   -- Use separate stacks for data types of sizes 4 and 8
-  stack-method              -- Use stack method instead of macros
-  style=s                   -- Source code style (default: guess from file contents)
-  redim-arguments           -- Transform 1D array arguments to scalars
-  set-variables=s%          -- Apply variables values and simplify the code
-  suffix-singlecolumn=s     -- Suffix for generated routines                                                                                -- _OPENACC
-  tmp=s                     -- Temporary directory for processing                                                                           -- .
-  value-attribute           -- Add VALUE attribute to scalar intrinsic arguments
-  version                   -- Append fxtran-acdc version at end of generated content
-  inline-contained          -- Inline contained routines
-  type-bound-methods        -- Generate & use type bound methods
-  types-constant-dir=s      -- Directory with constant type information                                                                     --  types-constant
-  types-fieldapi-dir=s      -- Directory with Field API type information                                                                    --  types-fieldapi
-  suffix-pointerparallel=s  -- Suffix for parallel routines                                                                                 --  _PARALLEL
-  suffix-singleblock=s      -- Suffix for single block routines                                                                             --  _SINGLEBLOCK
-  suffix-manyblocks=s       -- Suffix for many blocks routines                                                                              --  _MANYBLOCKS
-  ydcpg_opts                -- Change KIDIA, KFDIA -> YDCPG_OPTS, YDCPG_BNDS
-  checker                   -- Sanity checks, produce a report
-  suffix-semiimplicit=s     -- Suffix for semi-implicit  routines                                                                           --  _SINGLEBLOCK
-  base                      -- Base directory for file search                                                                               -- .
-  array-slice-to-address    -- Pass addresses of first array element instead of array slices
-  use-stack-manyblocks      -- Use stack allocation for manyblocks routines
-  method-prefix=s           -- Prefix for method names                                                         -- ACDC_
-  use-bit-repro-intrinsics  -- Use bit reproducible intrinsics
-  suffix-bitrepro=s         -- Suffix for bit-repro routines                                                   -- _BITREPRO
+  cycle=s                         -- Cycle                                                                                                        -- 49
+  dir=s                           -- Dump result in this directory                                                                                -- .
+  only-if-newer                   -- Do not update file if unchanged content
+  merge-interfaces                -- Consider that single column interfaces and regular interfaces are in the same include file
+  pragma=s                        -- Pragma (OpenACC or OpenMP)                                                                                   -- OpenACC
+  stack84                         -- Use separate stacks for data types of sizes 4 and 8
+  stack-method                    -- Use stack method instead of macros
+  style=s                         -- Source code style (default: guess from file contents)
+  redim-arguments                 -- Transform 1D array arguments to scalars
+  set-variables=s%                -- Apply variables values and simplify the code
+  suffix-singlecolumn=s           -- Suffix for generated routines                                                                                -- _OPENACC
+  tmp=s                           -- Temporary directory for processing                                                                           -- .
+  value-attribute                 -- Add VALUE attribute to scalar intrinsic arguments
+  version                         -- Append fxtran-acdc version at end of generated content
+  inline-contained                -- Inline contained routines
+  type-bound-methods              -- Generate & use type bound methods
+  types-constant-dir=s            -- Directory with constant type information                                                                     --  types-constant
+  types-fieldapi-dir=s            -- Directory with Field API type information                                                                    --  types-fieldapi
+  suffix-pointerparallel=s        -- Suffix for parallel routines                                                                                 --  _PARALLEL
+  suffix-singleblock=s            -- Suffix for single block routines                                                                             --  _SINGLEBLOCK
+  suffix-manyblocks=s             -- Suffix for many blocks routines                                                                              --  _MANYBLOCKS
+  ydcpg_opts                      -- Change KIDIA, KFDIA -> YDCPG_OPTS, YDCPG_BNDS
+  checker                         -- Sanity checks, produce a report
+  suffix-semiimplicit=s           -- Suffix for semi-implicit  routines                                                                           --  _SINGLEBLOCK
+  base                            -- Base directory for file search                                                                               -- .
+  array-slice-to-address          -- Pass addresses of first array element instead of array slices
+  use-stack-manyblocks            -- Use stack allocation for manyblocks routines
+  method-prefix=s                 -- Prefix for method names                                                                                      -- ACDC_
+  use-bit-repro-intrinsics        -- Use bit reproducible intrinsics
+  suffix-bitrepro=s               -- Suffix for bit-repro routines                                                                                -- _BITREPRO
+  max-statements-per-parallel=s   -- Maximum number of statements per parallel section
+  parallel-iterator-list=s@       -- List of iterators for generating parallel sections (add to JLON, JLEV)
 EOF
 
   my @options;
@@ -262,15 +264,14 @@ sub routineToRoutineTail
 
 &click (<< "EOF");
 @options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 stack-method style redim-arguments set-variables 
-             suffix-semiimplicit tmp value-attribute version inline-contained checker)}
+             suffix-semiimplicit tmp value-attribute version inline-contained checker
+             max-statements-per-parallel parallel-iterator-list)}
   keep-drhook               -- Keep DrHook
   dummy                     -- Generate a dummy routine (strip all executable code)
   inlined=s@                -- List of routines to inline
   inline-comment            -- Add a comment when inlining a routine
   create-interface          -- Generate an interface file
   openmptoparallel          -- Transform OpenMP parallel sections into ACDC parallel sections
-  max-statements-per-parallel=s   -- Maximum number of statements per parallel section
-  parallel-iterator-list=s@       -- List of iterators for generating parallel sections (add to JLON, JLEV)
 EOF
 sub semiimplicit
 {
@@ -425,7 +426,8 @@ See L<Fxtran::SingleColumn> for more details.
 
 &click (<< "EOF");
 @options{qw (cycle dir tmp only-if-newer merge-interfaces pragma stack84 stack-method style redim-arguments ydcpg_opts checker suffix-manyblocks
-             suffix-singlecolumn suffix-pointerparallel version type-bound-methods types-constant-dir types-fieldapi-dir method-prefix use-stack-manyblocks)}
+             suffix-singlecolumn suffix-pointerparallel version type-bound-methods types-constant-dir types-fieldapi-dir method-prefix use-stack-manyblocks
+             max-statements-per-parallel parallel-iterator-list)}
   base                            -- Base directory for file lookup
   contiguous-pointers             -- Add CONTIGUOUS attribute to pointer accessors
   files=s@                        -- List of files to be looked at for inlining
@@ -439,8 +441,6 @@ See L<Fxtran::SingleColumn> for more details.
   use-bcpy                        -- Avoid pointer aliasing using BCPY
   parallelmethod-section          -- Embed parallelmethod information in binary
   create-interface                -- Generate an interface file
-  max-statements-per-parallel=s   -- Maximum number of statements per parallel section
-  parallel-iterator-list=s@       -- List of iterators for generating parallel sections (add to JLON, JLEV)
 EOF
 sub pointerparallel
 {
