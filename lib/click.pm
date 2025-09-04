@@ -220,6 +220,49 @@ sub click
 
 }
 
+sub getMethodHelpAsString
+{
+  shift;
+  my ($package, $method) = @_;
+
+  my $help = '';
+
+  $help .= "* $method\n";
+  my $m = $METHOD{$package}{$method};
+  for my $opt (sort keys (%{ $m->{desc} }))
+    {
+      next if ($opt eq 'help');
+
+      my $kind = '';
+      $kind = '(FLAG)' if ($m->{flag}{$opt});
+      $kind = '(LIST)' if ($m->{list}{$opt});
+
+      my $default;
+
+      if ($m->{flag}{$opt})
+        {
+          $default = '';
+        }
+      elsif ($m->{list}{$opt} && ref ($m->{hopts}{$opt}))
+        {
+          $default = defined ($m->{hopts}{$opt}) ? join (',', @{$m->{hopts}{$opt}}) : 'NONE';
+        }
+      elsif ($m->{hash}{$opt} && ref ($m->{hopts}{$opt}))
+        {
+          $default = defined ($m->{hopts}{$opt}) ? join (',', %{$m->{hopts}{$opt}}) : 'NONE';
+        }
+      else
+        {
+          $default = defined ($m->{hopts}{$opt}) ? $m->{hopts}{$opt} : 'NONE';
+        }
+
+      $help .= sprintf("  %-30s %6s : %-20s : %s\n", "--$opt", $kind, $default,
+    	 (defined ($m->{desc}{$opt}) ? $m->{desc}{$opt} : '?'),
+    	);
+    }
+  $help .= "\n";
+}
+
 sub help
 {
   use File::Basename;
@@ -230,40 +273,7 @@ sub help
 
   for my $method (sort keys (%{ $METHOD{$package} }))
     {
-      print "* $method\n";
-      my $m = $METHOD{$package}{$method};
-      for my $opt (sort keys (%{ $m->{desc} }))
-        {
-          next if ($opt eq 'help');
-
-          my $kind = '';
-	  $kind = '(FLAG)' if ($m->{flag}{$opt});
-	  $kind = '(LIST)' if ($m->{list}{$opt});
-
-	  my $default;
-
-          if ($m->{flag}{$opt})
-            {
-              $default = '';
-            }
-          elsif ($m->{list}{$opt} && ref ($m->{hopts}{$opt}))
-            {
-              $default = defined ($m->{hopts}{$opt}) ? join (',', @{$m->{hopts}{$opt}}) : 'NONE';
-            }
-          elsif ($m->{hash}{$opt} && ref ($m->{hopts}{$opt}))
-            {
-              $default = defined ($m->{hopts}{$opt}) ? join (',', %{$m->{hopts}{$opt}}) : 'NONE';
-            }
-          else
-            {
-              $default = defined ($m->{hopts}{$opt}) ? $m->{hopts}{$opt} : 'NONE';
-            }
-
-          printf("  %-30s %6s : %-20s : %s\n", "--$opt", $kind, $default,
-		 (defined ($m->{desc}{$opt}) ? $m->{desc}{$opt} : '?'),
-		);
-	}
-      print "\n";
+      print __PACKAGE__->getMethodHelpAsString ($package, $method);
     }
 
   exit (0);

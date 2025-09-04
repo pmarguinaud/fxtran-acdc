@@ -10,6 +10,36 @@ This module contains entry points for source code transformation and generation 
 
 ## semiimplicit
 
+```
+* semiimplicit
+  --checker                      (FLAG) :                      : Sanity checks, produce a report
+  --create-interface             (FLAG) :                      : Generate an interface file
+  --cycle                               : 49                   : Cycle
+  --dir                                 : .                    : Dump result in this directory
+  --dummy                        (FLAG) :                      : Generate a dummy routine (strip all executable code)
+  --inline-comment               (FLAG) :                      : Add a comment when inlining a routine
+  --inline-contained             (FLAG) :                      : Inline contained routines
+  --inlined                      (LIST) : NONE                 : List of routines to inline
+  --keep-drhook                  (FLAG) :                      : Keep DrHook
+  --max-statements-per-parallel         : NONE                 : Maximum number of statements per parallel section
+  --merge-interfaces             (FLAG) :                      : Consider that single column interfaces and regular interfaces are in the same include file
+  --only-if-newer                (FLAG) :                      : Do not update file if unchanged content
+  --openmptoparallel             (FLAG) :                      : Transform OpenMP parallel sections into ACDC parallel sections
+  --parallel-iterator-list       (LIST) : NONE                 : List of iterators for generating parallel sections (add to JLON, JLEV)
+  --pragma                              : OpenACC              : Pragma (OpenACC or OpenMP)
+  --redim-arguments              (FLAG) :                      : Transform 1D array arguments to scalars
+  --set-variables                       : NONE                 : Apply variables values and simplify the code
+  --stack-method                 (FLAG) :                      : Use stack method instead of macros
+  --stack84                      (FLAG) :                      : Use separate stacks for data types of sizes 4 and 8
+  --style                               : NONE                 : Source code style (default: guess from file contents)
+  --suffix-semiimplicit                 : _SINGLEBLOCK         : Suffix for semi-implicit  routines
+  --tmp                                 : .                    : Temporary directory for processing
+  --value-attribute              (FLAG) :                      : Add VALUE attribute to scalar intrinsic arguments
+  --version                      (FLAG) :                      : Append fxtran-acdc version at end of generated content
+
+```
+
+
 This is the method for transforming top-level semi-implicit routines such as `spcsi.F90` (hydrostatic)
 and `spnhsi.F90` (non-hydrostatic).
 
@@ -22,6 +52,39 @@ routines is supposed to be enabled by passing an extra argument `LDACC=.TRUE.` t
 See [Fxtran::SemiImplicit](Fxtran%3A%3ASemiImplicit.md) for more details.
 
 ## singlecolumn
+
+```
+* singlecolumn
+  --array-slice-to-address       (FLAG) :                      : Pass addresses of first array element instead of array slices
+  --checker                      (FLAG) :                      : Sanity checks, produce a report
+  --create-interface             (FLAG) :                      : Generate an interface file
+  --cycle                               : 49                   : Cycle
+  --dir                                 : .                    : Dump result in this directory
+  --dummy                        (FLAG) :                      : Generate a dummy routine (strip all executable code)
+  --inline-comment               (FLAG) :                      : Add a comment when inlining a routine
+  --inline-contained             (FLAG) :                      : Inline contained routines
+  --inlined                      (LIST) : NONE                 : List of routines to inline
+  --keep-drhook                  (FLAG) :                      : Keep DrHook
+  --merge-interfaces             (FLAG) :                      : Consider that single column interfaces and regular interfaces are in the same include file
+  --no-check-pointers-dims       (LIST) : NONE                 : List of pointer variables that should not be checked for their dimensions
+  --only-if-newer                (FLAG) :                      : Do not update file if unchanged content
+  --pragma                              : OpenACC              : Pragma (OpenACC or OpenMP)
+  --process-interfaces           (FLAG) :                      : Transform interfaces into single column interfaces (used for MODI MESONH files)
+  --process-pointers             (FLAG) :                      : Process pointers (change them to CRAY pointers)
+  --redim-arguments              (FLAG) :                      : Transform 1D array arguments to scalars
+  --set-variables                       : NONE                 : Apply variables values and simplify the code
+  --stack-method                 (FLAG) :                      : Use stack method instead of macros
+  --stack84                      (FLAG) :                      : Use separate stacks for data types of sizes 4 and 8
+  --style                               : NONE                 : Source code style (default: guess from file contents)
+  --suffix-singlecolumn                 : _OPENACC             : Suffix for generated routines
+  --suffix-singlecolumn-called          : NONE                 : Suffix for singlecolumn routines called by routine being processed
+  --tmp                                 : .                    : Temporary directory for processing
+  --use-bit-repro-intrinsics     (FLAG) :                      : Use bit reproducible intrinsics
+  --value-attribute              (FLAG) :                      : Add VALUE attribute to scalar intrinsic arguments
+  --version                      (FLAG) :                      : Append fxtran-acdc version at end of generated content
+
+```
+
 
 This is the method used to transform a full vector routine (ie processing a full `NPROMA` block) 
 into its single-column version, ready for accelerators:
@@ -37,6 +100,46 @@ by all threads belonging to the same warp.
 See [Fxtran::SingleColumn](Fxtran%3A%3ASingleColumn.md) for more details.
 
 ## pointerparallel
+
+```
+* pointerparallel
+  --base                         (FLAG) :                      : Base directory for file lookup
+  --checker                      (FLAG) :                      : Sanity checks, produce a report
+  --contiguous-pointers          (FLAG) :                      : Add CONTIGUOUS attribute to pointer accessors
+  --create-interface             (FLAG) :                      : Generate an interface file
+  --cycle                               : 49                   : Cycle
+  --dir                                 : .                    : Dump result in this directory
+  --files                        (LIST) : NONE                 : List of files to be looked at for inlining
+  --gpumemstat                   (FLAG) :                      : Add calls to GPUMEMSTAT
+  --inline-contained             (FLAG) :                      : Inline CONTAINed routines
+  --inlined                      (LIST) : NONE                 : List of routines to inline
+  --merge-interfaces             (FLAG) :                      : Consider that single column interfaces and regular interfaces are in the same include file
+  --method-prefix                       : ACDC_                : Prefix for method names
+  --only-if-newer                (FLAG) :                      : Do not update file if unchanged content
+  --parallelmethod-section       (FLAG) :                      : Embed parallelmethod information in binary
+  --post-parallel                (LIST) : nullify              : Generate code after parallel section
+  --pragma                              : OpenACC              : Pragma (OpenACC or OpenMP)
+  --redim-arguments              (FLAG) :                      : Transform 1D array arguments to scalars
+  --skip-arrays                  (LIST) : PGFL,PGFLT1,PGMVT1,PGPSDT2D : Arrays not to be processed
+  --stack-method                 (FLAG) :                      : Use stack method instead of macros
+  --stack84                      (FLAG) :                      : Use separate stacks for data types of sizes 4 and 8
+  --style                               : NONE                 : Source code style (default: guess from file contents)
+  --suffix-manyblocks                   : _MANYBLOCKS          : Suffix for many blocks routines
+  --suffix-pointerparallel              : _PARALLEL            : Suffix for parallel routines
+  --suffix-singlecolumn                 : _OPENACC             : Suffix for generated routines
+  --tmp                                 : .                    : Temporary directory for processing
+  --type-bound-methods           (FLAG) :                      : Generate & use type bound methods
+  --types-constant-dir                  : types-constant       : Directory with constant type information
+  --types-fieldapi-dir                  : types-fieldapi       : Directory with Field API type information
+  --types-fieldapi-non-blocked   (LIST) : CPG_SL1F_TYPE,CPG_SL_MASK_TYPE : Non-blocked data types (without NPROMA)
+  --use-acpy                     (FLAG) :                      : Avoid pointer aliasing using ACPY
+  --use-bcpy                     (FLAG) :                      : Avoid pointer aliasing using BCPY
+  --use-stack-manyblocks         (FLAG) :                      : Use stack allocation for manyblocks routines
+  --version                      (FLAG) :                      : Append fxtran-acdc version at end of generated content
+  --ydcpg_opts                   (FLAG) :                      : Change KIDIA, KFDIA -> YDCPG_OPTS, YDCPG_BNDS
+
+```
+
 
 This method transforms a vector routine (processing a single `NPROMA` block) into a parallel routines, that is,
 a routine containing many OpenMP/OpenACC kernels.
@@ -54,6 +157,31 @@ See [Fxtran::Pointer::Parallel](Fxtran%3A%3APointer%3A%3AParallel.md) for more d
 
 ## singleblock
 
+```
+* singleblock
+  --base                         (FLAG) :                      : Base directory for file search
+  --checker                      (FLAG) :                      : Sanity checks, produce a report
+  --cycle                               : 49                   : Cycle
+  --dir                                 : .                    : Dump result in this directory
+  --drhooktonvtx                 (FLAG) :                      : Change DrHook calls into NVTX calls
+  --inlined                      (LIST) : NONE                 : List of routines to inline
+  --max-statements-per-parallel         : NONE                 : Maximum number of statements per parallel section
+  --merge-interfaces             (FLAG) :                      : Consider that single column interfaces and regular interfaces are in the same include file
+  --only-if-newer                (FLAG) :                      : Do not update file if unchanged content
+  --openmptoparallel             (FLAG) :                      : Transform OpenMP parallel sections into ACDC parallel sections
+  --parallel-iterator-list       (LIST) : NONE                 : List of iterators for generating parallel sections (add to JLON, JLEV)
+  --pragma                              : OpenACC              : Pragma (OpenACC or OpenMP)
+  --stack-method                 (FLAG) :                      : Use stack method instead of macros
+  --stack84                      (FLAG) :                      : Use separate stacks for data types of sizes 4 and 8
+  --style                               : NONE                 : Source code style (default: guess from file contents)
+  --suffix-singleblock                  : _SINGLEBLOCK         : Suffix for single block routines
+  --suffix-singlecolumn                 : _OPENACC             : Suffix for generated routines
+  --tmp                                 : .                    : Temporary directory for processing
+  --version                      (FLAG) :                      : Append fxtran-acdc version at end of generated content
+
+```
+
+
 This transforms a vector routine (processing a single `NPROMA` block) into a routine where each
 loop on the `NPROMA` dimension is transformed into an OpenACC kernel. The result of the 
 transformation is a routine which runs on the CPU, but spawns several kernels on the device.
@@ -64,6 +192,36 @@ are supposed to be present on the device when the generated routine is called.
 See [Fxtran::SingleBlock](Fxtran%3A%3ASingleBlock.md) for more details.
 
 ## manyblocks
+
+```
+* manyblocks
+  --array-slice-to-address       (FLAG) :                      : Pass addresses of first array element instead of array slices
+  --base                         (FLAG) :                      : Base directory for file search
+  --checker                      (FLAG) :                      : Sanity checks, produce a report
+  --create-interface             (FLAG) :                      : Generate an interface file
+  --cycle                               : 49                   : Cycle
+  --dir                                 : .                    : Dump result in this directory
+  --drhooktonvtx                 (FLAG) :                      : Change DrHook calls into NVTX calls
+  --fuse-outer-dimension-names          : NONE                 : Fuse outer dimensions
+  --inline-contained             (FLAG) :                      : Inline contained routines
+  --inlined                      (LIST) : NONE                 : List of routines to inline
+  --max-statements-per-parallel         : NONE                 : Maximum number of statements per parallel section
+  --merge-interfaces             (FLAG) :                      : Consider that single column interfaces and regular interfaces are in the same include file
+  --not-present-types            (LIST) : NONE                 : List of derived types not present on the device
+  --only-if-newer                (FLAG) :                      : Do not update file if unchanged content
+  --parallel-iterator-list       (LIST) : NONE                 : List of iterators for generating parallel sections (add to JLON, JLEV)
+  --pragma                              : OpenACC              : Pragma (OpenACC or OpenMP)
+  --stack-method                 (FLAG) :                      : Use stack method instead of macros
+  --stack84                      (FLAG) :                      : Use separate stacks for data types of sizes 4 and 8
+  --style                               : NONE                 : Source code style (default: guess from file contents)
+  --suffix-manyblocks                   : _MANYBLOCKS          : Suffix for many blocks routines
+  --suffix-singlecolumn                 : _OPENACC             : Suffix for generated routines
+  --tmp                                 : .                    : Temporary directory for processing
+  --use-stack-manyblocks         (FLAG) :                      : Use stack allocation for manyblocks routines
+  --version                      (FLAG) :                      : Append fxtran-acdc version at end of generated content
+
+```
+
 
 This method transform vector routines (processing a single `NPROMA` block) into routines 
 processing several `NPROMA` blocks. The result of the transformation is a routine which 
@@ -80,6 +238,33 @@ and we cannot have the compiler creating array copies.
 See [Fxtran::ManyBlocks](Fxtran%3A%3AManyBlocks.md) for more details.
 
 ## methods
+
+```
+* methods
+  --checker                      (FLAG) :                      : Sanity checks, produce a report
+  --dir                                 : .                    : Dump result in this directory
+  --field-api                    (FLAG) :                      : Dump Field API information
+  --field-api-class                     : NONE                 : Field API structure category
+  --method-prefix                       : ACDC_                : Prefix for method names
+  --methods-list                 (LIST) : NONE                 : List of methods (copy, crc64, host, legacy, load, save, size, wipe
+  --module-map                          : NONE                 : Type/module mapping for methods
+  --no-allocate                  (LIST) : NONE                 : Structures that should not be allocated/deallocated
+  --numbered-submodules          (FLAG) :                      : Do not generate submodules with full names, use numbers instead
+  --only-components                     : NONE                 : Process only these derived type members
+  --only-types                          : NONE                 : Process only these derived types
+  --out                          (FLAG) :                      : Output file name
+  --pragma                              : OpenACC              : Pragma (OpenACC or OpenMP)
+  --skip-components                     : NONE                 : Skip these derived type members
+  --skip-types                          : NONE                 : Skip these derived types
+  --sorted                       (FLAG) :                      : Sort files (with number prefix) in compilation order
+  --split-util                   (FLAG) :                      : Split util module into several modules (one per method)
+  --tmp                                 : .                    : Temporary directory for processing
+  --type-bound-methods           (FLAG) :                      : Generate & use type bound methods
+  --types-constant-dir                  : types-constant       : Directory with constant type information
+  --types-fieldapi-dir                  : types-fieldapi       : Directory with Field API type information
+
+```
+
 
 This method creates method for handling data structures (FORTRAN derived types).
 
@@ -111,6 +296,25 @@ See [Fxtran::IO](Fxtran%3A%3AIO.md) for more details.
 
 ## interface
 
+```
+* interface
+  --cycle                               : 49                   : Cycle
+  --dir                                 : .                    : Dump result in this directory
+  --merge-interfaces             (FLAG) :                      : Consider that single column interfaces and regular interfaces are in the same include file
+  --pragma                              : OpenACC              : Pragma (OpenACC or OpenMP)
+  --suffix-bitrepro                     : _BITREPRO            : Suffix for bit-repro routines
+  --suffix-manyblocks                   : _MANYBLOCKS          : Suffix for many blocks routines
+  --suffix-pointerparallel              : _PARALLEL            : Suffix for parallel routines
+  --suffix-semiimplicit                 : _SINGLEBLOCK         : Suffix for semi-implicit  routines
+  --suffix-singleblock                  : _SINGLEBLOCK         : Suffix for single block routines
+  --suffix-singlecolumn                 : _OPENACC             : Suffix for generated routines
+  --tmp                                 : .                    : Temporary directory for processing
+  --use-stack-manyblocks         (FLAG) :                      : Use stack allocation for manyblocks routines
+  --ydcpg_opts                   (FLAG) :                      : Change KIDIA, KFDIA -> YDCPG_OPTS, YDCPG_BNDS
+
+```
+
+
 This method create interface blocks for the original routine and the routines that can be obtained
 by transforming this routine. 
 
@@ -128,12 +332,41 @@ See `Fxtran::Interface` for more details.
 
 ## bitrepro
 
+```
+* bitrepro
+  --cycle                               : 49                   : Cycle
+  --dir                                 : .                    : Dump result in this directory
+  --inline-contained             (FLAG) :                      : Inline contained routines
+  --merge-interfaces             (FLAG) :                      : Consider that single column interfaces and regular interfaces are in the same include file
+  --suffix-bitrepro                     : _BITREPRO            : Suffix for bit-repro routines
+  --tmp                                 : .                    : Temporary directory for processing
+  --use-bit-repro-intrinsics     (FLAG) :                      : Use bit reproducible intrinsics
+  --use-bit-repro-parens         (FLAG) :                      : Make sure additions are executed in the right order
+
+```
+
+
 This routine transforms the current routine into a routine where architecture dependant
 intrinsics (`SIN`, `EXP`, etc.) are replaced by portable versions of these functions.
 
 See `Fxtran::BitRepro` for more details.
 
 ## toplevel
+
+```
+* toplevel
+  --cycle                               : 49                   : Cycle
+  --dir                                 : .                    : Dump result in this directory
+  --method-prefix                       : ACDC_                : Prefix for method names
+  --parallelmethod-section       (FLAG) :                      : Embed parallelmethod information in binary
+  --suffix-pointerparallel              : _PARALLEL            : Suffix for parallel routines
+  --switch                              : NONE                 : Set this variable to true if the parallel mode is enabled
+  --tmp                                 : .                    : Temporary directory for processing
+  --types-constant-dir                  : types-constant       : Directory with constant type information
+  --types-fieldapi-dir                  : types-fieldapi       : Directory with Field API type information
+
+```
+
 
 This method transforms a routine several `NPROMA` blocks. Sections delimited by
 `!$ACDC PARALLEL` directives are searched and call statements inside these
