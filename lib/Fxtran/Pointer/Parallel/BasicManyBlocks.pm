@@ -92,7 +92,7 @@ sub makeParallel
 
   my ($comp) = &F ('./comp', $par1);
 
-  $comp->insertBefore ($_, $comp->firstChild) for (&s ("YLOFFSET = STACK (0, 0, 0, 0)"), &t ("\n"));
+  $comp->insertBefore ($_, $comp->firstChild) for (&s ("YLOFFSET = FXTRAN_ACDC_STACK (0, 0, 0, 0)"), &t ("\n"));
 
   my $pragma = $opts{pragma};
 
