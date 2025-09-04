@@ -75,6 +75,10 @@ sub makeParallel
               kfdia => "MIN ($KLON, $KGPTOT - ($KGPBLKS - 1) * $KLON)", jlon => $style->jlon (),
               kidia_call => 'YDCPG_BNDS%KIDIA', kfdia_call => 'YDCPG_BNDS%KFDIA');
   
+
+  use Fxtran::DetectParallel;
+  &Fxtran::DetectParallel::createParallelSections ($par1, \%var2dim, %opts) if ($opts{'max-statements-per-parallel'});
+
   my @par = &F ('.//parallel-section', $par1);
 
   my %present;

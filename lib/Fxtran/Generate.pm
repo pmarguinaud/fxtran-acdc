@@ -439,6 +439,8 @@ See L<Fxtran::SingleColumn> for more details.
   use-bcpy                        -- Avoid pointer aliasing using BCPY
   parallelmethod-section          -- Embed parallelmethod information in binary
   create-interface                -- Generate an interface file
+  max-statements-per-parallel=s   -- Maximum number of statements per parallel section
+  parallel-iterator-list=s@       -- List of iterators for generating parallel sections (add to JLON, JLEV)
 EOF
 sub pointerparallel
 {
