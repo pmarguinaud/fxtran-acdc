@@ -42,8 +42,16 @@ sub createParallelSections
 
   my $style = $opts{style};
 
-  my ($dp) = &F ('./specification-part/declaration-part', $pu);
-  my ($ep) = &F ('./execution-part', $pu);
+  my $ep;
+
+  if ($pu->nodeName eq 'program-unit')
+    {
+      ($ep) = &F ('./execution-part', $pu);
+    }
+  else
+    {
+      $ep = $pu;
+    }
   
   my $vars = join ('/', '', (sort keys (%$var2dim)), '');
   

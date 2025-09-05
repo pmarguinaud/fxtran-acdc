@@ -178,15 +178,15 @@ EOF
 else
   {
 
-    ($f90compiler, @f90flags) = $opts{F90} ? @{ $opts{F90} } : @ARGV;
-    ($ccompiler  , @cflags  ) = @{ $opts{CC} || [] };
-    ($cxxcompiler, @cxxflags) = @{ $opts{CXX} || [] };
-
     for my $comp (qw (F90 CC CXX))
       {
         next unless ($opts{$comp});
         $opts{$comp} = [split (m/\s+/o, $opts{$comp})];
       }
+
+    ($f90compiler, @f90flags) = $opts{F90} ? @{ $opts{F90} } : @ARGV;
+    ($ccompiler  , @cflags  ) = @{ $opts{CC} || [] };
+    ($cxxcompiler, @cxxflags) = @{ $opts{CXX} || [] };
 
   }
 
