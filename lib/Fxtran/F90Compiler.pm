@@ -149,6 +149,14 @@ Save files from current directory (mostly generated code) into this directory.
     {
       &make (%args);
     }
+  elsif ($args{'object-merge-method'} eq 'archive')
+    {
+      &make (%args);
+    }
+  else
+    {
+      die ("Unexpected value for option `object-merge-method'");
+    }
 }
 
 sub slurp
@@ -260,11 +268,25 @@ AR=ar
 
 EOF
 
-  if ($obj)
+  if ($obj && ($args{'object-merge-method'} eq 'link'))
     {
       $fh->print (<< "EOF");
 $obj: @obj
 	@\$(LD) -r -o $obj @obj
+
+EOF
+
+  $fh->print (<< "EOF");
+clean:
+	\\rm -f $obj @obj *.mod *.smod *.lst
+  
+EOF
+    }
+  elsif ($obj && ($args{'object-merge-method'} eq 'archive'))
+    {
+      $fh->print (<< "EOF");
+$obj: @obj
+	@\$(AR) crv $obj @obj
 
 EOF
 

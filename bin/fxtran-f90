@@ -80,8 +80,8 @@ libraries are compiled using C<fxtran-boot>.
 =item --object-merge-method
 
 Method used to produce a single object file. Can be either 'link' (compile in parallel 
-and use the linker to merge the two objects) or 'concatenate' (concatenate source
-code before compiling).
+and use the linker to merge the two objects), 'concatenate' (concatenate source
+code before compiling), or 'archive' (merge objects into an archive).
 
 =back
 
