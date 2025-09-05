@@ -73,7 +73,7 @@ is present.
       $proc->setData ($proc->textContent . $suffix);
     }
 
-  PROC: for my $proc (keys (%proc))
+  PROC: for my $proc (sort keys (%proc))
     {   
       my @ext = qw (.intfb.h .h);
 
