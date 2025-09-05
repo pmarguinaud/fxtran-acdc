@@ -145,6 +145,10 @@ Save files from current directory (mostly generated code) into this directory.
         if (scalar (@C) or scalar (@CXX));
       &concatenateSource (%args);
     }
+  elsif ($args{lib})
+    {
+      &make (%args);
+    }
   elsif ($args{'object-merge-method'} eq 'link')
     {
       &make (%args);
@@ -155,7 +159,7 @@ Save files from current directory (mostly generated code) into this directory.
     }
   else
     {
-      die ("Unexpected value for option `object-merge-method'");
+      die ("Unexpected value $args{'object-merge-method'} for option 'object-merge-method'");
     }
 }
 
