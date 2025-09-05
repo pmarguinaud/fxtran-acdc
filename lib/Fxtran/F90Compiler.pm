@@ -139,7 +139,13 @@ Save files from current directory (mostly generated code) into this directory.
       my $obj = $args{obj};
       &Fxtran::Util::runCommand (cmd => [$f90compiler, @f90flags, ($obj ? (-o => $obj) : ()), @F90], %args);
     }
-  else
+  elsif ($args{'object-merge-method'} eq 'concatenate')
+    {
+      die ("Concatenating source code works only with FORTRAN source code")
+        if (scalar (@C) or scalar (@CXX));
+      &concatenateSource (%args);
+    }
+  elsif ($args{'object-merge-method'} eq 'link')
     {
       &make (%args);
     }
@@ -332,29 +338,26 @@ sub concatenateSource
   my %args = @_;
 
   my @f90flags = @{ $args{f90flags} };
-  my ($obj, $f90compiler, $F90) = @args{qw (obj f90compiler F90)};
+  my ($obj, $f90compiler) = @args{qw (obj f90compiler)};
   my $opts = $args{opts};
+  my @F90 = @{ $args{F90} };
 
   my $fho;
 
-  for my $f ($F90, sort <*.F90>)
+  my $F90_c = 'C_' . &basename ($F90[0]);
+  my $fho = 'FileHandle'->new ('>' . &basename ($F90_c));
+
+  for my $F90 (@F90) # Should sort the files, no dependency first; it works for now
     {
-      $fho ||= 'FileHandle'->new ('>' . &basename ($F90));
-      my $code = do { my $fh = 'FileHandle'->new ("<$f"); local $/ = undef; <$fh> };
+      my $code = do { my $fh = 'FileHandle'->new ("<$F90"); local $/ = undef; <$fh> };
       $fho->print ($code);
       $fho->print ("\n" x 3);
     }
 
   $fho->close ();
 
-  &Fxtran::F90Compiler::run 
-  (
-    f90compiler => $f90compiler, 
-    f90flags    => \@f90flags, 
-    obj         => $obj, 
-    F90         => [&basename ($F90)], 
-    %$opts 
-  );
+  &Fxtran::Util::runCommand (cmd => [$f90compiler, @f90flags, ($obj ? (-o => $obj) : ()), $F90_c], %args);
+
 }
 
 1;

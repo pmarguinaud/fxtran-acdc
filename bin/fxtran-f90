@@ -77,6 +77,12 @@ allows for inspection of generated source code by the user.
 This option takes a directory name where fxtran-acdc libraries and headers are installed. These
 libraries are compiled using C<fxtran-boot>.
 
+=item --object-merge-method
+
+Method used to produce a single object file. Can be either 'link' (compile in parallel 
+and use the linker to merge the two objects) or 'concatenate' (concatenate source
+code before compiling).
+
 =back
 
 Options passed to C<fxtran-f90> must be followed by a double hyphen (C<-->); then come the
@@ -279,14 +285,14 @@ for (my $i = 0; $i < $#ARGV; $i++)
 $package = 'Fxtran::' . ucfirst ($package) 
   unless ($package =~ m/::/o);
 
-my %opts = (package => $package, config => $config);
+my %opts = ('object-merge-method' => 'link', package => $package, config => $config);
 
 &Fxtran::Util::loadModule ($package);
 
 my $hopts = 'click'->getOptionList (package => $package);
 
 my @opts_f = qw (dryrun debug);
-my @opts_s = qw (package method config user-directory-in user-directory-out prefix);
+my @opts_s = qw (package method config user-directory-in user-directory-out prefix object-merge-method);
 
 &GetOptions
 (
@@ -454,7 +460,6 @@ FILE: for my $F90 (@F90)
       {
         &move ($mod, "$cwd/$mod");
       }
-
 
     chdir ($cwd);
 
