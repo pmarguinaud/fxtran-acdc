@@ -1,15 +1,38 @@
 package Fxtran::ACPY;
 
-#
-# Copyright 2022 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+=head1 NAME
 
+Fxtran::ACPY
+
+=head1 DESCRIPTION
+
+This module provides functions to transform array assignments 
+into calls to functions which will perform the assignements.
+
+This is meant to avoid the compiler makeing assumptions about
+aliasing, which leads to very conservative optimizations and
+memory allocations.
+
+=head1 EXAMPLE
+
+  X (:,:) = Y (:,:)
+
+is transformed into:
+
+  CALL FXTRAN_ACDC_ARRAY_COPY (X, Y)
+
+or, even better (for the NVHPC compiler):
+
+  CALL FXTRAN_ACDC_ARRAY_COPY (X, SIZE (X (:,:), 1), SIZE (X (:,:), 2), &
+                             & Y, SIZE (Y (:,:), 1), SIZE (Y (:,:), 2))
+
+=cut
+
+use Data::Dumper;
 
 use strict;
+
 use Fxtran;
-use Data::Dumper;
 
 sub useAcpy
 {
@@ -87,5 +110,15 @@ sub useBcpy
       $acpy->replaceNode ($call);
     }
 }
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2022
+
+=cut
 
 1;

@@ -1,18 +1,40 @@
 package Fxtran::Directive;
 
-#
-# Copyright 2022 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+=head1 NAME
 
+Fxtran::Directive
+
+=head1 DESCRIPTION
+
+This module provides functions to parse ACDC directives.
+
+=head1 FUNCTIONS
+
+=cut
+
+use Data::Dumper;
 
 use strict;
+
 use Fxtran;
-use Data::Dumper;
 
 sub parseDirectives
 {
+
+=head2 parseDirectives
+
+Parse ACDC directives, such as:
+
+  !$ACDC PARALLEL {
+
+  !$ACDC }
+
+and:
+
+  !$ACDC singlecolumn
+
+=cut
+
 # Add tags for each section
 
   my $d = shift;
@@ -115,6 +137,14 @@ sub parseDirectives
 
 sub openmpToACDC 
 {
+
+=head2 openmpToACDC
+
+Convert C<OpenMP> directives to ACDC parallel sections. The document has to be parsed
+with C<OpenMP> directives parsing enabled.
+
+=cut
+
   my ($d, %opts) = @_;
 
   for my $p (&F ('.//parallel-openmp|.//parallel-do-openmp|.//end-parallel-openmp|.//end-parallel-do-openmp', $d))
@@ -153,5 +183,14 @@ sub openmpToACDC
 
 }
 
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2022
+
+=cut
 
 1;
