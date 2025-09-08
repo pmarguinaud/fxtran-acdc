@@ -73,7 +73,7 @@ is present.
       $proc->setData ($proc->textContent . $suffix);
     }
 
-  PROC: for my $proc (keys (%proc))
+  PROC: for my $proc (sort keys (%proc))
     {   
       my @ext = qw (.intfb.h .h);
 
@@ -103,19 +103,29 @@ is present.
       # MesoNH style
       if (my ($mode) = &F ('./use-stmt/module-N/N/n/text()[string(.)="?"]', "MODE_$proc", $up))
         {
-          $mode->setData ("MODE_${proc}${suffix}");
           my $use = &Fxtran::stmt ($mode);
-          my ($un) = &F ('./rename-LT/rename/use-N/N/n/text()[string(.)="?"]', $proc, $use);
+          my $use1 = $use->cloneNode (1);
+
+          my ($mode1) = &F ('./module-N/N/n/text()', $use1);
+          $mode1->setData ("MODE_${proc}${suffix}");
+          my ($un) = &F ('./rename-LT/rename/use-N/N/n/text()[string(.)="?"]', $proc, $use1);
           $un->setData ("${proc}${suffix}");
+ 
+          $up->insertAfter ($_, $use) for ($use1, &t ("\n"));
+        
           next PROC;
         }
 
       if (my ($mode) = &F ('./use-stmt[./rename-LT/rename/use-N/N/n/text()[string(.)="?"]]/module-N/N/n/text()', $proc, $up))
         {
-          $mode->setData ($mode->data () . ${suffix}) unless ($mode->data () =~ m,$suffix$,);
           my $use = &Fxtran::stmt ($mode);
-          my ($un) = &F ('./rename-LT/rename/use-N/N/n/text()[string(.)="?"]', $proc, $use);
-          $un->setData ("${proc}${suffix}");
+
+          my ($mod) = &F ('./module-N', $use, 1);
+
+          my $use1 = &s ("USE $mod$suffix, ONLY : $proc$suffix");
+
+          $up->insertAfter ($_, $use) for ($use1, &t ("\n"));
+
           next PROC;
         }
 
