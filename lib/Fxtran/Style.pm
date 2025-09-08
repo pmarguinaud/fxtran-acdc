@@ -1,10 +1,40 @@
 package Fxtran::Style;
 
-#
-# Copyright 2025 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+=head1 NAME
+
+Fxtran::Style
+
+=head1 DESCRIPTION
+
+This module implements a base class for style objects. These
+are objects which contain some usefull properties to identify
+the parallelism in FORTRAN source code.
+
+Different parts of the code use slightly different notations;
+for instance:
+
+=over 4 
+
+=item
+
+In Meteo-France physics, the itetator and bounds of iterations are C<JLON>, C<KIDIA>, C<KFDIA>.
+
+=item
+
+In the dynamics, the itetator and bounds of iterations are C<JROF>, C<KST>, C<KEN>.
+
+=item
+
+In MesoNH physics, the iterator and bounds if iterations are C<JI> (or C<JIJ>), C<D%NIB>, C<D%NIE>.
+
+=back
+
+All other style classes derive from C<Fxtran::Style>.
+
+This base class is also responsible for identifying the style of a FORTRAN source code 
+document and create the corresponding style object.
+
+=cut
 
 use Data::Dumper;
 use File::Basename;
@@ -146,5 +176,15 @@ sub getActualNproma
     }
 
 }
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;
