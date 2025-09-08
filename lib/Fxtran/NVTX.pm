@@ -1,10 +1,23 @@
 package Fxtran::NVTX;
 
-#
-# Copyright 2025 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+=head1 NAME
+
+Fxtran::NVTX
+
+=head1 DESCRIPTION
+
+This module provides the C<drHookToNVTX> function, whose purpose is
+to convert C<DR_HOOK> calls to C<NVTX> calls. 
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 use strict;
 

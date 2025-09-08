@@ -1,17 +1,36 @@
 package Fxtran::Print;
 
-#
-# Copyright 2025 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+=head1 NAME
+
+Fxtran::Print
+
+=head1 DESCRIPTION
+
+The purpose of this module is to provide functions to transform
+C<PRINT> statements, C<WRITE> statements, calls to C<ABOR1>
+or MesoNH C<PRINT_MSG>. These statements cannot be used
+on the device, and need to be replaced by a simple C<PRINT>
+statements and/or a C<STOP> statement.
+
+=head1 FUNCTIONS
+
+=cut
 
 use strict;
+
 use Fxtran;
 use Data::Dumper;
 
 sub useABOR1_ACC
 {
+
+=head2 useABOR1_ACC
+
+Replace calls to C<ABOR1> by calls to C<FXTRAN_ACDC_ABORT>, which can be used 
+on the device.
+
+=cut
+
   my $d = shift;
 
   my ($ep, $dp);
@@ -61,6 +80,13 @@ sub removeTRIM
 
 sub changeWRITEintoPRINT
 {
+
+=head2 changeWRITEintoPRINT
+
+Change C<WRITE> statements (not supported on the device) into C<PRINT> statements.
+
+=cut
+
   my $d = shift;
 
   my ($ep) = &F ('./execution-part', $d);
@@ -77,6 +103,13 @@ sub changeWRITEintoPRINT
 
 sub changePRINT_MSGintoPRINT
 {
+
+=head2 changePRINT_MSGintoPRINT
+
+Change calls to C<PRINT_MSG> into calls to C<ABOR1> or C<PRINT> statements.
+
+=cut
+
   my $d = shift;
 
   my ($ep) = &F ('./execution-part', $d);
@@ -101,5 +134,15 @@ sub changePRINT_MSGintoPRINT
     }
 
 }
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;
