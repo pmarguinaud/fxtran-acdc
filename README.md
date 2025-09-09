@@ -9,6 +9,16 @@
 their options may be passed directly as options, or inferred from the `ecbuild`
 environment.
 
+# [fxtran-cc ...](./doc/fxtran-cc.md)
+
+This script is a wrapper for the C and the C++ compilers. The ACDC library is included in the link,
+and archive may be replaced by list of objects if the script is invoked to perform a link.
+
+# [fxtran-cxx ...](./doc/fxtran-cxx.md)
+
+This script is a wrapper for the C and the C++ compilers. The ACDC library is included in the link,
+and archive may be replaced by list of objects if the script is invoked to perform a link.
+
 # [fxtran-f90 ...](./doc/fxtran-f90.md)
 
 `fxtran-f90` is compiler wrapper performing the following tasks:

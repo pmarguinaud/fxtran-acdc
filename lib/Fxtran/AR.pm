@@ -1,5 +1,35 @@
 package Fxtran::AR;
 
+=head1 NAME
+
+Fxtran::AR
+
+=head1 DESCRIPTION
+
+This module provides the C<expandObjects> function, which processes
+a list of arguments.
+
+Arguments with the C<.o> extension may actually be archives (if the C<.o>
+file was created by C<fxtran-f90> with the C<--object-merge-method> option
+set to C<archive>).
+
+In this case, the archive is expanded into single objects and these objects
+replace the item in the argument list.
+
+=head1 SEE ALSO
+
+L<fxtran-f90>, L<fxtran-cxx>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 use Data::Dumper;
 use File::Spec;
 use File::Type;
