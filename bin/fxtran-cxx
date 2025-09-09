@@ -93,6 +93,6 @@ for my $argv (@ARGV)
 
   }
 
-exec (@ARGV);
+exec (@argv);
 
 
