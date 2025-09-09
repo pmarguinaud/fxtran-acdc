@@ -1,0 +1,88 @@
+#!/usr/bin/env perl 
+
+use warnings;
+
+use FindBin qw ($Bin);
+use lib "$Bin/../lib";
+
+use Fxtran::Common;
+
+use Getopt::Long;
+use FileHandle;
+use Data::Dumper;
+use File::Temp;
+use File::Basename;
+use File::Spec;
+use File::Copy;
+use File::Path;
+use File::Type;
+use Archive::Ar;
+use Cwd;
+
+use strict;
+
+my $AR = '/usr/bin/ar';
+
+sub sysAR
+{
+  my @cmd = ($AR, @_);
+  if ($cmd[1] eq 't')
+    {
+      my @obj = split (m/\n/o, `@cmd`);
+      goto ERROR if ($?);
+      return @obj;
+    }
+  else
+    {
+      system (@cmd)
+        and goto ERROR;
+    }
+
+  return;
+
+ERROR:
+  die ("Command `@cmd' failed");
+}
+
+my ($mod, $ar, @obj) = @ARGV;
+
+die unless ($mod && $ar);
+
+die if (($mod ne 'q') && ($mod ne 'qc'));
+
+my $ft = 'File::Type'->new ();
+
+my @o;
+
+my $dir = 'File::Temp'->newdir (CLEANUP => 1);
+my $cwd = &cwd ();
+
+for my $obj (@obj)
+  {
+    my $type = $ft->checktype_filename ($obj);
+
+    if ($type eq 'application/x-executable-file')
+      {
+        push @o, $obj;
+      }
+    elsif ($type eq 'application/x-ar')
+      {
+        $obj = 'File::Spec'->rel2abs ($obj);
+
+        chdir ($dir);
+
+        push @o, map { 'File::Spec'->rel2abs ($_) } &sysAR ('t', $obj);
+
+        &sysAR ('x', $obj);
+
+        chdir ($cwd);
+      }
+    else   
+      {
+        die ("Unexpected type `$type' for object `$obj'");
+      }
+  }
+
+&sysAR ($mod, $ar, @o);
+
+
