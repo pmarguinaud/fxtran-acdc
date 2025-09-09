@@ -197,6 +197,7 @@ use Fxtran::Bt;
 use Fxtran::F90Compiler;
 use Fxtran::Util;
 use Fxtran::PATH;
+use Fxtran::AR;
 
 sub runACDCMethod
 {
@@ -331,7 +332,6 @@ my $f90compiler = shift (@ARGV);
 
 my $c = grep { $_ eq '-c' } @ARGV;
 
-
 if ($opts{prefix})
   {
     unshift (@ARGV, "-I$opts{prefix}/include");
@@ -342,6 +342,7 @@ push @ARGV, '-DFXTRAN_ACDC', '-DFXTRAN_FILE=__FILE__', '-DFXTRAN_LINE=__LINE__';
 
 unless ($c)
   {
+    &Fxtran::AR::expandObjects (\@ARGV);
     exec ($f90compiler, @ARGV) 
       unless ($opts{dryrun});
     exit (0);
