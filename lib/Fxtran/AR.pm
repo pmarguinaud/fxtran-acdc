@@ -1,5 +1,6 @@
 package Fxtran::AR;
 
+use Data::Dumper;
 use File::Spec;
 use File::Type;
 use File::Temp;
@@ -65,7 +66,10 @@ sub expandObjects
   
           chdir ($dir);
   
-          push @argv, map { 'File::Spec'->rel2abs ($_) } &sysAR ('t', $obj);
+          for (&sysAR ('t', $obj))
+            {
+              push @argv, 'Fxtran::AR::Object::Temp'->new (dir => $dir, file => $_);
+            }
   
           &sysAR ('x', $obj);
   
@@ -80,5 +84,24 @@ sub expandObjects
 
   @$args = @argv;
 }
+
+package Fxtran::AR::Object::Temp;
+
+use strict;
+
+use overload '""' => \&asString;
+
+sub new
+{
+  my $class = shift;
+  return bless {@_}, $class;
+}
+
+sub asString
+{
+  my $self = shift;
+  return "$self->{dir}/$self->{file}";
+}
+
 
 1;
