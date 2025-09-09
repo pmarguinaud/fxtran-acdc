@@ -69,6 +69,12 @@ for GPU accelerators.
     This option takes a directory name where fxtran-acdc libraries and headers are installed. These
     libraries are compiled using `fxtran-boot`.
 
+- --object-merge-method
+
+    Method used to produce a single object file. Can be either 'link' (compile in parallel 
+    and use the linker to merge the two objects), 'concatenate' (concatenate source
+    code before compiling), or 'archive' (merge objects into an archive).
+
 Options passed to `fxtran-f90` must be followed by a double hyphen (`--`); then come the
 compiler name followed by the compiler options and files to be processed.
 

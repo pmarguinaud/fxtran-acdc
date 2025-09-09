@@ -113,9 +113,11 @@ See [Fxtran::SingleColumn](Fxtran%3A%3ASingleColumn.md) for more details.
   --gpumemstat                   (FLAG) :                      : Add calls to GPUMEMSTAT
   --inline-contained             (FLAG) :                      : Inline CONTAINed routines
   --inlined                      (LIST) : NONE                 : List of routines to inline
+  --max-statements-per-parallel         : NONE                 : Maximum number of statements per parallel section
   --merge-interfaces             (FLAG) :                      : Consider that single column interfaces and regular interfaces are in the same include file
   --method-prefix                       : ACDC_                : Prefix for method names
   --only-if-newer                (FLAG) :                      : Do not update file if unchanged content
+  --parallel-iterator-list       (LIST) : NONE                 : List of iterators for generating parallel sections (add to JLON, JLEV)
   --parallelmethod-section       (FLAG) :                      : Embed parallelmethod information in binary
   --post-parallel                (LIST) : nullify              : Generate code after parallel section
   --pragma                              : OpenACC              : Pragma (OpenACC or OpenMP)
