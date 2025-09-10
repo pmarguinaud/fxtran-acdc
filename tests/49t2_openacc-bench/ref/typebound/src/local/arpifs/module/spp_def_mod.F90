@@ -5,6 +5,8 @@ module spp_def_mod
   use parkind1, only: jpim, jprb
   use spp_gen_mod
 
+  implicit none
+
   type spp_pert_pointer
     !
     !   perturbation pointer type

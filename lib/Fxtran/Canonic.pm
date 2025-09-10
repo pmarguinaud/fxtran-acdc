@@ -273,6 +273,8 @@ sub fillSpecificationPart
 
   $space->parentNode->insertAfter ($spec, $space);
 
+  my $seenImplicit;
+
   for my $node (@node)
     {
       next if ($space->unique_key eq $node->unique_key);
@@ -294,7 +296,12 @@ sub fillSpecificationPart
         }
       elsif ($node->nodeName =~ m/^(?:implicit-none-stmt)$/o)
         {
+          $seenImplicit = 1;
           $part = $implicitPart;
+        }
+      elsif (($node->nodeName eq 'include') && (! $seenImplicit))
+        {
+          $part = $usePart;
         }
       else
         {

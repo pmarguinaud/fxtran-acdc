@@ -8,6 +8,8 @@ USE PARKIND1  ,ONLY : JPIM     ,JPRB
 USE YOMHOOK   ,ONLY : LHOOK    ,DR_HOOK, JPHOOK
 USE YOMCST   , ONLY : TCST
 
+IMPLICIT NONE
+
 ! Interface:
 ! ----------
 ! INPUT:
