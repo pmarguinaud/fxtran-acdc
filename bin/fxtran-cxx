@@ -47,7 +47,7 @@ my @argv = @ARGV;
 
 if ($opts{prefix})
   {
-    push @argv, "-L$opts{prefix}/lib", '-lACDC';
+    push @argv, "-L$opts{prefix}/lib", '-lFxtranACDC';
   }
 
 if (grep { $_ eq '-c' } @argv)
