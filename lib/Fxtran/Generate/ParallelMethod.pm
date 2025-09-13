@@ -39,7 +39,11 @@ sub generateCCode
 
   $fh->print ("void pm_${name}_ () { }\n");
 
-  $pu->insertBefore ($_, $pu->lastChild) for (&s ("CALL pm_${name}"), &t ("\n"));
+  my ($last) = &F ('./contains-stmt', $pu);
+
+  $last = $pu->lastChild unless ($last);
+
+  $pu->insertBefore ($_, $last) for (&s ("CALL pm_${name}"), &t ("\n"));
   
   for my $METHOD (qw (OPENMP OPENMPSINGLECOLUMN OPENACCSINGLECOLUMN))
     {
