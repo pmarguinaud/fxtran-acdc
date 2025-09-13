@@ -780,8 +780,8 @@ See L<Fxtran::IO> for more details.
     use FindBin qw ($Bin);
 
     my ($opts, $kw) = @_;
-  
-    if (-f "$Bin/../lib/$opts->{$kw}.pm")
+
+    if (-f "$Bin/../lib/Fxtran/IO/$opts->{$kw}.pm")
       {
         my $class = 'Fxtran::IO::' . $opts->{$kw};
         eval "use $class;";
