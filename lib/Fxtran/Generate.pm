@@ -145,7 +145,8 @@ my %options= do
   use-bit-repro-intrinsics        -- Use bit reproducible intrinsics
   suffix-bitrepro=s               -- Suffix for bit-repro routines                                                                                -- _BITREPRO
   max-statements-per-parallel=s   -- Maximum number of statements per parallel section
-  parallel-iterator-list=s@       -- List of iterators for generating parallel sections (add to JLON, JLEV)
+  parallel-iterator-list=s@       -- List of iterators for generating parallel sections (add to JLON, JLEV) 
+  write-metadata                  -- Add metadata to generated files                               
 EOF
 
   my @options;
@@ -256,12 +257,19 @@ sub routineToRoutineTail
 {
   my ($F90out, $F90, $d, $opts) = @_;
 
-  &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d), time => 1, version => 1, from => $F90);
+  if ($opts->{'write-metadata'})
+    {
+      &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d), time => 1, version => 1, from => $F90);
+    }
+  else
+    {
+      &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
+    }
 }
 
 &click (<< "EOF");
 @options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 stack-method style redim-arguments set-variables 
-             suffix-semiimplicit tmp value-attribute inline-contained checker
+             suffix-semiimplicit tmp value-attribute inline-contained checker write-metadata
              max-statements-per-parallel parallel-iterator-list)}
   keep-drhook               -- Keep DrHook
   dummy                     -- Generate a dummy routine (strip all executable code)
@@ -329,7 +337,7 @@ See L<Fxtran::SemiImplicit> for more details.
 }
 
 &click (<< "EOF");
-@options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 stack-method style redim-arguments set-variables 
+@options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 stack-method style redim-arguments set-variables write-metadata
              suffix-singlecolumn tmp value-attribute inline-contained checker array-slice-to-address use-bit-repro-intrinsics)}
   keep-drhook                  -- Keep DrHook
   dummy                        -- Generate a dummy routine (strip all executable code)
@@ -422,7 +430,7 @@ See L<Fxtran::SingleColumn> for more details.
 
 
 &click (<< "EOF");
-@options{qw (cycle dir tmp only-if-newer merge-interfaces pragma stack84 stack-method style redim-arguments ydcpg_opts checker suffix-manyblocks
+@options{qw (cycle dir tmp only-if-newer merge-interfaces pragma stack84 stack-method style redim-arguments ydcpg_opts checker suffix-manyblocks write-metadata
              suffix-singlecolumn suffix-pointerparallel type-bound-methods types-constant-dir types-fieldapi-dir method-prefix use-stack-manyblocks
              max-statements-per-parallel parallel-iterator-list)}
   base                            -- Base directory for file lookup
@@ -519,7 +527,7 @@ See L<Fxtran::Pointer::Parallel> for more details.
 
 &click (<< "EOF");
 @options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 stack-method style 
-             suffix-singlecolumn suffix-singleblock checker)}
+             suffix-singlecolumn suffix-singleblock checker write-metadata)}
   drhooktonvtx                    -- Change DrHook calls into NVTX calls
   inlined=s@                      -- List of routines to inline
   openmptoparallel                -- Transform OpenMP parallel sections into ACDC parallel sections
@@ -580,7 +588,7 @@ See L<Fxtran::SingleBlock> for more details.
 
 &click (<< "EOF");
 @options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 stack-method style inline-contained
-             suffix-singlecolumn suffix-manyblocks checker array-slice-to-address use-stack-manyblocks)}
+             suffix-singlecolumn suffix-manyblocks checker array-slice-to-address use-stack-manyblocks write-metadata)}
   drhooktonvtx                    -- Change DrHook calls into NVTX calls
   inlined=s@                      -- List of routines to inline
   create-interface                -- Generate an interface file
@@ -920,7 +928,7 @@ See C<Fxtran::Interface> for more details.
 }
 
 &click (<< "EOF");
-@options{qw (use-bit-repro-intrinsics tmp cycle dir merge-interfaces inline-contained suffix-bitrepro)}
+@options{qw (use-bit-repro-intrinsics tmp cycle dir merge-interfaces inline-contained suffix-bitrepro write-metadata)}
   use-bit-repro-parens      -- Make sure additions are executed in the right order
 EOF
 sub bitrepro
@@ -950,7 +958,7 @@ See F<Fxtran::BitRepro> for more details.
 }
 
 &click (<< "EOF");
-@options{qw (tmp cycle dir suffix-pointerparallel types-constant-dir types-fieldapi-dir method-prefix)}
+@options{qw (tmp cycle dir suffix-pointerparallel types-constant-dir types-fieldapi-dir method-prefix write-metadata)}
   switch=s                  -- Set this variable to true if the parallel mode is enabled
   parallelmethod-section    -- Embed parallelmethod information in binary
 EOF
