@@ -128,7 +128,6 @@ my %options= do
   suffix-singlecolumn=s           -- Suffix for generated routines                                                                                -- _OPENACC
   tmp=s                           -- Temporary directory for processing                                                                           -- .
   value-attribute                 -- Add VALUE attribute to scalar intrinsic arguments
-  version                         -- Append fxtran-acdc version at end of generated content
   inline-contained                -- Inline contained routines
   type-bound-methods              -- Generate & use type bound methods
   types-constant-dir=s            -- Directory with constant type information                                                                     --  types-constant
@@ -255,17 +254,14 @@ sub routineToRoutineHead
 
 sub routineToRoutineTail
 {
-  my ($F90out, $d, $opts) = @_;
+  my ($F90out, $F90, $d, $opts) = @_;
 
-  &Fxtran::Util::addVersion ($d)
-    if ($opts->{version});
-  
-  &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
+  &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d), time => 1, version => 1, from => $F90);
 }
 
 &click (<< "EOF");
 @options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 stack-method style redim-arguments set-variables 
-             suffix-semiimplicit tmp value-attribute version inline-contained checker
+             suffix-semiimplicit tmp value-attribute inline-contained checker
              max-statements-per-parallel parallel-iterator-list)}
   keep-drhook               -- Keep DrHook
   dummy                     -- Generate a dummy routine (strip all executable code)
@@ -324,7 +320,7 @@ See L<Fxtran::SemiImplicit> for more details.
         }
     }
   
-  &routineToRoutineTail ($F90out, $d, $opts);
+  &routineToRoutineTail ($F90out, $F90, $d, $opts);
 
   if ($opts->{'create-interface'})
     {
@@ -334,7 +330,7 @@ See L<Fxtran::SemiImplicit> for more details.
 
 &click (<< "EOF");
 @options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 stack-method style redim-arguments set-variables 
-             suffix-singlecolumn tmp value-attribute version inline-contained checker array-slice-to-address use-bit-repro-intrinsics)}
+             suffix-singlecolumn tmp value-attribute inline-contained checker array-slice-to-address use-bit-repro-intrinsics)}
   keep-drhook                  -- Keep DrHook
   dummy                        -- Generate a dummy routine (strip all executable code)
   inlined=s@                   -- List of routines to inline
@@ -416,7 +412,7 @@ See L<Fxtran::SingleColumn> for more details.
         }
     }
   
-  &routineToRoutineTail ($F90out, $d, $opts);
+  &routineToRoutineTail ($F90out, $F90, $d, $opts);
 
   if ($opts->{'create-interface'} && $singleRoutine)
     {
@@ -427,7 +423,7 @@ See L<Fxtran::SingleColumn> for more details.
 
 &click (<< "EOF");
 @options{qw (cycle dir tmp only-if-newer merge-interfaces pragma stack84 stack-method style redim-arguments ydcpg_opts checker suffix-manyblocks
-             suffix-singlecolumn suffix-pointerparallel version type-bound-methods types-constant-dir types-fieldapi-dir method-prefix use-stack-manyblocks
+             suffix-singlecolumn suffix-pointerparallel type-bound-methods types-constant-dir types-fieldapi-dir method-prefix use-stack-manyblocks
              max-statements-per-parallel parallel-iterator-list)}
   base                            -- Base directory for file lookup
   contiguous-pointers             -- Add CONTIGUOUS attribute to pointer accessors
@@ -513,7 +509,7 @@ See L<Fxtran::Pointer::Parallel> for more details.
       &Fxtran::Generate::ParallelMethod::generateCCode ($d, $opts);
     }
 
-  &routineToRoutineTail ($F90out, $d, $opts);
+  &routineToRoutineTail ($F90out, $F90, $d, $opts);
   
   if ($opts->{'create-interface'})
     {
@@ -523,7 +519,7 @@ See L<Fxtran::Pointer::Parallel> for more details.
 
 &click (<< "EOF");
 @options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 stack-method style 
-             suffix-singlecolumn suffix-singleblock version checker)}
+             suffix-singlecolumn suffix-singleblock checker)}
   drhooktonvtx                    -- Change DrHook calls into NVTX calls
   inlined=s@                      -- List of routines to inline
   openmptoparallel                -- Transform OpenMP parallel sections into ACDC parallel sections
@@ -579,12 +575,12 @@ See L<Fxtran::SingleBlock> for more details.
         }
     }
   
-  &routineToRoutineTail ($F90out, $d, $opts);
+  &routineToRoutineTail ($F90out, $F90, $d, $opts);
 }
 
 &click (<< "EOF");
 @options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 stack-method style inline-contained
-             suffix-singlecolumn suffix-manyblocks version checker array-slice-to-address use-stack-manyblocks)}
+             suffix-singlecolumn suffix-manyblocks checker array-slice-to-address use-stack-manyblocks)}
   drhooktonvtx                    -- Change DrHook calls into NVTX calls
   inlined=s@                      -- List of routines to inline
   create-interface                -- Generate an interface file
@@ -656,7 +652,7 @@ See L<Fxtran::ManyBlocks> for more details.
         }
     }
 
-  &routineToRoutineTail ($F90out, $d, $opts);
+  &routineToRoutineTail ($F90out, $F90, $d, $opts);
 
   if ($opts->{'create-interface'})
     {
@@ -950,7 +946,7 @@ See F<Fxtran::BitRepro> for more details.
 
   &Fxtran::BitRepro::makeBitReproducible ($d, %$opts);
 
-  &routineToRoutineTail ($F90out, $d, $opts);
+  &routineToRoutineTail ($F90out, $F90, $d, $opts);
 }
 
 &click (<< "EOF");
@@ -1094,7 +1090,7 @@ See L<Fxtran::TopLevel> for more details.
       &Fxtran::Generate::ParallelMethod::generateCCode ($d, $opts);
     }
 
-  &routineToRoutineTail ($F90out, $d, $opts);
+  &routineToRoutineTail ($F90out, $F90, $d, $opts);
 
 }
 

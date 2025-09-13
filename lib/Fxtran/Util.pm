@@ -14,6 +14,7 @@ This module provides various utilities.
 
 use FileHandle;
 use File::Path;
+use File::Spec;
 use File::Basename;
 use Data::Dumper;
 
@@ -32,36 +33,55 @@ content did not change.
 
 =cut
 
-  my ($file, $code) = @_;
+  my ($file, $code, %opts) = @_;
 
   my $c = do { local $/ = undef; my $fh = 'FileHandle'->new ("<$file"); $fh ? <$fh> : undef };
-  
-  if ((! defined ($c)) || ($c ne $code))
+
+  if ($opts{time})
+    {
+      $c =~ s/\n! time = \d+\n$/\n/goms;
+    }
+
+  my $eq =  defined ($c) && ($c eq $code);
+
+  unless ($eq)
     {
       unlink ($file);
       &mkpath (&dirname ($file));
       my $fh = 'FileHandle'->new (">$file"); 
       $fh or die ("Cannot write to $file");
       $fh->print ($code); 
+
+      unless (substr ($code, -1 , 1) eq "\n")
+        {
+          $fh->print ("\n");
+        }
+
+      if ($opts{version})
+        {
+          my $version = &Fxtran::getVersion ();
+          $fh->print ("! version = $version\n");
+        }
+
+      if (my $from = $opts{from})
+        {
+          $fh->print ("! from = $from\n");
+        }
+
+      my $time = time ();
+
+      if ($opts{time})
+        {
+          $fh->print ("! time = $time\n");
+        }
+
       $fh->close ();
+
+      if ($opts{time})
+        {
+          utime ($time, $time, $file);
+        }
     }
-}
-
-sub addVersion
-{
-
-=head2 addVersion
-
-Add C<git> commit hash of fxtran-acdc to the bottom of a
-generated file.
-
-=cut
-
-  my $d = shift;
-  my $version = &Fxtran::getVersion ();
-  my ($file) = &F ('./object/file', $d);
-  $file->appendChild (&n ("<C>! $version</C>"));
-  $file->appendChild (&t ("\n"));
 }
 
 {
