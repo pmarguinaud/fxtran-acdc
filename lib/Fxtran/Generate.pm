@@ -507,14 +507,14 @@ See L<Fxtran::Pointer::Parallel> for more details.
       &Fxtran::Pointer::Parallel::processSingleRoutine ($pu, $NAME, $types, %$opts);
     }
 
-  &routineToRoutineTail ($F90out, $d, $opts);
-  
   if ($opts->{'parallelmethod-section'})
     {
       &Fxtran::Util::loadModule ('Fxtran::Generate::ParallelMethod');
       &Fxtran::Generate::ParallelMethod::generateCCode ($d, $opts);
     }
 
+  &routineToRoutineTail ($F90out, $d, $opts);
+  
   if ($opts->{'create-interface'})
     {
       $opts->{style}->generateInterface ($F90out, %$opts);
@@ -1088,13 +1088,13 @@ See L<Fxtran::TopLevel> for more details.
         }
     }
 
-  &routineToRoutineTail ($F90out, $d, $opts);
-
   if ($opts->{'parallelmethod-section'})
     {
       &Fxtran::Util::loadModule ('Fxtran::Generate::ParallelMethod');
       &Fxtran::Generate::ParallelMethod::generateCCode ($d, $opts);
     }
+
+  &routineToRoutineTail ($F90out, $d, $opts);
 
 }
 

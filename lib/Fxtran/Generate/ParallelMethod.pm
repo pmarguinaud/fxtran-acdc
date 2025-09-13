@@ -10,9 +10,16 @@ use Data::Dumper;
 
 use strict;
 
+use Fxtran;
+
 sub generateCCode
 {
   my ($d, $opts) = @_;
+
+  my ($pu) = &F ('.//program-unit[1]', $d);
+  my $stmt = $pu->firstChild;
+  my ($name) = &F ('./ANY-N', $stmt, 1);
+  $name = lc ($name);
 
   my %section2method;
   
@@ -28,7 +35,11 @@ sub generateCCode
       $section2method{$section}{$method} = 1;
     }   
 
-  my $fh = 'FileHandle'->new (">$opts->{dir}/parallelmethod.c");
+  my $fh = 'FileHandle'->new (">$opts->{dir}/parallelmethod_${name}.c");
+
+  $fh->print ("void pm_${name}_ () { }\n");
+
+  $pu->insertBefore ($_, $pu->lastChild) for (&s ("CALL pm_${name}"), &t ("\n"));
   
   for my $METHOD (qw (OPENMP OPENMPSINGLECOLUMN OPENACCSINGLECOLUMN))
     {
