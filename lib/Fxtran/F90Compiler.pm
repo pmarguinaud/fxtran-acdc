@@ -18,6 +18,7 @@ use Data::Dumper;
 use File::Basename;
 use File::Path;
 use File::Copy;
+use File::stat;
 
 use strict;
 
@@ -112,6 +113,8 @@ Save files from current directory (mostly generated code) into this directory.
       for my $f (<*.F90>, <*.h>)
         {
           &copy ($f, "$dir/$f");
+          my $st = stat ($f); my $time = $st->mtime ();
+          utime ($time, $time, "$dir/$f");
         }
     }
 
@@ -367,8 +370,6 @@ sub concatenateSource
   my ($obj, $f90compiler) = @args{qw (obj f90compiler)};
   my $opts = $args{opts};
   my @F90 = @{ $args{F90} };
-
-  my $fho;
 
   my $F90_c = 'C_' . &basename ($F90[0]);
   my $fho = 'FileHandle'->new ('>' . &basename ($F90_c));

@@ -960,7 +960,7 @@ sub process_module
   $fh->print ($doc->textContent);
   $fh->close ();
 
-  my $F90 = $fh->filename;
+  $F90 = $fh->filename;
 
   $doc = &Fxtran::parse (location => $F90, fopts => [qw (-construct-tag -no-include -line-length 800)]);
 
