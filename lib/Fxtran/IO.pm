@@ -324,7 +324,7 @@ sub processDecl
                        "ENDIF\n";
       if (! $isFieldAPI)
         {
-          push @BODY_WIPE, $opts->{pragma}->exitDataDetach ("$prefix$name") . "\n";
+          push @BODY_WIPE, $opts->{pragma}->exitDataDelete ("$prefix$name") . "\n";
         }
       push @BODY_HOST       , "ENDIF\n" unless ($intrinsic);
       push @BODY_LEGACY     , "ENDIF\n" unless ($intrinsic);
