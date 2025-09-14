@@ -380,19 +380,17 @@ sub indent
   return @line;
 }
 
-sub r
-{
-  my $f = shift;
-  return '' unless (-f $f);
-  return do { local $/ = undef; my $fh = 'FileHandle'->new ("<$f"); <$fh> };
-}
-
 sub w
 {
-  my $f = shift;
-  my $t = &r ($f);
-  return if ($t eq $_[0]);
-  'FileHandle'->new (">$f")->print ($_[0]);
+  my ($f, $from, $opts) = @_;
+  if ($opts->{'write-metadata'})
+    {
+      &Fxtran::Util::updateFile ($f, $_[3], from => $from, time => 1, version => 1);
+    }
+  else
+    {
+      &Fxtran::Util::updateFile ($f, $_[3]);
+    }
 }
 
 sub processTypes1
@@ -832,6 +830,8 @@ sub processTypes
 {
   my ($doc, $opts) = @_;
 
+  my ($F90) = &F ('./object/file/@name', $doc, 2);
+
   my ($file, $code, $type) = &processTypes1 ($doc, $opts);
 
   if ($opts->{'type-bound-methods'})
@@ -873,7 +873,7 @@ sub processTypes
 
               $file = "$opts->{dir}/$file";
      
-              &w ($file, << "EOF");
+              &w ($file, $F90, $opts, << "EOF");
 SUBMODULE ($MOD) $SUB
 
 IMPLICIT NONE
@@ -909,31 +909,31 @@ EOF
 
       if ($opts->{sorted})
         {
-          &w ("$opts->{dir}/0000.$mod.F90", $doc->textContent);
+          &w ("$opts->{dir}/0000.$mod.F90", $F90, $opts, $doc->textContent);
         }
       else
         {
-          &w ("$opts->{dir}/$mod.F90", $doc->textContent);
+          &w ("$opts->{dir}/$mod.F90", $F90, $opts, $doc->textContent);
         }
 
     }
   elsif ($opts->{out})
     {
-      &w ("$opts->{dir}/$opts->{out}", join ('', map { $code->{$_} } @$file));
+      &w ("$opts->{dir}/$opts->{out}", $F90, $opts, join ('', map { $code->{$_} } @$file));
     }
   elsif ($opts->{sorted})
     {
       my $i = 0;
       for my $f (@$file)
         {
-          &w ("$opts->{dir}/" . sprintf ('%4.4d.', $i++) . $f, $code->{$f});
+          &w ("$opts->{dir}/" . sprintf ('%4.4d.', $i++) . $f, $F90, $opts, $code->{$f});
         }
     }
   else
     {
       for my $f (@$file)
         {
-          &w ("$opts->{dir}/$f", $code->{$f});
+          &w ("$opts->{dir}/$f", $F90, $opts, $code->{$f});
         }
     }
 }
@@ -943,6 +943,8 @@ sub process_module
   use File::Temp;
 
   my ($doc, $opts) = @_;
+
+  my ($F90) = &F ('./object/file/@name', $doc, 2);
 
   my ($pu) = &F ('./object/file/program-unit', $doc);
   my ($mod) = &F ('./module-stmt/module-N', $pu, 1);
@@ -976,13 +978,13 @@ sub process_module
 
   if ($opts->{out})
     {
-      &w ("$opts->{dir}/$opts->{out}", join ('', map { $code->{$_} } @$file));
+      &w ("$opts->{dir}/$opts->{out}", $F90, $opts, join ('', map { $code->{$_} } @$file));
     }
   else
     {
       for my $f (@$file)
         {
-          &w ("$opts->{dir}/$f", $code->{$f});
+          &w ("$opts->{dir}/$f", $F90, $opts, $code->{$f});
         }
     }
 

@@ -669,7 +669,7 @@ See L<Fxtran::ManyBlocks> for more details.
 }
 
 &click (<< "EOF");
-@options{qw (dir pragma tmp type-bound-methods types-constant-dir types-fieldapi-dir checker method-prefix)}
+@options{qw (dir pragma tmp type-bound-methods types-constant-dir types-fieldapi-dir checker method-prefix write-metadata)}
   field-api                       -- Dump Field API information
   field-api-class=s               -- Field API structure category
   methods-list=s@                 -- List of methods (copy, crc64, host, legacy, load, save, size, wipe
