@@ -557,7 +557,7 @@ sub processSingleRoutine
       }  
     else
       {
-        my @present = grep { $var2dim->{$_} || $typearg->{$_} } @argument;
+        my @present = grep { $var2dim->{$_} || ($typearg->{$_} && (! $notpresentttype{$typearg->{$_}})) } @argument;
         my @create = grep { ! $argument{$_} } sort (keys (%$var2dim));
        
         # Create local arrays, assume argument arrays are on the device
