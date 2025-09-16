@@ -56,6 +56,16 @@ several files have to be compiled.
   );
 }
 
+sub touch
+{
+  my $time = shift;
+  $time = time () if ($time < 0);
+  for my $f (@_)
+    {
+      utime ($time, $time, $f);
+    }
+}
+
 sub run
 {
   my %args = @_;
@@ -103,6 +113,7 @@ Save files from current directory (mostly generated code) into this directory.
               unlink ($f);
               print "Take $dir/$f\n";
               &copy ("$dir/$f", $f);
+              &touch (stat ("$dir/$f")->mtime (), $f);
             }
         }
     }
@@ -112,9 +123,9 @@ Save files from current directory (mostly generated code) into this directory.
       (-d $dir) or &mkpath ($dir);
       for my $f (<*.F90>, <*.h>)
         {
+          unlink ("$dir/$f");
           &copy ($f, "$dir/$f");
-          my $st = stat ($f); my $time = $st->mtime ();
-          utime ($time, $time, "$dir/$f");
+          &touch (stat ($f)->mtime (), "$dir/$f");
         }
     }
 
