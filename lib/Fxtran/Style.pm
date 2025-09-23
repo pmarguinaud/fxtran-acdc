@@ -122,6 +122,7 @@ sub new
 {
   my $class = shift;
   my %args = @_;
+
   if ($args{style})
     {
       return $class->newFromStyle (%args);

@@ -1102,6 +1102,108 @@ See L<Fxtran::TopLevel> for more details.
 
 }
 
+&click (<< "EOF");
+@options{qw (tmp cycle dir suffix-semiimplicit write-metadata style)}
+  switch=s                  -- Set this variable to true if the parallel mode is enabled
+  parallelmethod-section    -- Embed parallelmethod information in binary
+EOF
+sub toplevelsi
+{
+  my ($opts, @args) = @_;
+
+=head2 toplevelsi
+
+=cut
+
+  my ($F90) = @args;
+
+  $opts->{style} ||= 'SEMIIMPLICIT';
+
+  if (&dirname ($F90) eq $opts->{dir})
+    {
+      die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
+    }
+
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'toplevelsi', $opts, qw (-openmp -directive ACDC));
+
+  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
+
+  &Fxtran::Util::loadModule ('Fxtran::TopLevelSI');
+
+  for my $pu (&F ('./object/file/program-unit', $d))
+    {
+      my $stmt = $pu->firstChild;
+      (my $kind = $stmt->nodeName) =~ s/-stmt$//o;
+      if ($kind eq 'subroutine')
+        {
+          &Fxtran::TopLevelSI::processSingleRoutine ($pu, %$opts);
+        }
+      else
+        {
+          die;
+        }
+    }
+
+  if ($opts->{'parallelmethod-section'})
+    {
+      &Fxtran::Util::loadModule ('Fxtran::Generate::ParallelMethod');
+      &Fxtran::Generate::ParallelMethod::generateCCode ($d, $opts);
+    }
+
+  &routineToRoutineTail ($F90out, $F90, $d, $opts);
+}
+
+&click (<< "EOF");
+@options{qw (tmp cycle dir write-metadata style)}
+  switch=s                  -- Set this variable to true if the parallel mode is enabled
+  parallelmethod-section    -- Embed parallelmethod information in binary
+EOF
+sub toplevelsp
+{
+  my ($opts, @args) = @_;
+
+=head2 toplevelsp
+
+=cut
+
+  my ($F90) = @args;
+
+  $opts->{style} ||= 'SPECTRAL';
+
+  if (&dirname ($F90) eq $opts->{dir})
+    {
+      die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
+    }
+
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'toplevelsi', $opts, qw (-openmp -directive ACDC));
+
+  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
+
+  &Fxtran::Util::loadModule ('Fxtran::TopLevelSP');
+
+  for my $pu (&F ('./object/file/program-unit', $d))
+    {
+      my $stmt = $pu->firstChild;
+      (my $kind = $stmt->nodeName) =~ s/-stmt$//o;
+      if ($kind eq 'subroutine')
+        {
+          &Fxtran::TopLevelSP::processSingleRoutine ($pu, %$opts);
+        }
+      else
+        {
+          die;
+        }
+    }
+
+  if ($opts->{'parallelmethod-section'})
+    {
+      &Fxtran::Util::loadModule ('Fxtran::Generate::ParallelMethod');
+      &Fxtran::Generate::ParallelMethod::generateCCode ($d, $opts);
+    }
+
+  &routineToRoutineTail ($F90out, $F90, $d, $opts);
+}
+
 =head1 SEE ALSO
 
 L<fxtran-f90>, L<fxtran-gen>
