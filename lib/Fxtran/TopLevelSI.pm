@@ -14,6 +14,10 @@ sub processSingleRoutine
 
   &Fxtran::Decl::use ($pu, &s ('USE FXTRAN_ACDC_PARALLELMETHOD_MOD'));
 
+  my ($up) = &F ('./specification-part/use-part', $pu);
+
+  $up->appendChild ($_) for (&t ("\n"), &s ('USE FIELD_ACCESS_MODULE,ONLY:GET_DEVICE_DATA_RDWR'));
+
   my ($name) = &F ('./subroutine-stmt/subroutine-N', $pu, 1);
 
   my $count = 0;
