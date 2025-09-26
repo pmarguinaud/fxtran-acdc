@@ -50,7 +50,7 @@ sub processSingleRoutine
 
           my $tt = $N->textContent;
 
-          next unless if ($tt =~ m/^GET_HOST_DATA_/o);
+          next unless ($tt =~ m/^GET_HOST_DATA_/o);
 
           push @get, $pa->cloneNode (1);
 
