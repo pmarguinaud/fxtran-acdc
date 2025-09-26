@@ -15,7 +15,7 @@ sub processSingleRoutine
   my ($dp) = &F ('./specification-part/declaration-part', $pu);
   my ($ep) = &F ('./execution-part', $pu);
 
-  # Argument arrays
+  # Arrays
 
   my %arr = map { ($_, 1) } 
             &F ('./T-decl-stmt/EN-decl-LT/EN-decl[string(./array-spec/shape-spec-LT/shape-spec[last()])="KSTA:KEND"]/EN-N', $dp, 1);
@@ -30,8 +30,13 @@ sub processSingleRoutine
   my %typ = map { ($_, 1) } 
             &F ('./T-decl-stmt[_T-spec_/derived-T-spec][string(./attribute/attribute-N)="INTENT"]/EN-decl-LT/EN-decl[not(./array-spec)]/EN-N', $dp, 1);
 
-  my @present = (sort (keys (%arr)), sort (keys (%typ)));
-  my @create = ();
+  # Arguments
+
+  my %arg = map { ($_, 1) } 
+            &F ('./T-decl-stmt[string(./attribute/attribute-N)="INTENT"]/EN-decl-LT/EN-decl/EN-N', $dp, 1);
+
+  my @present = grep ({ $arg{$_} } sort (keys (%arr)), sort (keys (%typ)));
+  my @create = grep { ! $arg{$_} } sort (keys (%arr));
 
   my @do_jsp = &F ('.//do-construct[./do-stmt[string(do-V)="JSP"]]', $ep);
 
@@ -106,8 +111,6 @@ EOF
   my @decl = &F ('./T-decl-stmt[string(./attribute/attribute-N)="INTENT"]', $dp);
   $dp->insertAfter ($_, $decl[-1]) for (&s ("LOGICAL, INTENT (IN) :: LDACC"), &t ("\n"));
   
-
-  print &Fxtran::Canonic::indent ($pu);
 }
 
 1;
