@@ -1204,6 +1204,55 @@ sub toplevelsp
   &routineToRoutineTail ($F90out, $F90, $d, $opts);
 }
 
+&click (<< "EOF");
+@options{qw (cycle dir only-if-newer merge-interfaces pragma stack84 stack-method style 
+             tmp write-metadata max-statements-per-parallel parallel-iterator-list)}
+  keep-drhook               -- Keep DrHook
+  dummy                     -- Generate a dummy routine (strip all executable code)
+  create-interface          -- Generate an interface file
+EOF
+sub spectral
+{
+  my ($opts, @args) = @_;
+
+=head2 spectral
+
+=cut
+
+  &Fxtran::Util::loadModule ('Fxtran::Spectral');
+
+  my ($F90) = @args;
+
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'spectral', $opts, qw (-directive ACDC), $opts->{openmptoparallel} ? ('-openmp') : ());
+
+  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
+
+  $opts->{style}->preProcessForOpenACC ($d, %$opts);
+  
+  my @pu = &F ('./object/file/program-unit', $d);
+  
+  for my $pu (@pu)
+    {
+      my $stmt = $pu->firstChild;
+      (my $kind = $stmt->nodeName) =~ s/-stmt$//o;
+      if ($kind eq 'subroutine')
+        {
+          &Fxtran::Spectral::processSingleRoutine ($pu, %$opts);
+        }
+      else
+        {
+          die;
+        }
+    }
+  
+  &routineToRoutineTail ($F90out, $F90, $d, $opts);
+
+  if ($opts->{'create-interface'})
+    {
+      $opts->{style}->generateInterface ($F90out, %$opts);
+    }
+}
+
 =head1 SEE ALSO
 
 L<fxtran-f90>, L<fxtran-gen>
