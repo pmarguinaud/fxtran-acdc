@@ -50,10 +50,9 @@ sub processSingleRoutine
 
           my $tt = $N->textContent;
 
-          if ($tt =~ m/^GET_HOST_DATA_/o)
-            {
-              push @get, $pa->cloneNode (1);
-            }
+          next unless if ($tt =~ m/^GET_HOST_DATA_/o);
+
+          push @get, $pa->cloneNode (1);
 
           $tt =~ s/^GET_HOST_DATA_/GET_DEVICE_DATA_/o;
 
@@ -81,9 +80,9 @@ EOF
       $C1->replaceNode ($par1);
       $C0->replaceNode ($par0);
 
-
       $par->replaceNode ($if_block_parallel);
 
+      # Synchronization to host
 
       my ($if_block_synchost) = &Fxtran::parse (fragment => << "EOF");
 IF (FXTRAN_ACDC_LSYNCHOST ('$name:$count')) THEN

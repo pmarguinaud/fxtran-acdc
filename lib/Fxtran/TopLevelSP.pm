@@ -20,6 +20,8 @@ sub processSingleRoutine
 
   for my $par (&F ('.//parallel-section', $pu))
     {
+      my @get;
+
       my $par0 = $par->cloneNode (1);
 
       my $par1 = $par->cloneNode (1);
@@ -39,11 +41,15 @@ sub processSingleRoutine
 
           my $tt = $N->textContent;
 
-          next unless ($tt =~ s/^GET_HOST_DATA_/GET_DEVICE_DATA_/o);
+          next unless ($tt =~ m/^GET_HOST_DATA_/o);
+
+          push @get, $pa->cloneNode (1);
+
+          $tt =~ s/^GET_HOST_DATA_/GET_DEVICE_DATA_/o;
           $N->setData ($tt);
         }
 
-      my ($if_block) = &Fxtran::parse (fragment => << "EOF");
+      my ($if_block_parallel) = &Fxtran::parse (fragment => << "EOF");
 IF (FXTRAN_ACDC_LPARALLELMETHOD ('OPENACC', '$name:$count')) THEN
 !
 ELSE
@@ -51,12 +57,32 @@ ELSE
 ENDIF
 EOF
 
-      my ($C1, $C0) = &F ('.//C', $if_block);
+      my ($C1, $C0) = &F ('.//C', $if_block_parallel);
 
       $C1->replaceNode ($par1);
       $C0->replaceNode ($par0);
 
-      $par->replaceNode ($if_block);
+      $par->replaceNode ($if_block_parallel);
+
+      # Synchronization to host
+
+      my ($if_block_synchost) = &Fxtran::parse (fragment => << "EOF");
+IF (FXTRAN_ACDC_LSYNCHOST ('$name:$count')) THEN
+!
+ENDIF
+EOF
+
+      my ($C) = &F ('.//C', $if_block_synchost);
+
+      for my $get (@get)
+        {
+          $C->parentNode->insertBefore ($_, $C) for ($get, &t ("\n"));
+        }
+
+      $C->unbindNode ();
+
+      $if_block_parallel->parentNode->insertAfter ($_, $if_block_parallel)
+         for ($if_block_synchost, &t ("\n"));
 
       $count++;
     }
