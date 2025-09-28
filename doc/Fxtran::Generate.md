@@ -25,7 +25,7 @@ This module contains entry points for source code transformation and generation 
   --merge-interfaces             (FLAG) :                      : Consider that single column interfaces and regular interfaces are in the same include file
   --only-if-newer                (FLAG) :                      : Do not update file if unchanged content
   --openmptoparallel             (FLAG) :                      : Transform OpenMP parallel sections into ACDC parallel sections
-  --parallel-iterator-list       (LIST) : NONE                 : List of iterators for generating parallel sections (add to JLON, JLEV)
+  --parallel-iterator-list       (LIST) : NONE                 : List of iterators for generating parallel sections (add to JLON, JLEV) 
   --pragma                              : OpenACC              : Pragma (OpenACC or OpenMP)
   --redim-arguments              (FLAG) :                      : Transform 1D array arguments to scalars
   --set-variables                       : NONE                 : Apply variables values and simplify the code
@@ -35,7 +35,7 @@ This module contains entry points for source code transformation and generation 
   --suffix-semiimplicit                 : _SINGLEBLOCK         : Suffix for semi-implicit  routines
   --tmp                                 : .                    : Temporary directory for processing
   --value-attribute              (FLAG) :                      : Add VALUE attribute to scalar intrinsic arguments
-  --version                      (FLAG) :                      : Append fxtran-acdc version at end of generated content
+  --write-metadata               (FLAG) :                      : Add metadata to generated files                               
 
 ```
 
@@ -81,7 +81,7 @@ See [Fxtran::SemiImplicit](Fxtran%3A%3ASemiImplicit.md) for more details.
   --tmp                                 : .                    : Temporary directory for processing
   --use-bit-repro-intrinsics     (FLAG) :                      : Use bit reproducible intrinsics
   --value-attribute              (FLAG) :                      : Add VALUE attribute to scalar intrinsic arguments
-  --version                      (FLAG) :                      : Append fxtran-acdc version at end of generated content
+  --write-metadata               (FLAG) :                      : Add metadata to generated files                               
 
 ```
 
@@ -117,7 +117,7 @@ See [Fxtran::SingleColumn](Fxtran%3A%3ASingleColumn.md) for more details.
   --merge-interfaces             (FLAG) :                      : Consider that single column interfaces and regular interfaces are in the same include file
   --method-prefix                       : ACDC_                : Prefix for method names
   --only-if-newer                (FLAG) :                      : Do not update file if unchanged content
-  --parallel-iterator-list       (LIST) : NONE                 : List of iterators for generating parallel sections (add to JLON, JLEV)
+  --parallel-iterator-list       (LIST) : NONE                 : List of iterators for generating parallel sections (add to JLON, JLEV) 
   --parallelmethod-section       (FLAG) :                      : Embed parallelmethod information in binary
   --post-parallel                (LIST) : nullify              : Generate code after parallel section
   --pragma                              : OpenACC              : Pragma (OpenACC or OpenMP)
@@ -137,7 +137,7 @@ See [Fxtran::SingleColumn](Fxtran%3A%3ASingleColumn.md) for more details.
   --use-acpy                     (FLAG) :                      : Avoid pointer aliasing using ACPY
   --use-bcpy                     (FLAG) :                      : Avoid pointer aliasing using BCPY
   --use-stack-manyblocks         (FLAG) :                      : Use stack allocation for manyblocks routines
-  --version                      (FLAG) :                      : Append fxtran-acdc version at end of generated content
+  --write-metadata               (FLAG) :                      : Add metadata to generated files                               
   --ydcpg_opts                   (FLAG) :                      : Change KIDIA, KFDIA -> YDCPG_OPTS, YDCPG_BNDS
 
 ```
@@ -179,7 +179,7 @@ See [Fxtran::Pointer::Parallel](Fxtran%3A%3APointer%3A%3AParallel.md) for more d
   --suffix-singleblock                  : _SINGLEBLOCK         : Suffix for single block routines
   --suffix-singlecolumn                 : _OPENACC             : Suffix for generated routines
   --tmp                                 : .                    : Temporary directory for processing
-  --version                      (FLAG) :                      : Append fxtran-acdc version at end of generated content
+  --write-metadata               (FLAG) :                      : Add metadata to generated files                               
 
 ```
 
@@ -220,7 +220,7 @@ See [Fxtran::SingleBlock](Fxtran%3A%3ASingleBlock.md) for more details.
   --suffix-singlecolumn                 : _OPENACC             : Suffix for generated routines
   --tmp                                 : .                    : Temporary directory for processing
   --use-stack-manyblocks         (FLAG) :                      : Use stack allocation for manyblocks routines
-  --version                      (FLAG) :                      : Append fxtran-acdc version at end of generated content
+  --write-metadata               (FLAG) :                      : Add metadata to generated files                               
 
 ```
 
@@ -264,6 +264,7 @@ See [Fxtran::ManyBlocks](Fxtran%3A%3AManyBlocks.md) for more details.
   --type-bound-methods           (FLAG) :                      : Generate & use type bound methods
   --types-constant-dir                  : types-constant       : Directory with constant type information
   --types-fieldapi-dir                  : types-fieldapi       : Directory with Field API type information
+  --write-metadata               (FLAG) :                      : Add metadata to generated files                               
 
 ```
 
@@ -344,6 +345,7 @@ See `Fxtran::Interface` for more details.
   --tmp                                 : .                    : Temporary directory for processing
   --use-bit-repro-intrinsics     (FLAG) :                      : Use bit reproducible intrinsics
   --use-bit-repro-parens         (FLAG) :                      : Make sure additions are executed in the right order
+  --write-metadata               (FLAG) :                      : Add metadata to generated files                               
 
 ```
 
@@ -366,6 +368,7 @@ See `Fxtran::BitRepro` for more details.
   --tmp                                 : .                    : Temporary directory for processing
   --types-constant-dir                  : types-constant       : Directory with constant type information
   --types-fieldapi-dir                  : types-fieldapi       : Directory with Field API type information
+  --write-metadata               (FLAG) :                      : Add metadata to generated files                               
 
 ```
 
@@ -459,6 +462,37 @@ Eventually, note that the result of the transformation is compiled **IN PLACE**
 of the original routine.
 
 See [Fxtran::TopLevel](Fxtran%3A%3ATopLevel.md) for more details.
+
+## toplevelsi
+
+```
+* toplevelsi
+  --cycle                               : 49                   : Cycle
+  --dir                                 : .                    : Dump result in this directory
+  --parallelmethod-section       (FLAG) :                      : Embed parallelmethod information in binary
+  --style                               : NONE                 : Source code style (default: guess from file contents)
+  --suffix-semiimplicit                 : _SINGLEBLOCK         : Suffix for semi-implicit  routines
+  --switch                              : NONE                 : Set this variable to true if the parallel mode is enabled
+  --tmp                                 : .                    : Temporary directory for processing
+  --write-metadata               (FLAG) :                      : Add metadata to generated files                               
+
+```
+
+
+## toplevelsp
+
+```
+* toplevelsp
+  --cycle                               : 49                   : Cycle
+  --dir                                 : .                    : Dump result in this directory
+  --parallelmethod-section       (FLAG) :                      : Embed parallelmethod information in binary
+  --style                               : NONE                 : Source code style (default: guess from file contents)
+  --switch                              : NONE                 : Set this variable to true if the parallel mode is enabled
+  --tmp                                 : .                    : Temporary directory for processing
+  --write-metadata               (FLAG) :                      : Add metadata to generated files                               
+
+```
+
 
 # SEE ALSO
 

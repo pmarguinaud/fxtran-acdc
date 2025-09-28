@@ -13,11 +13,6 @@ This module provides various utilities.
 Update a file with new contents. Do do write to the file if its 
 content did not change.
 
-## addVersion
-
-Add `git` commit hash of fxtran-acdc to the bottom of a
-generated file.
-
 ## runCommand
 
 Run an external command, save the command to a file

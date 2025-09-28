@@ -29,7 +29,7 @@ $ENV{PERL5LIB} = "$lib:$ENV{PERL5LIB}";
 {
   return unless (-f (my $pm = $File::Find::name));
   $pm = 'File::Spec'->abs2rel ($pm, $lib);
-  $pm =~ s/\.pm$//o;
+  return unless ($pm =~ s/\.pm$//o);
   $pm =~ s,/,::,go;
  
   print "$pm\n";

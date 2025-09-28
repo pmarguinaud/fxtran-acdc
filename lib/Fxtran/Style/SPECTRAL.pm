@@ -42,6 +42,7 @@ sub matchDocument
 {
   shift;
   my $d = shift;
+  return;
 }
 
 1;
