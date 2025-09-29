@@ -91,7 +91,7 @@ sub fixSUMIdiom
     {
 
       my $xpath =
-         '//E-2/named-E[string(N)="SUM"]'
+         './/named-E[string(N)="SUM"]'
        . "[./R-LT/$R-R/element-LT/element/named-E/R-LT/array-R/section-subscript-LT"
        . "/section-subscript[string(.)=\"$kidia:$kfdia\"]]";
 
