@@ -611,7 +611,13 @@ sub processSingleRoutine
     $pu,
     suffix => $opts{'suffix-manyblocks'},
     'merge-interfaces' => $opts{'merge-interfaces'},
-    match => sub { my $proc = shift; ! (($proc =~ m/$opts{'suffix-singlecolumn'}$/i) or ($proc eq 'ABOR1') or ($proc eq 'FXTRAN_ACDC_ABORT') or ($proc eq 'GETENV') or ($proc eq 'ABOR1_ACC') or ($proc eq 'PRINT_MSG'))},
+    match => sub { my $proc = shift; ! (($proc =~ m/$opts{'suffix-singlecolumn'}$/i) 
+           or ($proc eq 'ABOR1') 
+           or ($proc eq 'FXTRAN_ACDC_ABORT') 
+           or ($proc eq 'GETENV') 
+           or ($proc eq 'PCRC') 
+           or ($proc eq 'ABOR1_ACC') 
+           or ($proc eq 'PRINT_MSG'))},
   );
 
   # Add KGPLKS argument to manyblock routines + add LDACC argument
