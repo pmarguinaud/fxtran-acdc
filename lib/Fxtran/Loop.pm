@@ -101,9 +101,11 @@ sub fixSUMIdiom
 
       for my $sum (@sum)
         {
-          my ($N) = &F ("./R-LT/$R-R/element-LT/element/named-E/N", $sum, 1);
-          my $N_jlon = &e ("$N($jlon)");
-          $sum->replaceNode ($N_jlon->cloneNode (1));
+          my ($expr) = &F ("./R-LT/$R-R/element-LT/element/named-E", $sum);
+          my ($sslt) = &F ('./R-LT/array-R/section-subscript-LT', $expr);
+          my @ss = &F ('./section-subscript', $sslt);
+          $ss[0]->replaceNode (&e ($jlon));
+          $sum->replaceNode ($expr);
         }
     }
 }
