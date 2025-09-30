@@ -1,11 +1,51 @@
 package Fxtran::IO;
 
-#
-# Copyright 2022 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+=head1 NAME
 
+Fxtran::IO
+
+=head1 DESCRIPTION
+
+This module provides functions whose purpose is to generate code 
+for handling FORTRAN derived types, in particular:
+
+=over 4
+
+=item SAVE
+
+Writing to a FORTRAN logical unit.
+
+=item LOAD
+
+Reading from a FORTRAN logical unit.
+
+=item COPY
+
+Copying to a device using OpenACC or OpenMP directives.
+
+=item WIPE
+
+Destroying a structure on the device.
+
+=item CRC64
+
+Computing checksums on device members.
+
+=item HOST
+
+Copy back Field API data to the host.
+
+=item DEVICE
+
+Push Field API data to the device.
+
+=item LEGACY
+
+Copy Field API data to host arrays.
+
+=back
+
+=cut
 
 use strict;
 
@@ -991,5 +1031,16 @@ sub process_module
 }
 
 
+=head1 COPYRIGHT
+
+Meteo-France 2022
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=cut
 
 1;
+
+

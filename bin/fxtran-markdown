@@ -101,7 +101,7 @@ for my $perl (@perl)
       {
         ($file = $perl) =~ s,::,/,go;
         $file = "lib/$file.pm";
-        die unless (-f $file);
+        die $file unless (-f $file);
       }
 
     my ($pp, $markdown);

@@ -2,6 +2,14 @@
 
 [Fxtran::Pointer](../lib/Fxtran/Pointer.pm)
 
+# SYNOPSIS
+
+    my @p = &setPointersDimensions ($pu); # Set pointers dimensions and return list of pointers
+
+    ... # Single-column transform
+
+    &handleAssociations ($pu, pointers => \@p); # Process pointer association statements & nullify statements
+
 # DESCRIPTION
 
 This module provides utilities to manage pointer variables, and transform them to 

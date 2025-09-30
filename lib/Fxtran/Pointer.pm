@@ -4,6 +4,14 @@ package Fxtran::Pointer;
 
 Fxtran::Pointer
 
+=head1 SYNOPSIS
+
+  my @p = &setPointersDimensions ($pu); # Set pointers dimensions and return list of pointers
+
+  ... # Single-column transform
+
+  &handleAssociations ($pu, pointers => \@p); # Process pointer association statements & nullify statements
+
 =head1 DESCRIPTION
 
 This module provides utilities to manage pointer variables, and transform them to 
