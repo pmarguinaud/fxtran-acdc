@@ -104,7 +104,7 @@ sub fixSUMIdiom
           my ($expr) = &F ("./R-LT/$R-R/element-LT/element/named-E", $sum);
           my ($sslt) = &F ('./R-LT/array-R/section-subscript-LT', $expr);
           my @ss = &F ('./section-subscript', $sslt);
-          $ss[0]->replaceNode (&e ($jlon));
+          $ss[0]->replaceNode (&n ('<section-subscript><lower-bound>' . &e ($jlon) . '</lower-bound></section-subscript>'));
           $sum->replaceNode ($expr);
         }
     }
