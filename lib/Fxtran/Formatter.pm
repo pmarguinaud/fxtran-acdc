@@ -26,6 +26,24 @@ Transform a packed statement into a multiline statement.
 
 =back
 
+The module also provides unit wide reformatting:
+
+=over 4
+
+=item simplifyAssociateBlocks
+
+Remove unused C<ASSOCIATE> selectors.
+
+=item alignUseStatements
+
+Align use statements, remove unused imported entities.
+
+=item alignArgumentDeclarations
+
+Align argument declarations statements.
+
+=back
+
 =head1 AUTHOR
 
 philippe.marguinaud@meteo.fr
@@ -281,7 +299,9 @@ sub formatStatements
 
   $class->repackStatements ($d, %opts);
 
-  'FileHandle'->new (">$f")->print ($d->textContent);
+# 'FileHandle'->new (">$f")->print ($d->textContent);
+  (my $g = $f) =~ s/\.F90$/.new.F90/o;
+  'FileHandle'->new (">$g")->print ($d->textContent);
 }
 
 sub alignUseStatements
@@ -291,12 +311,13 @@ sub alignUseStatements
   for my $use (&F ('./use-stmt[./rename-LT]', $pu))
     {   
       my $count = 0;
-      my @n = &F ('./rename-LT/rename/use-N/N/n', $use);
+      my @n = &F ('./rename-LT/rename/use-N', $use);
       for my $n (@n)
         {
-          my @expr = &F ('.//f:named-E[string(f:N)="?"]', $n->textContent, $pu);
-          my @type = &F ('.//f:T-N[string(.)="?"]', $n->textContent, $pu);
-          if (@expr || @type)
+          my @expr = &F ('.//named-E[string(N)="?"]', $n->textContent, $pu);
+          my @type = &F ('.//T-N[string(.)="?"]', $n->textContent, $pu);
+          my @gen = &F ('.//op|.//a', $n);
+          if (@expr || @type || @gen)
             {
               $count++;
               next;
@@ -308,26 +329,28 @@ sub alignUseStatements
     }   
   
   my @use = &F ('./use-stmt', $pu);
-  
+
   my %use;
+  my %op;
   
   for my $use (@use)
     {   
       my ($N) = &F ('./module-N', $use, 1); 
-      my @U = &F ('.//use-N/N/f:n', $use, 1); 
+      my @U = &F ('.//use-N', $use, 1); 
+
       for my $U (@U)
         {
           $use{$N}{$U}++;
         }
     }   
-  
+
   my ($len) = sort { $b <=> $a } map { length ($_) } keys (%use);
   
   for my $use (@use)
     {   
       my ($N) = &F ('./module-N', $use, 1); 
       if ($use{$N}) 
-        {
+        { 
           $use->replaceNode (&s (sprintf ("USE %-${len}s, ONLY : ", $N) . join (', ', sort keys (%{ $use{$N} }))));
         }
       else
