@@ -70,7 +70,7 @@ use strict;
 use Fxtran::Formatter;
 
 my %opts = qw (simplify-associate-blocks 1);
-my @opts_f = qw (simplify-associate-blocks);
+my @opts_f = qw (simplify-associate-blocks align-use-statements align-argument-declarations);
 my @opts_s = qw ();
 
 &GetOptions

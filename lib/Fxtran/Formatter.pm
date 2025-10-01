@@ -271,12 +271,141 @@ sub formatStatements
 
   my $d = &getDocument ($f, %opts);
 
-  &simplifyAssociateBlocks ($d)
-    if ($opts{'simplify-associate-blocks'});
+
+  for my $pu (&F ('.//program-unit', $d))
+    {
+      &simplifyAssociateBlocks ($pu) if ($opts{'simplify-associate-blocks'});
+      &alignUseStatements ($pu) if ($opts{'align-use-statements'});
+      &alignArgumentDeclarations ($pu) if ($opts{'align-argument-declarations'});
+    }
 
   $class->repackStatements ($d, %opts);
 
   'FileHandle'->new (">$f")->print ($d->textContent);
+}
+
+sub alignUseStatements
+{
+  my $pu = shift;
+
+  for my $use (&F ('./use-stmt[./rename-LT]', $pu))
+    {   
+      my $count = 0;
+      my @n = &F ('./rename-LT/rename/use-N/N/n', $use);
+      for my $n (@n)
+        {
+          my @expr = &F ('.//f:named-E[string(f:N)="?"]', $n->textContent, $pu);
+          my @type = &F ('.//f:T-N[string(.)="?"]', $n->textContent, $pu);
+          if (@expr || @type)
+            {
+              $count++;
+              next;
+            }
+          my ($rename) = &F ('ancestor::rename', $n);
+          $rename->unbindNode (); 
+        }
+      $use->unbindNode unless ($count);
+    }   
+  
+  my @use = &F ('./use-stmt', $pu);
+  
+  my %use;
+  
+  for my $use (@use)
+    {   
+      my ($N) = &F ('./module-N', $use, 1); 
+      my @U = &F ('.//use-N/N/f:n', $use, 1); 
+      for my $U (@U)
+        {
+          $use{$N}{$U}++;
+        }
+    }   
+  
+  my ($len) = sort { $b <=> $a } map { length ($_) } keys (%use);
+  
+  for my $use (@use)
+    {   
+      my ($N) = &F ('./module-N', $use, 1); 
+      if ($use{$N}) 
+        {
+          $use->replaceNode (&s (sprintf ("USE %-${len}s, ONLY : ", $N) . join (', ', sort keys (%{ $use{$N} }))));
+        }
+      else
+        {
+          $use->replaceNode (&s (sprintf ("USE %-${len}s", $N)));
+        }
+    }   
+}
+
+sub alignArgumentDeclarations
+{
+  use List::Util qw (max);
+
+  my $pu = shift;
+
+  my @decl = &F ('./T-decl-stmt[.//attribute-N[string(.)="INTENT"]', $pu);
+  
+  my %len;  # Max length of each of attribute
+  my %att;  # Attributes used in type decl statements
+  
+  for my $decl (@decl)
+    {   
+      my ($tspec) = &F ('./_T-spec_', $decl, 1); $tspec =~ s/\s+//go;
+  
+      $len{type} = &max ($len{type} || 0, length ($tspec));
+  
+      my @attr = &F ('.//attribute', $decl);
+      for my $attr (@attr)
+        {
+          my ($N) = &F ('./attribute-N', $attr, 1); 
+          $attr = $attr->textContent; $attr =~ s/\s+//go;
+          $att{$N} = 1;
+          $len{$N} = &max (($len{$N} || 0), length ($attr));
+        }
+    }   
+  
+  
+  my @att = sort keys (%att);
+  
+  for (values (%len))
+    {   
+      $_++;
+    }   
+  
+  for my $decl (@decl)
+    {   
+      my ($tspec) = &F ('./_T-spec_', $decl, 1); $tspec =~ s/\s+//go;
+      my ($endlt) = &F ('./EN-decl-LT', $decl, 1); 
+  
+      my @attr = &F ('.//attribute', $decl);
+      my %attr = map { my ($N) = &F ('./attribute-N', $_, 1); ($N, $_->textContent) } @attr;
+  
+      for (values (%attr))
+        {
+          s/\s+//go;
+        }
+  
+      my $code = sprintf ("%-$len{type}s", $tspec);
+  
+      for my $att (@att)
+        {
+          if ($attr{$att})
+            {
+              $code .= sprintf (",%-$len{$att}s", $attr{$att});
+            }
+          else
+            {
+              $code .= ' ' x ($len{$att} + 1); 
+            }
+        }
+  
+      $code .= ' :: ' . $endlt;
+  
+      my $stmt = &s ($code);
+  
+      $decl->replaceNode ($stmt);
+    }   
+
 }
 
 sub repackStatements
