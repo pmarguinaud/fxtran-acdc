@@ -1,5 +1,31 @@
 #!/usr/bin/env perl
 
+=head1 NAME
+
+fxtran-parallel-method
+
+=head1 DESCRIPTION
+
+The purpose of this script is to extract the list of parallel methods embedded in the ELF 
+sections of an executable.
+
+The lists of possible methods, per ACDC section are saved in C<.fxtran.acdc.*> ELF sections. We use
+C<objdump> and C<objcopy> to extract this information and save it into plain text files.
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 SEE ALSO
+
+L<fxtran-f90>, C<objcopy>, C<objdump>
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 use warnings;
 
 use Data::Dumper;
@@ -11,7 +37,14 @@ my $bin = shift;
 
 my @s;
 
-for my $line (split (m/\n/o, `objdump -h $bin`))
+my $objdump = `objdump -h $bin`;
+
+if ($?)
+  {
+    die ("Command `objdump -h $bin' failed");
+  }
+
+for my $line (split (m/\n/o, $objdump))
   {
     if ($line =~ m/^\s*\d+\s*(\S+)/o)
       {
