@@ -50,6 +50,10 @@ Meteo-France 2025
 
 philippe.marguinaud@meteo.fr
 
+=head1 SEE ALSO
+
+C<ar>, C<fxtran-f90>
+
 =cut
 
 use warnings;

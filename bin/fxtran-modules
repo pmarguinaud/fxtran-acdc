@@ -1,12 +1,25 @@
 #!/usr/bin/env perl 
 
-use warnings;
+=head1 NAME
 
-#
-# Copyright 2025 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+fxtran-modules
+
+=head1 DESCRIPTION
+
+The purpose of this script is to compile all modules of fxtran-acdc 
+and check they do not contain any errors.
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
+use warnings;
 
 use Data::Dumper;
 use File::Find;

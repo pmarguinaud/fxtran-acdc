@@ -121,3 +121,18 @@ Wrap kdiff3, meld or vimdiff. Expand the following FORTRAN statements before cal
 - subroutine
 
 Repack after merging.
+
+# [fxtran-modules ...](./doc/fxtran-modules.md)
+
+The purpose of this script is to compile all modules of fxtran-acdc 
+and check they do not contain any errors.
+
+# [fxtran-test ...](./doc/fxtran-test.md)
+
+The purpose of this script is to run tests, that is, to pre-process
+FORTRAN source code and compare the results to a reference.
+
+The FORTRAN source code is supposed to be organized in a pack-like
+directory.
+
+See the `tests` directory of the fxtran-acdc repository for examples.

@@ -1,5 +1,33 @@
 #!/usr/bin/env perl 
 
+=head1 NAME
+
+fxtran-test
+
+=head1 DESCRIPTION
+
+The purpose of this script is to run tests, that is, to pre-process
+FORTRAN source code and compare the results to a reference.
+
+The FORTRAN source code is supposed to be organized in a pack-like
+directory.
+
+See the C<tests> directory of the fxtran-acdc repository for examples.
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=head1 SEE ALSO
+
+L<fxtran-f90>, L<threads>, L<queue>
+
+=cut
+
 use warnings;
 
 use Cwd;
