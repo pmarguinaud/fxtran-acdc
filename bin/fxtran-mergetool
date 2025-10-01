@@ -1,7 +1,5 @@
 #!/usr/bin/env perl 
 
-use warnings;
-
 =head1 NAME
 
 fxtran-mergetool
@@ -53,6 +51,8 @@ L<fxtran|https://github.com/pmarguinaud/fxtran>
 Meteo-France 2025
 
 =cut
+
+use warnings;
 
 use Data::Dumper;
 use Getopt::Long;
