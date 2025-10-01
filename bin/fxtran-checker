@@ -1,12 +1,29 @@
 #!/usr/bin/env perl 
 
-use warnings;
+=head1 NAME
 
-#
-# Copyright 2025 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+fxtran-checker
+
+=head1 DESCRIPTION
+
+Apply norm checking to a FORTRAN file. The file will be scanned for ACDC directives, unless
+the C<--method> option is used. C<fxtran-f90> will be invoked.
+
+=head1 SEE ALSO
+
+L<Fxtran::Generate::Checker>, L<fxtran-f90>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
+use warnings;
 
 use Data::Dumper;
 

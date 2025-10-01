@@ -20,6 +20,20 @@ The new class must implement the following methods:
 
     Transform a packed statement into a multiline statement.
 
+The module also provides unit wide reformatting:
+
+- simplifyAssociateBlocks
+
+    Remove unused `ASSOCIATE` selectors.
+
+- alignUseStatements
+
+    Align use statements, remove unused imported entities.
+
+- alignArgumentDeclarations
+
+    Align argument declarations statements.
+
 # AUTHOR
 
 philippe.marguinaud@meteo.fr
