@@ -1,5 +1,54 @@
 #!/usr/bin/env perl 
 
+=head1 NAME
+
+fxtran-formatter
+
+=head1 SYNOPSIS
+
+  $ ls -l apl_arpege.F90
+  -rw-r--r-- 1 marguina algo 48695 oct.   1 14:45 apl_arpege.F90
+  $ fxtran-formatter apl_arpege.F90 
+  $ ls -l apl_arpege.F90
+  -rw-r--r-- 1 marguina algo 47501 oct.   1 14:52 apl_arpege.F90
+
+=head1 DESCRIPTION
+
+The purpose of C<fxtran-formatter> is to reformat some statements.
+
+For now we reformat only the following statements (these happen to be the
+most sensitive to merge process) :
+
+=over 4
+
+=item 
+
+C<CALL> statements.
+
+=item 
+
+C<SUBROUTINE> statements.
+
+=item
+
+C<ASSOCIATE> statements.
+
+=back
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 SEE ALSO
+
+L<Fxtran::Formatter>, L<fxtran-mergetool>
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 use warnings;
 
 use Data::Dumper;
@@ -22,7 +71,7 @@ use Fxtran::Formatter;
 
 my %opts = qw (simplify-associate-blocks 1);
 my @opts_f = qw (simplify-associate-blocks);
-my @opts_s = qw (mergetool);
+my @opts_s = qw ();
 
 &GetOptions
 (

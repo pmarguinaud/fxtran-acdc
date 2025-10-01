@@ -1,10 +1,44 @@
 package Fxtran::Formatter;
 
-#
-# Copyright 2025 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+=head1 NAME
+
+Fxtran::Formatter
+
+=head1 DESCRIPTION
+
+This module provides a framework for reformatting particular statements.
+
+Adding a capability for a new statement type involves adding a new class, inheriting
+from C<Fxtran::Formatter::regular> or C<Fxtran::Formatter::block>.
+
+The new class must implement the following methods:
+
+=over 4
+
+=item expand
+
+Transform the statement into a single line, plain statement, making simplifications
+when possible.
+
+=item repack
+
+Transform a packed statement into a multiline statement.
+
+=back
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=head1 SEE ALSO
+
+L<fxtran-formatter>, L<Fxtran::Formatter::regular>, L<Fxtran::Formatter::block>
+
+=cut
 
 use Data::Dumper;
 use FileHandle;

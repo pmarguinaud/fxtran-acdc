@@ -87,6 +87,17 @@ When the user is done with editing/debugging, he has to exit the shell; `fxtran-
 will then attempt to compile the code once more and return control to the 
 build system.
 
+# [fxtran-formatter ...](./doc/fxtran-formatter.md)
+
+The purpose of `fxtran-formatter` is to reformat some statements.
+
+For now we reformat only the following statements (these happen to be the
+most sensitive to merge process) :
+
+- `CALL` statements.
+- `SUBROUTINE` statements.
+- `ASSOCIATE` statements.
+
 # [fxtran-gen ...](./doc/fxtran-gen.md)
 
 `fxtran-gen` is a `click` frontend to `Fxtran::Generate` and other generation modules. It
@@ -111,6 +122,13 @@ When invoked, `fxtran-makemaker` will:
 
 The user is expected to provide a file named `Makefile.inc` which contains
 the compiler name and options.
+
+# [fxtran-markdown ...](./doc/fxtran-markdown.md)
+
+Generate markdown documentation from POD inline documentation. This documentation is
+meant to be visible on github.com.
+
+A `README.md` file is also generated; it contains pointers to fxtran-acdc utilities.
 
 # [fxtran-mergetool ...](./doc/fxtran-mergetool.md)
 

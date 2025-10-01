@@ -1,5 +1,30 @@
 #!/usr/bin/env perl
 
+=head1 NAME
+
+fxtran-markdown
+
+=head1 DESCRIPTION
+
+Generate markdown documentation from POD inline documentation. This documentation is
+meant to be visible on github.com.
+
+A F<README.md> file is also generated; it contains pointers to fxtran-acdc utilities.
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 SEE ALSO
+
+L<perldoc>
+
+=head1 COPYRIGHT
+
+L<fxtran-markdown>
+
+=cut
+
 use warnings;
 
 use Pod::Markdown;
