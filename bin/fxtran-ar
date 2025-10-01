@@ -1,5 +1,57 @@
 #!/usr/bin/env perl 
 
+=head1 NAME
+
+fxtran-ar
+
+=head1 DESCRIPTION
+
+C<fxtran-ar> is a wrapper around the traditional C<ar> utility. It is
+supposed to behave similarly to C<ar> and accept the same options.
+
+For now C<fxtran-> accept only the following commands:
+
+=over 4
+
+=item q
+
+=item qc
+
+=back
+
+These two command strings are used by C<cmake> to create static
+libraries.
+
+The purpose of C<fxtran-ar> is to manage situations where objects
+to be aggregated in a static library may actually be static libraries
+themselves.
+
+For instance, in the following command:
+
+  $ fxtran-ar q lib.a a.o b.o ...
+
+C<a.o> may be a static library:
+
+  $ ar tv a.o 
+  rw-r--r-- 0/0   1784 Jan  1 01:00 1970 O_a.o
+  rw-r--r-- 0/0   1784 Jan  1 01:00 1970 O_b.o
+
+In this case, C<fxtran-ar> will extract these objects, and build C<lib.a>
+using them:
+
+  $ ar rv a.o
+  $ ar crv liba.o O_a.o O_b.o b.o ...
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=cut
+
 use warnings;
 
 use FindBin qw ($Bin);
@@ -16,7 +68,6 @@ use File::Spec;
 use File::Copy;
 use File::Path;
 use File::Type;
-use Archive::Ar;
 use Cwd;
 
 use strict;
