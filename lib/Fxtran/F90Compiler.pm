@@ -19,6 +19,7 @@ use File::Basename;
 use File::Path;
 use File::Copy;
 use File::stat;
+use Cwd;
 
 use strict;
 
@@ -120,12 +121,14 @@ Save files from current directory (mostly generated code) into this directory.
 
   if (my $dir = $args{'user-directory-out'})
     { 
+      my $cwd = &cwd ();
       (-d $dir) or &mkpath ($dir);
       for my $f (<*.F90>, <*.h>)
         {
           unlink ("$dir/$f");
-          &copy ($f, "$dir/$f");
-          &touch (stat ($f)->mtime (), "$dir/$f");
+          &copy ($f, "$dir/$f") or die ("Cannot copy `$f' to `$dir/$f', cwd=$cwd");
+          (my $st = stat ($f)) or die ("Cannot stat `$f', cwd=$cwd");
+          &touch ($st->mtime, "$dir/$f");
         }
     }
 
