@@ -46,6 +46,7 @@ sub getAttributes
   return ($attr, \@text);
 }
 
+goto END if ($ENV{NOFXTRAN});
 
 my %opts;
 
@@ -156,6 +157,10 @@ for my $i (0 .. $#ARGV)
         last;
       }
   }
+
+$ENV{NOFXTRAN} = 1;
+
+END:
 
 system (@make) 
   and die ("Command `@make' failed\n");
