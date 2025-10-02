@@ -46,7 +46,9 @@ sub getAttributes
   return ($attr, \@text);
 }
 
-goto END if ($ENV{NOFXTRAN});
+$ENV{FXTRANMAKELEVEL} ||= 0;
+
+goto END if ($ENV{FXTRANMAKELEVEL} > 0);
 
 my %opts;
 
@@ -105,8 +107,6 @@ my ($user_out, $user_in) = @opts{qw (user-directory-out user-directory-in)};
 
 (-d $user_in) or &mkpath ($user_in);
     
-print &Dumper ([$user_out, $user_in]);
-
 for my $F90 (<$user_in/*.F90>)
   {
     my $f = &basename ($F90);
@@ -147,6 +147,8 @@ for my $F90 (<$user_out/*.F90>)
 
   }
 
+END:
+
 my @make;
 
 for my $i (0 .. $#ARGV)
@@ -158,9 +160,7 @@ for my $i (0 .. $#ARGV)
       }
   }
 
-$ENV{NOFXTRAN} = 1;
-
-END:
+$ENV{FXTRANMAKELEVEL} = $ENV{FXTRANMAKELEVEL} + 1;
 
 system (@make) 
   and die ("Command `@make' failed\n");
