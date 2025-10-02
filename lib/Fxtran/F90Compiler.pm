@@ -281,7 +281,8 @@ CXX=$cxxcompiler
 FCFLAGS=@f90flags
 CFLAGS=@cflags
 CXXFLAGS=@cxxflags
-LD=ld
+LD=$f90compiler
+LDFLAGS=@f90flags
 AR=ar
 
 EOF
@@ -290,7 +291,7 @@ EOF
     {
       $fh->print (<< "EOF");
 $obj: @obj
-	@\$(LD) -r -o $obj @obj
+	@\$(LD) \$(LDFLAGS) -r -o $obj @obj
 
 EOF
 
