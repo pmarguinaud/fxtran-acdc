@@ -103,7 +103,8 @@ my ($mod, $ar, @obj) = @ARGV;
 
 die unless ($mod && $ar);
 
-die if (($mod ne 'q') && ($mod ne 'qc'));
+die ("Archive command `$mod' is not supported\n")
+  if (($mod ne 'q') && ($mod ne 'qc'));
 
 my $ft = 'File::Type'->new ();
 
