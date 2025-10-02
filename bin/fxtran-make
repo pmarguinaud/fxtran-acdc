@@ -158,6 +158,6 @@ for my $i (0 .. $#ARGV)
   }
 
 system (@make) 
-  and die ("Command `@cmake' failed\n");
+  and die ("Command `@make' failed\n");
 
 
