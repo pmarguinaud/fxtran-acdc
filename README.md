@@ -145,6 +145,31 @@ comes the method to be invoked, followed by its options and arguments.
 
 See `Fxtran::Generate` for the details of methods and options accepted by `fxtran-gen`.
 
+# [fxtran-make ...](./doc/fxtran-make.md)
+
+`fxtran-make` is a wrapper around `make`, performing a few tasks before starting the
+actual `make` command:
+
+- Look in the fxtran-acdc `user-in` directory and see if the corresponding file 
+has been erased from the `user-out` directory.
+
+    The origin file (the file from which the file in `user-in` is derived), is
+    touched so that it be rebuild by `make`.
+
+- Look in the `user-out` directory and see whether some files have been modified
+(ie compare the file mtime with its time metadata, written at the end of the file).
+
+    When a modified file is encountered, then it will be copied to the `user-in` directory,
+    and the origin file will be touched, to trigger recompilation.
+
+The purpose of this processing is to allow the user to edit the result of the pre-processing;
+when a file in `user-out` is edited, it will be copied to `user-in` and the compilation
+will start again and take the result in `user-in`.
+
+If the user want to go back to the normal situation where the file from the git repo is 
+pre-processed and the result of the pre-processing is compiled, then the user just needs
+to remove the file from the `user-out` directory.
+
 # [fxtran-makemaker ...](./doc/fxtran-makemaker.md)
 
 `fxtran-makemaker` is a simple `Makefile` generator for external test
