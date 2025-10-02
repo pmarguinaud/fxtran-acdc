@@ -146,17 +146,17 @@ for my $F90 (<$user_out/*.F90>)
 
   }
 
-my @cmake;
+my @make;
 
 for my $i (0 .. $#ARGV)
   {
     if ($ARGV[$i] eq '--')
       {
-        @cmake = @ARGV[$i+1..$#ARGV];
+        @make = @ARGV[$i+1..$#ARGV];
         last;
       }
   }
 
-exec (@cmake) if (@cmake);
+exec (@make) if (@make);
 
 
