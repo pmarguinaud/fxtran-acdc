@@ -1,0 +1,160 @@
+#!/usr/bin/env perl
+
+use warnings;
+
+use Data::Dumper;
+use FileHandle;
+use File::stat;
+use File::Spec;
+use File::Path;
+use File::Basename;
+use Getopt::Long;
+
+use strict;
+
+sub touch
+{
+  my $f = shift;
+  my $time = time ();
+
+  print "TOUCH $f\n";
+
+  utime ($time, $time, $f);
+  return $time;
+}
+
+sub getAttributes
+{
+  my $F90 = shift;
+
+  my @text = do { my $fh = 'FileHandle'->new ("<$F90"); <$fh> };
+  
+  # Read attributes at end of file
+  
+  my $attr = {};
+  
+  for my $i (-5 .. -1)
+    {
+      if ($text[$i] =~ m/^\!\s*(\w+)\s*=\s*(\S+)/goms)
+        {
+          $attr->{$1} = $2;
+        }
+    }
+
+  $attr = undef unless (%$attr);
+
+  return ($attr, \@text);
+}
+
+
+my %opts;
+
+my ($config, $iconfig);
+
+# Look for config
+
+for (my $i = 0; $i < $#ARGV; $i++)
+  {
+    last if ($ARGV[$i] eq '--');
+    next unless ($ARGV[$i] eq '--config');
+    $iconfig = $i; 
+    $config = $ARGV[$i+1];
+    last;
+  }
+
+if ($config)
+  {
+    die ("Configution file `$config' was not found") 
+      unless (-f $config);
+    $config = 'File::Spec'->rel2abs ($config);
+    $config = do ("$config");
+    if (my $c = $@) 
+      {   
+        die ($c);
+      }   
+
+# Insert config arguments in place of config options
+
+    @ARGV = (@ARGV[0..$iconfig-1], @$config, @ARGV[$iconfig+2..$#ARGV]);
+  }
+
+for my $i (0 .. $#ARGV)
+  {
+    if ($ARGV[$i] eq '--')
+      {
+        last;
+      }
+    elsif ($ARGV[$i] eq '--user-directory-in')
+      {
+        $opts{'user-directory-in'} = $ARGV[$i+1];
+      }
+    elsif ($ARGV[$i] eq '--user-directory-out')
+      {
+        $opts{'user-directory-out'} = $ARGV[$i+1];
+      }
+  }
+
+for (qw (user-directory-in user-directory-out))
+  {
+    $opts{$_} = 'File::Spec'->rel2abs ($opts{$_})
+     if ($opts{$_});
+  }
+
+my ($user_out, $user_in) = @opts{qw (user-directory-out user-directory-in)};
+
+(-d $user_in) or &mkpath ($user_in);
+    
+print &Dumper ([$user_out, $user_in]);
+
+for my $F90 (<$user_in/*.F90>)
+  {
+    my $f = &basename ($F90);
+    next if (-f "$user_out/$f");
+
+    next unless (my ($attr) = &getAttributes ($F90));
+
+    &touch ($attr->{from});
+
+    unlink ($F90);
+  }
+
+for my $F90 (<$user_out/*.F90>)
+  {
+    my ($attr, $text) = &getAttributes ($F90);
+
+    next unless ($attr);
+
+    my $st = stat ($F90);
+
+    next unless ($st->mtime > $attr->{time}); # File has been edited by user
+
+    print "$F90\n";
+
+    my $time = &touch ($attr->{from}); # Touch file in git repo to trigger compilation
+
+    for my $i (-5 .. -1)
+      {
+        last if ($text->[$i] =~ s/^(\!\s*time\s*=\s*)\d+\s*\n/$1$time\n/goms);  # Update time stamp
+      }
+
+    # Write file in user_in directory and set its time to the origin time stamp
+
+    my $f = "$user_in/" . &basename ($F90);
+    'FileHandle'->new (">$f")->print (join ('', @$text));
+
+    utime ($time, $time, $f);
+
+  }
+
+my @cmake;
+
+for my $i (0 .. $#ARGV)
+  {
+    if ($ARGV[$i] eq '--')
+      {
+        @cmake = @ARGV[$i..$#ARGV];
+        last;
+      }
+  }
+
+exec (@cmake) if (@cmake);
