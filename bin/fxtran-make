@@ -157,6 +157,7 @@ for my $i (0 .. $#ARGV)
       }
   }
 
-exec (@make) if (@make);
+system (@make) 
+  and die ("Command `@cmake' failed\n");
 
 
