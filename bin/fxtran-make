@@ -147,10 +147,7 @@ sub make
 
   $ENV{FXTRANMAKELEVEL} = $ENV{FXTRANMAKELEVEL} + 1;
 
-  system (@make) 
-    and die ("Command `@make' failed\n");
-
-  exit (0);
+  exec (@make);
 }
 
 sub remove
