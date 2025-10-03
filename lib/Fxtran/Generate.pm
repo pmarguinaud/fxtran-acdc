@@ -35,6 +35,7 @@ use Fxtran::Style;
 use Fxtran::Pragma;
 use Fxtran::Cycle;
 use Fxtran::Inline;
+use Fxtran::Include;
 
 use click;
 
@@ -1200,6 +1201,27 @@ sub toplevelsp
       &Fxtran::Util::loadModule ('Fxtran::Generate::ParallelMethod');
       &Fxtran::Generate::ParallelMethod::generateCCode ($d, $opts);
     }
+
+  &routineToRoutineTail ($F90out, $F90, $d, $opts);
+}
+
+&click (<< "EOF");
+@options{qw (tmp cycle dir write-metadata style inline-contained)}
+EOF
+sub idem
+{
+  my ($opts, @args) = @_;
+
+  my ($F90) = @args;
+
+  if (&dirname ($F90) eq $opts->{dir})
+    {
+      die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
+    }
+
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'void', $opts, qw (-openmp -directive ACDC));
+
+  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
 
   &routineToRoutineTail ($F90out, $F90, $d, $opts);
 }
