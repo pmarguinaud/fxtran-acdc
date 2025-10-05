@@ -141,6 +141,8 @@ sub getVarToDim
   my $pu = shift;
   my %opts = @_;
 
+  my $wantarray = wantarray (); # Return var2dim & var2pos
+
   my ($dp) = &F ('./specification-part/declaration-part', $pu);
   my ($ep) = &F ('./execution-part', $pu);
 
@@ -164,13 +166,30 @@ sub getVarToDim
         }
     }
 
-  my %var2dim;
+  my (%var2dim, %var2pos);
 
   for my $en_decl (@en_decl)
     {
-      my @ss = &F ('./array-spec/shape-spec-LT/shape-spec', $en_decl);
+      my @ss = &F ('./array-spec/shape-spec-LT/shape-spec', $en_decl, 1);
       my ($N) = &F ('./EN-N', $en_decl, 1);
       $var2dim{$N} = scalar (@ss);
+
+      next unless ($wantarray);
+
+      for my $i (0 .. $#ss)
+        {
+          my $ss = $ss[$i];
+          for my $klon (@klon)
+            {
+              if ($ss eq $klon)
+                {
+                  $var2pos{$N} = $i;
+                  goto DONE;
+                }
+            }
+        }
+DONE:
+      next;
     }
 
   my %N1toN2;
@@ -196,7 +215,14 @@ sub getVarToDim
        $var2dim{$N1} = $var2dim{$N2};
      }
 
-  return \%var2dim;
+  if ($wantarray)
+    {
+      return (\%var2dim, \%var2pos);
+    }
+  else
+    {
+      return \%var2dim;
+    }
 }
 
 sub removeNpromaLoops
@@ -222,18 +248,19 @@ sub removeNpromaLoops
 
   $ep->insertBefore ($_, $ep->firstChild) for (&t ("\n"), &t ("\n"), &s ("$jlon = $kidia"), &t ("\n"));
 
+  my $var2dim = $opts{var2dim} || &getVarToDim ($pu, %opts);
+
   &removeNpromaLoopsInSection
   (
     $ep,
-    var2dim => &getVarToDim ($pu, %opts),
+    var2dim => $var2dim,
     %opts,
   );
 }
 
 sub removeNpromaLoopsFieldAPI
 {
-  my ($d, $s) = @_;
-  my %opts = @_;
+  my ($d, $s, %opts) = @_;
 
   my $TI = &Fxtran::FieldAPI::getTypeInfo ();
   my @T = sort keys (%$TI);
@@ -268,8 +295,7 @@ sub removeNpromaLoopsFieldAPI
  
 sub setJlon
 {
-  my ($expr, $nd) = @_;
-  my %opts = @_;
+  my ($expr, $nd, %opts) = @_;
 
   my $jlon = $opts{style}->jlon ();
 
@@ -326,7 +352,15 @@ sub setJlon
 
   my @ss = &F ('./section-subscript-LT/section-subscript', $ar);
 
-  $ss[0]->replaceNode (&n ("<section-subscript><lower-bound><named-E><N><n>$jlon</n></N></named-E></lower-bound></section-subscript>"));
+  my $pos = 0;
+
+  if (my $var2pos = $opts{var2pos})
+    {
+      my ($N) = &F ('./N', $expr, 1);
+      $pos = $var2pos->{$N};
+    }
+
+  $ss[$pos]->replaceNode (&n ("<section-subscript><lower-bound><named-E><N><n>$jlon</n></N></named-E></lower-bound></section-subscript>"));
 
 }
 

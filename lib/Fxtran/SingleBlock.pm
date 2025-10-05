@@ -209,8 +209,8 @@ sub processSingleRoutine
   
   # Arrays dimensioned with KLON and their dimensions
 
-  my $var2dim = &Fxtran::Loop::getVarToDim ($pu, style => $style);
-  
+  my ($var2dim, $var2pos) = &Fxtran::Loop::getVarToDim ($pu, style => $style);
+
   &Fxtran::DetectParallel::createParallelSections ($pu, $var2dim, %opts) if ($opts{'max-statements-per-parallel'});
 
   my %pointer;
@@ -257,6 +257,7 @@ sub processSingleRoutine
         $par, 
         style => $style, 
         var2dim => $var2dim,
+        var2pos => $var2pos,
       );
      
       # Move section contents into a DO loop over KLON

@@ -15,27 +15,35 @@ use strict;
 
 sub nproma
 {
-  die;
+ return qw (
+ YDGEOMETRY%YRMP%NSPEC2_HD
+ YDGEOMETRY%YRMP%NSPEC2_I_HD
+ YDGEOMETRY%YRMP%NSPEC2_L_HD
+ YDGEOMETRY%YRMP%NSPEC2_NH_HD
+ YDGEOMETRY%YRMP%NSPEC2_NHX_HD
+ YDGEOMETRY%YRMP%NSPEC2_O3_HD
+ YDGEOMETRY%YRMP%NSPEC2_Q_HD
+ );
 }
 
 sub jlon
 {
-  die;
+  return 'JSP';
 }
 
 sub jlev
 {
-  die;
+  return 'JLEV';
 }
 
 sub kidia
 {
-  die;
+  return 'KSTA';
 }
 
 sub kfdia
 {
-  die;
+  return 'KEND';
 }
 
 sub matchDocument

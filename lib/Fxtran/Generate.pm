@@ -1206,7 +1206,9 @@ sub toplevelsp
 }
 
 &click (<< "EOF");
-@options{qw (tmp cycle dir write-metadata style inline-contained)}
+@options{qw (tmp cycle dir write-metadata style inline-contained pragma suffix-singleblock)}
+  max-statements-per-parallel=s   -- Maximum number of statements per parallel section
+  parallel-iterator-list=s@       -- List of iterators for generating parallel sections (add to JLON, JLEV)
 EOF
 sub idem
 {
@@ -1214,15 +1216,24 @@ sub idem
 
   my ($F90) = @args;
 
+  &Fxtran::Util::loadModule ('Fxtran::SingleBlock');
+
   if (&dirname ($F90) eq $opts->{dir})
     {
       die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
     }
 
-  my ($d, $F90out) = &routineToRoutineHead ($F90, 'void', $opts, qw (-openmp -directive ACDC));
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'idem', $opts, qw (-directive ACDC));
 
   &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
 
+  my @pu = &F ('./object/file/program-unit', $d);
+
+  for my $pu (@pu)
+    {
+      &Fxtran::SingleBlock::processSingleRoutine ($pu, %$opts);
+    }
+  
   &routineToRoutineTail ($F90out, $F90, $d, $opts);
 }
 
