@@ -258,14 +258,9 @@ sub routineToRoutineTail
 {
   my ($F90out, $F90, $d, $opts) = @_;
 
-  if ($opts->{'write-metadata'})
-    {
-      &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d), time => 1, version => 1, from => $F90);
-    }
-  else
-    {
-      &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d));
-    }
+  my @args = $opts->{'write-metadata'} ? (time => 1, version => 1, from => $F90) : ();
+
+  &Fxtran::Util::updateFile ($F90out, &Fxtran::Canonic::indent ($d), @args);
 }
 
 &click (<< "EOF");
@@ -567,8 +562,6 @@ See L<Fxtran::SingleBlock> for more details.
   
   my @pu = &F ('./object/file/program-unit', $d);
 
-  my $NAME = uc (&basename ($F90out, qw (.F90)));
-  
   for my $pu (@pu)
     {
       &Fxtran::SingleBlock::processSingleRoutine ($pu, %$opts);
@@ -1214,7 +1207,17 @@ sub spectral
 {
   my ($opts, @args) = @_;
 
+=head2 spectral
+
+This is the transformation for spectral (mainly horizontal diffusion) calculations.
+
+See C<Fxtran::SingleBlock::Spectral> for more details.
+
+=cut
+
   my ($F90) = @args;
+
+  $opts->{'suffix-spectral'} = $opts->{'suffix-singleblock'};
 
   &Fxtran::Util::loadModule ('Fxtran::SingleBlock::Spectral');
 
@@ -1252,6 +1255,12 @@ sub idem
 {
   my ($opts, @args) = @_;
 
+=head2 idem
+
+Parse a file, inline some routines (optional) and write back the result.
+
+=cut
+
   my ($F90) = @args;
 
   if (&dirname ($F90) eq $opts->{dir})
@@ -1259,9 +1268,7 @@ sub idem
       die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
     }
 
-  my ($d, $F90out) = &routineToRoutineHead ($F90, 'idem', $opts, qw (-openmp -directive ACDC));
-
-  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'idem', $opts, qw (-openmp));
 
   &routineToRoutineTail ($F90out, $F90, $d, $opts);
 }

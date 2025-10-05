@@ -1,5 +1,52 @@
 package Fxtran::SingleBlock::Spectral;
 
+=head1 NAME
+
+Fxtran::SingleBlock::Spectral
+
+=head1 DESCRIPTION
+
+The purpose of this module is to apply the singleblock transform to spectral (horizontal diffusion mainly)
+routines.
+
+We rely on the C<Fxtran::SingleBlock> method and inherit from this class. 
+
+The differences with C<Fxtran::SingleBlock> are:
+
+=over 4
+
+=item
+
+Most arrays are dimensioned with C<NFLEVL> and C<NSPEC2>, or C<NSPEC2> alone for C<PSPSP> (surface pressuse):
+
+  REAL :: PSPDIV (NFLEVG, NSPEC2)
+  REAL :: PSPSP (NSPEC2)
+
+=item
+
+C<NPROMA> is C<NSPEC> (looks weird, but there is no other alternative).
+
+=item
+
+We overload the C<makeParallel> method, so that loops over levels and wavenumbers be collapsed into a single
+loop when possible.
+
+=back
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 SEE ALSO
+
+L<Fxtran::SingleBlock>
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 use Data::Dumper;
 
 use strict;
