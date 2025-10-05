@@ -1,4 +1,4 @@
-package Fxtran::TopLevelSP;
+package Fxtran::TopLevel::SemiImplicit;
 
 use Data::Dumper;
 use FileHandle;
@@ -34,8 +34,8 @@ sub processSingleRoutine
       for my $call (&F ('.//call-stmt', $par1))
         {
           my ($proc) = &F ('./procedure-designator/named-E/N/n/text()', $call);
-          next unless ((my $tt = $proc->textContent) =~ m/^SP\w+$/o);
-          $proc->setData ($tt. $opts{'suffix-singleblock'});
+          next unless ((my $tt = $proc->textContent) =~ m/^SP\w+SI$/o);
+          $proc->setData ($tt. $opts{'suffix-semiimplicit'});
           my ($argspec) = &F ('./arg-spec', $call);
           $argspec->appendChild ($_) 
             for (&t (", "), &n ('<arg><arg-N n="LDACC"><k>LDACC</k></arg-N>=' . &e ('.FALSE.') . '</arg>'));

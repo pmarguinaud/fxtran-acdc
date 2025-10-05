@@ -1122,7 +1122,7 @@ sub toplevelsi
 
   &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
 
-  &Fxtran::Util::loadModule ('Fxtran::TopLevelSI');
+  &Fxtran::Util::loadModule ('Fxtran::TopLevel::SemiImplicit');
 
   for my $pu (&F ('./object/file/program-unit', $d))
     {
@@ -1130,7 +1130,7 @@ sub toplevelsi
       (my $kind = $stmt->nodeName) =~ s/-stmt$//o;
       if ($kind eq 'subroutine')
         {
-          &Fxtran::TopLevelSI::processSingleRoutine ($pu, %$opts);
+          &Fxtran::TopLevel::SemiImplicit::processSingleRoutine ($pu, %$opts);
         }
       else
         {
@@ -1169,11 +1169,11 @@ sub toplevelsp
       die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
     }
 
-  my ($d, $F90out) = &routineToRoutineHead ($F90, 'toplevelsi', $opts, qw (-openmp -directive ACDC));
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'toplevelsp', $opts, qw (-openmp -directive ACDC));
 
   &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
 
-  &Fxtran::Util::loadModule ('Fxtran::TopLevelSP');
+  &Fxtran::Util::loadModule ('Fxtran::TopLevel::Spectral');
 
   for my $pu (&F ('./object/file/program-unit', $d))
     {
@@ -1181,7 +1181,7 @@ sub toplevelsp
       (my $kind = $stmt->nodeName) =~ s/-stmt$//o;
       if ($kind eq 'subroutine')
         {
-          &Fxtran::TopLevelSP::processSingleRoutine ($pu, %$opts);
+          &Fxtran::TopLevel::Spectral::processSingleRoutine ($pu, %$opts);
         }
       else
         {
