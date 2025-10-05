@@ -494,6 +494,44 @@ See [Fxtran::TopLevel](Fxtran%3A%3ATopLevel.md) for more details.
 ```
 
 
+## spectral
+
+```
+* spectral
+  --cycle                               : 49                   : Cycle
+  --dir                                 : .                    : Dump result in this directory
+  --inline-contained             (FLAG) :                      : Inline contained routines
+  --max-statements-per-parallel         : NONE                 : Maximum number of statements per parallel section
+  --parallel-iterator-list       (LIST) : NONE                 : List of iterators for generating parallel sections (add to JLON, JLEV)
+  --pragma                              : OpenACC              : Pragma (OpenACC or OpenMP)
+  --style                               : NONE                 : Source code style (default: guess from file contents)
+  --suffix-singleblock                  : _SINGLEBLOCK         : Suffix for single block routines
+  --tmp                                 : .                    : Temporary directory for processing
+  --write-metadata               (FLAG) :                      : Add metadata to generated files                               
+
+```
+
+
+This is the transformation for spectral (mainly horizontal diffusion) calculations.
+
+See `Fxtran::SingleBlock::Spectral` for more details.
+
+## idem
+
+```
+* idem
+  --cycle                               : 49                   : Cycle
+  --dir                                 : .                    : Dump result in this directory
+  --inline-contained             (FLAG) :                      : Inline contained routines
+  --style                               : NONE                 : Source code style (default: guess from file contents)
+  --tmp                                 : .                    : Temporary directory for processing
+  --write-metadata               (FLAG) :                      : Add metadata to generated files                               
+
+```
+
+
+Parse a file, inline some routines (optional) and write back the result.
+
 # SEE ALSO
 
 [fxtran-f90](fxtran-f90.md), [fxtran-gen](fxtran-gen.md)
