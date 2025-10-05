@@ -185,6 +185,12 @@ use Fxtran;
 
 sub processSingleRoutine
 {
+  return __PACKAGE__->processSingleRoutineMethod (@_);
+}
+
+sub processSingleRoutineMethod
+{
+  my $class = shift;
   my ($pu, %opts) = @_;
 
   my $find = $opts{find};
@@ -320,7 +326,14 @@ EOF
 
       # Add OpenACC directive  
 
-      $pragma->insertParallelLoopGangVector ($do, PRESENT => [sort (keys (%present))], PRIVATE => [sort (keys (%private))], IF => ['LDACC']);
+      $class->makeParallel 
+        (
+          $pu, $do, %opts,
+          present => [sort (keys (%present))], 
+          private => [sort (keys (%private))], 
+          var2dim => $var2dim,
+          var2pos => $var2pos,
+        );
     }
   
   # Add single block suffix to routines not called from within parallel sections
@@ -385,6 +398,18 @@ EOF
       $argspec->appendChild ($_) for (&t (', '), &n ('<arg><arg-N n="LDACC"><k>LDACC</k></arg-N>=' . &e ('LDACC') . '</arg>'));
     }
   
+}
+
+sub makeParallel
+{
+  my $class = shift;
+  my ($pu, $do, %opts) = @_;
+
+  my $pragma = $opts{pragma};
+  my $present = $opts{present} || [];
+  my $private = $opts{private} || [];
+
+  $pragma->insertParallelLoopGangVector ($do, PRESENT => $present, PRIVATE => $private, IF => ['LDACC']);
 }
 
 1;

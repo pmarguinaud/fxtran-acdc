@@ -1210,20 +1210,20 @@ sub toplevelsp
   max-statements-per-parallel=s   -- Maximum number of statements per parallel section
   parallel-iterator-list=s@       -- List of iterators for generating parallel sections (add to JLON, JLEV)
 EOF
-sub idem
+sub spectral
 {
   my ($opts, @args) = @_;
 
   my ($F90) = @args;
 
-  &Fxtran::Util::loadModule ('Fxtran::SingleBlock');
+  &Fxtran::Util::loadModule ('Fxtran::SingleBlock::Spectral');
 
   if (&dirname ($F90) eq $opts->{dir})
     {
       die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
     }
 
-  my ($d, $F90out) = &routineToRoutineHead ($F90, 'idem', $opts, qw (-directive ACDC));
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'spectral', $opts, qw (-directive ACDC));
 
   &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
 
@@ -1231,9 +1231,38 @@ sub idem
 
   for my $pu (@pu)
     {
-      &Fxtran::SingleBlock::processSingleRoutine ($pu, %$opts);
+      my $stmt = $pu->firstChild;
+      if ($stmt->nodeName eq 'subroutine-stmt')
+        {
+          'Fxtran::SingleBlock::Spectral'->processSingleRoutineMethod ($pu, %$opts);
+        }
+      else
+        {
+          die ("Unexpected program unit");
+        }
     }
   
+  &routineToRoutineTail ($F90out, $F90, $d, $opts);
+}
+
+&click (<< "EOF");
+@options{qw (tmp cycle dir write-metadata style inline-contained)}
+EOF
+sub idem
+{
+  my ($opts, @args) = @_;
+
+  my ($F90) = @args;
+
+  if (&dirname ($F90) eq $opts->{dir})
+    {
+      die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
+    }
+
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'idem', $opts, qw (-openmp -directive ACDC));
+
+  &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');
+
   &routineToRoutineTail ($F90out, $F90, $d, $opts);
 }
 
