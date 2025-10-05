@@ -10,6 +10,23 @@ use Fxtran;
 
 sub processSingleRoutine
 {
+  __PACKAGE__->processSingleRoutineMethod (@_);
+}
+
+sub renameProc
+{
+  my $class = shift;
+  my ($pu, $proc, %opts) = @_;
+
+  return unless ((my $tt = $proc->textContent) =~ m/^SP\w+$/o);
+  $proc->setData ($tt . $opts{'suffix-singleblock'});
+
+  return 1;
+}
+
+sub processSingleRoutineMethod
+{
+  my $class = shift;
   my ($pu, %opts) = @_;
 
   &Fxtran::Decl::use ($pu, &s ('USE FXTRAN_ACDC_PARALLELMETHOD_MOD'));
@@ -34,8 +51,9 @@ sub processSingleRoutine
       for my $call (&F ('.//call-stmt', $par1))
         {
           my ($proc) = &F ('./procedure-designator/named-E/N/n/text()', $call);
-          next unless ((my $tt = $proc->textContent) =~ m/^SP\w+$/o);
-          $proc->setData ($tt. $opts{'suffix-singleblock'});
+
+          next unless ($class->renameProc ($pu, $proc, %opts));
+
           my ($argspec) = &F ('./arg-spec', $call);
           $argspec->appendChild ($_) 
             for (&t (", "), &n ('<arg><arg-N n="LDACC"><k>LDACC</k></arg-N>=' . &e ('.FALSE.') . '</arg>'));
