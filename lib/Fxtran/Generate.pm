@@ -1148,7 +1148,7 @@ sub toplevelsi
 }
 
 &click (<< "EOF");
-@options{qw (tmp cycle dir write-metadata style)}
+@options{qw (tmp cycle dir write-metadata style suffix-singleblock)}
   switch=s                  -- Set this variable to true if the parallel mode is enabled
   parallelmethod-section    -- Embed parallelmethod information in binary
 EOF

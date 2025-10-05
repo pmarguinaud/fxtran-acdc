@@ -14,12 +14,17 @@ sub processSingleRoutine
 
   &Fxtran::Decl::use ($pu, &s ('USE FXTRAN_ACDC_PARALLELMETHOD_MOD'));
 
+  my ($up) = &F ('./specification-part/use-part', $pu);
+
+  $up->appendChild ($_) for (&t ("\n"), &s ('USE FIELD_ACCESS_MODULE,ONLY:GET_DEVICE_DATA_RDWR'));
+
   my ($name) = &F ('./subroutine-stmt/subroutine-N', $pu, 1);
 
   my $count = 0;
 
   for my $par (&F ('.//parallel-section', $pu))
     {
+
       my @get;
 
       my $par0 = $par->cloneNode (1);
@@ -29,12 +34,16 @@ sub processSingleRoutine
       for my $call (&F ('.//call-stmt', $par1))
         {
           my ($proc) = &F ('./procedure-designator/named-E/N/n/text()', $call);
+          next unless ((my $tt = $proc->textContent) =~ m/^SP\w+$/o);
+          $proc->setData ($tt. $opts{'suffix-singleblock'});
           my ($argspec) = &F ('./arg-spec', $call);
           $argspec->appendChild ($_) 
-            for (&t (", "), &n ('<arg><arg-N n="LDACC"><k>LDACC</k></arg-N>=' . &e ('.TRUE.') . '</arg>'));
+            for (&t (", "), &n ('<arg><arg-N n="LDACC"><k>LDACC</k></arg-N>=' . &e ('.FALSE.') . '</arg>'));
         }
 
-      for my $pa (&F ('.//pointer-a-stmt', $par1))
+      my $par2 = $par1->cloneNode (1);
+
+      for my $pa (&F ('.//pointer-a-stmt', $par2))
         {
           my ($E2) = &F ('./E-2/named-E', $pa);
           my ($N) = &F ('./N/n/text()', $E2);
@@ -46,19 +55,28 @@ sub processSingleRoutine
           push @get, $pa->cloneNode (1);
 
           $tt =~ s/^GET_HOST_DATA_/GET_DEVICE_DATA_/o;
+
           $N->setData ($tt);
         }
 
+      for my $ldacc (&F ('.//call-stmt/arg-spec/arg[string(arg-N)="LDACC"]/ANY-E', $par2))
+        {
+          $ldacc->replaceNode (&t ('.TRUE.'));
+        }
+
       my ($if_block_parallel) = &Fxtran::parse (fragment => << "EOF");
-IF (FXTRAN_ACDC_LPARALLELMETHOD ('OPENACC', '$name:$count')) THEN
+IF (FXTRAN_ACDC_LPARALLELMETHOD ('OPENACCSINGLEBLOCK', '$name:$count')) THEN
+!
+ELSEIF (FXTRAN_ACDC_LPARALLELMETHOD ('SINGLEBLOCK', '$name:$count')) THEN
 !
 ELSE
 !
 ENDIF
 EOF
 
-      my ($C1, $C0) = &F ('.//C', $if_block_parallel);
+      my ($C2, $C1, $C0) = &F ('.//C', $if_block_parallel);
 
+      $C2->replaceNode ($par2);
       $C1->replaceNode ($par1);
       $C0->replaceNode ($par0);
 
