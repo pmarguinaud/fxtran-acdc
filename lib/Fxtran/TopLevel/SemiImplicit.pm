@@ -1,5 +1,27 @@
 package Fxtran::TopLevel::SemiImplicit;
 
+=head1 NAME
+
+Fxtran::TopLevel::SemiImplicit
+
+=head1 DESCRIPTION
+
+Process high level routines of semi-implicit calculations. 
+
+=head1 SEE ALSO
+
+L<Fxtran::TopLevel::Spectral>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 use Data::Dumper;
 use FileHandle;
 

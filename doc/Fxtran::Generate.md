@@ -487,6 +487,7 @@ See [Fxtran::TopLevel](Fxtran%3A%3ATopLevel.md) for more details.
   --dir                                 : .                    : Dump result in this directory
   --parallelmethod-section       (FLAG) :                      : Embed parallelmethod information in binary
   --style                               : NONE                 : Source code style (default: guess from file contents)
+  --suffix-singleblock                  : _SINGLEBLOCK         : Suffix for single block routines
   --switch                              : NONE                 : Set this variable to true if the parallel mode is enabled
   --tmp                                 : .                    : Temporary directory for processing
   --write-metadata               (FLAG) :                      : Add metadata to generated files                               
