@@ -1,5 +1,73 @@
 package Fxtran::TopLevel::Spectral;
 
+=head1 NAME
+
+Fxtran::TopLevel::Spectral
+
+=head1 DESCRIPTION
+
+The purpose of this module is to transform high level routines (such as spcm.F90), to 
+enable OpenACC.
+
+=head1 EXAMPLE
+
+A sequence such as:
+
+  !$ACDC PARALLEL {
+
+    ZSPSPG   => GET_HOST_DATA_RDWR (YLSPG )
+    ZSPVORG  => GET_HOST_DATA_RDWR (YLVORG)
+    ...
+   
+    CALL SPCSI(...)
+  
+  !$ACDC }
+
+is transformed into:
+
+  IF (FXTRAN_ACDC_LPARALLELMETHOD ('OPENACCSINGLEBLOCK', 'SPCMSI:0')) THEN
+    
+    ZSPSPG=>GET_DEVICE_DATA_RDWR (YLSPG)
+    ZSPVORG=>GET_DEVICE_DATA_RDWR (YLVORG)
+    ...
+
+    CALL SPCSI_SINGLEBLOCK (..., LDACC=.TRUE.)
+    
+  ELSEIF (FXTRAN_ACDC_LPARALLELMETHOD ('SINGLEBLOCK', 'SPCMSI:0')) THEN
+    
+    ZSPSPG=>GET_HOST_DATA_RDWR (YLSPG)
+    ZSPVORG=>GET_HOST_DATA_RDWR (YLVORG)
+    ...
+
+    CALL SPCSI_SINGLEBLOCK (..., LDACC=.FALSE.)
+    
+  ELSE
+
+    ZSPSPG=>GET_HOST_DATA_RDWR (YLSPG)
+    ZSPVORG=>GET_HOST_DATA_RDWR (YLVORG)
+    ...
+
+    CALL SPCSI (...)
+
+  ENDIF
+
+  IF (FXTRAN_ACDC_LSYNCHOST ('SPCMSI:0')) THEN
+    ZSPSPG=>GET_HOST_DATA_RDWR (YLSPG)
+    ZSPVORG=>GET_HOST_DATA_RDWR (YLVORG)
+    ...
+
+  ENDIF
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 use Data::Dumper;
 use FileHandle;
 

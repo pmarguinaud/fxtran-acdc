@@ -1,10 +1,188 @@
 package Fxtran::TopLevel;
 
-#
-# Copyright 2025 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+=head1 NAME
+
+Fxtran::TopLevel
+
+=head1 DESCRIPTION
+
+The purpose of this module is to transform top-level routines such as F<cpg_drv.F90> so that
+generated parallel grid-point routines be called. 
+
+This module does differents things:
+
+=head2 switch
+
+There is a C<--switch> option to the transformation. The following sequence of statements:
+
+  SUBROUTINE CPG_DRV (...)
+
+  !$ACDC toplevel --switch LLPARALLEL
+
+  ...
+
+  LLPARALLEL = .FALSE.
+
+is transformed into:
+
+  LLPARALLEL=FXTRAN_ACDC_LPARALLELMETHOD ('PARALLEL','CPG_DRV')
+
+  ...
+
+so that the user can choose to enable the grid-point parallel routines.
+
+=head2 COPY directive
+
+A block delimited by this directive:
+
+  ...
+
+  !$ACDC COPY, IF=LLPARALLEL {
+  
+  LLPERSISTENT = LLPARALLEL
+  
+  CALL YLCPG_DYN0%INIT (..., PERSISTENT=LLPERSISTENT)
+  
+  CALL YLCPG_PHY0%INIT (..., PERSISTENT=LLPERSISTENT)
+
+  ...
+
+  !$ACDC }
+  
+is transformed into:
+  
+  CALL YLCPG_DYN0%INIT (..., PERSISTENT=LLPERSISTENT)
+
+  IF (LLPARALLEL) THEN
+    CALL ACDC_COPY (YLCPG_DYN0)
+  ENDIF
+
+  CALL YLCPG_PHY0%INIT (..., PERSISTENT=LLPERSISTENT)
+
+  IF (LLPARALLEL) THEN
+    CALL ACDC_COPY (YLCPG_PHY0)
+  ENDIF
+
+  ...
+
+so that scoped data structures be copied on the device.
+
+=head2 PARALLEL directive
+
+A block delimited by the C<PARALLEL> directive:
+
+  IF (LLPARALLEL) THEN
+  
+  !$ACDC PARALLEL {
+  
+    CALL CPG (...)
+  
+  !$ACDC }
+  
+  ELSE
+  
+  ...
+  
+  ENDIF
+
+is tranformed into:
+
+  IF (LLPARALLEL) THEN
+
+    CALL YFXTRAN_ACDC_STACK%INIT (YDCPG_OPTS%KLON, YDCPG_OPTS%KFLEVG, YDCPG_OPTS%KGPBLKS)
+
+    CALL CPG_PARALLEL (...)
+   
+    IF (FXTRAN_ACDC_LSYNCHOST ('CPG_DRV')) THEN
+      CALL HOST (YDA_EXTRA)
+      CALL HOST (YDA_GFLPC)
+      ...
+    ENDIF
+  ELSE
+    ...
+  ENDIF
+
+The result is that the parallel version of F<cpg.F90> is called, and optionally, involved
+Field API backed objects are synchronized on the CPU.
+
+=head2 WIPE directive
+
+A block delimited by this directive:
+
+  !$ACDC WIPE, IF=LLPARALLEL {
+  
+  ...
+
+  CALL YLCPG_PHY0%FINAL
+  CALL YLCPG_DYN0%FINAL
+  
+  !$ACDC }
+
+is transformed into:
+
+  IF (LLPARALLEL) THEN
+    CALL ACDC_WIPE (YLCPG_PHY0)
+  ENDIF
+
+  CALL YLCPG_PHY0%FINAL
+
+  IF (LLPARALLEL) THEN
+    CALL ACDC_WIPE (YLCPG_DYN0)
+  ENDIF
+
+  CALL YLCPG_DYN0%FINAL
+
+So that scoped data structures be removed from the device before being destroyed.
+
+=head1 ROUTINES
+
+This is the list of IAL routines which are instrumented using the toplevel method:
+
+=over 4
+
+=item
+
+F<cpg_drv.F90>
+
+=item
+
+F<cpglag_drv.F90>
+
+=item
+
+F<lapinea_drv.F90>
+
+=item
+
+F<lapineb_drv.F90>
+
+=item
+
+F<scan2m_ctvtot_drv.F90>
+
+=item
+
+F<scan2m.F90>
+
+=item
+
+F<scan2m_ctvtot_drv.F90>
+
+=back
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 SEE ALSO
+
+L<Fxtran::Generate>
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 use Data::Dumper;
 
