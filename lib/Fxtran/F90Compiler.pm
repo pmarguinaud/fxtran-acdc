@@ -105,6 +105,8 @@ Save files from current directory (mostly generated code) into this directory.
 
 =cut
 
+  return if ($args{dryrun});
+
   if (my $dir = $args{'user-directory-in'})
     {
       for my $f (<*.F90>, <*.h>)
@@ -131,8 +133,6 @@ Save files from current directory (mostly generated code) into this directory.
           &touch ($st->mtime, "$dir/$f");
         }
     }
-
-  return if ($args{dryrun});
 
   if (my $dir = $args{'user-directory-out'})
     { 
