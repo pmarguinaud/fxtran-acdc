@@ -148,6 +148,7 @@ my %options= do
   max-statements-per-parallel=s   -- Maximum number of statements per parallel section
   parallel-iterator-list=s@       -- List of iterators for generating parallel sections (add to JLON, JLEV) 
   write-metadata                  -- Add metadata to generated files                               
+  suffix-spectral=s               -- Suffix for semi-spectral routines                                                                            --  _SPECTRAL
 EOF
 
   my @options;
@@ -863,8 +864,8 @@ See L<Fxtran::IO> for more details.
 }
 
 &click (<< "EOF");
-@options{qw (dir pragma tmp merge-interfaces suffix-singlecolumn suffix-singleblock suffix-pointerparallel suffix-manyblocks suffix-bitrepro
-             use-stack-manyblocks ydcpg_opts cycle suffix-semiimplicit)}
+@options{qw (dir pragma tmp merge-interfaces suffix-singlecolumn suffix-singleblock suffix-pointerparallel suffix-manyblocks suffix-bitrepro 
+             suffix-spectral use-stack-manyblocks ydcpg_opts cycle suffix-semiimplicit)}
 EOF
 sub interface
 {
@@ -911,7 +912,7 @@ See C<Fxtran::Interface> for more details.
 
   &Fxtran::Util::loadModule ('Fxtran::Generate::Interface');
 
-  my @method = qw (singlecolumn singleblock pointerparallel manyblocks bitrepro semiimplicit);
+  my @method = qw (singlecolumn singleblock pointerparallel manyblocks bitrepro semiimplicit spectral);
 
   for my $method (@method)
     {
@@ -1206,7 +1207,7 @@ sub toplevelsp
 }
 
 &click (<< "EOF");
-@options{qw (tmp cycle dir write-metadata style inline-contained pragma suffix-singleblock)}
+@options{qw (tmp cycle dir write-metadata style inline-contained pragma suffix-spectral)}
   max-statements-per-parallel=s   -- Maximum number of statements per parallel section
   parallel-iterator-list=s@       -- List of iterators for generating parallel sections (add to JLON, JLEV)
   user-code=s                     -- User provided routine (FORTRAN file name)
@@ -1225,7 +1226,7 @@ See C<Fxtran::SingleBlock::Spectral> for more details.
 
   my ($F90) = @args;
 
-  $opts->{'suffix-spectral'} = $opts->{'suffix-singleblock'};
+  $opts->{'suffix-singleblock'} = $opts->{'suffix-spectral'};
 
   &Fxtran::Util::loadModule ('Fxtran::SingleBlock::Spectral');
 
