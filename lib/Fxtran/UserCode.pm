@@ -29,7 +29,7 @@ use Fxtran::Util;
 
 sub getUserCode
 {
-  my ($F90, $F90out, %opts) = @_;
+  my ($F90, $F90out, $method, %opts) = @_;
 
   my $find = $opts{find};
   

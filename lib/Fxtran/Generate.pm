@@ -196,7 +196,7 @@ sub routineToRoutineHead
   if ($opts->{'user-code'})
     {
       &Fxtran::Util::loadModule ('Fxtran::UserCode');
-      &Fxtran::UserCode::getUserCode ($F90, $F90out, %$opts);
+      &Fxtran::UserCode::getUserCode ($F90, $F90out, $method, %$opts);
       exit (0);
     }
   
