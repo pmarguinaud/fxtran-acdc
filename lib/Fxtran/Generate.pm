@@ -1156,7 +1156,7 @@ sub toplevelsi
 }
 
 &click (<< "EOF");
-@options{qw (tmp cycle dir write-metadata style suffix-singleblock)}
+@options{qw (tmp cycle dir write-metadata style suffix-spectral)}
   switch=s                  -- Set this variable to true if the parallel mode is enabled
   parallelmethod-section    -- Embed parallelmethod information in binary
 EOF
@@ -1171,6 +1171,7 @@ sub toplevelsp
   my ($F90) = @args;
 
   $opts->{style} ||= 'SPECTRAL';
+  $opts->{'suffix-singleblock'} = $opts->{'suffix-spectral'};
 
   if (&dirname ($F90) eq $opts->{dir})
     {
