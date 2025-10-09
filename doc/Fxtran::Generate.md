@@ -311,6 +311,7 @@ See [Fxtran::IO](Fxtran%3A%3AIO.md) for more details.
   --suffix-semiimplicit                 : _SINGLEBLOCK         : Suffix for semi-implicit  routines
   --suffix-singleblock                  : _SINGLEBLOCK         : Suffix for single block routines
   --suffix-singlecolumn                 : _OPENACC             : Suffix for generated routines
+  --suffix-spectral                     : _SPECTRAL            : Suffix for semi-spectral routines
   --tmp                                 : .                    : Temporary directory for processing
   --use-stack-manyblocks         (FLAG) :                      : Use stack allocation for manyblocks routines
   --ydcpg_opts                   (FLAG) :                      : Change KIDIA, KFDIA -> YDCPG_OPTS, YDCPG_BNDS
@@ -487,7 +488,7 @@ See [Fxtran::TopLevel](Fxtran%3A%3ATopLevel.md) for more details.
   --dir                                 : .                    : Dump result in this directory
   --parallelmethod-section       (FLAG) :                      : Embed parallelmethod information in binary
   --style                               : NONE                 : Source code style (default: guess from file contents)
-  --suffix-singleblock                  : _SINGLEBLOCK         : Suffix for single block routines
+  --suffix-spectral                     : _SPECTRAL            : Suffix for semi-spectral routines
   --switch                              : NONE                 : Set this variable to true if the parallel mode is enabled
   --tmp                                 : .                    : Temporary directory for processing
   --write-metadata               (FLAG) :                      : Add metadata to generated files                               
@@ -506,8 +507,9 @@ See [Fxtran::TopLevel](Fxtran%3A%3ATopLevel.md) for more details.
   --parallel-iterator-list       (LIST) : NONE                 : List of iterators for generating parallel sections (add to JLON, JLEV)
   --pragma                              : OpenACC              : Pragma (OpenACC or OpenMP)
   --style                               : NONE                 : Source code style (default: guess from file contents)
-  --suffix-singleblock                  : _SINGLEBLOCK         : Suffix for single block routines
+  --suffix-spectral                     : _SPECTRAL            : Suffix for semi-spectral routines
   --tmp                                 : .                    : Temporary directory for processing
+  --user-code                           : NONE                 : User provided routine (FORTRAN file name)
   --write-metadata               (FLAG) :                      : Add metadata to generated files                               
 
 ```
