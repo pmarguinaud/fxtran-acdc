@@ -903,28 +903,40 @@ See C<Fxtran::Interface> for more details.
 
   'Fxtran::Cycle'->simplify ($d, %$opts);
 
-  my %intfb;
-  
   # Strip empty lines
   
-  $intfb{regular} = $d->textContent ();
-  $intfb{regular} =~ s/^\s*\n$//goms;
+  (my $intfb = $d->textContent ()) =~ s/^\s*\n$//goms;
 
+  my @intfb = ($intfb);
+  
   &Fxtran::Util::loadModule ('Fxtran::Generate::Interface');
 
   my @method = qw (singlecolumn singleblock pointerparallel manyblocks bitrepro semiimplicit spectral);
 
-  for my $method (@method)
+  for my $line (@text)
     {
-      &Fxtran::Generate::Interface::interface ($d, \@text, $opts, \$intfb{$method}, $method);
+      my ($method, $args) = ($line =~ m/^!\$ACDC\s+(\S+)(.*)/o);
+
+      next unless (grep { $method eq $_ } @method);
+
+      my @args;
+      if ($args)
+        {
+          $args =~ s/(?:^\s*|\s*$)//o;
+          @args = split (m/\s+/o, $args);
+        }
+
+      my $intfb = &Fxtran::Generate::Interface::interface ($d, \@text, $opts, $method);
+      push @intfb, $intfb if ($intfb);
     }
+
 
   my $sub = &basename ($F90, qw (.F90));
   
   &Fxtran::Util::updateFile 
   (
     "$opts->{dir}/$sub$ext", 
-    join ("\n", 'INTERFACE', map ({ $intfb{$_} } ('regular', @method)), 'END INTERFACE', '')
+    join ("\n", 'INTERFACE', @intfb, 'END INTERFACE', '')
   );
 
 }

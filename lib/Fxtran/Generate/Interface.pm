@@ -1,10 +1,26 @@
 package Fxtran::Generate::Interface;
 
-#
-# Copyright 2025 Meteo-France
-# All rights reserved
-# philippe.marguinaud@meteo.fr
-#
+=head1 NAME
+
+Fxtran::Generate::Interface
+
+=head1 DESCRIPTION
+
+Generate interface block for different transformation methods.
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 SEE ALSO
+
+L<Fxtran::Generate>
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 use FileHandle;
 use Data::Dumper;
@@ -27,13 +43,11 @@ use Fxtran::Interface;
 
 sub interface
 {
-  my ($doc, $text, $opts, $intfb, $method) = @_;
-
-  $$intfb = '';
+  my ($doc, $text, $opts, $method) = @_;
 
   my ($directive) = map { m/^!\$ACDC\s+($method.*)/ ? ($1) : ()  } @$text;
 
-  return unless ($directive && $opts->{'merge-interfaces'});
+  return '' unless ($directive && $opts->{'merge-interfaces'});
 
   my @directive = split (m/\s+/o, $directive);
 
@@ -63,8 +77,9 @@ sub interface
 
   $_->unbindNode () for (&F ('.//a-stmt', $doc));
 
-  $$intfb = $doc->textContent ();
-  $$intfb =~ s/^\s*\n$//goms;
+  (my $intfb = $doc->textContent ()) =~ s/^\s*\n$//goms;
+
+  return $intfb;
 }
 
 1;
