@@ -14,6 +14,7 @@ use File::Path;
 use File::Copy;
 use File::Temp;
 use File::Basename;
+use Cwd;
 
 use strict;
 
@@ -28,44 +29,42 @@ sub interface
 {
   my ($doc, $text, $opts, $intfb, $method) = @_;
 
-  $intfb->{$method} = '';
+  $$intfb = '';
 
   my ($directive) = map { m/^!\$ACDC\s+($method.*)/ ? ($1) : ()  } @$text;
 
-  if ($directive && $opts->{'merge-interfaces'})
-    {
-      use File::Temp;
+  return unless ($directive && $opts->{'merge-interfaces'});
 
-      my @directive = split (m/\s+/o, $directive);
+  my @directive = split (m/\s+/o, $directive);
 
-      my $tmp = 'File::Temp'->new (SUFFIX => '.F90', TEMPLATE => 'fxtranXXXXX', CLEANUP => 0);
+  my $tmpdir = 'File::Temp'->newdir ();
 
-      $tmp->print ("!\$ACDC @directive\n", $doc->textContent);
+  my $F90 = "$tmpdir/file.F90";
+  my $fh = 'FileHandle'->new (">$F90");
 
-      $tmp->close ();
+  $fh->print ("!\$ACDC @directive\n", $doc->textContent);
 
-      my @opts = 'click'->hashToCommandLine (method => $method, package => 'Fxtran::Generate', opts => $opts);
+  $fh->close ();
 
-      my @cmd = ('fxtran-f90', @opts, '--dryrun', '--dir', '.', '--tmp', '.', '--', 'f90', '-c', $tmp);
+  my @opts = 'click'->hashToCommandLine (method => $method, package => 'Fxtran::Generate', opts => $opts);
 
-      &Fxtran::Util::runCommand (cmd => \@cmd);
+  my @cmd = ('fxtran-f90', @opts, '--dryrun', '--dir', $tmpdir, '--tmp', '.', '--', 'f90', '-c', $F90);
 
-      my $suffix = lc ($opts->{"suffix-$method"});
-      (my $tmp_directive = $tmp) =~ s/\.F90$/$suffix.F90/;
+  &Fxtran::Util::runCommand (cmd => \@cmd);
 
-      my $doc = &Fxtran::parse (location => $tmp_directive, fopts => ['-construct-tag', '-no-include', '-line-length' => 500], dir => $opts->{tmp});
+  my $suffix = lc ($opts->{"suffix-$method"});
+  (my $F90_directive = $F90) =~ s/\.F90$/$suffix.F90/;
 
-      &Fxtran::Canonic::makeCanonic ($doc, %$opts);
+  $doc = &Fxtran::parse (location => $F90_directive, fopts => ['-construct-tag', '-no-include', '-line-length' => 500], dir => $opts->{tmp});
 
-      &Fxtran::Interface::intfbBody ($doc);
+  &Fxtran::Canonic::makeCanonic ($doc, %$opts);
 
-      $_->unbindNode () for (&F ('.//a-stmt', $doc));
+  &Fxtran::Interface::intfbBody ($doc);
 
-      $intfb->{$method} = $doc->textContent ();
-      $intfb->{$method} =~ s/^\s*\n$//goms;
+  $_->unbindNode () for (&F ('.//a-stmt', $doc));
 
-      unlink ($_) for ($tmp_directive, "$tmp_directive.xml");
-    }
+  $$intfb = $doc->textContent ();
+  $$intfb =~ s/^\s*\n$//goms;
 }
 
 1;

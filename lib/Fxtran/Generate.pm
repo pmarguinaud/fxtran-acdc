@@ -916,7 +916,7 @@ See C<Fxtran::Interface> for more details.
 
   for my $method (@method)
     {
-      &Fxtran::Generate::Interface::interface ($d, \@text, $opts, \%intfb, $method);
+      &Fxtran::Generate::Interface::interface ($d, \@text, $opts, \$intfb{$method}, $method);
     }
 
   my $sub = &basename ($F90, qw (.F90));
