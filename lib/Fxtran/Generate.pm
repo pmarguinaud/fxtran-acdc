@@ -911,25 +911,28 @@ See C<Fxtran::Interface> for more details.
   
   &Fxtran::Util::loadModule ('Fxtran::Generate::Interface');
 
-  my @method = qw (singlecolumn singleblock pointerparallel manyblocks bitrepro semiimplicit spectral);
-
-  for my $line (@text)
+  if ($opts->{'merge-interfaces'})
     {
-      my ($method, $args) = ($line =~ m/^!\$ACDC\s+(\S+)(.*)/o);
-
-      next unless (grep { $method eq $_ } @method);
-
-      my @args;
-      if ($args)
+      my @method = qw (singlecolumn singleblock pointerparallel manyblocks bitrepro semiimplicit spectral);
+     
+      for my $line (@text)
         {
-          $args =~ s/(?:^\s*|\s*$)//o;
-          @args = split (m/\s+/o, $args);
+          my ($method, $args) = ($line =~ m/^!\$ACDC\s+(\S+)(.*)/o);
+     
+          next unless (grep { $method eq $_ } @method);
+     
+          my @args;
+
+          if ($args)
+            {
+              $args =~ s/(?:^\s*|\s*$)//o;
+              @args = split (m/\s+/o, $args);
+            }
+     
+          my $intfb = &Fxtran::Generate::Interface::interface ($d, $opts, $method, @args);
+          push @intfb, $intfb if ($intfb);
         }
-
-      my $intfb = &Fxtran::Generate::Interface::interface ($d, \@text, $opts, $method);
-      push @intfb, $intfb if ($intfb);
     }
-
 
   my $sub = &basename ($F90, qw (.F90));
   

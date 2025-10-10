@@ -43,20 +43,14 @@ use Fxtran::Interface;
 
 sub interface
 {
-  my ($doc, $text, $opts, $method) = @_;
-
-  my ($directive) = map { m/^!\$ACDC\s+($method.*)/ ? ($1) : ()  } @$text;
-
-  return '' unless ($directive && $opts->{'merge-interfaces'});
-
-  my @directive = split (m/\s+/o, $directive);
+  my ($doc, $opts, $method, @args) = @_;
 
   my $tmpdir = 'File::Temp'->newdir ();
 
   my $F90 = "$tmpdir/file.F90";
   my $fh = 'FileHandle'->new (">$F90");
 
-  $fh->print ("!\$ACDC @directive\n", $doc->textContent);
+  $fh->print ("!\$ACDC $method @args\n", $doc->textContent);
 
   $fh->close ();
 
@@ -66,8 +60,7 @@ sub interface
 
   &Fxtran::Util::runCommand (cmd => \@cmd);
 
-  my $suffix = lc ($opts->{"suffix-$method"});
-  (my $F90_directive = $F90) =~ s/\.F90$/$suffix.F90/;
+  my ($F90_directive) = grep { $_ ne $F90 } <$tmpdir/*.F90>;
 
   $doc = &Fxtran::parse (location => $F90_directive, fopts => ['-construct-tag', '-no-include', '-line-length' => 500], dir => $opts->{tmp});
 
