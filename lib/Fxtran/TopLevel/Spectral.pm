@@ -133,19 +133,42 @@ sub processSingleRoutineMethod
               my ($N) = &F ('./N', $expr, 1);
               my @ctl = &F ('./R-LT/component-R/ct', $expr, 1);
               my $ptr = join ('_', 'Z', $N, @ctl);
-              print &Dumper ([$expr->textContent, \@ctl]);
+
               use Fxtran::Pointer::Object;
 
               my ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $N, $dp);
 
               next unless (my ($tn) = &F ('./_T-spec_/derived-T-spec/T-N', $decl,1));
 
-              $decl = &Fxtran::Pointer::Object::getObjectDecl ($tn, $types, allowConstant => 1);
+              my $key = join ('%', $tn, @ctl);
+              $decl = &Fxtran::Pointer::Object::getObjectDecl ($key, $types, allowConstant => 1);
 
-              print &Dumper ([$N, $tn, $decl && $decl->textContent]);
+              next unless ($decl);
+
+              if ($decl)
+                {
+                  my ($as) = &F ('.//array-spec', $decl);
+                  my ($ts) = &F ('./_T-spec_/*', $decl);
+                  my @ss = &F ('./shape-spec-LT/shape-spec', $as);
+                  my $nd = scalar (@ss);
+
+                  $decl = $ts->textContent . ", POINTER :: " . $ptr . "(" . join (',', (':') x $nd) . ")";
+
+                  my $fld = $expr->cloneNode (1);
+                  my @ctl = &F ('./R-LT/component-R/ct/text()', $fld);
+                  $ctl[-1]->setData ('F_' . $ctl[-1]->textContent);
+
+                  print &Dumper ([$expr->textContent, $N, $tn, $decl, $fld->textContent]);
+                }
+
+
             }
 
         }
+
+print $par1->textContent;
+
+die;
 
       my $par2 = $par1->cloneNode (1);
 
