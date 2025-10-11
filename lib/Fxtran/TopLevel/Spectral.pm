@@ -95,11 +95,12 @@ sub renameProc
 sub processSingleRoutineMethod
 {
   my $class = shift;
-  my ($pu, %opts) = @_;
+  my ($pu, $types, %opts) = @_;
 
   &Fxtran::Decl::use ($pu, &s ('USE FXTRAN_ACDC_PARALLELMETHOD_MOD'));
 
   my ($up) = &F ('./specification-part/use-part', $pu);
+  my ($dp) = &F ('./specification-part/declaration-part', $pu);
 
   $up->appendChild ($_) for (&t ("\n"), &s ('USE FIELD_ACCESS_MODULE,ONLY:GET_DEVICE_DATA_RDWR'));
 
@@ -123,8 +124,27 @@ sub processSingleRoutineMethod
           next unless ($class->renameProc ($pu, $proc, %opts));
 
           my ($argspec) = &F ('./arg-spec', $call);
+
           $argspec->appendChild ($_) 
             for (&t (", "), &n ('<arg><arg-N n="LDACC"><k>LDACC</k></arg-N>=' . &e ('.FALSE.') . '</arg>'));
+
+          for my $expr (&F ('./arg/named-E', $argspec))
+            {
+              my ($N) = &F ('./N', $expr, 1);
+              my @ctl = &F ('./R-LT/component-R/ct', $expr, 1);
+              my $ptr = join ('_', 'Z', $N, @ctl);
+              print &Dumper ([$expr->textContent, \@ctl]);
+              use Fxtran::Pointer::Object;
+
+              my ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $N, $dp);
+
+              next unless (my ($tn) = &F ('./_T-spec_/derived-T-spec/T-N', $decl,1));
+
+              $decl = &Fxtran::Pointer::Object::getObjectDecl ($tn, $types, allowConstant => 1);
+
+              print &Dumper ([$N, $tn, $decl && $decl->textContent]);
+            }
+
         }
 
       my $par2 = $par1->cloneNode (1);

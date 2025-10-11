@@ -1171,7 +1171,7 @@ sub toplevelsi
 }
 
 &click (<< "EOF");
-@options{qw (tmp cycle dir write-metadata style suffix-spectral)}
+@options{qw (tmp cycle dir write-metadata style suffix-spectral types-constant-dir types-fieldapi-dir)}
   switch=s                  -- Set this variable to true if the parallel mode is enabled
   parallelmethod-section    -- Embed parallelmethod information in binary
 EOF
@@ -1188,6 +1188,11 @@ sub toplevelsp
   $opts->{style} ||= 'SPECTRAL';
   $opts->{'suffix-singleblock'} = $opts->{'suffix-spectral'};
 
+  &Fxtran::Util::loadModule ('Fxtran::IO::Link');
+
+  my $linkTypes = &Fxtran::IO::Link::link ('types-fieldapi-dir' => $opts->{'types-fieldapi-dir'});
+  my $types = $linkTypes->{decls};
+  
   if (&dirname ($F90) eq $opts->{dir})
     {
       die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
@@ -1205,7 +1210,7 @@ sub toplevelsp
       (my $kind = $stmt->nodeName) =~ s/-stmt$//o;
       if ($kind eq 'subroutine')
         {
-          &Fxtran::TopLevel::Spectral::processSingleRoutine ($pu, %$opts);
+          &Fxtran::TopLevel::Spectral::processSingleRoutine ($pu, $types, %$opts);
         }
       else
         {
