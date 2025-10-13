@@ -58,8 +58,8 @@ sub generateCCode
   
           push @method, ('OPENMP', 'UPDATEVIEW');
   
-          unshift (@method, 'HOSTMANYBLOCKS')    if ($METHOD =~ m/^OPENMPSINGLECOLUMN/o);
-          unshift (@method, 'OPENACCMANYBLOCKS') if ($METHOD =~ m/^OPENACC/o);
+          unshift (@method, 'HOSTMANYBLOCKS',    'SINGLEBLOCK'       ) if ($METHOD =~ m/^OPENMPSINGLECOLUMN/o);
+          unshift (@method, 'OPENACCMANYBLOCKS', 'OPENACCSINGLEBLOCK') if ($METHOD =~ m/^OPENACC/o);
 
           for my $method (@method)
             {
