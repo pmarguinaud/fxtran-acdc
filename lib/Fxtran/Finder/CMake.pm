@@ -11,6 +11,7 @@ use File::Basename;
 use File::Spec;
 use FileHandle;
 use Data::Dumper;
+use FindBin qw ($Bin);
 
 use strict;
 
@@ -68,16 +69,26 @@ sub resolveInCMakeHomeDirectory
 
   unless ($self->{cmake_home_directory_index})
     {
-      my %index;
       my $dir = $self->{cmake_home_directory};
 
-      &find ({wanted => sub 
+      my %index;
+
+      &find ({
+      wanted => sub 
       { 
         my $f = $File::Find::name; 
         return unless (-f $f); 
         $f = 'File::Spec'->rel2abs ($f, $dir); 
         push @{ $index{ &basename ($f) } }, $f;
-      }, no_chdir => 1}, $dir);
+      }, 
+      preprocess => sub 
+      {
+        my $dir = $File::Find::dir;
+        return -f "$File::Find::dir/.fxtran_acdc_cmake_ignore" ? () : @_;
+      },
+      no_chdir => 1,
+      }, $dir);
+
       $self->{cmake_home_directory_index} = \%index;
     }
 
