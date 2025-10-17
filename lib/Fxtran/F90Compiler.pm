@@ -162,6 +162,12 @@ Save files from current directory (mostly generated code) into this directory.
         if (scalar (@C) or scalar (@CXX));
       &concatenateSource (%args);
     }
+  elsif ($args{'object-merge-method'} eq 'concatenate-include')
+    {
+      die ("Concatenating source code works only with FORTRAN source code")
+        if (scalar (@C) or scalar (@CXX));
+      &concatenateIncludeSource (%args);
+    }
   elsif ($args{lib})
     {
       &make (%args);
@@ -398,7 +404,28 @@ sub concatenateSource
   $fho->close ();
 
   &Fxtran::Util::runCommand (cmd => [$f90compiler, @f90flags, ($obj ? (-o => $obj) : ()), $F90_c], %args);
+}
 
+sub concatenateIncludeSource
+{
+  my %args = @_;
+
+  my @f90flags = @{ $args{f90flags} };
+  my ($obj, $f90compiler) = @args{qw (obj f90compiler)};
+  my $opts = $args{opts};
+  my @F90 = @{ $args{F90} };
+
+  my $F90_c = 'C_' . &basename ($F90[0]);
+  my $fho = 'FileHandle'->new ('>' . &basename ($F90_c));
+
+  for my $F90 (@F90) # Should sort the files, no dependency first; it works for now
+    {
+      $fho->print ("#include \"$F90\"\n");
+    }
+
+  $fho->close ();
+
+  &Fxtran::Util::runCommand (cmd => [$f90compiler, @f90flags, ($obj ? (-o => $obj) : ()), $F90_c], %args);
 }
 
 1;
