@@ -352,6 +352,7 @@ See L<Fxtran::SemiImplicit> for more details.
   no-check-pointers-dims=s@    -- List of pointer variables that should not be checked for their dimensions
   process-pointers             -- Process pointers (change them to CRAY pointers)
   suffix-singlecolumn-called=s -- Suffix for singlecolumn routines called by routine being processed
+  use-bit-repro-parens         -- Make sure additions are executed in the right order
 EOF
 sub singlecolumn
 {

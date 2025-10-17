@@ -143,11 +143,6 @@ sub processSingleRoutine
 {
   my ($pu, %opts) = @_;
 
-my $dbg = $pu->textContent =~ m/computes the non-conservative variables/goms;
-
-print &Dumper ([$pu->toString]) if ($dbg);
-
-
   &Fxtran::Intrinsic::makeBitReproducible ($pu, %opts);
 
   my ($ep) = &F ('./execution-part', $pu);
