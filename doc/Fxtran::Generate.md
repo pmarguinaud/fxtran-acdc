@@ -80,6 +80,7 @@ See [Fxtran::SemiImplicit](Fxtran%3A%3ASemiImplicit.md) for more details.
   --suffix-singlecolumn-called          : NONE                 : Suffix for singlecolumn routines called by routine being processed
   --tmp                                 : .                    : Temporary directory for processing
   --use-bit-repro-intrinsics     (FLAG) :                      : Use bit reproducible intrinsics
+  --use-bit-repro-parens         (FLAG) :                      : Make sure additions are executed in the right order
   --value-attribute              (FLAG) :                      : Add VALUE attribute to scalar intrinsic arguments
   --write-metadata               (FLAG) :                      : Add metadata to generated files                               
 
