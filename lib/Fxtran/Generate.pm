@@ -866,7 +866,7 @@ See L<Fxtran::IO> for more details.
 
 &click (<< "EOF");
 @options{qw (dir pragma tmp merge-interfaces suffix-singlecolumn suffix-singleblock suffix-pointerparallel suffix-manyblocks suffix-bitrepro 
-             suffix-spectral use-stack-manyblocks ydcpg_opts cycle suffix-semiimplicit)}
+             suffix-spectral use-stack-manyblocks ydcpg_opts cycle suffix-semiimplicit array-slice-to-address)}
 EOF
 sub interface
 {
