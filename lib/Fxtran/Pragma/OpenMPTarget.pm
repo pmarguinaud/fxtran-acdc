@@ -31,7 +31,7 @@ sub insertDirective
         {
           $name = 'MAP';
 #         $prefix = 'PRESENT: ';
-          $prefix = 'COPY: ';
+          $prefix = 'TO: ';
         }
 
       my $f = 1;
