@@ -105,7 +105,7 @@ sub insertData
 
   &insertDirective ($p, 'TARGET DATA', %c);
   $p->parentNode->insertAfter (&t ("\n"), $p);
-  $p->parentNode->insertAfter (&n ("<C>!\$OMP END DATA</C>"), $p);
+  $p->parentNode->insertAfter (&n ("<C>!\$OMP END TARGET DATA</C>"), $p);
   $p->parentNode->insertAfter (&t ("\n"), $p);
 }
 
@@ -113,7 +113,7 @@ sub insertLoopVector
 {
   shift;
   my ($p, %c) = @_;
-  &insertDirective ($p, 'PARALLEL DO', %c);
+  &insertDirective ($p, 'PARALLEL DO SIMD', %c);
 }
 
 sub insertRoutineVector
