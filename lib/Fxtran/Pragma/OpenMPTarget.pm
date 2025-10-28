@@ -30,7 +30,8 @@ sub insertDirective
       if ($c eq 'PRESENT')
         {
           $name = 'MAP';
-          $prefix = 'PRESENT: ';
+#         $prefix = 'PRESENT: ';
+          $prefix = 'COPY: ';
         }
 
       my $f = 1;
@@ -66,11 +67,11 @@ sub insertDirective
     {
       if ($i < $#d)
         {
-          $d[$i] = $d[$i] . '&amp;'
+          $d[$i] = $d[$i] . ' &amp;'
         }
       if ($i > 0)
         {
-          $d[$i] = '&amp;' . $d[$i];
+          $d[$i] = ' &amp; ' . $d[$i];
         }
       $d[$i] = "!\$OMP$d[$i]";
     }
