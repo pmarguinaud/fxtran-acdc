@@ -6,11 +6,12 @@ package Fxtran::Pragma::OpenMPTarget;
 # philippe.marguinaud@meteo.fr
 #
 
-use strict;
-
 use base qw (Fxtran::Pragma);
 
+use strict;
+
 use Fxtran;
+use List::MoreUtils qw (uniq);
 
 sub insertDirective
 {
@@ -23,6 +24,15 @@ sub insertDirective
   for my $c (sort keys (%c))
     {
       next unless (my @l = sort &uniq (@{ $c{$c} }));
+
+      my ($name, $prefix) = ($c, '');
+
+      if ($c eq 'PRESENT')
+        {
+          $name = 'MAP';
+          $prefix = 'PRESENT: ';
+        }
+
       my $f = 1;
 
       while (@l)
@@ -38,12 +48,12 @@ sub insertDirective
           push @d, join (', ', @x); $d[-1] .= ', ' if (scalar (@l));
           if ($f)
             {
-              $d[-1] = "$c (" . $d[-1];
+              $d[-1] = "$name ($prefix" . $d[-1];
               $f = 0;
             }
           else
             {
-              $d[-1] = (' ' x (2 + length ($c))) . $d[-1];
+              $d[-1] = (' ' x (2 + length ($name))) . $d[-1];
             }
           unless (@l)
             {
@@ -85,6 +95,17 @@ sub insertParallelLoopGang
   delete $c{PRESENT};
   $c{THREAD_LIMIT} = delete $c{VECTOR_LENGTH};
   &insertDirective ($p, 'TARGET TEAMS DISTRIBUTE', %c);
+}
+
+sub insertData
+{
+  shift;
+  my ($p, %c) = @_;
+
+  &insertDirective ($p, 'TARGET DATA', %c);
+  $p->parentNode->insertAfter (&t ("\n"), $p);
+  $p->parentNode->insertAfter (&n ("<C>!\$OMP END DATA</C>"), $p);
+  $p->parentNode->insertAfter (&t ("\n"), $p);
 }
 
 sub insertLoopVector

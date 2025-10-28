@@ -9,6 +9,7 @@ package Fxtran::Pragma::OpenACC;
 use base qw (Fxtran::Pragma);
 
 use strict;
+
 use Fxtran;
 use List::MoreUtils qw (uniq);
 
