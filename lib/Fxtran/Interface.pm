@@ -207,6 +207,7 @@ sub intfbBody
   for (&F ('.//C', $doc))
     {
       next if ($_->textContent =~ m/^!\$acc\s+routine/io);
+      next if ($_->textContent =~ m/^!\$omp\s+declare\s+target/io);
       $_->unbindNode ();
     }
   

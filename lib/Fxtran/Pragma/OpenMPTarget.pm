@@ -10,6 +10,8 @@ use strict;
 
 use base qw (Fxtran::Pragma);
 
+use Fxtran;
+
 sub insertDirective
 {
   my ($p, $d, %c)  = @_;
@@ -139,13 +141,13 @@ sub updateDevice
 sub enterDataAttach
 {
   shift;
-  return @_ ? ' !$OMP TARGET ENTER DATA MAP (TO:' .  join (', ', @_) . ')' : '';
+  return @_ ? '!$OMP TARGET ENTER DATA MAP (TO: ' .  join (', ', @_) . ')' : '';
 }
 
 sub exitDataDetach
 {
   shift;
-  return '';
+  return @_ ? '!$OMP TARGET EXIT DATA MAP (RELEASE: ' .  join (', ', @_) . ')' : '';
 }
 
 
