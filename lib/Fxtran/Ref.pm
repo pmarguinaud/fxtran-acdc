@@ -6,17 +6,19 @@ package Fxtran::Ref;
 # philippe.marguinaud@meteo.fr
 #
 
+use Data::Dumper;
 
 use strict;
+
 use Fxtran;
 
 sub parensToArrayRef
 {
   my $r = shift;
-
   if ($r->nodeName eq 'parens-R')
     {   
       my ($elt) = &F ('./element-LT', $r);
+
       $r->setNodeName ('array-R');
       $elt->setNodeName ('section-subscript-LT');
       for my $i (&F ('./element', $elt))

@@ -40,6 +40,8 @@ sub simplify
     '//named-E[string(.)="BUCONF%LBUDGET_SV"]'                     => &e ('.FALSE.'),
     '//named-E[string(.)="LLSIMPLE_DGEMM"]'                        => &e ('.TRUE.'),
     '//named-E[string(.)="LLVERINT_ON_CPU"]'                       => &e ('.FALSE.'),
+    '//named-E[string(.)="TURBN%LTURB_FLX"]'                       => &e ('.FALSE.'),
+    '//named-E[string(.)="TPFILE%LOPENED"]'                        => &e ('.FALSE.'),
   );
 
   for my $n (&F ('.//n/text()[string(.)="YDGEO"', $d))

@@ -127,6 +127,12 @@ sub makeCanonicReferences
           goto DONE;
         }
  
+      if ($n eq 'TFIELDMETADATA')
+        {
+          $p->setNodeName ('function-R');
+          goto DONE;
+        }
+ 
       &Fxtran::Ref::parensToArrayRef ($p);
 
 DONE:
