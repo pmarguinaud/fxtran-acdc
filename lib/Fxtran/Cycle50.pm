@@ -42,6 +42,9 @@ sub simplify
     '//named-E[string(.)="LLVERINT_ON_CPU"]'                       => &e ('.FALSE.'),
     '//named-E[string(.)="TURBN%LTURB_FLX"]'                       => &e ('.FALSE.'),
     '//named-E[string(.)="TPFILE%LOPENED"]'                        => &e ('.FALSE.'),
+    '//named-E[string(.)="ODIAG_IN_RUN"]'                          => &e ('.FALSE.'),
+    '//named-E[string(.)="TURBN%CTURBDIM"]'                        => &e ('"0DIM"'),
+    '//named-E[string(.)="TLES%LLES_CALL"]'                        => &e ('.FALSE.'),
   );
 
   for my $n (&F ('.//n/text()[string(.)="YDGEO"', $d))
@@ -62,6 +65,11 @@ sub simplify
       
       &Fxtran::Construct::apply ($d, %set);
 
+    }
+
+  for my $call (&F ('.//call-stmt[string(procedure-designator)="GET_HALO_PHY"]', $d))
+    {
+      $call->unbindNode ();
     }
 
 }
