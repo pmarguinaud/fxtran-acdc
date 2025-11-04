@@ -43,7 +43,7 @@ sub simplify
     '//named-E[string(.)="TURBN%LTURB_FLX"]'                       => &e ('.FALSE.'),
     '//named-E[string(.)="TPFILE%LOPENED"]'                        => &e ('.FALSE.'),
     '//named-E[string(.)="ODIAG_IN_RUN"]'                          => &e ('.FALSE.'),
-    '//named-E[string(.)="TURBN%CTURBDIM"]'                        => &e ('"0DIM"'),
+    '//named-E[string(.)="TURBN%CTURBDIM"]'                        => &e ('"1DIM"'),
     '//named-E[string(.)="TLES%LLES_CALL"]'                        => &e ('.FALSE.'),
   );
 
