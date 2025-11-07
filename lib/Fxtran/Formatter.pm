@@ -65,6 +65,8 @@ use fxtran;
 use fxtran::parser;
 use fxtran::xpath;
 
+use Fxtran;
+
 use strict;
 
 sub getIndent
@@ -289,18 +291,19 @@ sub formatStatements
 
   my $d = &getDocument ($f, %opts);
 
-
   for my $pu (&F ('.//program-unit', $d))
     {
       &simplifyAssociateBlocks ($pu) if ($opts{'simplify-associate-blocks'});
       &alignUseStatements ($pu) if ($opts{'align-use-statements'});
       &alignArgumentDeclarations ($pu) if ($opts{'align-argument-declarations'});
+      &removeUnusedLocalVariables ($pu) if ($opts{'remove-unused-local-variables'});
     }
 
   $class->repackStatements ($d, %opts);
 
-# 'FileHandle'->new (">$f")->print ($d->textContent);
-  (my $g = $f) =~ s/\.F90$/.new.F90/o;
+  my $g = $f; 
+  $g =~ s/\.F90$/.new.F90/o unless ($opts{overwrite});
+
   'FileHandle'->new (">$g")->print ($d->textContent);
 }
 
@@ -488,6 +491,44 @@ sub repackCallLikeStatement
   $pp->($suffix);
 
   return $class->reparse ($str);
+}
+
+sub removeEnDecl
+{
+  my $en_decl = shift;
+
+  my $lt = $en_decl->parentNode;
+
+  my @n = &F ('following-sibling::node()', $en_decl);
+  @n = reverse (&F ('preceding-sibling::node()', $en_decl)) unless (@n);
+
+  $en_decl->unbindNode ();
+
+  for (@n)
+    {
+      last if ($_->nodeName eq 'EN-decl');
+      $_->unbindNode ();
+    }
+  
+  unless ($lt->childNodes ())
+    {
+      my $stmt = &Fxtran::stmt ($lt);
+      $stmt->unbindNode ();
+    }
+}
+
+sub removeUnusedLocalVariables
+{
+  my $pu = shift;
+
+  my %expr = map { ($_, 1) } &F ('.//named-E/N', $pu, 1);
+
+  for my $en_decl (&F ('./T-decl-stmt/EN-decl-LT/EN-decl', $pu))
+    {
+      my ($N) = &F ('./EN-N', $en_decl, 1);
+      next if ($expr{$N});
+      &removeEnDecl ($en_decl);
+    }
 }
 
 1;

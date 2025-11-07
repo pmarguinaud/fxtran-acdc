@@ -54,6 +54,8 @@ use warnings;
 use Data::Dumper;
 use Getopt::Long;
 use FileHandle;
+use File::Basename;
+
 use FindBin qw ($Bin);
 
 use lib "$Bin/../lib";
@@ -70,7 +72,8 @@ use strict;
 use Fxtran::Formatter;
 
 my %opts = qw (simplify-associate-blocks 1);
-my @opts_f = qw (simplify-associate-blocks align-use-statements align-argument-declarations);
+my @opts_f = qw (simplify-associate-blocks align-use-statements align-argument-declarations 
+                 remove-unused-local-variables overwrite help);
 my @opts_s = qw ();
 
 &GetOptions
@@ -78,6 +81,23 @@ my @opts_s = qw ();
   (map { ("$_!", \$opts{$_}) } @opts_f),
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
+
+if ($opts{help})
+  {
+    print &basename ($0), ":\n";
+
+    for (@opts_f)
+      {
+        print "  --$_\n";
+      }
+     
+    for (@opts_s)
+      {
+        print "  --$_=s\n";
+      }
+     
+    exit (0);
+  }
 
 for my $f (@ARGV)
   {

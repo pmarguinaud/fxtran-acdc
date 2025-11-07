@@ -16,7 +16,7 @@ use File::Basename;
 use FileHandle;
 
 use FindBin qw ($Bin);
-use lib "$Bin/fxtran-acdc/lib";
+use lib "$Bin/../lib";
 use local::lib;
 
 use fxtran;
