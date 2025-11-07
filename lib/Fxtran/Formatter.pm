@@ -293,10 +293,10 @@ sub formatStatements
 
   for my $pu (&F ('.//program-unit', $d))
     {
-      &simplifyAssociateBlocks ($pu) if ($opts{'simplify-associate-blocks'});
-      &alignUseStatements ($pu) if ($opts{'align-use-statements'});
-      &alignArgumentDeclarations ($pu) if ($opts{'align-argument-declarations'});
-      &removeUnusedLocalVariables ($pu) if ($opts{'remove-unused-local-variables'});
+      &simplifyAssociateBlocks ($pu, %opts) if ($opts{'simplify-associate-blocks'});
+      &alignUseStatements ($pu, %opts) if ($opts{'align-use-statements'});
+      &alignArgumentDeclarations ($pu, %opts) if ($opts{'align-argument-declarations'});
+      &removeUnusedLocalVariables ($pu, %opts) if ($opts{'remove-unused-local-variables'});
     }
 
   $class->repackStatements ($d, %opts);
@@ -517,9 +517,36 @@ sub removeEnDecl
     }
 }
 
+sub removeArg
+{
+  my $arg = shift;
+
+  my @n = &F ('following-sibling::node()', $arg);
+  @n = reverse (&F ('preceding-sibling::node()', $arg)) unless (@n);
+
+  $arg->unbindNode ();
+
+  for (@n)
+    {
+      last if ($_->nodeName eq 'arg-N');
+      $_->unbindNode ();
+    }
+}
+
 sub removeUnusedLocalVariables
 {
   my $pu = shift;
+  my %opts = @_;
+
+  my %args;
+
+  my $stmt = $pu->firstChild;
+ 
+  if ($stmt->nodeName eq 'subroutine-stmt')
+    {
+      my @args = &F ('./dummy-arg-LT/arg-N', $stmt);
+      %args = map { ($_->textContent, $_) } @args;
+    }
 
   my %expr = map { ($_, 1) } &F ('.//named-E/N', $pu, 1);
 
@@ -527,6 +554,11 @@ sub removeUnusedLocalVariables
     {
       my ($N) = &F ('./EN-N', $en_decl, 1);
       next if ($expr{$N});
+      if ($args{$N})
+        {
+          next unless ($args{'remove-unused-arguments'});
+          &removeArg ($args{$N});
+        }
       &removeEnDecl ($en_decl);
     }
 }

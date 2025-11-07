@@ -73,7 +73,7 @@ use Fxtran::Formatter;
 
 my %opts = qw (simplify-associate-blocks 1);
 my @opts_f = qw (simplify-associate-blocks align-use-statements align-argument-declarations 
-                 remove-unused-local-variables overwrite help);
+                 remove-unused-local-variables remove-unused-arguments overwrite help);
 my @opts_s = qw ();
 
 &GetOptions
