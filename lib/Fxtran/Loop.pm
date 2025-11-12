@@ -162,7 +162,9 @@ sub getVarToDim
         }
       else
         {
-          push @en_decl, &F ('.//EN-decl[./array-spec/shape-spec-LT/shape-spec[string(upper-bound)="?"]]', $klon, $dp);
+          push @en_decl, 
+            &F ('.//EN-decl[./array-spec/shape-spec-LT/shape-spec[string(upper-bound)="?"]]', $klon, $dp),
+            &F ('.//EN-decl[./array-spec/shape-spec-LT/shape-spec[starts-with(string(upper-bound),"?")]]', "MERGE ($klon,", $dp);
         }
     }
 
