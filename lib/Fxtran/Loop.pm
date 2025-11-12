@@ -45,18 +45,25 @@ sub removeNpromaConstructs
 
 sub fixCOUNTIdiom
 {
-  my $s = shift;
+  my ($s, %opts) = @_;
 
-  # MesoNH only (hopefully)
- 
-  my @E2 = &F ('.//a-stmt/E-2/named-E[string(N)="COUNT"]', $s);
+  my $jlon  = $opts{style}->jlon ();
+  my $kidia = $opts{style}->kidia ();
+  my $kfdia = $opts{style}->kfdia ();
 
-  for my $E2 (@E2)
+  for my $E2 (&F ('.//a-stmt/E-2/named-E[string(N)="COUNT"]', $s))
     {
-      my ($T) = &F ('.//named-E[./R-LT/array-R[string(section-subscript-LT)="IIJB:IIJE"]]', $E2);
-      next unless ($T);
-      my ($N) = &F ('./N', $T, 1);
-      $E2->replaceNode (&e ("MERGE (1, 0, $N)"));
+      if (my ($T) = &F ('.//named-E[./R-LT/array-R[string(section-subscript-LT)="IIJB:IIJE"]]', $E2))
+        {
+          # MesoNH only (IIJB=D%NIJB, IIJE=D%NIJE)
+          my ($N) = &F ('./N', $T, 1);
+          $E2->replaceNode (&e ("MERGE (1, 0, $N ($jlon))"));
+        }
+      elsif (my ($T) = &F ('.//named-E[./R-LT/array-R[string(section-subscript-LT)="?"]]', "$kidia:$kfdia", $E2))
+        {
+          my ($N) = &F ('./N', $T, 1);
+          $E2->replaceNode (&e ("MERGE (1, 0, $N ($jlon))"));
+        }
     }
 
 }
@@ -162,9 +169,12 @@ sub getVarToDim
         }
       else
         {
-          push @en_decl, 
-            &F ('.//EN-decl[./array-spec/shape-spec-LT/shape-spec[string(upper-bound)="?"]]', $klon, $dp),
-            &F ('.//EN-decl[./array-spec/shape-spec-LT/shape-spec[starts-with(string(upper-bound),"?")]]', "MERGE ($klon,", $dp);
+          push @en_decl, &F ('.//EN-decl[./array-spec/shape-spec-LT/shape-spec[string(upper-bound)="?"]]', $klon, $dp);
+# Some MesoNH variables are declared like : 
+# REAL, DIMENSION(MERGE(D%NIJT,0,OFLYER),MERGE(D%NKT,0,OFLYER),MERGE(KSV,0,OFLYER)),INTENT(OUT) :: PWSV
+# where D%NIJT is NPROMA
+          push @en_decl, &F ('.//EN-decl[./array-spec/shape-spec-LT/shape-spec'
+                           . '[starts-with(translate(string(upper-bound)," ",""),"?")]]', "MERGE($klon,", $dp);
         }
     }
 
