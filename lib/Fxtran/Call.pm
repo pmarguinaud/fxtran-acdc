@@ -102,21 +102,6 @@ is present.
 
 
       # MesoNH style
-#     if (my ($mode) = &F ('./use-stmt/module-N/N/n/text()[string(.)="?"]', "MODE_$proc", $up))
-#       {
-#         my $use = &Fxtran::stmt ($mode);
-
-#         my $use1 = $use->cloneNode (1);
-
-#         my ($mode1) = &F ('./module-N/N/n/text()', $use1);
-#         $mode1->setData ("MODE_${proc}${suffix}");
-#         my ($un) = &F ('./rename-LT/rename/use-N/N/n/text()[string(.)="?"]', $proc, $use1);
-#         $un->setData ("${proc}${suffix}");
-#
-#         $up->insertAfter ($_, $use) for ($use1, &t ("\n"));
-#       
-#         next PROC;
-#       }
 
       if (my ($mode) = &F ('./use-stmt[./rename-LT/rename/use-N/N/n/text()[string(.)="?"]]/module-N/N/n/text()', $proc, $up))
         {
