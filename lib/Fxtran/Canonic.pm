@@ -158,9 +158,16 @@ sub makeCanonic
 
   &Fxtran::DIR::removeDIR ($d);
 
-  for my $pu (&F ('./object/file/program-unit', $d))
+  if ($d->nodeName eq 'program-unit')
     {
-      &makeCanonicUnit ($pu);
+      &makeCanonicUnit ($d);
+    }
+  elsif ($d->nodeName eq '#document')
+    {
+      for my $pu (&F ('./object/file/program-unit', $d))
+        {
+          &makeCanonicUnit ($pu);
+        }
     }
 
   'Fxtran::Cycle'->simplify ($d, %opts);
