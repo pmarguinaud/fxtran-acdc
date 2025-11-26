@@ -135,4 +135,21 @@ sub link
   
 }
 
+sub list
+{
+  my %opts = @_;
+
+  my $dir = $opts{'dir'};
+
+  my @type;
+
+  for my $pl (<$dir/*.pl>)
+    {
+      (my $type = &basename ($pl)) =~ s/\.pl$//o;
+      push @type, $type;
+    }
+
+  return \@type;
+}
+
 1;

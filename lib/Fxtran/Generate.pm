@@ -1299,6 +1299,49 @@ Parse a file, inline some routines (optional) and write back the result.
   &routineToRoutineTail ($F90out, $F90, $d, $opts);
 }
 
+&click (<< "EOF");
+@options{qw (tmp cycle dir style types-constant-dir method-prefix write-metadata)}
+EOF
+sub updateconstants
+{
+  my ($opts, @args) = @_;
+
+=head2 update
+
+=cut
+
+  &Fxtran::Util::loadModule ('Fxtran::IO::Link');
+
+  my ($F90) = @args;
+
+  if (&dirname ($F90) eq $opts->{dir})
+    {
+      die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
+    }
+
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'toplevel', $opts);
+
+  my $types = &Fxtran::IO::Link::list ('dir' => $opts->{'types-constant-dir'});
+
+  &Fxtran::Util::loadModule ('Fxtran::UpdateConstants');
+
+  for my $pu (&F ('./object/file/program-unit', $d))
+    {
+      my $stmt = $pu->firstChild;
+      (my $kind = $stmt->nodeName) =~ s/-stmt$//o;
+      if ($kind eq 'subroutine')
+        {
+          &Fxtran::UpdateConstants::processSingleRoutine ($pu, %$opts, types => $types);
+        }
+      else
+        {
+          die;
+        }
+    }
+
+  &routineToRoutineTail ($F90out, $F90, $d, $opts);
+}
+
 =head1 SEE ALSO
 
 L<fxtran-f90>, L<fxtran-gen>
