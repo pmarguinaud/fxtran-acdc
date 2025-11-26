@@ -727,17 +727,22 @@ EOF
         }
       else
         {
+
+      my $present = $opts->{pragma}->exprIsPresent ('SELF');
+
       $HEAD{update} = << "EOF";
-SUBROUTINE $opts->{'method-prefix'}UPDATE_$name (SELF, LDDELETED)
+SUBROUTINE $opts->{'method-prefix'}UPDATE_$name (SELF, LDCOMPONENT)
 $USE{update}
 USE UTIL_${name}_WIPE_MOD
 USE UTIL_${name}_COPY_MOD
 IMPLICIT NONE
 $type ($name), INTENT (IN) :: SELF
-LOGICAL, OPTIONAL, INTENT (IN) :: LDDELETED
+LOGICAL, OPTIONAL, INTENT (IN) :: LDCOMPONENT
 
-CALL $opts->{'method-prefix'}WIPE_$name (SELF, LDDELETED)
-CALL $opts->{'method-prefix'}COPY_$name (SELF, LDCREATED=LDDELETED)
+IF ($present) THEN
+CALL $opts->{'method-prefix'}WIPE_$name (SELF, LDDELETED=LDCOMPONENT)
+CALL $opts->{'method-prefix'}COPY_$name (SELF, LDCREATED=LDCOMPONENT)
+ENDIF
 
 EOF
         }

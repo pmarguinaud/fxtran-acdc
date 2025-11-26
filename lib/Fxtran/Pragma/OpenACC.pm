@@ -171,11 +171,11 @@ sub useModule
   return 'USE OPENACC';
 }
 
-sub accIsPresent
+sub exprIsPresent
 {
   shift;
   my $expr = shift;
-  return "ACC_IS_PRESENT ($expr)";
+  return "ACC_IS_PRESENT ($expr, SIZEOF ($expr))";
 }
 
 

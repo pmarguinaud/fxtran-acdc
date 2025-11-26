@@ -139,8 +139,7 @@ sub processSingleRoutine
   
       my ($if) = &parse (fragment => << "EOF");
 IF (LLDO_$N) THEN
-CALL $opts{'method-prefix'}WIPE ($N)
-CALL $opts{'method-prefix'}COPY ($N)
+CALL $opts{'method-prefix'}UPDATE ($N, LDCOMPONENT=.TRUE.)
 ENDIF
 EOF
   
