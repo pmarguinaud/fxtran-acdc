@@ -443,7 +443,7 @@ sub processTypes1
   
   my @tconst = &F ('.//T-construct', $doc);
 
-  my @method = qw (save load copy host legacy crc64 wipe size);
+  my @method = qw (save load copy host legacy crc64 wipe update size);
 
   for my $tconst (@tconst)
     {
@@ -659,6 +659,8 @@ sub processTypes1
       $type = 'CLASS' if ($abstract);
       $type = 'CLASS' if ($opts->{'type-bound-methods'});
 
+      $USE{update} = $opts->{pragma}->useModule ();
+
       my %HEAD;
 
       $HEAD{save} = << "EOF";
@@ -718,6 +720,27 @@ IMPLICIT NONE
 $type ($name), INTENT (IN), TARGET :: SELF
 LOGICAL, OPTIONAL, INTENT (IN) :: LDDELETED, LDFIELDAPI
 EOF
+
+      if ($opts->{'type-bound-methods'})
+        {
+      $HEAD{update} = ''; # Not yet
+        }
+      else
+        {
+      $HEAD{update} = << "EOF";
+SUBROUTINE $opts->{'method-prefix'}UPDATE_$name (SELF, LDDELETED)
+$USE{update}
+USE UTIL_${name}_WIPE_MOD
+USE UTIL_${name}_COPY_MOD
+IMPLICIT NONE
+$type ($name), INTENT (IN) :: SELF
+LOGICAL, OPTIONAL, INTENT (IN) :: LDDELETED
+
+CALL $opts->{'method-prefix'}WIPE_$name (SELF, LDDELETED)
+CALL $opts->{'method-prefix'}COPY_$name (SELF, LDCREATED=LDDELETED)
+
+EOF
+        }
 
       $HEAD{size} = << "EOF";
 FUNCTION $opts->{'method-prefix'}SIZE_$name (SELF, CDPATH, LDPRINT) RESULT (KSIZE)

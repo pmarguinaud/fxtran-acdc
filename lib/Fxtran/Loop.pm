@@ -53,13 +53,14 @@ sub fixCOUNTIdiom
 
   for my $E2 (&F ('.//a-stmt/E-2/named-E[string(N)="COUNT"]', $s))
     {
-      if (my ($T) = &F ('.//named-E[./R-LT/array-R[string(section-subscript-LT)="IIJB:IIJE"]]', $E2))
+      my $T;
+      if (($T) = &F ('.//named-E[./R-LT/array-R[string(section-subscript-LT)="IIJB:IIJE"]]', $E2))
         {
           # MesoNH only (IIJB=D%NIJB, IIJE=D%NIJE)
           my ($N) = &F ('./N', $T, 1);
           $E2->replaceNode (&e ("MERGE (1, 0, $N ($jlon))"));
         }
-      elsif (my ($T) = &F ('.//named-E[./R-LT/array-R[string(section-subscript-LT)="?"]]', "$kidia:$kfdia", $E2))
+      elsif (($T) = &F ('.//named-E[./R-LT/array-R[string(section-subscript-LT)="?"]]', "$kidia:$kfdia", $E2))
         {
           my ($N) = &F ('./N', $T, 1);
           $E2->replaceNode (&e ("MERGE (1, 0, $N ($jlon))"));

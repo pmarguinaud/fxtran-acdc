@@ -734,7 +734,7 @@ See L<Fxtran::IO> for more details.
   &Fxtran::Util::loadModule ('Fxtran::Pragma');
 
   my %methods = map { ($_, 1) } @{ $opts->{'methods-list'} };
-  for my $method (qw (copy crc64 host legacy load save size wipe))
+  for my $method (qw (copy crc64 host legacy load save size wipe update))
     {
       $opts->{$method} = 1 if ($methods{$method});
     }
