@@ -29,10 +29,4 @@ TYPE(TPG_TYPE)          ,INTENT(INOUT)            :: YDPGTERM
 TYPE(TYP_DDH)           ,INTENT(INOUT)            :: YDDDH
 END SUBROUTINE CPG_GP
 
-
-
-
-
-
-
 END INTERFACE

@@ -66,13 +66,48 @@ sub noComputeRoutine
 
 sub preProcessForOpenACC
 {
-  shift;
+  my $class = shift;
   my $d = shift;
   my %opts = @_;
 
   # JIJ -> JI
 
   &Fxtran::Identifier::rename ($d, 'JIJ' => 'JI');
+
+  my $kidia = $class->kidia ();
+  my $kfdia = $class->kfdia ();
+
+  # Replace IIJB/IIJE by D%NIJB/D%NIJE
+
+  for my $expr (&F ('.//named-E[string(.)="IIJE" or string(.)="IIJB"]', $d))
+    {
+      my ($N) = &F ('./N', $expr, 1);
+      my $p = $expr->parentNode;
+
+      my $k = $N eq 'IIJB' ? $kidia : $kfdia;
+
+      my $stmt = &Fxtran::stmt ($expr);
+
+      if ($p->nodeName eq 'E-1')
+        {
+          my ($E2) = &F ('./E-2/named-E', $stmt);
+          die ("Unexpected statement: " . $stmt->textContent . "\n")
+            unless ($E2->textContent ne $k);
+        }
+      elsif (($p->nodeName eq 'lower-bound') && ($N == 'IIJB'))
+        {
+          $expr->replaceNode (&e ($k));
+        }
+      elsif (($p->nodeName eq 'upper-bound') && ($N == 'IIJE'))
+        {
+          $expr->replaceNode (&e ($k));
+        }
+      else
+        {
+          die ("Unexpected use of $N: " . $stmt->textContent . "\n");
+        }
+    }
+
 }
 
 sub handleMessages

@@ -16,10 +16,4 @@ LOGICAL                       ,INTENT (IN)    :: LDCT
 LOGICAL                       ,INTENT (IN)    :: LDCTC
 END SUBROUTINE LATTEX_EXPL_2TL
 
-
-
-
-
-
-
 END INTERFACE
