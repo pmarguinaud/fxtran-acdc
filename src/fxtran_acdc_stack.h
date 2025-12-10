@@ -9,9 +9,7 @@
 
 USE FXTRAN_ACDC_ABORT_MOD
 
-#ifdef __PGI
 #define fxtran_acdc_stack_init(ydstack, ibl, nbl, ...) FXTRAN_ACDC_STACK (0, 0, 0, 0); CALL FXTRAN_ACDC_STACK_INIT (ydstack, YFXTRAN_ACDC_STACK, ibl, nbl, ##__VA_ARGS__)
-#endif
 
 #define fxtran_acdc_temp(t, n, s) t, DIMENSION s :: n; POINTER (IP_##n##_, n)
 

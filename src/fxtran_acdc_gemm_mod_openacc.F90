@@ -16,8 +16,13 @@ CONTAINS
 
 SUBROUTINE FXTRAN_ACDC_GEMM_OPENACC (KIDIA, KFDIA, TRANSA, TRANSB, M, N, K, ALPHA, A, &
                                    & LDA, B, LDB, BETA, C, LDC, LDDONE, YDSTACK)
-
+#ifdef USE_OPENACC
 !$acc routine seq
+#endif
+
+#ifdef USE_OPENMP
+!$omp declare target
+#endif
 
 USE FXTRAN_ACDC_STACK_MOD
 USE FXTRAN_ACDC_ABORT_MOD

@@ -11,6 +11,7 @@ use strict;
 use base qw (Fxtran::Pragma);
 
 use Fxtran;
+use List::MoreUtils qw (uniq);
 
 sub insertDirective
 {
@@ -87,6 +88,23 @@ sub insertParallelLoopGang
   &insertDirective ($p, 'TARGET TEAMS DISTRIBUTE', %c);
 }
 
+sub insertParallelLoopGangVector
+{
+  shift;
+  my ($p, %c) = @_;
+# &insertDirective ($p, 'PARALLEL LOOP GANG VECTOR', %c);
+}
+
+sub insertData
+{
+  shift;
+  my ($p, %c) = @_;
+# &insertDirective ($p, 'DATA', %c);
+# $p->parentNode->insertAfter (&t ("\n"), $p);
+# $p->parentNode->insertAfter (&n ("<C>!\$ACC END DATA</C>"), $p);
+# $p->parentNode->insertAfter (&t ("\n"), $p);
+}
+
 sub insertLoopVector
 {
   shift;
@@ -149,6 +167,19 @@ sub exitDataDetach
   shift;
   return @_ ? '!$OMP TARGET EXIT DATA MAP (RELEASE: ' .  join (', ', @_) . ')' : '';
 }
+
+sub useModule
+{
+  return 'USE OMP_LIB';
+}
+
+sub exprIsPresent
+{
+  shift;
+  my $expr = shift;
+  return "OMP_TARGET_IS_PRESENT ($expr, OMP_GET_DEFAULT_DEVICE ())";
+}
+
 
 
 1;

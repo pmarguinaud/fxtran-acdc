@@ -11,8 +11,13 @@ CONTAINS
 SUBROUTINE FXTRAN_ACDC_ABORT (CDMESS)
 
 CHARACTER (LEN=*) :: CDMESS
-
+#ifdef USE_OPENACC
 !$acc routine (FXTRAN_ACDC_ABORT) seq
+#endif
+
+#ifdef USE_OPENMP
+!$omp declare target
+#endif
 
 PRINT *, " FXTRAN_ACDC_ABORT "
 PRINT *, CDMESS

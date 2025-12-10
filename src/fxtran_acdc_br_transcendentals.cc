@@ -71,7 +71,12 @@ double erfc(double x);
  * HELPER FUNCTIONS *
  ********************/
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double __internal_copysign_pos(double a, double b)
 {
     union {
@@ -84,7 +89,12 @@ double __internal_copysign_pos(double a, double b)
     return aa.d;
 }
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double __internal_old_exp_kernel(double x, int scale)
 { 
     double t, z;
@@ -134,7 +144,12 @@ double __internal_old_exp_kernel(double x, int scale)
  * \param x The number whose sin or cos must be computed
  * \param q Represents the quadrant as integer
  */
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 static double __internal_sin_cos_kerneld(double x, int q)
 
 {
@@ -180,7 +195,12 @@ static double __internal_sin_cos_kerneld(double x, int q)
 }
 
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double __internal_tan_kernel(double x, int i)
 {
     double x2, z, q;
@@ -216,7 +236,12 @@ double __internal_tan_kernel(double x, int i)
 }
 
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 static double __internal_trig_reduction_kerneld(double x, int *q_)
 {
     double j, t;
@@ -235,7 +260,12 @@ static double __internal_trig_reduction_kerneld(double x, int *q_)
     return t;
 }
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double sin(double x)
 {
     double z;
@@ -249,7 +279,12 @@ double sin(double x)
     return z;
 }
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double cos(double x)
 {
     double z;
@@ -264,7 +299,12 @@ double cos(double x)
     return z;
 }
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double tan(double x)
 {
     double z, inf = std::numeric_limits<double>::infinity();
@@ -283,7 +323,12 @@ double tan(double x)
  * INVERSE TRIGONOMETRIC FUNCTIONS *
  ***********************************/
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double __internal_asin_kernel(double x)
 {
   double r;
@@ -304,7 +349,12 @@ double __internal_asin_kernel(double x)
   return r;
 }
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double __internal_atan_kernel(double x)
 {
   double t, x2;
@@ -334,7 +384,12 @@ double __internal_atan_kernel(double x)
 }
 
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double asin(double x)
 {
   double fx, t0, t1;
@@ -372,7 +427,12 @@ double asin(double x)
   return t1;
 }
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double acos(double x)
 {
     double t0, t1;
@@ -434,7 +494,12 @@ double acos(double x)
     return t0;
 }
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double atan(double x)
 {
     double t0, t1;
@@ -461,7 +526,12 @@ double atan(double x)
  * HYPERBOLIC FUNCTIONS *
  ************************/
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double __internal_expm1_kernel (double x)
 {
   double t;
@@ -481,7 +551,12 @@ double __internal_expm1_kernel (double x)
   return t;
 }
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double __internal_exp2i_kernel(int32_t b)
 {
     union {
@@ -495,7 +570,12 @@ double __internal_exp2i_kernel(int32_t b)
     return xx.d;
 }
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double __internal_expm1_scaled(double x, int scale)
 { 
   double t, z, u;
@@ -533,7 +613,12 @@ double __internal_expm1_scaled(double x, int scale)
   return t;
 }   
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double sinh(double x)
 {
     double z;
@@ -571,7 +656,12 @@ double sinh(double x)
     return z;
 }
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double cosh(double x)
 {
     double t, z;
@@ -597,7 +687,12 @@ double cosh(double x)
     return z;
 }
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double tanh(double x)
 {
   double t;
@@ -635,7 +730,12 @@ double tanh(double x)
  * INVERSE HIPERBOLIC FUNCTIONS *
  ********************************/
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double __internal_atanh_kernel (double a_1, double a_2)
 {
     double a, a2, t;
@@ -656,7 +756,12 @@ double __internal_atanh_kernel (double a_1, double a_2)
     return t;
 }
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double asinh(double x)
 {
   double fx, t;
@@ -677,7 +782,12 @@ double asinh(double x)
   return __internal_copysign_pos(t, x);  
 }
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double acosh(double x)
 {
   double t;
@@ -717,7 +827,12 @@ double atanh(double x)
 
 
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double log(double x)
 {
     double m, f, g, u, v, tmp, q, ulo, log_lo, log_hi;
@@ -798,7 +913,12 @@ double log(double x)
 }
 
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double log1p(double x)
 {
     double t;
@@ -822,7 +942,12 @@ double log1p(double x)
 }
 
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double __internal_exp_poly(double x)
 {
   double t;
@@ -842,7 +967,12 @@ double __internal_exp_poly(double x)
   return t;
 }
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double __internal_exp_scale(double x, int i)
 {
     unsigned int j, k;
@@ -871,7 +1001,12 @@ double __internal_exp_scale(double x, int i)
     return x;
 }
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double __internal_exp_kernel(double x, int scale)
 { 
   double t, z;
@@ -892,7 +1027,12 @@ double __internal_exp_kernel(double x, int scale)
   return z;
 }   
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double exp(double x)
 {
   double t;
@@ -918,7 +1058,12 @@ double exp(double x)
 }
 
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double erf(double x)
 {
 
@@ -931,7 +1076,12 @@ double erf(double x)
 
 }
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double __cheb_eval(const double cs[],int order,double x)
 {
 
@@ -957,7 +1107,12 @@ double __cheb_eval(const double cs[],int order,double x)
   return d;
 }
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double erfc(double x)
 {
 
@@ -1066,7 +1221,12 @@ const double erfc_x510_cs[20] = {
 }
 
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double __erfseries(double x)
 {
   double coef = x;
@@ -1083,7 +1243,12 @@ double __erfseries(double x)
 }
 
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double gamma
 (
     double x    // We require x > 0
@@ -1209,7 +1374,12 @@ double gamma
     return exp(log_gamma(x));
 }
 
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double log_gamma
 (
     double x    // x must be positive
@@ -1265,42 +1435,137 @@ double log_gamma
 // Implement C interface
 extern "C"
 {
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_sin  (double x) { return fxtran_acdc_br::sin  (x); }
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_cos  (double x) { return fxtran_acdc_br::cos  (x); }
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_tan  (double x) { return fxtran_acdc_br::tan  (x); }
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_asin (double x) { return fxtran_acdc_br::asin (x); }
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_acos (double x) { return fxtran_acdc_br::acos (x); }
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_atan (double x) { return fxtran_acdc_br::atan (x); }
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_sinh (double x) { return fxtran_acdc_br::sinh (x); }
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_cosh (double x) { return fxtran_acdc_br::cosh (x); }
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_tanh (double x) { return fxtran_acdc_br::tanh (x); }
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_asinh(double x) { return fxtran_acdc_br::asinh(x); }
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_acosh(double x) { return fxtran_acdc_br::acosh(x); }
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_atanh(double x) { return fxtran_acdc_br::atanh(x); }
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_log  (double x) { return fxtran_acdc_br::log  (x); }
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_log1p(double x) { return fxtran_acdc_br::log1p(x); }
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_exp  (double x) { return fxtran_acdc_br::exp  (x); }
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_erf  (double x) { return fxtran_acdc_br::erf  (x); }
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_erfc  (double x) { return fxtran_acdc_br::erfc  (x); }
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_gamma  (double x) { return fxtran_acdc_br::gamma  (x); }
+#ifdef USE_OPENACC
 #pragma acc routine seq
+#endif
+#ifdef USE_OPENMP
+#pragma omp declare target
+#endif
 double fxtran_acdc_br_log_gamma  (double x) { return fxtran_acdc_br::log_gamma  (x); }
 }

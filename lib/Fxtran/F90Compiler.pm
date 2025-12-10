@@ -382,6 +382,31 @@ EOF
   &Fxtran::Util::runCommand (cmd => ['make', -j => 4], %args);
 }
 
+sub sortFilesByLevel
+{
+  my @F90 = @_;
+
+  # Compile first with zero dependencies, then with a single dependency, etc.
+
+  my (%dep, %mod);
+
+  for my $F90 (@F90)
+    {
+      $dep{$F90} = &study ($F90);
+      $mod{$_} = 1 for (@{ $dep{$F90}->{mod} });
+    }
+
+  my @level;
+
+  for my $F90 (@F90)
+    {
+      my @use = grep { $mod{$_} } @{ $dep{$F90}->{use} };
+      push @{ $level[scalar (@use)] }, $F90;
+    }
+
+  return @level;
+}
+
 sub concatenateSource
 {
   my %args = @_;
@@ -394,11 +419,16 @@ sub concatenateSource
   my $F90_c = 'C_' . &basename ($F90[0]);
   my $fho = 'FileHandle'->new ('>' . &basename ($F90_c));
 
-  for my $F90 (@F90) # Should sort the files, no dependency first; it works for now
+  my @level = &sortFilesByLevel (@F90);
+
+  for my $i (0 .. $#level)
     {
-      my $code = do { my $fh = 'FileHandle'->new ("<$F90"); local $/ = undef; <$fh> };
-      $fho->print ($code);
-      $fho->print ("\n" x 3);
+      for my $F90 (@{ $level[$i] || [] })
+        {
+          my $code = do { my $fh = 'FileHandle'->new ("<$F90"); local $/ = undef; <$fh> };
+          $fho->print ($code);
+          $fho->print ("\n" x 3);
+        }
     }
 
   $fho->close ();
@@ -418,9 +448,14 @@ sub concatenateIncludeSource
   my $F90_c = 'C_' . &basename ($F90[0]);
   my $fho = 'FileHandle'->new ('>' . &basename ($F90_c));
 
-  for my $F90 (@F90) # Should sort the files, no dependency first; it works for now
+  my @level = &sortFilesByLevel (@F90);
+
+  for my $i (0 .. $#level)
     {
-      $fho->print ("#include \"$F90\"\n");
+      for my $F90 (@{ $level[$i] || [] })
+        {
+          $fho->print ("#include \"$F90\"\n");
+        }
     }
 
   $fho->close ();

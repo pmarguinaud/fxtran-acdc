@@ -27,8 +27,13 @@ PRIVATE
 CONTAINS
 
 SUBROUTINE ACPY_RD_1D (JLON, PL, PR)
-
+#ifdef USE_OPENACC
 !$acc routine (ACPY_RD_1D) seq
+#endif
+
+#ifdef USE_OPENMP
+!$omp declare target
+#endif
 
 REAL (KIND=JPRD) :: PL (:,:), PR (:,:)
 INTEGER (KIND=JPIM) :: JLON
@@ -38,8 +43,13 @@ PL (JLON, :) = PR (JLON, :)
 END SUBROUTINE
 
 SUBROUTINE ACPY_RD_2D (JLON, PL, PR)
-
+#ifdef USE_OPENACC
 !$acc routine (ACPY_RD_2D) seq
+#endif
+
+#ifdef USE_OPENMP
+!$omp declare target
+#endif
 
 REAL (KIND=JPRD) :: PL (:,:,:), PR (:,:,:)
 INTEGER (KIND=JPIM) :: JLON
@@ -49,8 +59,13 @@ PL (JLON, :, :) = PR (JLON, :, :)
 END SUBROUTINE
 
 SUBROUTINE ACPY_RM_1D (JLON, PL, PR)
-
+#ifdef USE_OPENACC
 !$acc routine (ACPY_RM_1D) seq
+#endif
+
+#ifdef USE_OPENMP
+!$omp declare target
+#endif
 
 REAL (KIND=JPRM) :: PL (:,:), PR (:,:)
 INTEGER (KIND=JPIM) :: JLON
@@ -60,8 +75,13 @@ PL (JLON, :) = PR (JLON, :)
 END SUBROUTINE
 
 SUBROUTINE ACPY_RM_2D (JLON, PL, PR)
-
+#ifdef USE_OPENACC
 !$acc routine (ACPY_RM_2D) seq
+#endif
+
+#ifdef USE_OPENMP
+!$omp declare target
+#endif
 
 REAL (KIND=JPRM) :: PL (:,:,:), PR (:,:,:)
 INTEGER (KIND=JPIM) :: JLON
@@ -71,8 +91,13 @@ PL (JLON, :, :) = PR (JLON, :, :)
 END SUBROUTINE
 
 SUBROUTINE BCPY_RD_1D (JLON, KL1, KL2, PL, KR1, KR2, PR)
-
+#ifdef USE_OPENACC
 !$acc routine (BCPY_RD_1D) seq
+#endif
+
+#ifdef USE_OPENMP
+!$omp declare target
+#endif
 
 INTEGER (KIND=JPIM) :: KL1, KL2, KR1, KR2
 REAL (KIND=JPRD) :: PL (KL1, KL2), PR (KR1, KR2)
@@ -83,8 +108,13 @@ PL (JLON, :) = PR (JLON, :)
 END SUBROUTINE
 
 SUBROUTINE BCPY_RD_2D (JLON, KL1, KL2, KL3, PL, KR1, KR2, KR3, PR)
-
+#ifdef USE_OPENACC
 !$acc routine (BCPY_RD_2D) seq
+#endif
+
+#ifdef USE_OPENMP
+!$omp declare target
+#endif
 
 INTEGER (KIND=JPIM) :: KL1, KL2, KL3, KR1, KR2, KR3
 REAL (KIND=JPRD) :: PL (KL1, KL2, KL3), PR (KR1, KR2, KR3)
@@ -95,8 +125,13 @@ PL (JLON, :, :) = PR (JLON, :, :)
 END SUBROUTINE
 
 SUBROUTINE BCPY_RM_1D (JLON, KL1, KL2, PL, KR1, KR2, PR)
-
+#ifdef USE_OPENACC
 !$acc routine (BCPY_RM_1D) seq
+#endif
+
+#ifdef USE_OPENMP
+!$omp declare target
+#endif
 
 INTEGER (KIND=JPIM) :: KL1, KL2, KR1, KR2
 REAL (KIND=JPRM) :: PL (KL1, KL2), PR (KR1, KR2)
@@ -107,8 +142,13 @@ PL (JLON, :) = PR (JLON, :)
 END SUBROUTINE
 
 SUBROUTINE BCPY_RM_2D (JLON, KL1, KL2, KL3, PL, KR1, KR2, KR3, PR)
-
+#ifdef USE_OPENACC
 !$acc routine (BCPY_RM_2D) seq
+#endif
+
+#ifdef USE_OPENMP
+!$omp declare target
+#endif
 
 INTEGER (KIND=JPIM) :: KL1, KL2, KL3, KR1, KR2, KR3
 REAL (KIND=JPRM) :: PL (KL1, KL2, KL3), PR (KR1, KR2, KR3)
