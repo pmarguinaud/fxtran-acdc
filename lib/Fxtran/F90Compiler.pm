@@ -19,6 +19,7 @@ use File::Basename;
 use File::Path;
 use File::Copy;
 use File::stat;
+use List::Util;
 use Cwd;
 
 use strict;
@@ -388,20 +389,43 @@ sub sortFilesByLevel
 
   # Compile first with zero dependencies, then with a single dependency, etc.
 
-  my (%dep, %mod);
+  my (%dep, %mod2F90);
 
   for my $F90 (@F90)
     {
       $dep{$F90} = &study ($F90);
-      $mod{$_} = 1 for (@{ $dep{$F90}->{mod} });
+      $mod2F90{$_} = $F90 for (@{ $dep{$F90}{mod} });
     }
+
+  for my $F90 (@F90)
+    {
+      @{ $dep{$F90}{use} } = grep { $mod2F90{$_} } @{ $dep{$F90}{use} };
+    }
+
+  my $walk;
+
+  $walk = sub
+  {
+    my $F90 = shift;
+
+    unless (exists $dep{$F90}{level})
+      {
+        $dep{$F90}{level} = 0;
+        for my $use (@{ $dep{$F90}{use} })
+          {
+            $dep{$F90}{level} = &List::Util::max (1 + $walk->($mod2F90{$use}), $dep{$F90}{level});
+          }
+      }
+
+    return $dep{$F90}{level};
+  };
 
   my @level;
 
   for my $F90 (@F90)
     {
-      my @use = grep { $mod{$_} } @{ $dep{$F90}->{use} };
-      push @{ $level[scalar (@use)] }, $F90;
+      $dep{$F90}{level} = $walk->($F90);
+      push @{ $level[ $dep{$F90}{level} ] }, $F90;
     }
 
   return @level;
