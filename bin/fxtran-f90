@@ -364,9 +364,14 @@ for (my $i = 0; $i < scalar (@ARGV); $i++)
         push @argv, '-I' . 'File::Spec'->rel2abs ($ARGV[$i+1]);
         $i++;
       }
-    elsif ($ARGV[$i] eq '-module')
+    elsif (($ARGV[$i] eq '-module') || ($ARGV[$i] eq '-module-dir')) # -module is for NVHPC, -module-dir is for ROCM
       {
         push @argv, $ARGV[$i], 'File::Spec'->rel2abs ($ARGV[$i+1]);
+        $i++;
+      }
+    elsif ($ARGV[$i] =~ s/^-module-dir//o) # may be -module-dir<DIR>
+      {
+        push @argv, '-module-dir', 'File::Spec'->rel2abs ($ARGV[$i]);
         $i++;
       }
     elsif (my ($inc) = ($ARGV[$i] =~ m/^-I(.*)$/o))

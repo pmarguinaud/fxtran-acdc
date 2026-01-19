@@ -659,7 +659,7 @@ sub processTypes1
       $type = 'CLASS' if ($abstract);
       $type = 'CLASS' if ($opts->{'type-bound-methods'});
 
-      $USE{update} = $opts->{pragma}->useModule ();
+      $USE{update} = '';
 
       my %HEAD;
 
@@ -733,13 +733,15 @@ EOF
       $HEAD{update} = << "EOF";
 SUBROUTINE $opts->{'method-prefix'}UPDATE_$name (SELF, LDCOMPONENT)
 $USE{update}
+
+USE FXTRAN_ACDC_IS_PRESENT_MOD
 USE UTIL_${name}_WIPE_MOD
 USE UTIL_${name}_COPY_MOD
 IMPLICIT NONE
 $type ($name), INTENT (IN) :: SELF
 LOGICAL, OPTIONAL, INTENT (IN) :: LDCOMPONENT
 
-IF ($present) THEN
+IF (FXTRAN_ACDC_IS_PRESENT (C_LOC (SELF), SIZEOF (SELF))) THEN
 CALL $opts->{'method-prefix'}WIPE_$name (SELF, LDDELETED=LDCOMPONENT)
 CALL $opts->{'method-prefix'}COPY_$name (SELF, LDCREATED=LDCOMPONENT)
 ENDIF
