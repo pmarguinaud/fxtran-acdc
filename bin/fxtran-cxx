@@ -45,9 +45,9 @@ my %opts;
 
 my @argv = @ARGV;
 
-if ($opts{prefix})
+unless ($ENV{FXTRAN_BOOT})
   {
-    push @argv, "-L$opts{prefix}/lib", '-lFxtranACDC';
+    push @argv, "-L$opts{prefix}/lib", '-lFxtranACDC' if ($opts{prefix});
   }
 
 if (grep { $_ eq '-c' } @argv)

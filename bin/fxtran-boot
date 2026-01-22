@@ -118,6 +118,8 @@ if ($opts{help})
     exit (0);
   }
 
+local $ENV{FXTRAN_BOOT} = 1;
+
 my ($f90compiler, @f90flags);
 my ($ccompiler  , @cflags  );
 my ($cxxcompiler, @cxxflags);
@@ -126,11 +128,12 @@ if ($opts{'ecbuild-build-type'})
   {
     @opts{qw (F90 CC CXX)} = @ENV{qw (F90 CC CXX)};
 
-    my $toolchain = $ENV{ECBUILD_TOOLCHAIN} || './toolchain.cmake';
-    die ("Cannot find ecbuild toolchain") unless (-f $toolchain);
+    die ("Cannot find environment variable `CMAKE_TOOLCHAIN_FILE'\n")
+      unless ($ENV{CMAKE_TOOLCHAIN_FILE});
 
-    $toolchain = 'File::Spec'->rel2abs ($toolchain);
-    
+    die ("Toolchain file `$ENV{CMAKE_TOOLCHAIN_FILE}' does not exist\n")
+      unless (-f $ENV{CMAKE_TOOLCHAIN_FILE});
+
     my $cwd = &cwd ();
 
     my $dir = 'File::Temp'->newdir ();
@@ -141,8 +144,6 @@ if ($opts{'ecbuild-build-type'})
 cmake_minimum_required (VERSION 3.28)
 
 project (fxtran-boot)
-
-include ($toolchain)
 
 get_cmake_property (vars VARIABLES)
 
@@ -174,6 +175,18 @@ EOF
     ($ccompiler,   @cflags  ) = ($opts{CC},  @{ $flags{C}       });
     ($cxxcompiler, @cxxflags) = ($opts{CXX}, @{ $flags{CXX}     });
 
+    my $readv = sub
+    {
+      my ($pv, $name) = @_;
+      if (my $v = &slurp ("variables/$name"))
+        {
+          $$pv = $v;
+        }
+    };
+
+    $readv->(\$f90compiler, 'CMAKE_Fortran_COMPILER');
+    $readv->(\$ccompiler  , 'CMAKE_C_COMPILER'      );
+    $readv->(\$cxxcompiler, 'CMAKE_CXX_COMPILER'    );
   }
 else
   {

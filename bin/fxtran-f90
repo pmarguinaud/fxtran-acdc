@@ -332,13 +332,19 @@ my $f90compiler = shift (@ARGV);
 
 my $c = grep { $_ eq '-c' } @ARGV;
 
-if ($opts{prefix})
+
+unless ($ENV{FXTRAN_BOOT})
   {
-    unshift (@ARGV, "-I$opts{prefix}/include");
-    push (@ARGV, "-L$opts{prefix}/lib", '-lFxtranACDC');
+    if ($opts{prefix})
+    {
+      unshift (@ARGV, "-I$opts{prefix}/include");
+      push (@ARGV, "-L$opts{prefix}/lib", '-lFxtranACDC');
+    }
+
+    push @ARGV, '-DFXTRAN_ACDC', '-DFXTRAN_FILE=__FILE__', '-DFXTRAN_LINE=__LINE__';
+
   }
 
-push @ARGV, '-DFXTRAN_ACDC', '-DFXTRAN_FILE=__FILE__', '-DFXTRAN_LINE=__LINE__';
 
 unless ($c)
   {
