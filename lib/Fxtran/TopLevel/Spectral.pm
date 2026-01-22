@@ -97,6 +97,19 @@ sub processSingleRoutineMethod
   my $class = shift;
   my ($pu, %opts) = @_;
 
+  my ($dp) = &F ('./specification-part/declaration-part', $pu);
+  my ($ep) = &F ('./execution-part', $pu);
+
+  my ($NAME) = &F ('./subroutine-stmt/subroutine-N', $pu, 1);
+
+  if (my $switch = $opts{switch})
+    {
+      if (my ($E2) = &F ('./a-stmt[./E-1/named-E[string(N)="?"]]/E-2/ANY-E', $switch, $ep))
+        {
+          $E2->replaceNode (&e ("FXTRAN_ACDC_LPARALLELMETHOD ('PARALLEL','$NAME')"));
+        }
+    }
+
   &Fxtran::Decl::use ($pu, &s ('USE FXTRAN_ACDC_PARALLELMETHOD_MOD'));
 
   my ($up) = &F ('./specification-part/use-part', $pu);
