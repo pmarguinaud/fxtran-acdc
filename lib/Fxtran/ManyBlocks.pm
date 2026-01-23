@@ -757,6 +757,15 @@ NPROMA:
     if ($opts{'use-stack-manyblocks'});
 
   &Fxtran::Decl::use ($pu, 'USE FXTRAN_ACDC_ABORT_MOD');
+
+  # Make sure JLON is declared
+  
+  unless (my ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $jlon, $dp))
+    {
+      my ($decl) = &s ("INTEGER :: $jlon");
+      $dp->appendChild ($_) for (&t ("\n"), $decl);
+    }
+
 }
 
 sub stackAllocateTemporaries
