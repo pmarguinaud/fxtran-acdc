@@ -695,6 +695,12 @@ sub processSingleRoutine
       for my $nproma (@nproma)
         {
           goto NPROMA if ($ss[0]->textContent eq $nproma);
+
+          if (my ($expr) = &F ('./upper-bound/named-E[./R-LT/function-R][string(N)="MERGE"]', $ss[0]))
+            {
+              my @arg = &F ('./R-LT/function-R/element-LT/element/ANY-E', $expr);
+              goto NPROMA if ($arg[0]->textContent eq $nproma);
+            }
         }
 
       next;
