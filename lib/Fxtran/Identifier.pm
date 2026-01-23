@@ -26,7 +26,17 @@ sub rename
           $_->setData ($v);
         }   
      
-      my @en_decl = &F ('.//EN-N[string(N)="?"]/N/n/text()', $k, $d);
+      my @en_decl;
+
+      @en_decl = &F ('.//EN-N[string(N)="?"]/N/n/text()', $v, $d);
+
+      for my $en_decl (@en_decl)
+        {
+          my $stmt = &Fxtran::stmt ($en_decl);
+          $stmt->unbindNode ();
+        }
+
+      @en_decl = &F ('.//EN-N[string(N)="?"]/N/n/text()', $k, $d);
      
       for (@en_decl)
         {   
