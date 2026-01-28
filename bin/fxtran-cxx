@@ -26,6 +26,7 @@ use lib "$Bin/../lib";
 
 use Fxtran::Common;
 
+use Data::Dumper;
 use Getopt::Long;
 
 use strict;
@@ -43,7 +44,21 @@ my %opts;
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
 
-my @argv = @ARGV;
+my @argv;
+
+my $seen_flang_rt_hostdevice; # Specific to ROCM
+
+for (my $i = 0; $i < scalar (@ARGV); $i++)
+  {
+    if ($ARGV[$i] eq '-lflang_rt.hostdevice')
+      {
+        push @argv, $ARGV[$i] unless ($seen_flang_rt_hostdevice++);
+      }
+    else
+      {
+        push @argv, $ARGV[$i];
+      }
+  }
 
 unless ($ENV{FXTRAN_BOOT})
   {
