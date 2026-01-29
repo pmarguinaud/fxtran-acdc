@@ -28,10 +28,12 @@ use Fxtran::Common;
 
 use Data::Dumper;
 use Getopt::Long;
+use FileHandle;
 
 use strict;
 
 use Fxtran::AR;
+use Fxtran::Vendor;
 
 my @opts_f = qw ();
 my @opts_s = qw (config prefix);
@@ -44,21 +46,11 @@ my %opts;
   (map { ("$_=s", \$opts{$_}) } @opts_s),
 );
 
-my @argv;
+my $cc = shift;
 
-my $seen_flang_rt_hostdevice; # Specific to ROCM
+my $vendor = 'Fxtran::Vendor'->new ($cc);
 
-for (my $i = 0; $i < scalar (@ARGV); $i++)
-  {
-    if ($ARGV[$i] eq '-lflang_rt.hostdevice')
-      {
-        push @argv, $ARGV[$i] unless ($seen_flang_rt_hostdevice++);
-      }
-    else
-      {
-        push @argv, $ARGV[$i];
-      }
-  }
+my @argv = $vendor->preprocessOptions (@ARGV);
 
 unless ($ENV{FXTRAN_BOOT})
   {
@@ -67,11 +59,11 @@ unless ($ENV{FXTRAN_BOOT})
 
 if (grep { $_ eq '-c' } @argv)
   {
-    exec (@argv);
+    exec ($cc, @argv);
   }
 
 &Fxtran::AR::expandObjects (\@argv);
 
-exec (@argv);
+exec ($cc, @argv);
 
 

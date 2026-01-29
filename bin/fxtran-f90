@@ -198,6 +198,7 @@ use Fxtran::F90Compiler;
 use Fxtran::Util;
 use Fxtran::PATH;
 use Fxtran::AR;
+use Fxtran::Vendor;
 
 sub runACDCMethod
 {
@@ -330,8 +331,9 @@ if ($opts{help})
 
 my $f90compiler = shift (@ARGV);
 
-my $c = grep { $_ eq '-c' } @ARGV;
+my $vendor = 'Fxtran::Vendor'->new ($f90compiler);
 
+my $c = grep { $_ eq '-c' } @ARGV;
 
 unless ($ENV{FXTRAN_BOOT})
   {
@@ -345,10 +347,10 @@ unless ($ENV{FXTRAN_BOOT})
 
   }
 
-
 unless ($c)
   {
     &Fxtran::AR::expandObjects (\@ARGV);
+    @ARGV = $vendor->preprocessOptions (@ARGV);
     exec ($f90compiler, @ARGV) 
       unless ($opts{dryrun});
     exit (0);
@@ -357,8 +359,6 @@ unless ($c)
 # Absolute path for includes
 
 my (@argv, $output);
-
-my $seen_flang_rt_hostdevice; # Specific to ROCM
 
 for (my $i = 0; $i < scalar (@ARGV); $i++)
   {
@@ -386,17 +386,13 @@ for (my $i = 0; $i < scalar (@ARGV); $i++)
       {
         push @argv, '-I' . 'File::Spec'->rel2abs ($inc);
       }
-    elsif ($ARGV[$i] eq '-lflang_rt.hostdevice')
-      {
-        push @argv, $ARGV[$i] unless ($seen_flang_rt_hostdevice++);
-      }
     else
       {
         push @argv, $ARGV[$i];
       }
   }
 
-@ARGV = @argv;
+@ARGV = $vendor->preprocessOptions (@argv);
 
 my @F90 = grep { m/\.(?:F90|F)$/io } @ARGV;
 my @f90flags = grep { ! m/\.(?:F90|F)$/io } @ARGV;
