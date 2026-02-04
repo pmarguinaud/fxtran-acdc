@@ -166,17 +166,4 @@ sub exitDataDetach
   return @_ ? '!$ACC EXIT DATA DETACH (' .  join (', ', @_) . ')' : '';
 }
 
-sub useModule
-{
-  return 'USE OPENACC';
-}
-
-sub exprIsPresent
-{
-  shift;
-  my $expr = shift;
-  return "ACC_IS_PRESENT ($expr, SIZEOF ($expr))";
-}
-
-
 1;

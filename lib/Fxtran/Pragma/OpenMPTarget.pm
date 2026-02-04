@@ -11,6 +11,7 @@ use strict;
 use base qw (Fxtran::Pragma);
 
 use Fxtran;
+use List::MoreUtils qw (uniq);
 
 sub insertDirective
 {
@@ -38,7 +39,15 @@ sub insertDirective
           push @d, join (', ', @x); $d[-1] .= ', ' if (scalar (@l));
           if ($f)
             {
-              $d[-1] = "$c (" . $d[-1];
+              if ($c eq 'CREATE')
+                {$d[-1] = "MAP(ALLOC:" . $d[-1];}
+              elsif ($c eq 'PRESENT')
+
+# PRESENT does not work with NVIDIA (not implemented), we would need to use TO instead
+
+                {$d[-1] = "MAP(PRESENT:" . $d[-1];}
+              else
+                {$d[-1] = "$c (" . $d[-1];}
               $f = 0;
             }
           else
@@ -87,11 +96,28 @@ sub insertParallelLoopGang
   &insertDirective ($p, 'TARGET TEAMS DISTRIBUTE', %c);
 }
 
+sub insertParallelLoopGangVector
+{
+  shift;
+  my ($p, %c) = @_;
+  &insertDirective ($p, 'TARGET TEAMS DISTRIBUTE PARALLEL DO SIMD', %c);
+}
+
+sub insertData
+{
+  shift;
+  my ($p, %c) = @_;
+  &insertDirective ($p, 'TARGET DATA ', %c);
+  $p->parentNode->insertAfter (&t ("\n"), $p);
+  $p->parentNode->insertAfter (&n ("<C>!\$OMP END TARGET DATA</C>"), $p);
+  $p->parentNode->insertAfter (&t ("\n"), $p);
+}
+
 sub insertLoopVector
 {
   shift;
   my ($p, %c) = @_;
-  &insertDirective ($p, 'PARALLEL DO', %c);
+  &insertDirective ($p, 'PARALLEL DO SIMD', %c);
 }
 
 sub insertRoutineVector
@@ -113,11 +139,16 @@ sub insertSerial
 {
   shift;
   my ($p, %c) = @_;
-  &insertDirective ($p, 'TARGET TEAMS PARALLEL NUM_THREADS (1)', %c);
-  $p->parentNode->insertAfter (&n ("<C>!\$OMP END TEAMS</C>"), $p);
+  &insertDirective ($p, 'TARGET', %c);
+  $p->parentNode->insertAfter (&n ("<C>!\$OMP END TARGET</C>"), $p);
   $p->parentNode->insertAfter (&t ("\n"), $p);
-  $p->parentNode->insertAfter (&n ("<C>!\$OMP END PARALLEL</C>"), $p);
-  $p->parentNode->insertAfter (&t ("\n"), $p);
+
+# Maybe this should be (need to check) : 
+# &insertDirective ($p, 'TARGET TEAMS PARALLEL NUM_THREADS (1)', %c);
+# $p->parentNode->insertAfter (&n ("<C>!\$OMP END TEAMS</C>"), $p);
+# $p->parentNode->insertAfter (&t ("\n"), $p);
+# $p->parentNode->insertAfter (&n ("<C>!\$OMP END PARALLEL</C>"), $p);
+# $p->parentNode->insertAfter (&t ("\n"), $p);
 }
 
 sub enterDataCreate
@@ -149,6 +180,5 @@ sub exitDataDetach
   shift;
   return @_ ? '!$OMP TARGET EXIT DATA MAP (RELEASE: ' .  join (', ', @_) . ')' : '';
 }
-
 
 1;

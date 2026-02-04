@@ -728,8 +728,6 @@ EOF
       else
         {
 
-      my $present = $opts->{pragma}->exprIsPresent ('SELF');
-
       $HEAD{update} = << "EOF";
 SUBROUTINE $opts->{'method-prefix'}UPDATE_$name (SELF, LDCOMPONENT)
 $USE{update}
