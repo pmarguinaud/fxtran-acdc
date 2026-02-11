@@ -86,7 +86,7 @@ sub renameProc
   my $class = shift;
   my ($pu, $proc, %opts) = @_;
 
-  return unless ((my $tt = $proc->textContent) =~ m/^SP\w+$/o);
+  return unless ((my $tt = $proc->textContent) =~ m/^SP\w+$|^ESP\w+$/o);
   $proc->setData ($tt . $opts{'suffix-singleblock'});
 
   return 1;
