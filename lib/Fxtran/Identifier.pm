@@ -26,7 +26,11 @@ sub rename
           $_->setData ($v);
         }   
      
-      my @en_decl = &F ('.//EN-N[string(N)="?"]/N/n/text()', $k, $d);
+      my @en_decl;
+
+      next if (@en_decl = &F ('.//EN-N[string(N)="?"]/N/n/text()', $v, $d));
+
+      @en_decl = &F ('.//EN-N[string(N)="?"]/N/n/text()', $k, $d);
      
       for (@en_decl)
         {   

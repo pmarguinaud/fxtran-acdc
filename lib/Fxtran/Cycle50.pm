@@ -45,6 +45,15 @@ sub simplify
     '//named-E[string(.)="ODIAG_IN_RUN"]'                          => &e ('.FALSE.'),
     '//named-E[string(.)="TURBN%CTURBDIM"]'                        => &e ('"1DIM"'),
     '//named-E[string(.)="TLES%LLES_CALL"]'                        => &e ('.FALSE.'),
+    '//named-E[string(.)="OFLAT"]'                                 => &e ('.FALSE.'),
+    '//named-E[string(.)="O2D"]'                                   => &e ('.FALSE.'),
+    '//named-E[string(.)="OHARAT"]'                                => &e ('.FALSE.'),
+    '//named-E[string(.)="TURBN%LHARAT"]'                          => &e ('.FALSE.'),
+    '//named-E[string(.)="HTURBDIM"]'                              => &e ('"1DIM"'),
+    '//named-E[string(.)="GOCEAN"]'                                => &e ('.FALSE.'),
+    '//named-E[string(.)="TURBN%LLEONARD"]'                        => &e ('.FALSE.'),
+    '//named-E[string(.)="OFLYER"]'                                => &e ('.FALSE.'),
+    '//named-E[string(.)="OIBM"]'                                  => &e ('.FALSE.'),
   );
 
   for my $n (&F ('.//n/text()[string(.)="YDGEO"', $d))
