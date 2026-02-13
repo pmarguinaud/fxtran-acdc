@@ -76,11 +76,9 @@ use Cwd;
 
 use strict;
 
-my $AR = '/usr/bin/ar';
-
-sub sysAR
+sub ar
 {
-  my @cmd = ($AR, @_);
+  my @cmd = @_;
   if ($cmd[1] eq 't')
     {
       my @obj = split (m/\n/o, `@cmd`);
@@ -98,6 +96,14 @@ sub sysAR
 ERROR:
   die ("Command `@cmd' failed");
 }
+
+my $AR = '/usr/bin/ar';
+
+if ($ARGV[0] eq '--')
+  {
+    shift;
+    $AR = shift;
+  }
 
 my ($mod, $ar, @obj) = @ARGV;
 
@@ -127,9 +133,9 @@ for my $obj (@obj)
 
         chdir ($dir);
 
-        push @o, map { 'File::Spec'->rel2abs ($_) } &sysAR ('t', $obj);
+        push @o, map { 'File::Spec'->rel2abs ($_) } &ar ($AR, 't', $obj);
 
-        &sysAR ('x', $obj);
+        &ar ($AR, 'x', $obj);
 
         chdir ($cwd);
       }
@@ -139,6 +145,6 @@ for my $obj (@obj)
       }
   }
 
-&sysAR ($mod, $ar, @o);
+&ar ($AR, $mod, $ar, @o);
 
 
