@@ -89,11 +89,9 @@ ELSE
 
 #ifdef USE_OPENMP
 !$OMP TARGET DATA USE_DEVICE_ADDR (A, B, C)
-#endif
 
     CALL CUBLASDGEMM ('N','T', M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
 
-#ifdef USE_OPENMP
 !$OMP END TARGET DATA 
 #endif
   
