@@ -39,7 +39,14 @@ sub insertDirective
           push @d, join (', ', @x); $d[-1] .= ', ' if (scalar (@l));
           if ($f)
             {
-              $d[-1] = "$c (" . $d[-1];
+              if ($c eq 'CREATE')
+                {$d[-1] = "MAP(ALLOC:" . $d[-1];}
+              elsif ($c eq 'PRESENT')
+                {$d[-1] = "MAP(PRESENT:" . $d[-1];}
+##                {$d[-1] = "MAP(PRESENT:" . $d[-1];}
+##nvidia ???                {$d[-1] = "MAP(TO:" . $d[-1];}
+              else
+                {$d[-1] = "$c (" . $d[-1];}
               $f = 0;
             }
           else
@@ -92,24 +99,24 @@ sub insertParallelLoopGangVector
 {
   shift;
   my ($p, %c) = @_;
-# &insertDirective ($p, 'PARALLEL LOOP GANG VECTOR', %c);
+ &insertDirective ($p, 'TARGET TEAMS DISTRIBUTE PARALLEL DO SIMD', %c);
 }
 
 sub insertData
 {
   shift;
   my ($p, %c) = @_;
-# &insertDirective ($p, 'DATA', %c);
-# $p->parentNode->insertAfter (&t ("\n"), $p);
-# $p->parentNode->insertAfter (&n ("<C>!\$ACC END DATA</C>"), $p);
-# $p->parentNode->insertAfter (&t ("\n"), $p);
+ &insertDirective ($p, 'TARGET DATA ', %c);
+ $p->parentNode->insertAfter (&t ("\n"), $p);
+ $p->parentNode->insertAfter (&n ("<C>!\$OMP END TARGET DATA</C>"), $p);
+ $p->parentNode->insertAfter (&t ("\n"), $p);
 }
 
 sub insertLoopVector
 {
   shift;
   my ($p, %c) = @_;
-  &insertDirective ($p, 'PARALLEL DO', %c);
+  &insertDirective ($p, 'PARALLEL DO SIMD', %c);
 }
 
 sub insertRoutineVector
@@ -131,11 +138,15 @@ sub insertSerial
 {
   shift;
   my ($p, %c) = @_;
-  &insertDirective ($p, 'TARGET TEAMS PARALLEL NUM_THREADS (1)', %c);
-  $p->parentNode->insertAfter (&n ("<C>!\$OMP END TEAMS</C>"), $p);
+  &insertDirective ($p, 'TARGET', %c);
+  $p->parentNode->insertAfter (&n ("<C>!\$OMP END TARGET</C>"), $p);
   $p->parentNode->insertAfter (&t ("\n"), $p);
-  $p->parentNode->insertAfter (&n ("<C>!\$OMP END PARALLEL</C>"), $p);
-  $p->parentNode->insertAfter (&t ("\n"), $p);
+
+###  &insertDirective ($p, 'TARGET TEAMS PARALLEL NUM_THREADS (1)', %c);
+###  $p->parentNode->insertAfter (&n ("<C>!\$OMP END TEAMS</C>"), $p);
+###  $p->parentNode->insertAfter (&t ("\n"), $p);
+###  $p->parentNode->insertAfter (&n ("<C>!\$OMP END PARALLEL</C>"), $p);
+###  $p->parentNode->insertAfter (&t ("\n"), $p);
 }
 
 sub enterDataCreate
