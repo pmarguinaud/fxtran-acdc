@@ -6,7 +6,7 @@ FC=pgf90 -I fxtran-acdc/include $(FFLAGS)
 CC=pgcc $(FLAGS)
 CXX=pgc++ $(FLAGS)
 
-LIBS=-L fxtran-acdc/lib -lFxtranACDC -lblas
+LIBS=-L fxtran-acdc/lib -lFxtranACDC -lblas -L$(NVHPC_ROOT)/math_libs/12.5/lib64 -cudalib=cublas
 
 boot:
 	../../bin/fxtran-boot --prefix fxtran-acdc -CXX "$(CXX)" -CC "$(CC)" -F90 "$(FC)"
