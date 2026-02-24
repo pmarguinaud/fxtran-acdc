@@ -6,10 +6,6 @@ MODULE FXTRAN_ACDC_GEMV_MOD_SINGLEBLOCK
 ! philippe.marguinaud@meteo.fr
 !
 
-#if defined(_OPENACC) && (__NVCOMPILER==1)
-USE CUBLAS
-#endif
-
 IMPLICIT NONE
 
 PRIVATE
@@ -68,9 +64,11 @@ IF (BETA /= 0._8) CALL FXTRAN_ACDC_ABORT ('FXTRAN_ACDC_GEMV')
 
 IF (LLSIMPLE_DGEMM) THEN
 
+#ifdef _FXTRAN_USE_OPENACC
   !$ACC PARALLEL LOOP GANG VECTOR &
   !$ACC&PRESENT (A, B, C) &
   !$ACC&PRIVATE (JK, JN, JM) IF(LDACC) 
+#endif
 
   DO JM = KIDIA, KFDIA
     C (JM) = 0.
@@ -82,11 +80,12 @@ IF (LLSIMPLE_DGEMM) THEN
 ELSE
 
   IF (LDACC) THEN
-#if defined(_OPENACC) && (__NVCOMPILER==1)
 
+#if _FXTRAN_USE_OPENACC
     !$ACC PARALLEL LOOP GANG VECTOR &
     !$ACC&PRESENT (A, B, C) &
     !$ACC&PRIVATE (JK, JN, JM)  
+#endif
   
     DO JM = KIDIA, KFDIA
       C (JM) = 0.
@@ -94,10 +93,6 @@ ELSE
         C (JM) = C (JM) + B (LDB , JK) * A (JM , JK)
       ENDDO
     ENDDO
-
-#else
-    CALL DGEMM ('N','T', M, N, K, ALPHA, A(1,1), LDA, B(LDB,1), LDB, BETA, C(1), LDC)
-#endif
 
   ELSE
     CALL DGEMM ('N','T', M, N, K, ALPHA, A(1,1), LDA, B(LDB,1), LDB, BETA, C(1), LDC)
