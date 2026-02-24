@@ -1,7 +1,7 @@
 
 FLAGS=-mp -fPIC -Minfo -gopt -Mlist -Mnofma -cuda -acc=gpu -O1
 
-FFLAGS=$(FLAGS) -Minfo=accel,all,ccff -Mlarge_arrays -traceback -Mbyteswapio -Mbackslash -Mstack_arrays
+FFLAGS=$(FLAGS) -Minfo=accel,all,ccff -Mlarge_arrays -traceback -Mbyteswapio -Mbackslash -Mstack_arrays -DFXTRAN_ACDC_VENDOR=FXTRAN_ACDC_NVIDIA -DFXTRAN_ACDC_PRAGMA=FXTRAN_ACDC_OPENACC
 FC=pgf90 -I fxtran-acdc/include $(FFLAGS)
 CC=pgcc $(FLAGS)
 CXX=pgc++ $(FLAGS)
