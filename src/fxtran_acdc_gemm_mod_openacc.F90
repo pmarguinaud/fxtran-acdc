@@ -1,5 +1,7 @@
 MODULE FXTRAN_ACDC_GEMM_MOD_OPENACC
 
+#include "fxtran_acdc_config.h"
+
 !
 ! Copyright 2025 Meteo-France
 ! All rights reserved
@@ -17,7 +19,7 @@ CONTAINS
 SUBROUTINE FXTRAN_ACDC_GEMM_OPENACC (KIDIA, KFDIA, TRANSA, TRANSB, M, N, K, ALPHA, A, &
                                    & LDA, B, LDB, BETA, C, LDC, LDDONE, YDSTACK)
 
-!$acc routine seq
+DEVICE_ROUTINE
 
 USE FXTRAN_ACDC_STACK_MOD
 USE FXTRAN_ACDC_ABORT_MOD

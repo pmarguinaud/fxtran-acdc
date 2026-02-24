@@ -1,5 +1,7 @@
 MODULE FXTRAN_ACDC_GEMM_MOD_SINGLEBLOCK
 
+#include "fxtran_acdc_config.h"
+
 !
 ! Copyright 2025 Meteo-France
 ! All rights reserved
@@ -17,7 +19,7 @@ CONTAINS
 SUBROUTINE FXTRAN_ACDC_GEMM_SINGLEBLOCK (KIDIA, KFDIA, TRANSA, TRANSB, M, N, K, ALPHA, A, &
                                        & LDA, B, LDB, BETA, C, LDC, LDDONE, LDACC )
 
-#ifdef _CUDA
+#ifdef _FXTRAN_USE_CUBLAS
 USE CUBLAS
 #endif
 
@@ -58,9 +60,11 @@ IF (KIDIA /= 1) CALL FXTRAN_ACDC_ABORT ('FXTRAN_ACDC_GEMM')
 
 IF (LLSIMPLE_DGEMM) THEN
 
+#ifdef _FXTRAN_USE_OPENACC
   !$ACC PARALLEL LOOP GANG VECTOR &
   !$ACC&PRESENT (A, B, C) &
   !$ACC&PRIVATE (JK, JN, JM) IF(LDACC)
+#endif
 
   DO JM = KIDIA, KFDIA
     DO JN = 1, N
@@ -75,22 +79,21 @@ IF (LLSIMPLE_DGEMM) THEN
 
 ELSE
 
-#ifdef _OPENACC
   IF (LDACC) THEN
   
+#ifdef _FXTRAN_USE_CUBLAS
     !$ACC DATA PRESENT(A,B,C)
     !$ACC HOST_DATA USE_DEVICE(A,B,C)
     CALL CUBLASDGEMM ('N','T', M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
     !$ACC END HOST_DATA
     !$ACC END DATA
     !$ACC WAIT
+#endif
   
   ELSE
     CALL DGEMM ('N','T', M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
   ENDIF
-#else
-  CALL DGEMM ('N','T', M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
-#endif
+
 ENDIF
 
 LDDONE = .TRUE.
