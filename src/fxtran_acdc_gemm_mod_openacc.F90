@@ -53,6 +53,7 @@ JM = KIDIA
 DO JN = 1, N
   C (JM, JN) = 0.
 ENDDO
+
 DO JK = 1, K
   DO JN = 1, N
     C (JM, JN) = C (JM, JN) + B (JN, JK) * A (JM, JK)
