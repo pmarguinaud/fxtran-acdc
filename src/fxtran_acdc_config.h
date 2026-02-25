@@ -19,7 +19,7 @@
 #endif
 
 #ifdef _FXTRAN_USE_OPENACC
-#define DEVICE_ROUTINE !$acc routine seq
+#define FXTRAN_ACDC_DEVICE_ROUTINE !$acc routine seq
 #endif
 
 #endif
