@@ -119,9 +119,9 @@ ELSE
       LLCBH_INITIALIZED = .TRUE.
     ENDIF
 
-    STRIDEA= STRIDE3 (A)
+    STRIDEA= FXTRAN_ACDC_STRIDE (A)
     STRIDEB= 0
-    STRIDEC= STRIDE2 (C)
+    STRIDEC= FXTRAN_ACDC_STRIDE (C)
     BATCHCOUNT=KGPBLKS
 
     !$ACC DATA PRESENT(A,B,C)
@@ -129,8 +129,8 @@ ELSE
      CALL CHECKCUBLAS (&
       & CUBLASDGEMMSTRIDEDBATCHED_V2 (YLCBH, CUBLAS_OP_N, CUBLAS_OP_T, M, 1, K, &
       &                        ALPHA, A (1, 1, 1), LDA, STRIDEA, &
-      &                               B (LDB, 1),    LDB, STRIDEB, &
-      &                        BETA,  C (1, 1), LDC, STRIDEC, &
+      &                               B (LDB, 1),  LDB, STRIDEB, &
+      &                        BETA,  C (1, 1),    LDC, STRIDEC, &
       &                               BATCHCOUNT))   
     !$ACC END HOST_DATA
     !$ACC END DATA
@@ -149,16 +149,6 @@ ENDIF
 LDDONE = .TRUE.
 
 END SUBROUTINE
-
-INTEGER FUNCTION STRIDE3 (P)
-REAL*8 :: P (:,:,:)
-STRIDE3 = (LOC (P (1, 1, 2)) - LOC (P (1, 1, 1))) / 8
-END FUNCTION
-
-INTEGER FUNCTION STRIDE2 (P)
-REAL*8 :: P (:,:)
-STRIDE2 = (LOC (P (1, 2)) - LOC (P (1, 1))) / 8
-END FUNCTION
 
 #ifdef _FXTRAN_USE_CUBLAS
 SUBROUTINE CHECKCUBLAS (STATUS)
