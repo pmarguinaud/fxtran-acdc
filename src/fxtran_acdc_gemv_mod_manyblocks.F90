@@ -45,12 +45,6 @@ LOGICAL     :: LDACC
 INTEGER                  :: KGPBLKS
 TYPE (FXTRAN_ACDC_STACK), OPTIONAL :: YDOFFSET
 
-INTEGER :: STRIDEA
-INTEGER :: STRIDEB
-INTEGER :: STRIDEC
-INTEGER :: BATCHCOUNT
-
-
 INTEGER :: JM, JN, JK, JBLK
 CHARACTER (LEN=*), PARAMETER :: CLNAME = 'FXTRAN_ACDC_GEMV'
 
@@ -75,7 +69,7 @@ IF (USE_SIMPLE_DGEMM ()) THEN
 #endif
   DO JBLK=1,KGPBLKS
 #ifdef _FXTRAN_USE_OPENACC
-!$ACC LOOP VECTOR PRIVATE(JM,JK)
+!$ACC LOOP VECTOR PRIVATE (JM, JK)
 #endif
     DO JM = KIDIA, MERGE (M, KFDIA, JBLK < KGPBLKS)
       C (JM,JBLK) = 0.
@@ -89,19 +83,15 @@ ELSE
 
   IF (LDACC) THEN
 #ifdef _FXTRAN_USE_CUBLAS
-    STRIDEA= FXTRAN_ACDC_STRIDE (A)
-    STRIDEB= 0
-    STRIDEC= FXTRAN_ACDC_STRIDE (C)
-    BATCHCOUNT=KGPBLKS
 
 !$ACC DATA PRESENT (A, B, C)
 !$ACC HOST_DATA USE_DEVICE (A, B, C)
      CALL CHECKCUBLAS (&
       & CUBLASDGEMMSTRIDEDBATCHED_V2 (GETCUHANDLE (), CUBLAS_OP_N, CUBLAS_OP_T, M, 1, K, &
-      &                        ALPHA, A (1, 1, 1), LDA, STRIDEA, &
-      &                               B (LDB, 1),  LDB, STRIDEB, &
-      &                        BETA,  C (1, 1),    LDC, STRIDEC, &
-      &                               BATCHCOUNT))   
+      &                        ALPHA, A (1, 1, 1), LDA, FXTRAN_ACDC_STRIDE (A), &
+      &                               B (LDB, 1),  LDB,                      0, &
+      &                        BETA,  C (1, 1),    LDC, FXTRAN_ACDC_STRIDE (C), &
+      &                               KGPBLKS))   
 !$ACC END HOST_DATA
 !$ACC END DATA
 
