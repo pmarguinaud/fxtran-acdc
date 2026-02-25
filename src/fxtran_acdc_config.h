@@ -20,6 +20,8 @@
 
 #ifdef _FXTRAN_USE_OPENACC
 #define FXTRAN_ACDC_DEVICE_ROUTINE !$acc routine seq
+#define fxtran_acdc_device_routine_begin _Pragma ("acc routine seq") 
+#define fxtran_acdc_device_routine_end   //
 #endif
 
 #endif
