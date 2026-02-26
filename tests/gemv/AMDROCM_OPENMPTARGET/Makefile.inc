@@ -8,5 +8,3 @@ CXX=amdclang++ $(FLAGS)
 
 LIBS=-L $(BUILD)/fxtran-acdc/lib -lFxtranACDC -L/lib/x86_64-linux-gnu -lblas -lrocblas -lamdhip64 -lhipfort-amdgcn
 
-# $(ROCM_PATH)/lib/libhipfort-amdgcn.a
-
