@@ -16,6 +16,8 @@
 
 #if FXTRAN_ACDC_VENDOR == FXTRAN_ACDC_NVIDIA
 #define _FXTRAN_USE_CUBLAS
+#elif FXTRAN_ACDC_VENDOR == FXTRAN_ACDC_AMDROCM
+#define _FXTRAN_USE_ROCBLAS
 #else
 #error No accelerated blas package was found
 #endif
