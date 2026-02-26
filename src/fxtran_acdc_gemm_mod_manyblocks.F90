@@ -92,8 +92,6 @@ ELSE
 
   IF (LDACC) THEN
 
-#ifdef _FXTRAN_USE_CUBLAS
-
 #ifdef _FXTRAN_USE_OPENACC
 !$ACC DATA PRESENT (A, B, C)
 !$ACC HOST_DATA USE_DEVICE (A, B, C)
@@ -102,12 +100,15 @@ ELSE
 !$OMP TARGET DATA MAP (TOFROM: A(1:LDA, 1:K, 1:KGPBLKS), B (1:LDB, 1:K), C (1:LDC, 1:N, 1:KGPBLKS))
 !$OMP TARGET DATA USE_DEVICE_ADDR (A, B, C)
 #endif
+
+#ifdef _FXTRAN_USE_CUBLAS
     CALL CHECKCUBLAS (&
       & CUBLASDGEMMSTRIDEDBATCHED_V2 (GETCUHANDLE (), CUBLAS_OP_N, CUBLAS_OP_T, M, N, K, &
       &                        ALPHA, A (1, 1, 1), LDA, FXTRAN_ACDC_STRIDE (A), &
       &                               B (1, 1),    LDB,                      0, &
       &                        BETA,  C (1, 1, 1), LDC, FXTRAN_ACDC_STRIDE (C), &
       &                               KGPBLKS))
+#endif
 
 #ifdef _FXTRAN_USE_OPENACC
 !$ACC END HOST_DATA
@@ -118,8 +119,7 @@ ELSE
 !$OMP END TARGET DATA
 #endif
 
-    CALL CHECKCUSTREAM
-#endif
+    CALL FXTRAN_ACDC_CHECK_BLAS_STREAM
 
   ELSE
 

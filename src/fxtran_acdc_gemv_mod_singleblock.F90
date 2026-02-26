@@ -82,7 +82,6 @@ IF (FXTRAN_ACDC_USE_SIMPLE_DGEMM ()) THEN
 ELSE
 
   IF (LDACC) THEN
-#ifdef _FXTRAN_USE_CUBLAS
 
 #ifdef _FXTRAN_USE_OPENACC
 !$ACC DATA PRESENT (A, B, C)
@@ -93,11 +92,14 @@ ELSE
 !$OMP TARGET DATA USE_DEVICE_ADDR (A, B, C)
 #endif
 
+#ifdef _FXTRAN_USE_CUBLAS
     CALL CHECKCUBLAS (&
       & CUBLASDGEMM_V2 (GETCUHANDLE (), CUBLAS_OP_N, CUBLAS_OP_T, M, N, K, &
       &          ALPHA, A (1, 1),   LDA, &
       &                 B (LDB, 1), LDB, &
       &          BETA,  C (1),      LDC))
+#endif
+
 #ifdef _FXTRAN_USE_OPENACC
 !$ACC END HOST_DATA
 !$ACC END DATA
@@ -107,8 +109,7 @@ ELSE
 !$OMP END TARGET DATA
 #endif
 
-    CALL CHECKCUSTREAM
-#endif
+    CALL FXTRAN_ACDC_CHECK_BLAS_STREAM
   ELSE
     CALL DGEMM ('N','T', M, N, K, ALPHA, A(1,1), LDA, B(LDB,1), LDB, BETA, C(1), LDC)
   ENDIF
