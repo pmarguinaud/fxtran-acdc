@@ -9,7 +9,10 @@ endif
 
 all: exe
 
-include Makefile.$(ARCH)
+include $(ARCH)/Makefile.inc
+
+boot:
+	../../bin/fxtran-boot --prefix $(BUILD)/fxtran-acdc -CXX "$(CXX)" -CC "$(CC)" -F90 "$(FC)"
 
 $(BUILD)/main.o: $(BOOT) $(SRC)/main.F90 
 	$(FC) -o $(BUILD)/main.o -c $(SRC)/main.F90
