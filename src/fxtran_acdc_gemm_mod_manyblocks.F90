@@ -110,6 +110,16 @@ ELSE
       &                               KGPBLKS))
 #endif
 
+#ifdef _FXTRAN_USE_ROCBLAS
+    CALL CHECKROCBLAS (&
+      & ROCBLAS_DGEMM_STRIDED_BATCHED (GETROCBLASHANDLE (), ROCBLAS_OPERATION_NONE, ROCBLAS_OPERATION_TRANSPOSE, M, N, K, &
+      &                        ALPHA, A (1, 1, 1), LDA, FXTRAN_ACDC_STRIDE (A), &
+      &                               B (1, 1),    LDB,                      0, &
+      &                        BETA,  C (1, 1, 1), LDC, FXTRAN_ACDC_STRIDE (C), &
+      &                               KGPBLKS))
+
+#endif
+
 #ifdef _FXTRAN_USE_OPENACC
 !$ACC END HOST_DATA
 !$ACC END DATA

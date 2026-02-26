@@ -90,9 +90,17 @@ ELSE
 #ifdef _FXTRAN_USE_CUBLAS
     CALL CHECKCUBLAS (&
       & CUBLASDGEMM_V2 (GETCUBLASHANDLE (), CUBLAS_OP_N, CUBLAS_OP_T, M, N, K, &
-      &          ALPHA, A (1,1), LDA, &
-      &                 B (1,1), LDB, &
-      &          BETA,  C (1,1), LDC))
+      &          ALPHA, A (1, 1), LDA, &
+      &                 B (1, 1), LDB, &
+      &          BETA,  C (1, 1), LDC))
+#endif
+
+#ifdef _FXTRAN_USE_ROCBLAS
+    CALL CHECKROCBLAS (&
+      &  ROCBLAS_DGEMM (GETROCBLASHANDLE (), ROCBLAS_OPERATION_NONE, ROCBLAS_OPERATION_TRANSPOSE, M, N, K, &
+      &          ALPHA, A (1, 1), LDA, &
+      &                 B (1, 1), LDB, &
+      &          BETA,  C (1, 1), LDC))
 #endif
 
 #ifdef _FXTRAN_USE_OPENACC
