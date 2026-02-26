@@ -19,9 +19,16 @@
 #endif
 
 #ifdef _FXTRAN_USE_OPENACC
-#define FXTRAN_ACDC_DEVICE_ROUTINE !$acc routine seq
-#define fxtran_acdc_device_routine_begin _Pragma ("acc routine seq") 
-#define fxtran_acdc_device_routine_end   //
+#define FXTRAN_ACDC_ROUTINE_SEQ          !$ACC ROUTINE SEQ
+#define FXTRAN_ACDC_ENTER_DATA_CREATE(x) !$ACC ENTER DATA CREATE (x)
+#define FXTRAN_ACDC_EXIT_DATA_DELETE(x)  !$ACC EXIT DATA DELETE (x)
+#define FXTRAN_ACDC_UPDATE_DEVICE(x)     !$ACC UPDATE DEVICE (x)
+#define FXTRAN_ACDC_ENTER_DATA_ATTACH(x) !$ACC ENTER DATA ATTACH (x)
+#define FXTRAN_ACDC_EXIT_DATA_DETACH(x)  !$ACC EXIT DATA DETACH (x)
+
+#define fxtran_acdc_routine_seq_begin    _Pragma ("acc routine seq") 
+#define fxtran_acdc_routine_seq_end      //
+
 #endif
 
 #endif
