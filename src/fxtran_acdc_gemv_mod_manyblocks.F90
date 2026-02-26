@@ -101,7 +101,7 @@ ELSE
 
 #ifdef _FXTRAN_USE_CUBLAS
      CALL CHECKCUBLAS (&
-      & CUBLASDGEMMSTRIDEDBATCHED_V2 (GETCUHANDLE (), CUBLAS_OP_N, CUBLAS_OP_T, M, 1, K, &
+      & CUBLASDGEMMSTRIDEDBATCHED_V2 (GETCUBLASHANDLE (), CUBLAS_OP_N, CUBLAS_OP_T, M, 1, K, &
       &                        ALPHA, A (1, 1, 1), LDA, FXTRAN_ACDC_STRIDE (A), &
       &                               B (LDB, 1),  LDB,                      0, &
       &                        BETA,  C (1, 1),    LDC, FXTRAN_ACDC_STRIDE (C), &

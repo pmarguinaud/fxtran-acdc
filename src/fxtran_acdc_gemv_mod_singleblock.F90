@@ -94,7 +94,7 @@ ELSE
 
 #ifdef _FXTRAN_USE_CUBLAS
     CALL CHECKCUBLAS (&
-      & CUBLASDGEMM_V2 (GETCUHANDLE (), CUBLAS_OP_N, CUBLAS_OP_T, M, N, K, &
+      & CUBLASDGEMM_V2 (GETCUBLASHANDLE (), CUBLAS_OP_N, CUBLAS_OP_T, M, N, K, &
       &          ALPHA, A (1, 1),   LDA, &
       &                 B (LDB, 1), LDB, &
       &          BETA,  C (1),      LDC))
