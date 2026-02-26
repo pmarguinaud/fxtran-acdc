@@ -4,12 +4,12 @@ SRC=.
 endif
 
 ifeq ($(BUILD), )
-BUILD=.
+BUILD=$(ARCH)
 endif
 
 all: exe
 
-include Makefile.inc
+include Makefile.$(ARCH)
 
 $(BUILD)/main.o: $(BOOT) $(SRC)/main.F90 
 	$(FC) -o $(BUILD)/main.o -c $(SRC)/main.F90
