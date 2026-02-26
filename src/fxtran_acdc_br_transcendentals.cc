@@ -46,14 +46,6 @@
 namespace fxtran_acdc_br
 {
 
-/*************
- * CONSTANTS *
- *************/
- 
-static const double const_2_over_pi = 6.3661977236758138e-1;
-static const double halfLogTwoPi = 0.91893853320467274178032973640562;
-static const double squareRootOfPi = 1.77245385090551602729816748334;
-
 /*****************************************
  * FORWARD DECLARATION OF SOME FUNCTIONS *
  *****************************************/
@@ -222,6 +214,7 @@ fxtran_acdc_routine_seq_end
 fxtran_acdc_routine_seq_begin
 static double __internal_trig_reduction_kerneld(double x, int *q_)
 {
+    const double const_2_over_pi = 6.3661977236758138e-1;
     double j, t;
     int& q = *q_;
 
@@ -1091,6 +1084,7 @@ fxtran_acdc_routine_seq_end
 fxtran_acdc_routine_seq_begin
 double __erfseries(double x)
 {
+  const double squareRootOfPi = 1.77245385090551602729816748334;
   double coef = x;
   double e    = coef;
   double del;
@@ -1238,10 +1232,12 @@ double log_gamma
     double x    // x must be positive
 )
 {
-	if (x <= 0.0)
-	{
-          return std::numeric_limits<double>::quiet_NaN();
-	}
+    const double halfLogTwoPi = 0.91893853320467274178032973640562;
+
+    if (x <= 0.0)
+    {
+      return std::numeric_limits<double>::quiet_NaN();
+    }
 
     if (x < 12.0)
     {

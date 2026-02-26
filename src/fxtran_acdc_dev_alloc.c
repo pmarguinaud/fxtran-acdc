@@ -35,7 +35,7 @@ static void init ()
   dev_malloc = dlsym (h, "dev_malloc");
   dev_free   = dlsym (h, "dev_free");
 
-  fprintf (stderr, " dev_malloc = 0x%llx, dev_free = 0x%llx\n", dev_malloc, dev_free);
+  fprintf (stderr, " dev_malloc = 0x%llx, dev_free = 0x%llx\n", (unsigned long long)dev_malloc, (unsigned long long)dev_free);
   fflush (stderr);
 
   dlclose (h);

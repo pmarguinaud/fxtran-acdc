@@ -105,7 +105,7 @@ ELSE
     CALL CHECKCUBLAS (&
       & CUBLASDGEMMSTRIDEDBATCHED_V2 (GETCUBLASHANDLE (), CUBLAS_OP_N, CUBLAS_OP_T, M, N, K, &
       &                        ALPHA, A (1, 1, 1), LDA, FXTRAN_ACDC_STRIDE (A), &
-      &                               B (1, 1),    LDB,                      0, &
+      &                               B (1, 1),    LDB, FXTRAN_ACDC_STRIDE (0), &
       &                        BETA,  C (1, 1, 1), LDC, FXTRAN_ACDC_STRIDE (C), &
       &                               KGPBLKS))
 #endif
@@ -114,7 +114,7 @@ ELSE
     CALL CHECKROCBLAS (&
       & ROCBLAS_DGEMM_STRIDED_BATCHED (GETROCBLASHANDLE (), ROCBLAS_OPERATION_NONE, ROCBLAS_OPERATION_TRANSPOSE, M, N, K, &
       &                        ALPHA, A (1, 1, 1), LDA, FXTRAN_ACDC_STRIDE (A), &
-      &                               B (1, 1),    LDB,                      0, &
+      &                               B (1, 1),    LDB, FXTRAN_ACDC_STRIDE (0), &
       &                        BETA,  C (1, 1, 1), LDC, FXTRAN_ACDC_STRIDE (C), &
       &                               KGPBLKS))
 

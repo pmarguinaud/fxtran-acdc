@@ -103,7 +103,7 @@ ELSE
      CALL CHECKCUBLAS (&
       & CUBLASDGEMMSTRIDEDBATCHED_V2 (GETCUBLASHANDLE (), CUBLAS_OP_N, CUBLAS_OP_T, M, 1, K, &
       &                        ALPHA, A (1, 1, 1), LDA, FXTRAN_ACDC_STRIDE (A), &
-      &                               B (LDB, 1),  LDB,                      0, &
+      &                               B (LDB, 1),  LDB, FXTRAN_ACDC_STRIDE (0), &
       &                        BETA,  C (1, 1),    LDC, FXTRAN_ACDC_STRIDE (C), &
       &                               KGPBLKS))   
 #endif
@@ -112,7 +112,7 @@ ELSE
      CALL CHECKROCBLAS (&
       & ROCBLAS_DGEMM_STRIDED_BATCHED (GETROCBLASHANDLE (), ROCBLAS_OPERATION_NONE, ROCBLAS_OPERATION_TRANSPOSE, M, 1, K, &
       &                        ALPHA, A (1, 1, 1), LDA, FXTRAN_ACDC_STRIDE (A), &
-      &                               B (LDB, 1),  LDB,                      0, &
+      &                               B (LDB, 1),  LDB, FXTRAN_ACDC_STRIDE (0), &
       &                        BETA,  C (1, 1),    LDC, FXTRAN_ACDC_STRIDE (C), &
       &                               KGPBLKS))
 #endif
@@ -130,7 +130,7 @@ ELSE
 
   ELSE
     DO JBLK=1,KGPBLKS
-      CALL DGEMM ('N','T', M, N, K, ALPHA, A(1,1,JBLK), LDA, B(LDB,1), LDB, BETA, C(1,JBLK), LDC)
+      CALL DGEMM ('N','T', M, N, K, ALPHA, A (1, 1, JBLK), LDA, B (LDB, 1), LDB, BETA, C (1, JBLK), LDC)
     ENDDO
   ENDIF
 

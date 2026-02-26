@@ -40,6 +40,8 @@ static int runCommand (const char * fmt, ...)
 
   if (rc)
     abort ();
+
+  return 0;
 }
 
 static int getMPIRank ()
