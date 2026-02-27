@@ -101,7 +101,7 @@ ELSE
 #endif
 
 #ifdef _FXTRAN_USE_ROCBLAS
-     CALL CHECKROCBLAS (&
+     CALL FXTRAN_ACDC_CHECK_BLAS (&
        & FXTRAN_ACDC_DGEMM (GETROCBLASHANDLE (), FXTRAN_ACDC_OP_N, FXTRAN_ACDC_OP_T, M, N, K, &
        &         ALPHA, A (1, 1),   LDA, &
        &                B (LDB, 1), LDB, &
