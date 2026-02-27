@@ -11,7 +11,7 @@
 
 #include "fxtran_acdc_config.h"
 
-#ifdef _FXTRAN_USE_OPENACC
+#ifdef FXTRAN_ACDC_USE_OPENACC
 #include <openacc.h>
 #include <accel.h>
 #endif
@@ -58,7 +58,7 @@ void fxtran_acdc_nvidia_smi_ (ssize_t * psize)
 
   *psize = -1;
 
-#ifdef _FXTRAN_USE_OPENACC
+#ifdef FXTRAN_ACDC_USE_OPENACC
   idev = acc_get_device_num (acc_device_nvidia);
 
   sprintf (file, ".nvidia-smi-%6.6d.txt", 1 + getMPIRank ());
@@ -77,7 +77,7 @@ void fxtran_acdc_nvidia_smi_ (ssize_t * psize)
 void fxtran_acdc_nvidia_free_memory_ (ssize_t * psize)
 {
   *psize = 0;
-#ifdef _FXTRAN_USE_OPENACC
+#ifdef FXTRAN_ACDC_USE_OPENACC
   *psize = acc_get_memory () - acc_get_free_memory ();
 #endif
 }
@@ -117,7 +117,7 @@ void fxtran_acdc_nvidia_present_dump_ (ssize_t * pallocated, ssize_t * pdeleted)
   *pallocated = 0;
   *pdeleted   = 0;
 
-#ifdef _FXTRAN_USE_OPENACC
+#ifdef FXTRAN_ACDC_USE_OPENACC
 
   sprintf (file, ".nvidia-acc_present_dump-%6.6d.txt", 1 + getMPIRank ());
   unlink (file);
