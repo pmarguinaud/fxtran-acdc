@@ -87,21 +87,11 @@ ELSE
 !$OMP TARGET DATA USE_DEVICE_ADDR (A, B, C)
 #endif
 
-#ifdef _FXTRAN_USE_CUBLAS
-    CALL CHECKCUBLAS (&
-      & CUBLASDGEMM_V2 (GETCUBLASHANDLE (), CUBLAS_OP_N, CUBLAS_OP_T, M, N, K, &
-      &          ALPHA, A (1, 1), LDA, &
-      &                 B (1, 1), LDB, &
-      &          BETA,  C (1, 1), LDC))
-#endif
-
-#ifdef _FXTRAN_USE_ROCBLAS
     CALL FXTRAN_ACDC_CHECK_BLAS (&
       &  FXTRAN_ACDC_DGEMM (FXTRAN_ACDC_BLAS_GET_HANDLE (), FXTRAN_ACDC_OP_N, FXTRAN_ACDC_OP_T, M, N, K, &
       &          ALPHA, A (1, 1), LDA, &
       &                 B (1, 1), LDB, &
       &          BETA,  C (1, 1), LDC))
-#endif
 
 #ifdef _FXTRAN_USE_OPENACC
 !$ACC END HOST_DATA
