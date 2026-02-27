@@ -15,8 +15,8 @@
 typedef void (*dev_malloc_t) (size_t, void **);
 typedef void (*dev_free_t) (void *);
 
-dev_malloc_t dev_malloc = NULL;
-dev_free_t dev_free = NULL;
+static dev_malloc_t dev_malloc = NULL;
+static dev_free_t dev_free = NULL;
 
 static void init ()
 {
