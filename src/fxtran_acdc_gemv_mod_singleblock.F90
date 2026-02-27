@@ -102,7 +102,7 @@ ELSE
 
 #ifdef _FXTRAN_USE_ROCBLAS
      CALL CHECKROCBLAS (&
-       & ROCBLAS_DGEMM (GETROCBLASHANDLE (), ROCBLAS_OPERATION_NONE, ROCBLAS_OPERATION_TRANSPOSE, M, N, K, &
+       & FXTRAN_ACDC_DGEMM (GETROCBLASHANDLE (), FXTRAN_ACDC_OP_N, FXTRAN_ACDC_OP_T, M, N, K, &
        &         ALPHA, A (1, 1),   LDA, &
        &                B (LDB, 1), LDB, &
        &         BETA,  C (1),      LDC))
