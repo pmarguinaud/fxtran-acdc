@@ -1,0 +1,5 @@
+
+module load nvhpc/24.7
+
+ARCHLIST="NVIDIA_OPENACC NVIDIA_OPENMPTARGET"
+

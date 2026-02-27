@@ -1,21 +1,12 @@
 #!/bin/bash
 
-set -x
 set -e
 
+source ./env.sh
+
+set -x
+
 export ARCH
-
-host=$(hostname)
-
-if [ $host = "mi300x" ]
-then
-  ARCHLIST=AMDROCM_OPENMPTARGET
-fi
-
-if [[ $host =~ (taranis|belenos)ndl ]] 
-then 
-  ARCHLIST="NVIDIA_OPENACC NVIDIA_OPENMPTARGET"
-fi
 
 for ARCH in $ARCHLIST
 do
