@@ -11,7 +11,7 @@
 
 #include "fxtran_acdc_config.h"
 
-#ifdef FXTRAN_ACDC_USE_OPENACC
+#ifdef _FXTRAN_ACDC_USE_OPENACC
 #include <openacc.h>
 #include <accel.h>
 #endif
@@ -62,7 +62,7 @@ void fxtran_acdc_openacc_bind_ (int * prank, int * psize)
       goto end;
     }
 
-#ifdef FXTRAN_ACDC_USE_OPENACC
+#ifdef _FXTRAN_ACDC_USE_OPENACC
   printf (" openacc_bind_ : %d -> %d\n", rank, idev);
   acc_set_device_num (idev, acc_device_nvidia);
 #endif
