@@ -14,7 +14,6 @@
 void fxtran_acdc_field_api_stat_ (long * device_cur, long * device_max)
 {
   void * h = NULL;
-  char * error;
 
   *device_cur = 0;
   *device_max = 0;
@@ -27,7 +26,8 @@ void fxtran_acdc_field_api_stat_ (long * device_cur, long * device_max)
       abort ();
     }
 
-  void (*field_api_stat) (long *, long *) = dlsym (h, "field_api_stat");
+  typedef void (*field_api_stat_t) (long *, long *);
+  field_api_stat_t field_api_stat = (field_api_stat_t)dlsym (h, "field_api_stat");
 
   if (field_api_stat != NULL)
     field_api_stat (device_cur, device_max);

@@ -22,6 +22,7 @@
  * philippe.marguinaud@meteo.fr
  */
 
+#ifdef FXTRAN_ACDC_USE_OPENACC
 static int runCommand (const char * fmt, ...)
 {
   char command[512];
@@ -50,15 +51,38 @@ static int getMPIRank ()
   return MPIRank ? atoi (MPIRank) : -1;
 }
 
+static int redirectStderr (const char * file)
+{
+  int i, j, k;
+
+  unlink (file);
+  k = open (file, O_WRONLY | O_CREAT, 0644);
+
+  fflush (stderr);
+  i = fileno (stderr);
+  j = dup (i);
+  dup2 (k, i);
+  return j;
+}
+
+static void restoreStderr (int j)
+{
+  fflush (stderr);
+  dup2 (j, 2);
+  close (j);
+}
+
+#endif
+
 void fxtran_acdc_nvidia_smi_ (ssize_t * psize)
 {
+#ifdef FXTRAN_ACDC_USE_OPENACC
   char file[64];
   FILE * fp = NULL;
   int idev;
 
   *psize = -1;
 
-#ifdef FXTRAN_ACDC_USE_OPENACC
   idev = acc_get_device_num (acc_device_nvidia);
 
   sprintf (file, ".nvidia-smi-%6.6d.txt", 1 + getMPIRank ());
@@ -82,29 +106,9 @@ void fxtran_acdc_nvidia_free_memory_ (ssize_t * psize)
 #endif
 }
 
-static int redirectStderr (const char * file)
-{
-  int i, j, k;
-
-  unlink (file);
-  k = open (file, O_WRONLY | O_CREAT, 0644);
-
-  fflush (stderr);
-  i = fileno (stderr);
-  j = dup (i);
-  dup2 (k, i);
-  return j;
-}
-
-static void restoreStderr (int j)
-{
-  fflush (stderr);
-  dup2 (j, 2);
-  close (j);
-}
-
 void fxtran_acdc_nvidia_present_dump_ (ssize_t * pallocated, ssize_t * pdeleted)
 {
+#ifdef FXTRAN_ACDC_USE_OPENACC
   int i;
   char file[64];
   FILE * fp = NULL;
@@ -113,6 +117,7 @@ void fxtran_acdc_nvidia_present_dump_ (ssize_t * pallocated, ssize_t * pdeleted)
   const char * ALLOCATED_BLOCK = "allocated block ";
   const char * DELETED_BLOCK = "deleted block ";
   const char * SIZE = "size:";
+#endif
 
   *pallocated = 0;
   *pdeleted   = 0;
