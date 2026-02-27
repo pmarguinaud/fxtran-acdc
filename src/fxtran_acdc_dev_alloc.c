@@ -11,13 +11,16 @@
  * philippe.marguinaud@meteo.fr
  */
 
-static void (*dev_malloc) (size_t, void **) = NULL;
-static void (*dev_free) (void *) = NULL;
+
+typedef void (*dev_malloc_t) (size_t, void **);
+typedef void (*dev_free_t) (void *);
+
+dev_malloc_t dev_malloc = NULL;
+dev_free_t dev_free = NULL;
 
 static void init ()
 {
   void * h = NULL;
-  char * error;
 
   static int done = 0;
 
@@ -32,8 +35,8 @@ static void init ()
       abort ();
     }
 
-  dev_malloc = dlsym (h, "dev_malloc");
-  dev_free   = dlsym (h, "dev_free");
+  dev_malloc = (dev_malloc_t)dlsym (h, "dev_malloc");
+  dev_free   = (dev_free_t)dlsym (h, "dev_free");
 
   fprintf (stderr, " dev_malloc = 0x%llx, dev_free = 0x%llx\n", (unsigned long long)dev_malloc, (unsigned long long)dev_free);
   fflush (stderr);

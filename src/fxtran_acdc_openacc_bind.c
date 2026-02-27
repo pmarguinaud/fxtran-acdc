@@ -24,9 +24,6 @@
  * philippe.marguinaud@meteo.fr
  */
 
-static int DEVNUM = -1;
-static int MPIRANK = -1;
-
 void fxtran_acdc_openacc_bind_ (int * prank, int * psize)
 {
   int rank = *prank;
@@ -36,8 +33,6 @@ void fxtran_acdc_openacc_bind_ (int * prank, int * psize)
   char * buf = (char*)malloc (len);
   const char * MF_OPENACC_BIND;
   int idev;
-
-  MPIRANK = *prank;
 
   MF_OPENACC_BIND = getenv ("MF_OPENACC_BIND");
 
@@ -70,7 +65,6 @@ void fxtran_acdc_openacc_bind_ (int * prank, int * psize)
 #ifdef _FXTRAN_USE_OPENACC
   printf (" openacc_bind_ : %d -> %d\n", rank, idev);
   acc_set_device_num (idev, acc_device_nvidia);
-  DEVNUM = idev;
 #endif
 
 end:
