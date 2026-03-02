@@ -6,5 +6,5 @@ FC=pgf90 -I $(BUILD)/fxtran-acdc/include $(FFLAGS)
 CC=pgcc $(FLAGS)
 CXX=pgc++ $(FLAGS)
 
-LIBS=-L $(BUILD)/fxtran-acdc/lib -lFxtranACDC -lblas -L$(NVHPC_ROOT)/math_libs/$(CUDA)/lib64 -cudalib=cublas
+LIBS=-L $(BUILD)/fxtran-acdc/lib -lFxtranACDC -lblas -L$(NVHPC_ROOT)/math_libs/$(CUDA)/lib64 -cudalib=cublas $(NVTXLIBS)
 

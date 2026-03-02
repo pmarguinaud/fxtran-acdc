@@ -13,8 +13,8 @@ CHARACTER (LEN=*), PARAMETER :: CLPOP  = "roctxRangePop"
 #endif
 
 #ifdef _FXTRAN_ACDC_USE_NVTX
-CHARACTER (LEN=*), PARAMETER :: CLMARK = "nvtxMark"
-CHARACTER (LEN=*), PARAMETER :: CLPUSH = "nvtxRangePush"
+CHARACTER (LEN=*), PARAMETER :: CLMARK = "nvtxMarkA"
+CHARACTER (LEN=*), PARAMETER :: CLPUSH = "nvtxRangePushA"
 CHARACTER (LEN=*), PARAMETER :: CLPOP  = "nvtxRangePop"
 #endif
 
