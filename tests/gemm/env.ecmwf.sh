@@ -1,7 +1,11 @@
 
 module purge
-module load pn
-module load nvidia/24.11
+
+export MODULEPATH=/perm/sor/install/nvidia/hpc_sdk/modulefiles
+
+module load nvhpc/26.1
+
+export CUDA=12.9
 
 ARCHLIST="NVIDIA_OPENACC NVIDIA_OPENMPTARGET"
 

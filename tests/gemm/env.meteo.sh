@@ -1,5 +1,7 @@
 
 module load nvhpc/24.7
 
+export CUDA=12.5
+
 ARCHLIST="NVIDIA_OPENACC NVIDIA_OPENMPTARGET"
 
