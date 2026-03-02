@@ -22,6 +22,14 @@
 #error No accelerated blas package was found
 #endif
 
+#if FXTRAN_ACDC_VENDOR == FXTRAN_ACDC_NVIDIA
+#define _FXTRAN_ACDC_USE_NVTX
+#elif FXTRAN_ACDC_VENDOR == FXTRAN_ACDC_AMDROCM
+#define _FXTRAN_ACDC_USE_ROCTX
+#else
+#error No tx package was found
+#endif
+
 #ifdef _FXTRAN_ACDC_USE_OPENACC
 
 #define FXTRAN_ACDC_ROUTINE_SEQ          !$ACC ROUTINE SEQ
