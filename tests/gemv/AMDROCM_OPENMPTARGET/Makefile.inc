@@ -6,5 +6,4 @@ FC=amdflang -I $(BUILD)/fxtran-acdc/include $(FFLAGS)
 CC=amdclang $(FLAGS)
 CXX=amdclang++ $(FLAGS)
 
-LIBS=-L $(BUILD)/fxtran-acdc/lib -lFxtranACDC -L/lib/x86_64-linux-gnu -lblas -lrocblas -lamdhip64 -lhipfort-amdgcn
-
+LIBS=-L $(BUILD)/fxtran-acdc/lib -lFxtranACDC -L/lib/x86_64-linux-gnu -lblas -lrocblas -lamdhip64 -lhipfort-amdgcn -lrocprofiler-sdk-roctx
