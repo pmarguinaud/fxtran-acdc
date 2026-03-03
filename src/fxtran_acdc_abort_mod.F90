@@ -1,5 +1,7 @@
 MODULE FXTRAN_ACDC_ABORT_MOD
 
+#include "fxtran_acdc_config.h"
+
 !
 ! Copyright 2025 Meteo-France
 ! All rights reserved
@@ -12,7 +14,7 @@ SUBROUTINE FXTRAN_ACDC_ABORT (CDMESS)
 
 CHARACTER (LEN=*) :: CDMESS
 
-!$acc routine (FXTRAN_ACDC_ABORT) seq
+FXTRAN_ACDC_ROUTINE_SEQ
 
 PRINT *, " FXTRAN_ACDC_ABORT "
 PRINT *, CDMESS

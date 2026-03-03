@@ -1,5 +1,7 @@
 MODULE FXTRAN_ACDC_GEMM_MOD_SINGLEBLOCK
 
+#include "fxtran_acdc_config.h"
+
 !
 ! Copyright 2025 Meteo-France
 ! All rights reserved
@@ -17,10 +19,7 @@ CONTAINS
 SUBROUTINE FXTRAN_ACDC_GEMM_SINGLEBLOCK (KIDIA, KFDIA, TRANSA, TRANSB, M, N, K, ALPHA, A, &
                                        & LDA, B, LDB, BETA, C, LDC, LDDONE, LDACC )
 
-#ifdef _CUDA
-USE CUBLAS
-#endif
-
+USE FXTRAN_ACDC_BLAS_MOD
 USE FXTRAN_ACDC_ABORT_MOD
 
                                 ! VERINT
@@ -32,36 +31,32 @@ INTEGER     :: M                ! KPROMA
 INTEGER     :: N                ! KLEVOUT-1  if verder/verint, 1 if verints  
 INTEGER     :: K                ! KLEVIN
 REAL*8      :: ALPHA            ! 1.0_JPRD
-REAL*8      :: A (LDA, *)       ! ZIN
+REAL*8      :: A (:, :)         ! ZIN
 INTEGER     :: LDA              ! KPROMA
-REAL*8      :: B (LDB, *)       ! PINTE
+REAL*8      :: B (:, :)         ! PINTE
 INTEGER     :: LDB              ! KLEVOUT
 REAL*8      :: BETA             ! 0.0_JPRB
-REAL*8      :: C (LDC, *)       ! ZOUT
+REAL*8      :: C (:, :)         ! ZOUT
 INTEGER     :: LDC              ! KPROMA
 LOGICAL     :: LDDONE
 LOGICAL     :: LDACC
 
 INTEGER :: JM, JN, JK
-CHARACTER*1, SAVE :: CLENV = ''
-LOGICAL, SAVE :: LLSIMPLE_DGEMM = .FALSE.
-
-IF (CLENV == '') THEN
-  CALL GETENV ('FXTRAN_ACDC_SIMPLE_DGEMM', CLENV)
-  LLSIMPLE_DGEMM = CLENV (1:1) == '1' 
-  CLENV = '0'
-ENDIF
 
 IF (TRANSA /= 'N') CALL FXTRAN_ACDC_ABORT ('FXTRAN_ACDC_GEMM')
 IF (TRANSB /= 'T') CALL FXTRAN_ACDC_ABORT ('FXTRAN_ACDC_GEMM')
 IF (KIDIA /= 1) CALL FXTRAN_ACDC_ABORT ('FXTRAN_ACDC_GEMM')
 
-IF (LLSIMPLE_DGEMM) THEN
+IF (_FXTRAN_ACDC_USE_SIMPLE_DGEMM ()) THEN
 
-  !$ACC PARALLEL LOOP GANG VECTOR &
-  !$ACC&PRESENT (A, B, C) &
-  !$ACC&PRIVATE (JK, JN, JM) IF(LDACC)
-
+#ifdef _FXTRAN_ACDC_USE_OPENACC
+!$ACC DATA PRESENT (A, B, C) IF (LDACC)
+!$ACC PARALLEL LOOP GANG VECTOR PRIVATE (JK, JN, JM) IF (LDACC)
+#endif
+#ifdef _FXTRAN_ACDC_USE_OPENMPTARGET
+!$OMP TARGET DATA MAP (TOFROM: A (1:LDA, 1:K), B (1:LDB, 1:K), C (1:LDC, 1:N)) IF (LDACC)
+!$OMP TARGET TEAMS DISTRIBUTE PARALLEL DO SIMD PRIVATE (JK, JN) IF (LDACC) 
+#endif
   DO JM = KIDIA, KFDIA
     DO JN = 1, N
       C (JM, JN) = 0.
@@ -72,25 +67,47 @@ IF (LLSIMPLE_DGEMM) THEN
       ENDDO
     ENDDO
   ENDDO
+#ifdef _FXTRAN_ACDC_USE_OPENACC
+!$ACC END DATA
+#endif
+#ifdef _FXTRAN_ACDC_USE_OPENMPTARGET
+!$OMP END TARGET DATA
+#endif
 
 ELSE
 
-#ifdef _OPENACC
   IF (LDACC) THEN
   
-    !$ACC DATA PRESENT(A,B,C)
-    !$ACC HOST_DATA USE_DEVICE(A,B,C)
-    CALL CUBLASDGEMM ('N','T', M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
-    !$ACC END HOST_DATA
-    !$ACC END DATA
-    !$ACC WAIT
+#ifdef _FXTRAN_ACDC_USE_OPENACC
+!$ACC DATA PRESENT (A, B, C)
+!$ACC HOST_DATA USE_DEVICE (A, B, C)
+#endif
+#ifdef _FXTRAN_ACDC_USE_OPENMPTARGET
+!$OMP TARGET DATA MAP (TOFROM: A (1:LDA, 1:K), B (1:LDB, 1:K), C (1:LDC, 1:N))
+!$OMP TARGET DATA USE_DEVICE_ADDR (A, B, C)
+#endif
+
+    CALL FXTRAN_ACDC_CHECK_BLAS (&
+      &  FXTRAN_ACDC_DGEMM (FXTRAN_ACDC_BLAS_GET_HANDLE (), FXTRAN_ACDC_OP_N, FXTRAN_ACDC_OP_T, M, N, K, &
+      &          ALPHA, A (1, 1), LDA, &
+      &                 B (1, 1), LDB, &
+      &          BETA,  C (1, 1), LDC))
+
+#ifdef _FXTRAN_ACDC_USE_OPENACC
+!$ACC END HOST_DATA
+!$ACC END DATA
+#endif
+#ifdef _FXTRAN_ACDC_USE_OPENMPTARGET
+!$OMP END TARGET DATA
+!$OMP END TARGET DATA
+#endif
+
+    CALL FXTRAN_ACDC_CHECK_BLAS_STREAM
   
   ELSE
     CALL DGEMM ('N','T', M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
   ENDIF
-#else
-  CALL DGEMM ('N','T', M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
-#endif
+
 ENDIF
 
 LDDONE = .TRUE.

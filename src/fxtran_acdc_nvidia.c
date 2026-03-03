@@ -9,7 +9,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#ifdef _OPENACC
+#include "fxtran_acdc_config.h"
+
+#ifdef _FXTRAN_ACDC_USE_OPENACC
 #include <openacc.h>
 #include <accel.h>
 #endif
@@ -20,6 +22,7 @@
  * philippe.marguinaud@meteo.fr
  */
 
+#ifdef _FXTRAN_ACDC_USE_OPENACC
 static int runCommand (const char * fmt, ...)
 {
   char command[512];
@@ -38,44 +41,14 @@ static int runCommand (const char * fmt, ...)
 
   if (rc)
     abort ();
+
+  return 0;
 }
 
 static int getMPIRank ()
 {
   const char * MPIRank = getenv ("OMPI_COMM_WORLD_RANK");
   return MPIRank ? atoi (MPIRank) : -1;
-}
-
-void fxtran_acdc_nvidia_smi_ (ssize_t * psize)
-{
-  char file[64];
-  FILE * fp = NULL;
-  int idev;
-
-  *psize = -1;
-
-#ifdef _OPENACC
-  idev = acc_get_device_num (acc_device_nvidia);
-
-  sprintf (file, ".nvidia-smi-%6.6d.txt", 1 + getMPIRank ());
-  unlink (file);
-  runCommand ("/usr/bin/nvidia-smi --query-compute-apps=used_memory  --format=csv,noheader,nounits -i %d > %s", idev, file);
-  if (fp = fopen (file, "r"))
-    {
-      fscanf (fp, "%lld", psize);
-      fclose (fp);
-    }
-
-#endif
-
-}
-
-void fxtran_acdc_nvidia_free_memory_ (ssize_t * psize)
-{
-  *psize = 0;
-#ifdef _OPENACC
-  *psize = acc_get_memory () - acc_get_free_memory ();
-#endif
 }
 
 static int redirectStderr (const char * file)
@@ -99,8 +72,43 @@ static void restoreStderr (int j)
   close (j);
 }
 
+#endif
+
+void fxtran_acdc_nvidia_smi_ (ssize_t * psize)
+{
+#ifdef _FXTRAN_ACDC_USE_OPENACC
+  char file[64];
+  FILE * fp = NULL;
+  int idev;
+
+  *psize = -1;
+
+  idev = acc_get_device_num (acc_device_nvidia);
+
+  sprintf (file, ".nvidia-smi-%6.6d.txt", 1 + getMPIRank ());
+  unlink (file);
+  runCommand ("/usr/bin/nvidia-smi --query-compute-apps=used_memory  --format=csv,noheader,nounits -i %d > %s", idev, file);
+  if (fp = fopen (file, "r"))
+    {
+      fscanf (fp, "%lld", psize);
+      fclose (fp);
+    }
+
+#endif
+
+}
+
+void fxtran_acdc_nvidia_free_memory_ (ssize_t * psize)
+{
+  *psize = 0;
+#ifdef _FXTRAN_ACDC_USE_OPENACC
+  *psize = acc_get_memory () - acc_get_free_memory ();
+#endif
+}
+
 void fxtran_acdc_nvidia_present_dump_ (ssize_t * pallocated, ssize_t * pdeleted)
 {
+#ifdef _FXTRAN_ACDC_USE_OPENACC
   int i;
   char file[64];
   FILE * fp = NULL;
@@ -109,11 +117,12 @@ void fxtran_acdc_nvidia_present_dump_ (ssize_t * pallocated, ssize_t * pdeleted)
   const char * ALLOCATED_BLOCK = "allocated block ";
   const char * DELETED_BLOCK = "deleted block ";
   const char * SIZE = "size:";
+#endif
 
   *pallocated = 0;
   *pdeleted   = 0;
 
-#ifdef _OPENACC
+#ifdef _FXTRAN_ACDC_USE_OPENACC
 
   sprintf (file, ".nvidia-acc_present_dump-%6.6d.txt", 1 + getMPIRank ());
   unlink (file);

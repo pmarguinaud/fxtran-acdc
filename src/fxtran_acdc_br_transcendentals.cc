@@ -7,6 +7,8 @@
 # include <stdint.h>
 #endif
 
+#include "fxtran_acdc_config.h"
+
 // Copyright (c) 2013, Andrea Arteaga
 // All rights reserved.
 // 
@@ -44,14 +46,6 @@
 namespace fxtran_acdc_br
 {
 
-/*************
- * CONSTANTS *
- *************/
- 
-static const double const_2_over_pi = 6.3661977236758138e-1;
-static const double halfLogTwoPi = 0.91893853320467274178032973640562;
-static const double squareRootOfPi = 1.77245385090551602729816748334;
-
 /*****************************************
  * FORWARD DECLARATION OF SOME FUNCTIONS *
  *****************************************/
@@ -71,7 +65,7 @@ double erfc(double x);
  * HELPER FUNCTIONS *
  ********************/
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double __internal_copysign_pos(double a, double b)
 {
     union {
@@ -83,8 +77,9 @@ double __internal_copysign_pos(double a, double b)
     aa.i[1] = (bb.i[1] & 0x80000000) | aa.i[1];
     return aa.d;
 }
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double __internal_old_exp_kernel(double x, int scale)
 { 
     double t, z;
@@ -123,8 +118,8 @@ double __internal_old_exp_kernel(double x, int scale)
         z = t * z;
     }
     return z;
-}   
-
+}
+fxtran_acdc_routine_seq_end
 
 /***************************
  * TRIGONOMETRIC FUNCTIONS *
@@ -134,7 +129,7 @@ double __internal_old_exp_kernel(double x, int scale)
  * \param x The number whose sin or cos must be computed
  * \param q Represents the quadrant as integer
  */
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 static double __internal_sin_cos_kerneld(double x, int q)
 
 {
@@ -178,9 +173,9 @@ static double __internal_sin_cos_kerneld(double x, int q)
 
     return x;
 }
+fxtran_acdc_routine_seq_end
 
-
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double __internal_tan_kernel(double x, int i)
 {
     double x2, z, q;
@@ -214,11 +209,12 @@ double __internal_tan_kernel(double x, int i)
 
     return q;
 }
+fxtran_acdc_routine_seq_end
 
-
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 static double __internal_trig_reduction_kerneld(double x, int *q_)
 {
+    const double const_2_over_pi = 6.3661977236758138e-1;
     double j, t;
     int& q = *q_;
 
@@ -234,8 +230,9 @@ static double __internal_trig_reduction_kerneld(double x, int *q_)
     
     return t;
 }
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double sin(double x)
 {
     double z;
@@ -248,8 +245,9 @@ double sin(double x)
 
     return z;
 }
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double cos(double x)
 {
     double z;
@@ -263,8 +261,9 @@ double cos(double x)
 
     return z;
 }
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double tan(double x)
 {
     double z, inf = std::numeric_limits<double>::infinity();
@@ -277,13 +276,13 @@ double tan(double x)
     z = __internal_tan_kernel(z, i & 1);
     return z;
 }
-
+fxtran_acdc_routine_seq_end
 
 /***********************************
  * INVERSE TRIGONOMETRIC FUNCTIONS *
  ***********************************/
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double __internal_asin_kernel(double x)
 {
   double r;
@@ -303,8 +302,9 @@ double __internal_asin_kernel(double x)
   r = r * x;
   return r;
 }
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double __internal_atan_kernel(double x)
 {
   double t, x2;
@@ -332,9 +332,9 @@ double __internal_atan_kernel(double x)
   t = __BITREPFMA (t, x, x);
   return t;
 }
+fxtran_acdc_routine_seq_end
 
-
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double asin(double x)
 {
   double fx, t0, t1;
@@ -371,8 +371,9 @@ double asin(double x)
   }
   return t1;
 }
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double acos(double x)
 {
     double t0, t1;
@@ -433,8 +434,9 @@ double acos(double x)
     } 
     return t0;
 }
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double atan(double x)
 {
     double t0, t1;
@@ -455,13 +457,13 @@ double atan(double x)
     }
     return __internal_copysign_pos(t1, x);
 }
-
+fxtran_acdc_routine_seq_end
 
 /************************
  * HYPERBOLIC FUNCTIONS *
  ************************/
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double __internal_expm1_kernel (double x)
 {
   double t;
@@ -480,8 +482,9 @@ double __internal_expm1_kernel (double x)
   t = __BITREPFMA (t, x, x);
   return t;
 }
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double __internal_exp2i_kernel(int32_t b)
 {
     union {
@@ -494,8 +497,9 @@ double __internal_exp2i_kernel(int32_t b)
 
     return xx.d;
 }
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double __internal_expm1_scaled(double x, int scale)
 { 
   double t, z, u;
@@ -531,9 +535,10 @@ double __internal_expm1_scaled(double x, int scale)
   if (i == 1024) t = t + t;
   if (k == 0) t = z;              /* preserve -0 */
   return t;
-}   
+}
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double sinh(double x)
 {
     double z;
@@ -570,8 +575,9 @@ double sinh(double x)
     z = __internal_copysign_pos(z, x);
     return z;
 }
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double cosh(double x)
 {
     double t, z;
@@ -596,8 +602,9 @@ double cosh(double x)
 
     return z;
 }
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double tanh(double x)
 {
   double t;
@@ -629,13 +636,13 @@ double tanh(double x)
   }
   return x;
 }
-
+fxtran_acdc_routine_seq_end
 
 /********************************
  * INVERSE HIPERBOLIC FUNCTIONS *
  ********************************/
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double __internal_atanh_kernel (double a_1, double a_2)
 {
     double a, a2, t;
@@ -655,8 +662,9 @@ double __internal_atanh_kernel (double a_1, double a_2)
     t = t + a_1;
     return t;
 }
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double asinh(double x)
 {
   double fx, t;
@@ -676,8 +684,9 @@ double asinh(double x)
   }
   return __internal_copysign_pos(t, x);  
 }
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double acosh(double x)
 {
   double t;
@@ -691,6 +700,7 @@ double acosh(double x)
   }
   return t;
 }
+fxtran_acdc_routine_seq_end
 
 double atanh(double x)
 {
@@ -717,7 +727,7 @@ double atanh(double x)
 
 
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double log(double x)
 {
     double m, f, g, u, v, tmp, q, ulo, log_lo, log_hi;
@@ -796,9 +806,9 @@ double log(double x)
 
     return q;
 }
+fxtran_acdc_routine_seq_end
 
-
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double log1p(double x)
 {
     double t;
@@ -820,9 +830,9 @@ double log1p(double x)
     }
     return t;
 }
+fxtran_acdc_routine_seq_end
 
-
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double __internal_exp_poly(double x)
 {
   double t;
@@ -841,8 +851,9 @@ double __internal_exp_poly(double x)
   t = __BITREPFMA (t, x, 1.0000000000000000E+000);
   return t;
 }
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double __internal_exp_scale(double x, int i)
 {
     unsigned int j, k;
@@ -870,8 +881,9 @@ double __internal_exp_scale(double x, int i)
 
     return x;
 }
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double __internal_exp_kernel(double x, int scale)
 { 
   double t, z;
@@ -890,9 +902,10 @@ double __internal_exp_kernel(double x, int scale)
   t = __internal_exp_poly (z);
   z = __internal_exp_scale (t, i + scale); 
   return z;
-}   
+}
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double exp(double x)
 {
   double t;
@@ -916,9 +929,9 @@ double exp(double x)
   }
   return t;
 }
+fxtran_acdc_routine_seq_end
 
-
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double erf(double x)
 {
 
@@ -930,8 +943,9 @@ double erf(double x)
   }
 
 }
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double __cheb_eval(const double cs[],int order,double x)
 {
 
@@ -956,8 +970,9 @@ double __cheb_eval(const double cs[],int order,double x)
   
   return d;
 }
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double erfc(double x)
 {
 
@@ -1064,11 +1079,12 @@ const double erfc_x510_cs[20] = {
   }
 
 }
+fxtran_acdc_routine_seq_end
 
-
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double __erfseries(double x)
 {
+  const double squareRootOfPi = 1.77245385090551602729816748334;
   double coef = x;
   double e    = coef;
   double del;
@@ -1081,9 +1097,9 @@ double __erfseries(double x)
   return 2.0 / squareRootOfPi  * e;
 
 }
+fxtran_acdc_routine_seq_end
 
-
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double gamma
 (
     double x    // We require x > 0
@@ -1208,17 +1224,20 @@ double gamma
 
     return exp(log_gamma(x));
 }
+fxtran_acdc_routine_seq_end
 
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double log_gamma
 (
     double x    // x must be positive
 )
 {
-	if (x <= 0.0)
-	{
-          return std::numeric_limits<double>::quiet_NaN();
-	}
+    const double halfLogTwoPi = 0.91893853320467274178032973640562;
+
+    if (x <= 0.0)
+    {
+      return std::numeric_limits<double>::quiet_NaN();
+    }
 
     if (x < 12.0)
     {
@@ -1258,49 +1277,87 @@ double log_gamma
         loggamma = loggamma + series;    
 	return loggamma;
 }
-
+fxtran_acdc_routine_seq_end
 
 } // End of namespace fxtran_acdc_br
 
 // Implement C interface
 extern "C"
 {
-#pragma acc routine seq
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_sin  (double x) { return fxtran_acdc_br::sin  (x); }
-#pragma acc routine seq
+fxtran_acdc_routine_seq_end
+
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_cos  (double x) { return fxtran_acdc_br::cos  (x); }
-#pragma acc routine seq
+fxtran_acdc_routine_seq_end
+
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_tan  (double x) { return fxtran_acdc_br::tan  (x); }
-#pragma acc routine seq
+fxtran_acdc_routine_seq_end
+
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_asin (double x) { return fxtran_acdc_br::asin (x); }
-#pragma acc routine seq
+fxtran_acdc_routine_seq_end
+
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_acos (double x) { return fxtran_acdc_br::acos (x); }
-#pragma acc routine seq
+fxtran_acdc_routine_seq_end
+
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_atan (double x) { return fxtran_acdc_br::atan (x); }
-#pragma acc routine seq
+fxtran_acdc_routine_seq_end
+
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_sinh (double x) { return fxtran_acdc_br::sinh (x); }
-#pragma acc routine seq
+fxtran_acdc_routine_seq_end
+
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_cosh (double x) { return fxtran_acdc_br::cosh (x); }
-#pragma acc routine seq
+fxtran_acdc_routine_seq_end
+
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_tanh (double x) { return fxtran_acdc_br::tanh (x); }
-#pragma acc routine seq
+fxtran_acdc_routine_seq_end
+
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_asinh(double x) { return fxtran_acdc_br::asinh(x); }
-#pragma acc routine seq
+fxtran_acdc_routine_seq_end
+
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_acosh(double x) { return fxtran_acdc_br::acosh(x); }
-#pragma acc routine seq
+fxtran_acdc_routine_seq_end
+
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_atanh(double x) { return fxtran_acdc_br::atanh(x); }
-#pragma acc routine seq
+fxtran_acdc_routine_seq_end
+
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_log  (double x) { return fxtran_acdc_br::log  (x); }
-#pragma acc routine seq
+fxtran_acdc_routine_seq_end
+
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_log1p(double x) { return fxtran_acdc_br::log1p(x); }
-#pragma acc routine seq
+fxtran_acdc_routine_seq_end
+
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_exp  (double x) { return fxtran_acdc_br::exp  (x); }
-#pragma acc routine seq
+fxtran_acdc_routine_seq_end
+
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_erf  (double x) { return fxtran_acdc_br::erf  (x); }
-#pragma acc routine seq
+fxtran_acdc_routine_seq_end
+
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_erfc  (double x) { return fxtran_acdc_br::erfc  (x); }
-#pragma acc routine seq
+fxtran_acdc_routine_seq_end
+
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_gamma  (double x) { return fxtran_acdc_br::gamma  (x); }
-#pragma acc routine seq
+fxtran_acdc_routine_seq_end
+
+fxtran_acdc_routine_seq_begin
 double fxtran_acdc_br_log_gamma  (double x) { return fxtran_acdc_br::log_gamma  (x); }
+fxtran_acdc_routine_seq_end
+
 }
