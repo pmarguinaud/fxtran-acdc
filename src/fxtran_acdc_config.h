@@ -11,10 +11,12 @@
 #elif FXTRAN_ACDC_PRAGMA == FXTRAN_ACDC_OPENMPTARGET
 #define _FXTRAN_ACDC_USE_OPENMPTARGET
 #else
-#error No accelerator pragma defined
+#define _FXTRAN_ACDC_USE_NOPRAGMA
 #endif
 
-#if FXTRAN_ACDC_VENDOR == FXTRAN_ACDC_NVIDIA
+#ifdef _FXTRAN_ACDC_USE_NOPRAGMA
+#define _FXTRAN_ACDC_USE_NOBLAS
+#elif FXTRAN_ACDC_VENDOR == FXTRAN_ACDC_NVIDIA
 #define _FXTRAN_ACDC_USE_CUBLAS
 #elif FXTRAN_ACDC_VENDOR == FXTRAN_ACDC_AMDROCM
 #define _FXTRAN_ACDC_USE_ROCBLAS
@@ -55,6 +57,20 @@
 
 #define fxtran_acdc_routine_seq_begin    _Pragma ("omp declare target") 
 #define fxtran_acdc_routine_seq_end      _Pragma ("omp end declare target")
+
+#endif
+
+#ifdef _FXTRAN_ACDC_USE_NOPRAGMA
+
+#define FXTRAN_ACDC_ROUTINE_SEQ          !
+#define FXTRAN_ACDC_ENTER_DATA_CREATE(x) !
+#define FXTRAN_ACDC_EXIT_DATA_DELETE(x)  !
+#define FXTRAN_ACDC_UPDATE_DEVICE(x)     !
+#define FXTRAN_ACDC_ENTER_DATA_ATTACH(x) !
+#define FXTRAN_ACDC_EXIT_DATA_DETACH(x)  !
+
+#define fxtran_acdc_routine_seq_begin    //
+#define fxtran_acdc_routine_seq_end      //
 
 #endif
 
