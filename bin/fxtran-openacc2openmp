@@ -116,10 +116,14 @@ sub expandParallelData
 {
   my $pa = shift;
 
+  (my $type = $pa->nodeName) =~ s/-openacc$//o; # parallel or serial
+
+  die ("Unexpected node $pa") unless ($type =~ m{^(?:parallel|serial)$}o);
+
   my $p = $pa->parentNode;
 
-  my ($pe) = &F ('following-sibling::end-parallel-openacc', $pa);
-  $pe or die ("Could not find ACC END PARALLEL directive");
+  my ($pe) = &F ("following-sibling::end-$type-openacc", $pa);
+  $pe or die ("Could not find ACC END \U$type directive");
 
   my ($acc) = &getACC ($pa);
   my $indent = $acc->previousSibling;
@@ -158,7 +162,14 @@ sub expandParallelData
 
   for my $private (grep { my ($N) = &F ('./N', $_, 1); lc ($N) eq 'private' } &F ('./clause', $pa))
     { 
-      &movePrivateDirectiveToLoops ($pa, $pe, $private);
+      if ($type eq 'serial')
+        {
+          $private->unbindNode ();
+        }
+      else
+        {
+          &movePrivateDirectiveToLoops ($pa, $pe, $private);
+        }
     }
 }
 
@@ -219,7 +230,7 @@ for my $pl (&F ('.//parallel-loop-openacc', $d))
     &expandParallelLoop ($pl);
   }
 
-for my $pa (&F ('.//parallel-openacc', $d))
+for my $pa (&F ('.//parallel-openacc|.//serial-openacc', $d))
   {
     &expandParallelData ($pa);
   }
