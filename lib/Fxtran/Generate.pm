@@ -1300,6 +1300,31 @@ Parse a file, inline some routines (optional) and write back the result.
 }
 
 &click (<< "EOF");
+@options{qw (tmp cycle dir write-metadata style pragma)}
+EOF
+sub openacctoopenmptarget
+{
+  my ($opts, @args) = @_;
+
+  my ($F90) = @args;
+
+  if (&dirname ($F90) eq $opts->{dir})
+    {
+      die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
+    }
+
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'idem', $opts, qw (-openacc));
+
+  if ($opts->{pragma}->isa ('Fxtran::Pragma::OpenMPTarget'))
+    {
+      &Fxtran::Util::loadModule ('Fxtran::Pragma::OpenACCToOpenMPTarget');
+      &Fxtran::Pragma::OpenACCToOpenMPTarget::convert ($d, $opts);
+    }
+
+  &routineToRoutineTail ($F90out, $F90, $d, $opts);
+}
+
+&click (<< "EOF");
 @options{qw (tmp cycle dir style types-constant-dir method-prefix write-metadata)}
 EOF
 sub updateconstants
