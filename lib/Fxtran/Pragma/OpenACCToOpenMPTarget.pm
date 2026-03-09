@@ -23,8 +23,74 @@ sub convert
   
       'Fxtran::Pragma::OpenACCToOpenMPTarget::openacc::directive'->convert ($openacc);
     }
+
+  for my $openacc (&F ('.//ANY-openacc', $d))
+    {
+      &normalizeOpenACC ($openacc);
+    }
 }
 
+sub normalizeOpenACC
+{
+  my $openacc = shift;
+
+
+  # normalize space
+
+  for my $tt (&F ('./text()', $openacc))
+    {
+      my $text = $tt->textContent;
+
+      next unless (my $n = $tt->nextSibling);
+
+      next unless ($n->nodeName eq 'clause');
+
+      for ($text)
+        {
+          s/^[ ]*//o;
+          s/[ ]*$//o;
+          s/[ ]+/ /go;
+        }
+      if (length ($text) > 0)
+        {
+          $tt->setData ($text); 
+        }
+      else
+        {
+          $tt->unbindNode ();
+        }
+    }
+
+
+  for my $clause (&F ('./clause', $openacc))
+    {
+      $openacc->insertBefore (&t (' '), $clause);
+    }
+
+  # detect consecutive &&
+
+  for my $cnt (&F ('.//cnt', $openacc))
+    {  
+      if ($cnt->textContent =~ m/&&/goms)
+        {
+          my @x;
+          for (my $x = $cnt; ; $x = $x->previousSibling)
+            {
+              if ($x->nodeName eq '#text') 
+                {
+                  if ((my $tt = $x->textContent) =~ s/^.*?\n//o)
+                    {
+                      $x->setData ($tt);
+                      last;
+                    }
+                }
+              push @x, $x;
+            }
+          $_->unbindNode () for (@x);
+        }
+    }
+
+}
 
 package Fxtran::Pragma::OpenACCToOpenMPTarget::openacc::clause;
 
@@ -101,7 +167,7 @@ sub create
   my @n = $n->childNodes ();
 
   my $t = shift (@n); $t = $t->firstChild; $t->setData ('MAP');
-  $t = shift (@n); $t->setData ('(CREATE:');
+  $t = shift (@n); $t->setData ('(ALLOC:');
 }
 
 sub present
@@ -129,6 +195,28 @@ sub copyin
   $t = shift (@n); $t->setData ('(TO:');
 }
 
+sub copyout
+{
+  shift;
+  my $n = shift;
+
+  my @n = $n->childNodes ();
+
+  my $t = shift (@n); $t = $t->firstChild; $t->setData ('MAP');
+  $t = shift (@n); $t->setData ('(FROM:');
+}
+
+sub copy
+{
+  shift;
+  my $n = shift;
+
+  my @n = $n->childNodes ();
+
+  my $t = shift (@n); $t = $t->firstChild; $t->setData ('MAP');
+  $t = shift (@n); $t->setData ('(TOFROM:');
+}
+
 sub use_device
 {
   shift;
@@ -151,12 +239,7 @@ sub gang
 
 sub seq
 {
-  shift;
-  my $n = shift;
-
-  my @n = $n->childNodes ();
-
-  my $t = shift (@n); $t = $t->firstChild; $t->setData ('FOR');
+  die;
 }
 
 sub vector
@@ -173,9 +256,22 @@ sub if { }
 sub private { }
 sub collapse { }
 sub default { }
-sub tile { }
+
+sub tile 
+{ 
+  shift;
+  my $n = shift;
+  $n->unbindNode ();
+}
+
 sub firstprivate { }
-sub async { }
+
+sub async 
+{ 
+  shift;
+  my $n = shift;
+  $n->unbindNode ();
+}
 
 package Fxtran::Pragma::OpenACCToOpenMPTarget::openacc::directive;
 
@@ -236,7 +332,26 @@ sub data
     }
 }
 
-sub cache { }
+sub prune
+{ 
+  shift;
+  my $n = shift;
+
+  my @x;
+  for (my $x = $n; $x; $x = $x->previousSibling)
+    {
+      unshift (@x, $x);
+      last if (uc ($x->textContent) eq '!$OMP');
+    }
+
+  $_->unbindNode () for (@x);
+}
+
+sub cache
+{
+  my $class = shift;
+  $class->prune (@_);
+}
 
 sub end_data
 {
@@ -248,14 +363,14 @@ sub end_data
   my $t = shift (@n); $t->setData ('END TARGET DATA ');
 }
 
-sub parallel_loop
+sub serial
 {
   shift;
   my $n = shift;
 
   my @n = $n->childNodes ();
 
-  my $t = shift (@n); $t->setData ('TARGET ');
+  my $t = shift (@n); $t->setData ('TARGET');
 
   my @c = grep { $_->nodeName ne '#text' } @n;
 
@@ -263,7 +378,35 @@ sub parallel_loop
     {
       'Fxtran::Pragma::OpenACCToOpenMPTarget::openacc::clause'->convert ($_);
     }
+}
 
+sub end_serial
+{
+  shift;
+  my $n = shift;
+
+  my @n = $n->childNodes ();
+
+  my $t = shift (@n); $t->setData ('END TARGET');
+}
+
+sub parallel_loop 
+{ 
+  my $class = shift;
+  my $n = shift;
+
+  my @n = $n->childNodes ();
+
+  my @c = grep { $_->nodeName eq 'clause' } @n;
+
+  my $t = shift (@n); $t->setData ('TARGET TEAMS ');
+
+  $class->handleLoopClauses ($n, $t, @c);
+}
+
+sub end_parallel_loop 
+{ 
+  die; 
 }
 
 sub parallel
@@ -290,17 +433,7 @@ sub end_parallel
 
   my @n = $n->childNodes ();
 
-  my $t = shift (@n); $t->setData ('END TARGET TEAMS DISTRIBUTE PARALLEL ');
-}
-
-sub end_parallel_loop
-{
-  shift;
-  my $n = shift;
-
-  my @n = $n->childNodes ();
-
-  my $t = shift (@n); $t->setData ('END TARGET TEAMS DISTRIBUTE PARALLEL ');
+  my $t = shift (@n); $t->setData ('END TARGET TEAMS');
 }
 
 sub host_data
@@ -332,18 +465,46 @@ sub end_host_data
 
 sub loop
 {
-  shift;
+  my $class = shift;
   my $n = shift;
 
   my @n = $n->childNodes ();
 
   my @c = grep { $_->nodeName eq 'clause' } @n;
 
-  my $t = shift (@n); 
+  my $t = shift (@n); $t->setData ('');
 
-  for (@c)
+  $class->handleLoopClauses ($n, $t, @c);
+}
+
+sub handleLoopClauses
+{
+  my $class = shift;
+  my ($n, $t, @c) = @_;
+
+  for my $c (@c)
     {
-      'Fxtran::Pragma::OpenACCToOpenMPTarget::openacc::clause'->convert ($_);
+      my ($N) = &F ('./N', $c, 1); $N = lc ($N);
+      if ($N eq 'seq')
+        {
+          $class->prune ($n);
+        }
+      elsif ($N eq 'gang')
+        {
+          my $tt = $t->textContent;
+          $t->setData ($tt ? "$tt DISTRIBUTE" : 'DISTRIBUTE');
+          $c->unbindNode ();
+        }
+      elsif ($N eq 'vector')
+        {
+          my $tt = $t->textContent;
+          $t->setData ($tt ? "$tt PARALLEL DO" : "PARALLEL DO");
+          $c->unbindNode ();
+        }
+      else
+        {
+          'Fxtran::Pragma::OpenACCToOpenMPTarget::openacc::clause'->convert ($c);
+        }
     }
 }
 
@@ -362,6 +523,12 @@ sub update
     {
       'Fxtran::Pragma::OpenACCToOpenMPTarget::openacc::clause'->convert ($_);
     }
+}
+
+sub wait 
+{ 
+  my $class = shift;
+  $class->prune (@_);
 }
 
 1;

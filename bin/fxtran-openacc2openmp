@@ -14,232 +14,68 @@ use File::Basename;
 use Fxtran::Bt;
 use Fxtran;
 use Fxtran::Pragma::OpenACCToOpenMPTarget;
+use Fxtran::Pragma::OpenACC;
 
 use strict;
 
-sub getACC
-{
-  my $openacc = shift;
-  my @x;
-  for (my $x = $openacc; $x; $x = $x->previousSibling)
-    {
-      unshift (@x, $x);
-      last if ($x->nodeName eq 'acc');
-    }
-  return @x;
-}
+my $expand = 1;
 
-sub pruneClauses
-{
-  my ($openacc, $list, $keep) = @_;  # list =  clauses to prune and return, keep = clauses to return but not prune
-
-  my @c;
-
-  for my $c (&F ('./clause', $openacc))
-    {
-      my ($n) = &F ('./N', $c, 1); $n = lc ($n);
-      next unless ($list->{$n});
-      if ($keep && $keep->{$n})
-        {
-          push @c, $c->cloneNode (1);
-        }
-      else
-        {
-          push @c, $c;
-          my $p = $c->previousSibling;
-
-          if (($p->nodeName eq '#text') && ((my $tt = $p->textContent) =~ s/^(\w+)\s+/$1/o))
-            {
-              $p->setData ($tt);
-            }
-          else
-            {
-              $c->previousSibling->unbindNode ();
-            }
-          $c->unbindNode ();
-        }
-    }
-
-  return @c;
-}
-
-
-# Clauses specific to the loop directive
-
-my %clauseLoop = map { ($_, 1) } qw (collapse gang worker vector seq independent auto 
-                                     tile device_type private reduction);
-
-sub expandParallelLoop
-{
-  my $pl = shift;
-
-  my $p = $pl->parentNode;
-
-  my ($do) = &F ('following-sibling::do-construct', $pl);
-  my ($acc) = &getACC ($pl);
-  my $indent = $acc->previousSibling;
-  $indent = $indent->textContent;
-  $indent =~ s/\s*\n/\n/o;
-  
-  my @c = &pruneClauses ($pl, \%clauseLoop);
-
-  my $loop = &n ('<loop-openacc>LOOP</loop-openacc>');
-
-  for my $c (@c)
-    {
-      $loop->appendChild ($_) for (&t (' '), $c);
-    }
-
-  $acc = $acc->cloneNode (1);
-
-  my $q = $pl->nextSibling;
-  $p->insertBefore ($_, $q) for (&t ($indent), $acc, &t (' '), $loop);
-
-  my $f = $pl->firstChild;
-  unless ($f)
-    {
-      $pl->appendChild ($f = &t (' '));
-    }
-  $f->setData ('PARALLEL');
-
-  $p->insertAfter ($_, $do) for (reverse (&t ($indent), &n ('<acc>!$ACC</acc>'), &t (' '), &n ('<end-parallel-openacc>END PARALLEL</end-parallel-openacc>')));
-
-  $pl->setNodeName ('parallel-openacc');
-}
-
-# Clauses specific to the data directive
-
-my %clauseData = map { ($_, 1) } qw (if async wait device_type copy copyin copyout
-                                     create no_create present deviceptr attach default);
-
-sub expandParallelData
-{
-  my $pa = shift;
-
-  (my $type = $pa->nodeName) =~ s/-openacc$//o; # parallel or serial
-
-  die ("Unexpected node $pa") unless ($type =~ m{^(?:parallel|serial)$}o);
-
-  my $p = $pa->parentNode;
-
-  my ($pe) = &F ("following-sibling::end-$type-openacc", $pa);
-  $pe or die ("Could not find ACC END \U$type directive");
-
-  my ($acc) = &getACC ($pa);
-  my $indent = $acc->previousSibling;
-  $indent = $indent->textContent;
-  $indent =~ s/\s*\n/\n/o;
-
-  my %keep = (if => 1, async => 1);
-
-  my @c = &pruneClauses ($pa, \%clauseData, \%keep);
-
-  my $data = &n ('<data-openacc>DATA</data-openacc>');
-
-  my $nokeep;
-
-  for my $c (@c)
-    {
-      $data->appendChild ($_) for (&t (' '), $c);
-      my ($n) = &F ('./N', $c, 1);
-      unless ($keep{lc ($n)})
-        {
-          $nokeep++;
-        }
-    }
-
-  # Insert this DATA directive only if it is required
-  if ($nokeep)
-    {
-      $p->insertBefore ($_, $acc) for ($acc->cloneNode (1), &t (' '), $data, &t ($indent));
-     
-      my $q = $pe->nextSibling;
-     
-      $p->insertBefore ($_, $q) for (&t ($indent), $acc->cloneNode (1), &t (' '), &n ('<end-data-openacc>END DATA</end-data-openacc>'));
-    }
-
-  # Move PRIVATE directive from ACC PARALLEL to the inner LOOP GANG directives
-
-  for my $private (grep { my ($N) = &F ('./N', $_, 1); lc ($N) eq 'private' } &F ('./clause', $pa))
-    { 
-      if ($type eq 'serial')
-        {
-          $private->unbindNode ();
-        }
-      else
-        {
-          &movePrivateDirectiveToLoops ($pa, $pe, $private);
-        }
-    }
-}
-
-sub movePrivateDirectiveToLoops
-{
-  my ($pa, $pe, $private) = @_; # ACC PARALLEL, ACC END PARALLEL, PRIVATE (...)
-
-  my $p = $pa->parentNode;
-
-  # Gather temporarity all nodes between ACC PARALLEL and ACC END PARALLEL in an XML node
-
-  my $pp = &n ('<pp/>');
-
-  $p->insertBefore ($pp, $pa);
-
-  for my $s ($pa, &F ('following-sibling::node()', $pa))
-    {
-      $pp->appendChild ($s);
-      last if ($s->unique_key == $pe->unique_key);
-    }
-
-  for my $loop (&F ('.//loop-openacc', $pp))
-    {
-      my @c = map { lc ($_) } &F ('./clause/N/text()', $loop, 1);
-      if (grep { $_ eq 'gang' } @c)
-        {
-          $loop->appendChild ($_) for (&t (' '), $private->cloneNode (1));
-        }
-    }
-
-  for my $s (&F ('./node()', $pp))
-    {
-      $p->insertBefore ($s, $pp);
-    }
-
-  $pp->unbindNode ();
-
-  $private->unbindNode ();
-}
+if ($ARGV[0] eq '--no-expand')
+  {
+    $expand = 0;
+    shift (@ARGV);
+  }
 
 my $F90 = shift;
 my $F90out = shift;
 
+
+mkdir ('expand');
+mkdir ('openmptarget');
+
 my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include 
                         -no-cpp -construct-tag -openacc)]);
 
-#print $d->textContent;
-#print "\n------\n\n";
-
-
-for my $ep (&F ('.//end-parallel-loop-openacc', $d))
-  {
-    $_->unbindNode () for (&getACC ($ep));
-  }
-
 for my $pl (&F ('.//parallel-loop-openacc', $d))
   {
-    &expandParallelLoop ($pl);
+    &Fxtran::Pragma::OpenACC::cleanOpenACCParallelLoop ($pl);
   }
 
-for my $pa (&F ('.//parallel-openacc|.//serial-openacc', $d))
+if ($expand)
   {
-    &expandParallelData ($pa);
+    for my $pl (&F ('.//parallel-loop-openacc', $d))
+      {
+        &Fxtran::Pragma::OpenACC::expandParallelLoop ($pl);
+      }
+    
+    for my $pa (&F ('.//parallel-openacc|.//serial-openacc', $d))
+      {
+        &Fxtran::Pragma::OpenACC::expandParallelData ($pa);
+      }
   }
 
-print $d->textContent;
+if ($F90out && ($F90out eq '-'))
+  {
+    print $d->textContent;
+  }
+else
+  {
+    'FileHandle'->new (">expand/" . &basename ($F90))->print ($d->textContent);
+  }
 
-__END__
 &Fxtran::Pragma::OpenACCToOpenMPTarget::convert ($d);
 
+if ($F90out && ($F90out eq '-'))
+  {
+    print "---\n";
+    print $d->textContent;
+  }
+else
+  {
+    'FileHandle'->new (">openmptarget/" . &basename ($F90))->print ($d->textContent);
+  }
+
+__END__
 if ($F90out)
   {
     'FileHandle'->new (">$F90out")->print ($d->textContent);
