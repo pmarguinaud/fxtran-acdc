@@ -16,10 +16,10 @@ sub convert
   
       for (&F ('.//acc', $openacc))
         {
-          $_->replaceNode (&n ('<C>!$OMP</C>'));
+          $_->replaceNode (&n ('<omp-target>!$OMP</omp-target>'));
         }
   
-      $acc->replaceNode (&n ('<C>!$OMP</C>'));
+      $acc->replaceNode (&n ('<omp-target>!$OMP</omp-target>'));
   
       'Fxtran::Pragma::OpenACCToOpenMPTarget::openacc::directive'->convert ($openacc);
     }
@@ -89,6 +89,54 @@ sub normalizeOpenACC
           $_->unbindNode () for (@x);
         }
     }
+}
+
+sub addIfdefFxtran
+{
+  my ($d, %opts) = @_;
+  
+  my %seen;
+  
+  my ($TAG, $MACRO) = $opts{openmptarget}
+      ? ('omp-target', '_FXTRAN_ACDC_USE_OPENMPTARGET')
+      : ('acc',        '_FXTRAN_ACDC_USE_OPENACC'     );
+  
+  for my $acc (&F ('.//' . $TAG . '[not(ancestor::ANY-openacc)', $d))
+    {
+      next if ($seen{$acc->unique_key ()});
+  
+      my @n;
+  
+      for (my $n = $acc->previousSibling; $n; $n = $n->nextSibling)
+        {
+          my $nn = $n->nodeName;
+          last unless (($nn =~ m{^(?:#text|C|$TAG)$}) || ($nn =~ m{-openacc$}o));
+          push @n, $n;
+        }
+  
+      for my $n (@n)
+        {
+          $seen{$n->unique_key ()} = 1;
+        }
+  
+      my $sp1 = $n[+0]; my @tt1 = ($sp1->textContent =~ m{^(.*\n)(.*)$}goms);
+      my $sp2 = $n[-1]; my @tt2 = ($sp2->textContent =~ m{^(.*\n)(.*)$}goms);
+  
+      my $p = $sp1->parentNode;
+  
+      $sp1->setData ($tt1[1]); $p->insertBefore (&t ($tt1[0]), $sp1);
+      $sp2->setData ($tt2[0]); $p->insertAfter  (&t ($tt2[1]), $sp2);
+  
+      $p->insertBefore ($_, $sp1) for (&n ("<cpp>#ifdef $MACRO</cpp>"), &t ("\n"));
+      $p->insertAfter  ($_, $sp2) for (&t ("\n"), &n ('<cpp>#endif</cpp>'));
+  
+    }
+  
+  my ($implicitnone) = &F ('.//implicit-none-stmt', $d);
+  
+  my $include = &n ("<include>#include &quot;<filename>fxtran_acdc_config.h</filename>&quot;</include>");
+  
+  $implicitnone->parentNode->insertBefore ($_, $implicitnone) for ($include, &t ("\n\n"));
 
 }
 
@@ -530,5 +578,6 @@ sub wait
   my $class = shift;
   $class->prune (@_);
 }
+
 
 1;
