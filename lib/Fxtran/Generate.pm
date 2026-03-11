@@ -1301,6 +1301,8 @@ Parse a file, inline some routines (optional) and write back the result.
 
 &click (<< "EOF");
 @options{qw (tmp cycle dir write-metadata style pragma)}
+  expand-openacc                  -- Expand OpenACC directives
+  ifdef-fxtran                    -- OpenMP Target directives in #ifdef/#endif
 EOF
 sub openacctoopenmptarget
 {
@@ -1318,7 +1320,8 @@ sub openacctoopenmptarget
   if ($opts->{pragma}->isa ('Fxtran::Pragma::OpenMPTarget'))
     {
       &Fxtran::Util::loadModule ('Fxtran::Pragma::OpenACCToOpenMPTarget');
-      &Fxtran::Pragma::OpenACCToOpenMPTarget::convert ($d, $opts);
+      $opts->{openmptarget} = 1;
+      &Fxtran::Pragma::OpenACCToOpenMPTarget::apply ($d, $opts);
     }
 
   &routineToRoutineTail ($F90out, $F90, $d, $opts);
