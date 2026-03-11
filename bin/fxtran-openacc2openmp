@@ -18,71 +18,30 @@ use Fxtran::Pragma::OpenACC;
 
 use strict;
 
-my $expand = 1;
+my @opts_f = qw (expand-openacc ifdef-fxtran openmptarget);
+my @opts_s = qw ();
 
-if ($ARGV[0] eq '--no-expand')
-  {
-    $expand = 0;
-    shift (@ARGV);
-  }
+my %opts;
 
-my $F90 = shift;
-my $F90out = shift;
+&GetOptions
+(
+  (map { ($_, \$opts{$_}) } @opts_f),
+  (map { ("$_=s", \$opts{$_}) } @opts_s),
+);
 
+my ($F90, $F90out) = @ARGV;
 
-mkdir ('expand');
-mkdir ('openmptarget');
+$F90out ||= '-';
 
-my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include 
-                        -no-cpp -construct-tag -openacc)]);
+my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -openacc)]);
 
-for my $pl (&F ('.//parallel-loop-openacc', $d))
-  {
-    &Fxtran::Pragma::OpenACC::cleanOpenACCParallelLoop ($pl);
-  }
-
-if ($expand)
-  {
-    for my $pl (&F ('.//parallel-loop-openacc', $d))
-      {
-        &Fxtran::Pragma::OpenACC::expandParallelLoop ($pl);
-      }
-    
-    for my $pa (&F ('.//parallel-openacc|.//serial-openacc', $d))
-      {
-        &Fxtran::Pragma::OpenACC::expandParallelData ($pa);
-      }
-  }
+&Fxtran::Pragma::OpenACCToOpenMPTarget::apply ($d, \%opts);
 
 if ($F90out && ($F90out eq '-'))
   {
     print $d->textContent;
   }
 else
-  {
-    'FileHandle'->new (">expand/" . &basename ($F90))->print ($d->textContent);
-  }
-
-&Fxtran::Pragma::OpenACCToOpenMPTarget::convert ($d);
-
-if ($F90out && ($F90out eq '-'))
-  {
-    print "---\n";
-    print $d->textContent;
-  }
-else
-  {
-    'FileHandle'->new (">openmptarget/" . &basename ($F90))->print ($d->textContent);
-  }
-
-__END__
-if ($F90out)
   {
     'FileHandle'->new (">$F90out")->print ($d->textContent);
   }
-else
-  {
-    print $d->textContent;
-  }
-
-
