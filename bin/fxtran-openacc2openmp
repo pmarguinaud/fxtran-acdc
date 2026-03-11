@@ -37,6 +37,17 @@ my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-in
 
 &Fxtran::Pragma::OpenACCToOpenMPTarget::apply ($d, \%opts);
 
+if ($opts{openmptarget})
+  {
+    &Fxtran::Pragma::OpenACCToOpenMPTarget::convert ($d, %opts);
+  }
+
+if ($opts{'ifdef-fxtran'})
+  {
+    &Fxtran::Pragma::OpenACCToOpenMPTarget::addIfdefFxtran ($d, %opts);
+  }
+
+
 if ($F90out && ($F90out eq '-'))
   {
     print $d->textContent;
