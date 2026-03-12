@@ -347,7 +347,11 @@ sub default
 
   my ($t, $x) = @n;
 
-  if (lc ($x->textContent) eq '(none)')
+  my $tt = lc ($x->textContent);
+
+  $tt =~ s/(?:^\s*|\s*$)//o;
+
+  if ($tt eq '(none)')
     {
       $x->setData ('(SHARED)');
     }
