@@ -206,6 +206,13 @@ sub routineToRoutineHead
   
   my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -canonic), @fopts], dir => $opts->{tmp});
 
+  # OpenACC/OpenMP Directives are not unfolded properly by the fxtran parser; unfold them by hand
+  if (grep { $_ eq '-openacc' } @fopts)
+    {
+      &Fxtran::Util::loadModule ('Fxtran::Pragma::OpenACC');
+      &Fxtran::Pragma::OpenACC::unfoldDirectives ($d);
+    }
+
   &Fxtran::Canonic::makeCanonic ($d, %$opts);
 
   die ("Could not figure out style for file $F90")

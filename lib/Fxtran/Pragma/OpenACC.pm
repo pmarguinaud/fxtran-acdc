@@ -12,6 +12,26 @@ use strict;
 use Fxtran;
 use List::MoreUtils qw (uniq);
 
+sub unfoldDirectives
+{
+  my $d = shift;
+
+  for my $openacc (&F ('.//ANY-openacc', $d))
+    {
+      for my $x (&F ('.//acc|.//cnt|.//text()[contains(.,"?")]', "\n", $openacc))
+        {
+          if ($x->nodeName eq '#text')
+            {
+              $x->setData (' ');
+            }
+          else
+            {
+              $x->unbindNode ();
+            }
+        }
+    }
+}
+
 sub insertDirective
 {
   my ($p, $d, %c)  = @_;
