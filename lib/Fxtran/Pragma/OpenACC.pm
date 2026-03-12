@@ -22,7 +22,9 @@ sub unfoldDirectives
         {
           if ($x->nodeName eq '#text')
             {
-              $x->setData (' ');
+              my $tt = $x->textContent; 
+              $tt =~ s/\s+/ /go;
+              $x->setData ($tt);
             }
           else
             {
