@@ -144,7 +144,7 @@ sub stmt_is_executable
   &croak ("Undefined stmt\n") unless ($stmt);
 
   my @noexec = ('subroutine-stmt', 'use-stmt', 'T-decl-stmt', 'end-subroutine-stmt', 'data-stmt', 'save-stmt',
-                'implicit-none-stmt', 'T-stmt', 'component-decl-stmt', 'end-T-stmt');
+                'implicit-none-stmt', 'T-stmt', 'component-decl-stmt', 'end-T-stmt', 'import-stmt');
   my %noexec = map {($_, 1)} @noexec;
 
   if ($noexec{$stmt->nodeName})

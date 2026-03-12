@@ -323,7 +323,7 @@ sub fillSpecificationPart
       $part->appendChild ($node);
     
     }
-  
+
   $space->parentNode->insertAfter (&t ("\n"), $spec);
 }
 
