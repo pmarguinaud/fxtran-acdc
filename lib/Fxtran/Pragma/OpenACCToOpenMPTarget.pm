@@ -35,6 +35,7 @@ sub apply
     {
       &addIfdefFxtran ($d, $opts);
     }
+
 }
 
 sub convertToOpenMPTarget

@@ -171,7 +171,6 @@ sub makeCanonic
     }
 
   'Fxtran::Cycle'->simplify ($d, %opts);
-      
 }
 
 sub makeCanonicUnit
@@ -217,7 +216,6 @@ sub makeCanonicModule
   my $spec = &n ("<specification-part><use-part/>\n<implicit-part/>\n<declaration-part/></specification-part>");
 
   &fillSpecificationPart ($pu, $spec, @node);
-
 }
 
 sub makeCanonicFunction
@@ -269,9 +267,6 @@ sub makeCanonicSubroutine
   my $spec = &n ("<specification-part><use-part/>\n<implicit-part/>\n<declaration-part/></specification-part>");
 
   &fillSpecificationPart ($pu, $spec, &F ('preceding-sibling::node()', $exec));
-
-
-  
 }
 
 sub fillSpecificationPart

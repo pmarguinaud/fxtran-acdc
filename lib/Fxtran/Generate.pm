@@ -1304,7 +1304,7 @@ Parse a file, inline some routines (optional) and write back the result.
   expand-openacc                  -- Expand OpenACC directives
   ifdef-fxtran                    -- OpenMP Target directives in #ifdef/#endif
 EOF
-sub openacctoopenmptarget
+sub openaccconvert
 {
   my ($opts, @args) = @_;
 
