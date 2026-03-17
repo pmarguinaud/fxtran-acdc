@@ -1,0 +1,47 @@
+#!/usr/bin/env perl 
+
+use warnings;
+
+use FindBin qw ($Bin);
+use lib "$Bin/../lib";
+use Fxtran::Common;
+
+use Data::Dumper;
+use Getopt::Long;
+use FileHandle;
+use File::Basename;
+
+use Fxtran::Bt;
+use Fxtran;
+use Fxtran::Pragma::OpenACCToOpenMPTarget;
+use Fxtran::Pragma::OpenACC;
+
+use strict;
+
+my @opts_f = qw (expand-openacc ifdef-fxtran openmptarget);
+my @opts_s = qw ();
+
+my %opts;
+
+&GetOptions
+(
+  (map { ($_, \$opts{$_}) } @opts_f),
+  (map { ("$_=s", \$opts{$_}) } @opts_s),
+);
+
+my ($F90, $F90out) = @ARGV;
+
+$F90out ||= '-';
+
+my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -openacc)]);
+
+&Fxtran::Pragma::OpenACCToOpenMPTarget::apply ($d, \%opts);
+
+if ($F90out && ($F90out eq '-'))
+  {
+    print $d->textContent;
+  }
+else
+  {
+    'FileHandle'->new (">$F90out")->print ($d->textContent);
+  }

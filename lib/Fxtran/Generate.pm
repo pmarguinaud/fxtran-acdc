@@ -206,6 +206,13 @@ sub routineToRoutineHead
   
   my $d = &Fxtran::parse (location => $F90, fopts => [qw (-line-length 5000 -no-include -no-cpp -construct-tag -canonic), @fopts], dir => $opts->{tmp});
 
+  # OpenACC/OpenMP Directives are not unfolded properly by the fxtran parser; unfold them by hand
+  if (grep { $_ eq '-openacc' } @fopts)
+    {
+      &Fxtran::Util::loadModule ('Fxtran::Pragma::OpenACC');
+      &Fxtran::Pragma::OpenACC::unfoldDirectives ($d);
+    }
+
   &Fxtran::Canonic::makeCanonic ($d, %$opts);
 
   die ("Could not figure out style for file $F90")
@@ -1295,6 +1302,36 @@ Parse a file, inline some routines (optional) and write back the result.
     }
 
   my ($d, $F90out) = &routineToRoutineHead ($F90, 'idem', $opts, qw (-openmp));
+
+  &routineToRoutineTail ($F90out, $F90, $d, $opts);
+}
+
+&click (<< "EOF");
+@options{qw (tmp cycle dir write-metadata style pragma)}
+  expand-openacc                  -- Expand OpenACC directives
+  ifdef-fxtran                    -- OpenMP Target directives in #ifdef/#endif
+EOF
+sub openaccconvert
+{
+  my ($opts, @args) = @_;
+
+  my ($F90) = @args;
+
+  if (&dirname ($F90) eq $opts->{dir})
+    {
+      die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
+    }
+
+  print &Dumper ([F90 => $F90, dir => $opts->{dir}, cwd => &Cwd::cwd ()]);
+
+  my ($d, $F90out) = &routineToRoutineHead ($F90, 'idem', $opts, qw (-openacc));
+
+  if ($opts->{pragma}->isa ('Fxtran::Pragma::OpenMPTarget'))
+    {
+      &Fxtran::Util::loadModule ('Fxtran::Pragma::OpenACCToOpenMPTarget');
+      $opts->{openmptarget} = 1;
+      &Fxtran::Pragma::OpenACCToOpenMPTarget::apply ($d, $opts);
+    }
 
   &routineToRoutineTail ($F90out, $F90, $d, $opts);
 }

@@ -31,6 +31,16 @@ sub getUserCode
 {
   my ($F90, $F90out, $method, %opts) = @_;
 
+  my @fxtran_f90_command = do
+  {
+    my $cmd;
+    if ($cmd = $ENV{FXTRAN_F90_COMMAND})
+      {
+        $cmd = eval ($cmd);
+      }
+    @{ $cmd || [] }
+  };
+
   my $find = $opts{find};
   
   my $f90orig = $F90;
@@ -75,9 +85,13 @@ sub getUserCode
             }
         }
     }     
-  
+
   &Fxtran::Util::updateFile ($F90out, $d_user->textContent);
 
+  if (@fxtran_f90_command)
+    {
+      &Fxtran::Util::runCommand (cmd => [@fxtran_f90_command, qw (--dryrun --tmp 0 --dir . -- f90 -c), $F90out]);
+    }
 }
 
 

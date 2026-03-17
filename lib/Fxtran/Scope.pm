@@ -6,8 +6,10 @@ package Fxtran::Scope;
 # philippe.marguinaud@meteo.fr
 #
 
+use Data::Dumper;
 
 use strict;
+
 use Fxtran;
 
 sub getExec
@@ -33,9 +35,9 @@ sub getNoExec
 {
   my $d = shift;
  
-  my @stmt = &F ('.//ANY-stmt', $d); 
+  my @stmt = &F ('.//ANY-stmt|.//acc', $d); 
 
-  my ($exec) = grep { &Fxtran::stmt_is_executable ($_) } @stmt;
+  my ($exec) = grep { &Fxtran::stmt_is_executable ($_) || ($_->nodeName eq 'acc') } @stmt;
 
   if (! $exec)
     {
@@ -48,13 +50,14 @@ sub getNoExec
 
   for my $p (reverse (@prev))
     {
-      next if ($p->nodeName eq '#text');
-      next if ($p->nodeName eq 'C');
-      if ($p->nodeName eq 'ACDC-directive')
+      my $nn = $p->nodeName;
+      next if ($nn eq '#text');
+      next if ($nn eq 'C');
+      if ($nn eq 'ACDC-directive')
         {
           next if ($p->textContent =~ m/^PARALLEL/o);
         }
-      next if ($p->nodeName eq 'ACDC');
+      next if ($nn eq 'ACDC');
       $prev = $p;
       last;
     }
@@ -65,7 +68,8 @@ sub getNoExec
 
   for my $anc (reverse (@anc))
     {
-      if (($anc->nodeName =~ m/-(?:construct|stmt)$/o) || ($anc->nodeName eq 'include'))
+      my $nn = $anc->nodeName;
+      if (($nn =~ m/-(?:construct|stmt)$/o) || ($nn eq 'include'))
         {
           $prev = $anc;
         }
