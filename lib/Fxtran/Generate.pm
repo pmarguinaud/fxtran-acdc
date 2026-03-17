@@ -1322,6 +1322,8 @@ sub openaccconvert
       die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
     }
 
+  print &Dumper ([F90 => $F90, dir => $opts->{dir}, cwd => &Cwd::cwd ()]);
+
   my ($d, $F90out) = &routineToRoutineHead ($F90, 'idem', $opts, qw (-openacc));
 
   if ($opts->{pragma}->isa ('Fxtran::Pragma::OpenMPTarget'))

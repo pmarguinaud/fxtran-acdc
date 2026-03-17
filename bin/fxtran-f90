@@ -245,24 +245,36 @@ sub runACDCMethod
   &Fxtran::F90Compiler::compile (%args);
 }
 
-my ($package, $config, $iconfig) = ('generate');
+my ($package, $ilast, $config, $iconfig) = ('generate', scalar (@ARGV));
 
 # Look for config
 
 for (my $i = 0; $i < $#ARGV; $i++)
   {
-    last if ($ARGV[$i] eq '--');
-    next unless ($ARGV[$i] eq '--config');
-    $iconfig = $i;
-    $config = $ARGV[$i+1];
-    last;
+    if ($ARGV[$i] eq '--') 
+      {
+        $ilast = $i;
+        last;
+      }
+    elsif ($ARGV[$i] eq '--config')
+      {
+        $iconfig = $i;
+        $ARGV[$i+1] = $config = 'File::Spec'->rel2abs ($ARGV[$i+1]);
+      }
   }
+
+# Save fxtran-f90 options for subprocesses (transformations may recursively invoke fxtran-f90)
+{
+  local $Data::Dumper::Terse = 1;
+  local $Data::Dumper::Indent = 0;
+  local $Data::Dumper::Sortkeys = 1;
+  $ENV{FXTRAN_F90_COMMAND} = &Dumper ([$0, @ARGV[0..$ilast-1]]);
+}
 
 if ($config)
   {
     die ("Configution file `$config' was not found") 
       unless (-f $config);
-    $config = 'File::Spec'->rel2abs ($config);
     $config = do ("$config");
     if (my $c = $@)
       {
@@ -408,7 +420,7 @@ my $cwd = &cwd ();
 
 unshift (@f90flags, "-I$cwd");
 
-my $dir = (delete $opts{dir}) || '.'; 
+my $dir = (delete $opts{dir}) || '.';  $dir = 'File::Spec'->rel2abs ($dir);
 my $tmp = delete $opts{tmp}; $tmp = undef if ($tmp && ($tmp eq '.'));
 
 FILE: for my $F90 (@F90)
