@@ -6,6 +6,25 @@ package Fxtran::Style::SEMIIMPLICIT;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Style::SEMIIMPLICIT
+
+=head1 DESCRIPTION
+
+Style class for the IFS/Arpege semi-implicit solver routines. This class
+derives from C<Fxtran::Style::IAL> and defines the naming conventions used
+in semi-implicit spectral-space code, where the horizontal loop iterator is
+C<JSP>, the loop bounds are C<KSTA> and C<KEND>, and the loop size (nproma)
+is one of several C<YDGEOMETRY%YRMP%NSPEC2V_*_SI> fields or C<KSPEC2V>.
+The vertical level iterator is C<JLEV>.
+
+The C<matchDocument> method identifies semi-implicit source files by the
+presence of array declarations dimensioned by C<KSPEC2V> or
+C<YDGEOMETRY%YRMP%NSPEC2V_SI>.
+
+=cut
+
 use Data::Dumper;
 
 use base qw (Fxtran::Style::IAL);

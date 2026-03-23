@@ -1,5 +1,22 @@
 package Fxtran::Vendor::ROCM;
 
+=head1 NAME
+
+Fxtran::Vendor::ROCM
+
+=head1 DESCRIPTION
+
+Vendor adaptor for the AMD ROCm (amdflang/amdlang) Fortran compiler.
+Overrides C<preprocessOptions> to apply two ROCm-specific fixups to the
+compiler argument list: it honours per-file optimisation level overrides
+specified via C<!amdrocm -ON> comment directives in the source, and it
+deduplicates C<.a> static library arguments while ensuring that
+C<-lflang_rt.hostdevice> is followed by C<-lm> exactly once.
+
+=head1 FUNCTIONS
+
+=cut
+
 use Data::Dumper;
 use File::Basename;
 use FileHandle;

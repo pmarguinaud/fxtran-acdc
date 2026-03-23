@@ -6,6 +6,28 @@ package Fxtran::Style::ACRANEB2;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Style::ACRANEB2
+
+=head1 DESCRIPTION
+
+Style class for the ACRANEB2 radiation scheme. This class derives from
+C<Fxtran::Style::MFPHYS> and handles the specific naming conventions used
+in the ACRANEB2 code, where the horizontal loop iterator is C<JN> and the
+loop size argument is C<KJN> instead of the usual C<JLON>/C<KLON>.
+
+The C<preProcessForOpenACC> method normalises ACRANEB2 code before OpenACC
+parallelisation: it renames C<KJN> to C<KLON>, removes the C<JN> loops,
+and replaces the local C<IIDIA>/C<IFDIA> bounds variables with the
+standard C<KIDIA>/C<KFDIA> dummy arguments.
+
+The C<matchDocument> method identifies ACRANEB2 source files by the
+presence of both C<KLON> and C<KJN> dummy arguments together with either
+a C<KIIDIA> argument or an C<IIDIA> local variable declaration.
+
+=cut
+
 use base qw (Fxtran::Style::MFPHYS);
 
 use File::Basename;

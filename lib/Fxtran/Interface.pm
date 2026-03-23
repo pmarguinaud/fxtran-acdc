@@ -6,6 +6,24 @@ package Fxtran::Interface;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Interface
+
+=head1 DESCRIPTION
+
+Generates Fortran interface-block files (C<.intfb.h>) and MODI module wrappers
+from a Fortran source file.  The core transformation strips execution parts,
+contained procedures, and all declarations that are not needed to describe the
+dummy argument list, keeping only the statements that are essential for the
+interface.  Labels, comments (except OpenACC/OMP declare-target), includes, and
+defines are also removed.  The module also supports merging an additional
+OpenACC interface variant into the generated file.
+
+=head1 FUNCTIONS
+
+=cut
+
 use File::Basename;
 use FileHandle;
 use Data::Dumper;

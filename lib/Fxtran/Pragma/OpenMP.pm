@@ -6,6 +6,29 @@ package Fxtran::Pragma::OpenMP;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Pragma::OpenMP
+
+=head1 DESCRIPTION
+
+Pragma class for generating OpenMP directives in FORTRAN source code.
+This class derives from C<Fxtran::Pragma> and currently provides one
+directive-insertion method:
+
+=over 4
+
+=item C<parallelDo>
+
+Inserts a C<!$OMP PARALLEL DO> directive with optional clauses (e.g.
+C<PRIVATE>, C<REDUCTION>) before a given node in the fxtran XML document
+tree. Long clause lists are automatically wrapped across continuation
+lines.
+
+=back
+
+=cut
+
 use base qw (Fxtran::Pragma);
 
 use strict;

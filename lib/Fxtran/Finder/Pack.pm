@@ -6,6 +6,22 @@ package Fxtran::Finder::Pack;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Finder::Pack
+
+=head1 DESCRIPTION
+
+Finder implementation for gmkpack-style source packs. A pack is a directory
+tree whose layout is described by a C<.gmkview> file listing the views in
+priority order. All C<.F90> and C<.h> files across every view are indexed by
+basename. The index is cached in a C<.scan.pl> file inside the pack directory
+so that subsequent runs do not need to re-scan the tree. The local (first)
+view is always scanned afresh to pick up any recent edits.
+
+=head1 FUNCTIONS
+
+=cut
 
 use strict;
 use base qw (Fxtran::Finder::Basic);

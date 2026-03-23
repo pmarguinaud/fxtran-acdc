@@ -6,6 +6,23 @@ package Fxtran::IO::Link;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::IO::Link
+
+=head1 DESCRIPTION
+
+Loads FieldAPI type description files (C<.pl> files produced by
+C<Fxtran::FieldAPI::Register>) from a directory, resolves inheritance
+and cross-type references, and returns a unified data structure that
+maps type names to their FieldAPI member layouts.  Also synthesises
+JPRB array definitions by duplicating the corresponding JPRD
+definitions.
+
+=head1 FUNCTIONS
+
+=cut
+
 use File::Spec;
 use File::Basename;
 use Data::Dumper;

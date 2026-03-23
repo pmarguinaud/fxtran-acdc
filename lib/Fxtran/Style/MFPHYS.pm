@@ -6,6 +6,25 @@ package Fxtran::Style::MFPHYS;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Style::MFPHYS
+
+=head1 DESCRIPTION
+
+Style class for Meteo-France physics routines. This class derives from
+C<Fxtran::Style::IAL> and defines the naming conventions used in
+Meteo-France physics code, where the horizontal loop iterator is C<JLON>,
+the loop bounds are C<KIDIA> and C<KFDIA>, and the loop size (nproma) is
+C<KLON> or C<YDGEOMETRY%YRDIM%NPROMA>. The vertical level iterator is
+C<JLEV>.
+
+The C<matchDocument> method identifies MFPHYS source files by the presence
+of a C<KLON> dummy argument (or the combination of C<KIDIA>, C<KFDIA> and
+C<YDGEOMETRY>) together with a C<JLON> local variable declaration.
+
+=cut
+
 use base qw (Fxtran::Style::IAL);
 use Fxtran;
 

@@ -6,6 +6,23 @@ package Fxtran::Scope;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Scope
+
+=head1 DESCRIPTION
+
+Navigation and whitespace-management utilities for fxtran XML parse trees.
+C<getExec> returns the first executable statement or construct in a subtree.
+C<getNoExec> returns the last non-executable node that precedes the first
+executable statement, which is useful as an insertion point for new
+declarations or directives.  C<removeWhiteSpaces> and C<removeWhiteLines>
+collapse redundant whitespace text nodes in the tree.
+
+=head1 FUNCTIONS
+
+=cut
+
 use Data::Dumper;
 
 use strict;

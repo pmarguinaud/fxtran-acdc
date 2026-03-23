@@ -6,6 +6,22 @@ package Fxtran::Finder::Include;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Finder::Include
+
+=head1 DESCRIPTION
+
+Finder implementation that searches for files through a list of include
+directories, similar to a C preprocessor include path. Directories are passed
+via the C<I> constructor argument (with or without a leading C<-I> prefix).
+The current directory C<.> is always prepended to the search path. The first
+directory that contains the requested file wins.
+
+=head1 FUNCTIONS
+
+=cut
+
 use strict;
 use base qw (Fxtran::Finder::Basic);
 

@@ -6,6 +6,23 @@ package Fxtran::Generate::ParallelMethod;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Generate::ParallelMethod
+
+=head1 DESCRIPTION
+
+Generates a C stub file (C<parallelmethod_<name>.c>) that embeds, in named ELF
+sections, a mapping from code sections to their preferred parallel method
+(OPENMP, OPENMPSINGLECOLUMN, OPENACCSC).  The mapping is read from
+C<FXTRAN_ACDC_LPARALLELMETHOD> macro calls inside the Fortran source.  It also
+inserts a call to the generated C stub into the program unit so that the linker
+can resolve the symbol.
+
+=head1 FUNCTIONS
+
+=cut
+
 use Data::Dumper;
 
 use strict;

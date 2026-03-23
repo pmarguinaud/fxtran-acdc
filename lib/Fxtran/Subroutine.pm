@@ -6,6 +6,23 @@ package Fxtran::Subroutine;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Subroutine
+
+=head1 DESCRIPTION
+
+Utilities for manipulating Fortran SUBROUTINE program units in a parsed
+document.  C<addSuffix> appends a string to the subroutine name in both the
+SUBROUTINE and END SUBROUTINE statements as well as in any DR_HOOK call
+strings.  C<rename> applies a user-supplied transformation function to the
+subroutine name and updates DR_HOOK strings accordingly.  C<getInterface>
+locates and parses the interface block for a named subroutine.
+
+=head1 FUNCTIONS
+
+=cut
+
 use FileHandle;
 use Data::Dumper;
 

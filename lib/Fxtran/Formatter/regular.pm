@@ -6,6 +6,21 @@ package Fxtran::Formatter::regular;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Formatter::regular
+
+=head1 DESCRIPTION
+
+Base class for formatters that handle ordinary (non-block) Fortran statements.
+Inherits from L<Fxtran::Formatter>. Provides C<canonic> and C<reparse> methods
+that parse a single statement in isolation using fxtran, without needing a
+matching C<END> construct.
+
+=head1 FUNCTIONS
+
+=cut
+
 use base qw (Fxtran::Formatter);
 
 use strict;

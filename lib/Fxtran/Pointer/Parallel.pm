@@ -6,6 +6,24 @@ package Fxtran::Pointer::Parallel;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Pointer::Parallel
+
+=head1 DESCRIPTION
+
+Transforms FORTRAN program units that contain parallel-region pragmas into
+code that dispatches at runtime between multiple parallelisation backends
+(e.g. OpenMP, OpenACC). For each parallel region, an C<IF/ELSEIF/ELSE>
+construct is generated that selects the appropriate back-end based on a
+runtime condition. Array references to FIELD API objects are rewritten to
+use the correct view (host or device) for each target, and pointer
+associations are updated accordingly.
+
+=head1 FUNCTIONS
+
+=cut
+
 use Data::Dumper;
 use File::Basename;
 use List::MoreUtils qw (uniq);

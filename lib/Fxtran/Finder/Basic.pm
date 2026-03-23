@@ -6,6 +6,20 @@ package Fxtran::Finder::Basic;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Finder::Basic
+
+=head1 DESCRIPTION
+
+Base class for all finder implementations. Provides common logic for locating
+interface files, supporting both the ARPEGE/IFS convention (C<.intfb.h> and
+C<.h> files) and the MesoNH convention (C<modi_*.F90> files). Concrete
+subclasses must implement the C<resolve> method.
+
+=head1 FUNCTIONS
+
+=cut
 
 use strict;
 use Data::Dumper;

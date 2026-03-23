@@ -6,6 +6,20 @@ package Fxtran::Compare;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Compare
+
+=head1 DESCRIPTION
+
+Utilities for comparing Fortran source files and directories.  Files are
+parsed with fxtran into canonical form before comparison so that insignificant
+formatting differences are ignored.  An interactive prompt mode allows the user
+to overwrite the reference file when a difference is detected.
+
+=head1 FUNCTIONS
+
+=cut
 
 use strict;
 use Fxtran;

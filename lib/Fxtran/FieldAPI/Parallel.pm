@@ -6,7 +6,25 @@ package Fxtran::FieldAPI::Parallel;
 # philippe.marguinaud@meteo.fr
 #
 
-#
+=head1 NAME
+
+Fxtran::FieldAPI::Parallel
+
+=head1 DESCRIPTION
+
+Transforms Fortran subroutines so that local NPROMA-sized arrays are
+wrapped in FieldAPI array objects (C<ARRAY_xD> types) suitable for
+parallel execution on CPU and GPU.  The main entry point,
+C<wrapArrays>, locates array declarations dimensioned on C<KLON> or
+C<YDCPG_OPTS%KLON>, replaces them with the appropriate FieldAPI
+wrapper type, initialises and finalises the wrappers around the
+executable section, and rewrites all array references inside parallel
+regions to go through the C<%P> data pointer.
+
+=head1 FUNCTIONS
+
+=cut
+
 use strict;
 use FileHandle;
 use Data::Dumper;

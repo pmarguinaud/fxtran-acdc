@@ -6,6 +6,21 @@ package Fxtran::MergeTool::Meld;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::MergeTool::Meld
+
+=head1 DESCRIPTION
+
+Backend for the meld merge tool. Implements the C<merge> method from
+L<Fxtran::MergeTool> by invoking the C<meld> external command to perform
+a three-way merge of base, local, and remote files, writing the result to
+the merged output file.
+
+=head1 FUNCTIONS
+
+=cut
+
 use base qw (Fxtran::MergeTool);
 
 use strict;

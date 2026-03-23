@@ -6,6 +6,21 @@ package Fxtran::Pointer::Object;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Pointer::Object
+
+=head1 DESCRIPTION
+
+Provides utilities for working with derived-type object fields in the context
+of FIELD API pointer transformations. Functions look up type declarations,
+determine whether a component belongs to an object, and translate field
+expressions and component paths from their original names (e.g. C<PT0>,
+C<DM0>) to their FIELD API field counterparts (e.g. C<FT0>, C<F_PT0>).
+
+=head1 FUNCTIONS
+
+=cut
 
 use strict;
 use Fxtran;

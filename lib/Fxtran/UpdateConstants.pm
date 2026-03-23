@@ -1,5 +1,22 @@
 package Fxtran::UpdateConstants;
 
+=head1 NAME
+
+Fxtran::UpdateConstants
+
+=head1 DESCRIPTION
+
+Inserts update calls for derived-type arguments after they have been modified
+inside a subroutine.  For each INOUT dummy argument whose type belongs to a
+configurable list, the module tracks every assignment or INOUT call-site that
+could mutate the object and injects a conditional C<CALL UPDATE(...)> after
+each such statement, guarded by a LOGICAL flag.  The corresponding utility
+module (C<USE UTIL_<TYPE>_MOD>) is added to the use-part automatically.
+
+=head1 FUNCTIONS
+
+=cut
+
 use Data::Dumper;
 
 use strict;

@@ -6,6 +6,27 @@ package Fxtran::Style::MFPHYSTOP;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Style::MFPHYSTOP
+
+=head1 DESCRIPTION
+
+Style class for the top-level Meteo-France physics interface routines.
+This class derives from C<Fxtran::Style::MFPHYS> and overrides the loop
+size (nproma) and loop bounds to use the C<YDCPG_OPTS> and C<YDCPG_BNDS>
+structures that appear at the top of the Meteo-France physics call tree.
+Specifically, nproma is taken from C<YDGEOMETRY%YRDIM%NPROMA>,
+C<YDGEOMETRY%YRDIM%NPROMNH>, or C<YDCPG_OPTS%KLON>, and the loop bounds
+are C<YDCPG_BNDS%KIDIA> and C<YDCPG_BNDS%KFDIA>.
+
+The C<matchDocument> method identifies MFPHYSTOP source files by the
+presence of C<YDMF_PHYS>, C<YDMF_PHYS_OUT>, or the combination of
+C<YDCPG_OPTS> and C<YDCPG_BNDS> dummy arguments together with a C<JLON>
+local variable declaration.
+
+=cut
+
 use base qw (Fxtran::Style::MFPHYS);
 use Fxtran;
 use Data::Dumper;

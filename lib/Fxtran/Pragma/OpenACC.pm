@@ -6,6 +6,62 @@ package Fxtran::Pragma::OpenACC;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Pragma::OpenACC
+
+=head1 DESCRIPTION
+
+Pragma class for generating and manipulating OpenACC directives in
+FORTRAN source code. This class derives from C<Fxtran::Pragma> and
+provides methods to insert, expand, and clean up C<!$ACC> directives in
+an fxtran XML document tree.
+
+The following directive-insertion methods are available:
+
+=over 4
+
+=item C<insertParallelLoopGang>
+
+Inserts a C<!$ACC PARALLEL LOOP GANG> directive before a given node.
+
+=item C<insertParallelLoopGangVector>
+
+Inserts a C<!$ACC PARALLEL LOOP GANG VECTOR> directive before a given node.
+
+=item C<insertData>
+
+Inserts a C<!$ACC DATA> / C<!$ACC END DATA> pair around a given node.
+
+=item C<insertLoopVector>
+
+Inserts a C<!$ACC LOOP VECTOR> directive before a given node.
+
+=item C<insertRoutineVector>
+
+Inserts a C<!$ACC ROUTINE (...) VECTOR> annotation inside a subroutine.
+
+=item C<insertRoutineSeq>
+
+Inserts a C<!$ACC ROUTINE (...) SEQ> annotation inside a subroutine.
+
+=item C<insertSerial>
+
+Inserts a C<!$ACC SERIAL> / C<!$ACC END SERIAL> pair around a given node.
+
+=back
+
+Data-movement helper methods (C<enterDataCreate>, C<exitDataDelete>,
+C<updateDevice>, C<enterDataAttach>, C<exitDataDetach>) return the
+corresponding C<!$ACC> directive strings.
+
+The C<expandParallelLoop> and C<expandParallelData> utility functions
+split a combined C<!$ACC PARALLEL LOOP> directive into separate
+C<!$ACC PARALLEL> and C<!$ACC LOOP> directives, and extract data clauses
+into a dedicated C<!$ACC DATA> region respectively.
+
+=cut
+
 use base qw (Fxtran::Pragma);
 
 use strict;

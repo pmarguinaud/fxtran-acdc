@@ -302,6 +302,7 @@ See [Fxtran::IO](Fxtran%3A%3AIO.md) for more details.
 
 ```
 * interface
+  --array-slice-to-address       (FLAG) :                      : Pass addresses of first array element instead of array slices
   --cycle                               : 49                   : Cycle
   --dir                                 : .                    : Dump result in this directory
   --merge-interfaces             (FLAG) :                      : Consider that single column interfaces and regular interfaces are in the same include file
@@ -535,6 +536,8 @@ See `Fxtran::SingleBlock::Spectral` for more details.
 
 
 Parse a file, inline some routines (optional) and write back the result.
+
+## update
 
 # SEE ALSO
 

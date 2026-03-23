@@ -6,6 +6,20 @@ package Fxtran::Include;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Include
+
+=head1 DESCRIPTION
+
+Manages Fortran INCLUDE directives in a parsed document.  Provides functions
+to remove interface-block includes that are no longer referenced, to insert new
+include directives into the declaration part of a program unit, and to inline
+(load and expand) include files that appear after a CONTAINS statement.
+
+=head1 FUNCTIONS
+
+=cut
 
 use strict;
 use Fxtran;

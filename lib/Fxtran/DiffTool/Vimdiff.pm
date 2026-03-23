@@ -6,6 +6,20 @@ package Fxtran::DiffTool::Vimdiff;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::DiffTool::Vimdiff
+
+=head1 DESCRIPTION
+
+Backend for the vimdiff diff tool. Implements the C<diff> method from
+L<Fxtran::DiffTool> by invoking the C<vimdiff> external command to display
+a side-by-side comparison of two files inside Vim.
+
+=head1 FUNCTIONS
+
+=cut
+
 use base qw (Fxtran::DiffTool);
 
 use strict;

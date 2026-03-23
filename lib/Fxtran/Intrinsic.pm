@@ -6,6 +6,24 @@ package Fxtran::Intrinsic;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Intrinsic
+
+=head1 DESCRIPTION
+
+Handles Fortran intrinsic functions, in particular for bit-reproducibility
+transformations.  Provides a predicate to test whether a name is a known
+intrinsic, and functions that replace elementary math intrinsics and the C<**>
+operator with wrapper functions from the C<FXTRAN_ACDC_BR_INTRINSICS> module,
+ensuring portable, bit-reproducible results across different compilers and
+platforms.  Inline include files (C<*.func.h>) and post-CONTAINS include files
+are also processed.
+
+=head1 FUNCTIONS
+
+=cut
+
 use Data::Dumper;
 use FileHandle;
 use File::Basename;

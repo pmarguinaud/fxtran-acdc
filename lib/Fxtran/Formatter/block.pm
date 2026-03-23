@@ -6,6 +6,24 @@ package Fxtran::Formatter::block;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Formatter::block
+
+=head1 DESCRIPTION
+
+Base class for formatters that handle block-introducing Fortran statements
+(i.e. statements that have a matching C<END xxx> statement, such as
+C<ASSOCIATE> or C<SUBROUTINE>). Inherits from L<Fxtran::Formatter>.
+
+Provides C<canonic> and C<reparse> methods that temporarily append the
+appropriate C<END> statement so that fxtran can parse the opening statement
+in context.
+
+=head1 FUNCTIONS
+
+=cut
+
 use base qw (Fxtran::Formatter);
 
 use strict;

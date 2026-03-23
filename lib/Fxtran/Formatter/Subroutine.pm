@@ -6,6 +6,22 @@ package Fxtran::Formatter::Subroutine;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Formatter::Subroutine
+
+=head1 DESCRIPTION
+
+Formatter for Fortran C<SUBROUTINE> statements. Inherits from
+L<Fxtran::Formatter::block>. The C<expand> method rewrites the dummy argument
+list so that each argument appears on its own continuation line. The C<repack>
+method reassembles the argument list into a compact form respecting the
+line-length limit.
+
+=head1 FUNCTIONS
+
+=cut
+
 use base qw (Fxtran::Formatter::block);
 
 use strict;

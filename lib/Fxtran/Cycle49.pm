@@ -6,6 +6,20 @@ package Fxtran::Cycle49;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Cycle49
+
+=head1 DESCRIPTION
+
+Simplification rules specific to IFS cycle 49.  Provides a C<simplify> method
+that rewrites a set of named Boolean or string variables to their known
+compile-time values for that cycle, removing dead code branches.  Additional
+variables can be overridden at run time via the C<set-variables> option.
+
+=head1 FUNCTIONS
+
+=cut
 
 use strict;
 use Fxtran;

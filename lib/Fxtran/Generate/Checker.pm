@@ -6,6 +6,35 @@ package Fxtran::Generate::Checker;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Generate::Checker
+
+=head1 DESCRIPTION
+
+Validation pass used by the C<Fxtran::Generate> framework.  After a
+parallel-method transformation has been applied, this module checks that the
+resulting program unit conforms to the coding rules required by the target
+parallel back-end (single-column, pointer-parallel, many-blocks, or
+single-block).  It reports violations via L<Fxtran::Message> for:
+
+=over 4
+
+=item * missing INTENT attributes, forbidden derived-type locals, assumed-shape
+arrays, allocatable and pointer variables (C<checkVariables>).
+
+=item * array-syntax assignments or call statements that are not simple array
+copies or contiguous sections (C<checkArraySyntax>).
+
+=item * NPROMA-dimensioned arrays that are not indexed with the expected loop
+index or range (C<checkExpressions>).
+
+=back
+
+=head1 FUNCTIONS
+
+=cut
+
 use Data::Dumper;
 
 use strict;

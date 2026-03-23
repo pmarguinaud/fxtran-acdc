@@ -6,6 +6,23 @@ package Fxtran::Ref;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Ref
+
+=head1 DESCRIPTION
+
+Low-level utilities for working with array and function reference nodes in a
+fxtran XML parse tree.  Provides C<parensToArrayRef> to convert a
+C<parens-R> function-call reference node into an C<array-R> subscript node,
+C<resolveParensRef> to apply that conversion throughout a subtree, and
+C<getRLT> to retrieve (or create) the C<R-LT> reference-list child of an
+expression node.
+
+=head1 FUNCTIONS
+
+=cut
+
 use Data::Dumper;
 
 use strict;

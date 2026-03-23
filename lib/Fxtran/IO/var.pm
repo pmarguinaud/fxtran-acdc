@@ -6,6 +6,22 @@ package Fxtran::IO::var;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::IO::var
+
+=head1 DESCRIPTION
+
+FieldAPI class policy module for variable (VAR) derived types.
+Provides C<skip> and C<getFieldAPIMember> methods used by
+C<Fxtran::IO> when generating I/O code.  Only pointer components are
+examined; the special component C<P> is mapped to C<T0> before
+looking for the corresponding FieldAPI member (using the C<F> prefix
+rather than C<F_>).
+
+=head1 FUNCTIONS
+
+=cut
 
 use strict;
 use Fxtran;

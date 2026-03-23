@@ -6,6 +6,21 @@ package Fxtran::Message;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Message
+
+=head1 DESCRIPTION
+
+Simple diagnostic output module.  Formats and prints human-readable warning
+or error messages, optionally accompanied by the text of the Fortran statement
+that triggered the message.  The C<error> function additionally terminates the
+program after printing the message.
+
+=head1 FUNCTIONS
+
+=cut
+
 use Text::Wrap;
 
 use strict;

@@ -6,6 +6,22 @@ package Fxtran::Cycle50;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Cycle50
+
+=head1 DESCRIPTION
+
+Simplification rules specific to IFS cycle 50.  Provides a C<simplify> method
+that rewrites a set of named Boolean or string variables to their known
+compile-time values for that cycle.  Compared to cycle 49 it includes
+additional variables and also renames YDGEO to YDGEOMETRY and removes calls to
+GET_HALO_PHY.  Additional variables can be overridden at run time via the
+C<set-variables> option.
+
+=head1 FUNCTIONS
+
+=cut
 
 use strict;
 use Fxtran;

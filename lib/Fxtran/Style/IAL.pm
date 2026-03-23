@@ -6,6 +6,57 @@ package Fxtran::Style::IAL;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Style::IAL
+
+=head1 DESCRIPTION
+
+Intermediate base style class for IFS/Arpege/LACE (IAL) code. This class
+derives from C<Fxtran::Style> and provides shared behaviour for all IAL
+style subclasses (C<Fxtran::Style::MFPHYS>, C<Fxtran::Style::ECPHYS>,
+C<Fxtran::Style::DYNAMICS>, etc.).
+
+It provides the following common services:
+
+=over 4
+
+=item *
+
+The include file extension C<.intfb.h> used for interface blocks.
+
+=item *
+
+A list of routines that are never treated as compute routines
+(C<ABOR1>, C<DR_HOOK>, C<PCRC>).
+
+=item *
+
+Message-handling pre-processing (C<ABOR1_ACC> conversion and
+C<WRITE>-to-C<PRINT> transformation).
+
+=item *
+
+Dimension-to-iterator and dimension-to-bounds mappings for C<KLON> and
+C<KLEV>.
+
+=item *
+
+OpenACC pre-processing that replaces explicit horizontal-range section
+subscripts with bare colons.
+
+=item *
+
+Interface generation via C<Fxtran::Interface::intfb>.
+
+=item *
+
+Logic for inserting OpenACC-variant interface include files.
+
+=back
+
+=cut
+
 use base qw (Fxtran::Style);
 use Data::Dumper;
 

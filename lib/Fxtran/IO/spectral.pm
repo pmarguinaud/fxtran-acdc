@@ -6,6 +6,21 @@ package Fxtran::IO::spectral;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::IO::spectral
+
+=head1 DESCRIPTION
+
+FieldAPI class policy module for spectral derived types.  Provides
+C<skip> and C<getFieldAPIMember> methods used by C<Fxtran::IO> when
+generating I/O code.  Pointer components that do not start with C<F_>
+are skipped, as are components matching C<SP\dD> (spectral
+dimensioned arrays).
+
+=head1 FUNCTIONS
+
+=cut
 
 use strict;
 use Fxtran;

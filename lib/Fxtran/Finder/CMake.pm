@@ -6,6 +6,23 @@ package Fxtran::Finder::CMake;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Finder::CMake
+
+=head1 DESCRIPTION
+
+Finder implementation for CMake-based projects. Resolves source files by first
+searching the include paths (via L<Fxtran::Finder::Include>) and then falling
+back to a full recursive scan of the CMake home directory read from
+C<CMakeCache.txt>. The environment variable C<CMAKE_BUILD_DIRECTORY> must point
+to the CMake build directory. Directories containing a C<.fxtran_acdc_cmake_ignore>
+file are excluded from the scan.
+
+=head1 FUNCTIONS
+
+=cut
+
 use File::Find;
 use File::Basename;
 use File::Spec;

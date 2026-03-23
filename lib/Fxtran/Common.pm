@@ -6,6 +6,20 @@ package Fxtran::Common;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Common
+
+=head1 DESCRIPTION
+
+Bootstrap module that sets up the local::lib environment.  When imported, it
+tries to load the system C<local::lib> and falls back to the bundled
+C<Fxtran::local::lib> if the system one is unavailable.
+
+=head1 FUNCTIONS
+
+=cut
+
 use strict;
 
 sub import

@@ -6,6 +6,25 @@ package Fxtran::FieldAPI::Register;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::FieldAPI::Register
+
+=head1 DESCRIPTION
+
+Scans Fortran type definitions in an fxtran XML document and records
+which components are backed by FieldAPI objects.  For each type
+construct found, C<registerFieldAPI1> collects component metadata
+(pointer attributes, array rank, type specifier, and inheritance) and
+C<registerFieldAPI> serialises the resulting hash to a per-type C<.pl>
+file under the directory given by the C<types-fieldapi-dir> option.
+An optional class (e.g. C<Fxtran::IO::cpg>) can be supplied via the
+C<field-api-class> option to customise how FieldAPI members are
+identified for a particular family of types.
+
+=head1 FUNCTIONS
+
+=cut
 
 use strict;
 use FileHandle;

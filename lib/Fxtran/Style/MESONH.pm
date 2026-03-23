@@ -6,6 +6,31 @@ package Fxtran::Style::MESONH;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Style::MESONH
+
+=head1 DESCRIPTION
+
+Style class for MesoNH physics routines. This class derives directly from
+C<Fxtran::Style> and defines the naming conventions used in MesoNH code,
+where the horizontal loop iterator is C<JI> (or C<JIJ>), the loop bounds
+are C<D%NIB> and C<D%NIE>, and the loop size (nproma) is C<D%NIT> or
+C<D%NIJT>. The vertical level iterator is C<JK>.
+
+The class uses C<DIMPHYEX_T> structure variables (C<D> and a copy named
+C<DD>) as custom iterators and provides methods to update them from
+C<YLCPG_BNDS%KIDIA>/C<YLCPG_BNDS%KFDIA> bounds.
+
+The C<preProcessForOpenACC> method renames C<JIJ> to C<JI> and normalises
+C<IIJB>/C<IIJE> bound references to C<D%NIJB>/C<D%NIJE>.
+
+The C<matchDocument> method identifies MesoNH source files by the presence
+of a C<D> dummy argument declared as C<TYPE(DIMPHYEX_T)>, or by a C<JI>
+or C<JIJ> local variable declaration in a routine with a C<D> argument.
+
+=cut
+
 use List::MoreUtils qw (uniq);
 use Data::Dumper;
 

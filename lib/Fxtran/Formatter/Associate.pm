@@ -6,6 +6,22 @@ package Fxtran::Formatter::Associate;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Formatter::Associate
+
+=head1 DESCRIPTION
+
+Formatter for Fortran C<ASSOCIATE> statements. Inherits from
+L<Fxtran::Formatter::block>. The C<expand> method rewrites the statement so
+that each selector appears on its own line sorted alphabetically by associate
+name. The C<repack> method reformats a canonical statement back into a compact
+multi-line form respecting the line-length limit.
+
+=head1 FUNCTIONS
+
+=cut
+
 use base qw (Fxtran::Formatter::block);
 
 use Data::Dumper;

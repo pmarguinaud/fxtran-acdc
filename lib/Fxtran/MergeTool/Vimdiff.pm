@@ -6,6 +6,22 @@ package Fxtran::MergeTool::Vimdiff;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::MergeTool::Vimdiff
+
+=head1 DESCRIPTION
+
+Backend for the vimdiff merge tool. Implements the C<merge> method from
+L<Fxtran::MergeTool> by invoking the C<vimdiff> external command to perform
+a three-way merge inside Vim. The base file is first copied to the merged
+output path, which is then opened alongside the local and remote files for
+interactive editing.
+
+=head1 FUNCTIONS
+
+=cut
+
 use base qw (Fxtran::MergeTool);
 
 use strict;

@@ -6,6 +6,22 @@ package Fxtran::Tool;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Tool
+
+=head1 DESCRIPTION
+
+General-purpose helper utilities for the fxtran-acdc toolchain.  Provides a
+simple logging function (C<ll>) that writes caller location and message to a
+log file, C<runCommand> to execute a shell command and die on failure (with an
+optional interactive debug mode that opens an xterm), and C<which> to locate
+an executable in C<$PATH>.
+
+=head1 FUNCTIONS
+
+=cut
+
 use Data::Dumper;
 use FileHandle;
 
