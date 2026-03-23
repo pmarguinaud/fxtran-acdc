@@ -33,19 +33,6 @@ C<ASSOCIATE> selectors mapped to complex slices are not supported; for instance:
   TYPE (TT) :: YY (N)
 
   ASSOCIATE (XX => YY%X)
-
-=head1 SEE ALSO
-
-L<Fxtran::Call>, L<Fxtran::Formatter>
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2022
-
 =cut
 
 use FileHandle;
@@ -137,6 +124,18 @@ Without C<outer>, the C<ASSOCIATE> construct itself is removed after inlining.
   
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::Call>, L<Fxtran::Formatter>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2022
+
+=cut
 1;
-  
-  

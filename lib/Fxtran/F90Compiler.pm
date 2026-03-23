@@ -544,6 +544,8 @@ Concatenate FORTRAN source files via C<#include> directives into a single file (
 }
 
 1;
+=cut
+
 
 =head1 SEE ALSO
 
@@ -558,3 +560,4 @@ philippe.marguinaud@meteo.fr
 Meteo-France 2025
 
 =cut
+1;

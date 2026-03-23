@@ -170,19 +170,6 @@ L<shallow_mf.F90|url:../tests/49t2_openacc-bench/src/main/phyex/turb/shallow_mf.
 L<shallow_mf_openacc.F90|url:../tests/49t2_openacc-bench/ref/util/src/local/phyex/turb/shallow_mf_openacc.F90>
 
 =back
-
-=head1 SEE ALSO
-
-L<Fxtran::Stack>, L<Fxtran::Loop>, L<Fxtran::ReDim>, L<Fxtran::SingleBlock>, L<Fxtran::ManyBlocks>
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2022
-
 =cut
 
 use FileHandle;
@@ -517,4 +504,18 @@ Apply the full singlecolumn transformation to a subroutine program unit, produci
 
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::Stack>, L<Fxtran::Loop>, L<Fxtran::ReDim>, L<Fxtran::SingleBlock>, L<Fxtran::ManyBlocks>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2022
+
+=cut
 1;

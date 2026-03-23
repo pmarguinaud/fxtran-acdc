@@ -56,18 +56,6 @@ is transformed into:
 
     ENDIF
 
-# SEE ALSO
-
-[Fxtran::TopLevel](Fxtran%3A%3ATopLevel.md)
-
-# AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-# COPYRIGHT
-
-Meteo-France 2025
-
 ## processSingleRoutine
 
 Dispatch to `processSingleRoutineMethod` for the spectral top-level transformation.
@@ -79,3 +67,15 @@ Rename a called procedure by appending the singleblock suffix when its name matc
 ## processSingleRoutineMethod
 
 Transform all `ACDC PARALLEL` sections in a top-level spectral routine into guarded dispatch blocks supporting OpenACC, singleblock, and fallback execution paths.
+
+# SEE ALSO
+
+[Fxtran::TopLevel](Fxtran%3A%3ATopLevel.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

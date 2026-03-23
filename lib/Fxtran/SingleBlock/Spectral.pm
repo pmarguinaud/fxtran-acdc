@@ -36,15 +36,6 @@ loop when possible.
 =head1 AUTHOR
 
 philippe.marguinaud@meteo.fr
-
-=head1 SEE ALSO
-
-L<Fxtran::SingleBlock>
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use Data::Dumper;
@@ -141,4 +132,14 @@ EOF
   $pragma->insertParallelLoopGangVector ($do, PRESENT => $present, PRIVATE => $private, IF => ['LDACC'], COLLAPSE => [2]);
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::SingleBlock>
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

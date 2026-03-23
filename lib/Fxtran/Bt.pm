@@ -9,19 +9,6 @@ Fxtran::Bt
 This module provides the C<bt> function and uses it to handle C<__WARN__> and
 C<__DIE__> Perl signal. The C<bt> function will then print a stack trace 
 and abort when an error or a warnings is encountered.
-
-=head1 SEE ALSO
-
-L<Devel::StackTrace>
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2022
-
 =cut
 
 use Data::Dumper;
@@ -158,4 +145,18 @@ C<die "\n"> to abort the program.
 $SIG{__WARN__} = \&bt;
 $SIG{__DIE__} = \&bt;
 
+
+=head1 SEE ALSO
+
+L<Devel::StackTrace>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2022
+
+=cut
 1;

@@ -155,18 +155,6 @@ is transformed to:
         ENDDO
       ENDDO
 
-# SEE ALSO
-
-[Fxtran::ManyBlocks](Fxtran%3A%3AManyBlocks.md), [Fxtran::SingleColumn](Fxtran%3A%3ASingleColumn.md)
-
-# AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-# COPYRIGHT
-
-Meteo-France 2025
-
 ## processSingleRoutine
 
 Dispatch to `processSingleRoutineMethod` on the current package for the singleblock transformation.
@@ -178,3 +166,15 @@ Apply the full singleblock transformation to a subroutine program unit, generati
 ## makeParallel
 
 Insert an OpenACC `PARALLEL LOOP GANG VECTOR` directive around a do-construct.
+
+# SEE ALSO
+
+[Fxtran::ManyBlocks](Fxtran%3A%3AManyBlocks.md), [Fxtran::SingleColumn](Fxtran%3A%3ASingleColumn.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

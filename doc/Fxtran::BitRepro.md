@@ -14,20 +14,6 @@ number in a well defined order.
 The generated code has to be compiled with the `-O0` option, so that results 
 be reproduced between CPU and GPU.
 
-# SEE ALSO
-
-[fxtran\_acdc\_br\_intrinsics.F90](../src/fxtran_acdc_br_intrinsics.F90),
-[fxtran\_acdc\_br\_transcendentals.cc](../src/fxtran_acdc_br_transcendentals.cc),
-[Fxtran::Intrinsic](Fxtran%3A%3AIntrinsic.md)
-
-# AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-# COPYRIGHT
-
-Meteo-France 2025
-
 ## makeBitReproducible
 
 Entry point for the bit-reproducibility transformation. Iterates over all
@@ -57,3 +43,17 @@ Apply the full bit-reproducibility transformation to a single subroutine: replac
 transcendental intrinsics, optionally bracket additions, rename call targets and
 the subroutine itself with the bit-repro suffix, then recurse into contained
 program units.
+
+# SEE ALSO
+
+[fxtran\_acdc\_br\_intrinsics.F90](../src/fxtran_acdc_br_intrinsics.F90),
+[fxtran\_acdc\_br\_transcendentals.cc](../src/fxtran_acdc_br_transcendentals.cc),
+[Fxtran::Intrinsic](Fxtran%3A%3AIntrinsic.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

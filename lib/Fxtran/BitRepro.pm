@@ -24,21 +24,6 @@ number in a well defined order.
 
 The generated code has to be compiled with the C<-O0> option, so that results 
 be reproduced between CPU and GPU.
-
-=head1 SEE ALSO
-
-L<fxtran_acdc_br_intrinsics.F90|url:../src/fxtran_acdc_br_intrinsics.F90>,
-L<fxtran_acdc_br_transcendentals.cc|url:../src/fxtran_acdc_br_transcendentals.cc>,
-L<Fxtran::Intrinsic>
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use Data::Dumper;
@@ -217,4 +202,20 @@ program units.
 
 }
 
+
+=head1 SEE ALSO
+
+L<fxtran_acdc_br_intrinsics.F90|url:../src/fxtran_acdc_br_intrinsics.F90>,
+L<fxtran_acdc_br_transcendentals.cc|url:../src/fxtran_acdc_br_transcendentals.cc>,
+L<Fxtran::Intrinsic>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

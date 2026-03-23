@@ -16,14 +16,6 @@ The `parallel-iterator-list` contain the list of iterators
 of loops that should be included in parallel sections (NPROMA and
 vertical iterators are the default).
 
-# AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-# COPYRIGHT
-
-Meteo-France 2025
-
 ## createParallelSections
 
 Scan a program unit (or execution-part node) for assignment statements that
@@ -35,3 +27,11 @@ combined statement count does not exceed `max-statements-per-parallel` are
 merged into a single section.  The set of loop iterators that qualify for
 parallelisation is controlled by the `parallel-iterator-list` option
 (defaulting to the NPROMA and vertical iterators).
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

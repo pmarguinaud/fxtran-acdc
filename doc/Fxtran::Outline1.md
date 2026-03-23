@@ -130,18 +130,6 @@ and:
 [apl\_arpege\_zbay\_qrconv.F90](../tests/49t2_openacc-outline1/ref/outline1/src/local/arpifs/phys_dmn/apl_arpege_zbay_qrconv.F90),
 etc ...
 
-# SEE ALSO
-
-[Fxtran::Outline](Fxtran%3A%3AOutline.md), [Fxtran::Generate](Fxtran%3A%3AGenerate.md)
-
-# AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-# COPYRIGHT
-
-Meteo-France 2025
-
 ## variableDependencies
 
 Return the declaration statement and dependent symbol names for a given symbol in a program unit.
@@ -170,3 +158,15 @@ Parse a Fortran text fragment and write it to a file in canonical indented form.
 
 
 Top-level entry point: parse a Fortran source file and outline all `ACDC PARALLEL` sections.
+
+# SEE ALSO
+
+[Fxtran::Outline](Fxtran%3A%3AOutline.md), [Fxtran::Generate](Fxtran%3A%3AGenerate.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

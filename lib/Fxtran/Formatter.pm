@@ -43,23 +43,6 @@ Align use statements, remove unused imported entities.
 Align argument declarations statements.
 
 =back
-
-=head1 SEE ALSO
-
-L<Fxtran::Formatter::Call>, L<Fxtran::Formatter::Associate>, L<Fxtran::Formatter::Subroutine>
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
-=head1 SEE ALSO
-
-L<fxtran-formatter>, L<Fxtran::Formatter::regular>, L<Fxtran::Formatter::block>
-
 =cut
 
 use Data::Dumper;
@@ -679,4 +662,22 @@ Remove local variable declarations (and optionally unused dummy arguments) that 
     }
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::Formatter::Call>, L<Fxtran::Formatter::Associate>, L<Fxtran::Formatter::Subroutine>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=head1 SEE ALSO
+
+L<fxtran-formatter>, L<Fxtran::Formatter::regular>, L<Fxtran::Formatter::block>
+
+=cut
 1;

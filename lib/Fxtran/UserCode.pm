@@ -9,15 +9,6 @@ Fxtran::UserCode
 Instead of generating code for a routine, look for user provided code (option C<user-code>).
 
 The user provided code is renamed according using the appropriate routine name and suffix.
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use Data::Dumper;
@@ -109,4 +100,14 @@ environment, a dry-run compilation is performed to validate the output.
 }
 
 
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

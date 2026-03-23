@@ -160,18 +160,6 @@ See for instance:
 /
 [shallow\_mf\_openacc.F90](../tests/49t2_openacc-bench/ref/util/src/local/phyex/turb/shallow_mf_openacc.F90)
 
-# SEE ALSO
-
-[Fxtran::Stack](Fxtran%3A%3AStack.md), [Fxtran::Loop](Fxtran%3A%3ALoop.md), [Fxtran::ReDim](Fxtran%3A%3AReDim.md), [Fxtran::SingleBlock](Fxtran%3A%3ASingleBlock.md), [Fxtran::ManyBlocks](Fxtran%3A%3AManyBlocks.md)
-
-# AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-# COPYRIGHT
-
-Meteo-France 2022
-
 ## arraySliceToAddress
 
 Convert NPROMA array section arguments to pointer-based element addresses for PGI compatibility.
@@ -191,3 +179,15 @@ Apply the singlecolumn transformation to an interface body within a module.
 ## processSingleRoutine
 
 Apply the full singlecolumn transformation to a subroutine program unit, producing an OpenACC seq routine.
+
+# SEE ALSO
+
+[Fxtran::Stack](Fxtran%3A%3AStack.md), [Fxtran::Loop](Fxtran%3A%3ALoop.md), [Fxtran::ReDim](Fxtran%3A%3AReDim.md), [Fxtran::SingleBlock](Fxtran%3A%3ASingleBlock.md), [Fxtran::ManyBlocks](Fxtran%3A%3AManyBlocks.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2022

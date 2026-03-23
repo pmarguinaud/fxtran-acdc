@@ -156,19 +156,6 @@ is transformed to:
         PD (JLON, JLEV)=ZOUT (JLON, JLEV)+PSP (JLON)*YDDYN%SIRPRG
       ENDDO
     ENDDO
-
-=head1 SEE ALSO
-
-L<Fxtran::ManyBlocks>, L<Fxtran::SingleColumn>
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use Data::Dumper;
@@ -437,4 +424,18 @@ Insert an OpenACC C<PARALLEL LOOP GANG VECTOR> directive around a do-construct.
   $pragma->insertParallelLoopGangVector ($do, PRESENT => $present, PRIVATE => $private, IF => ['LDACC']);
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::ManyBlocks>, L<Fxtran::SingleColumn>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

@@ -13,19 +13,6 @@ dependent.
 
 The C<Fxtran::Cycle::simplify> will invoke the appropriate
 C<Fxtran::CycleNN::simplify> method, using the cycle value.
-
-=head1 SEE ALSO
-
-L<Fxtran::Cycle49>, L<Fxtran::Cycle50>
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use strict;
@@ -58,4 +45,18 @@ arguments.  Returns immediately if no C<cycle> option is provided.
   $class->simplify ($d, %opts);
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::Cycle49>, L<Fxtran::Cycle50>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

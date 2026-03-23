@@ -41,15 +41,6 @@ gmkpack
 A simple directory containing all source files.
 
 =back
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use Data::Dumper;
@@ -130,4 +121,14 @@ C<Fxtran::Finder::Include> as the default fall-back.
     }
 }
 
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

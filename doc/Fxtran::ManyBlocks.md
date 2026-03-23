@@ -201,18 +201,6 @@ See for instance:
 /
 [cucalln\_mf\_manyblocks.F90](../tests/49t2_openacc-manyblocks-auto/ref/manyblocks/src/local/arpifs/phys_ec/cucalln_mf_manyblocks.F90).
 
-# SEE ALSO
-
-[Fxtran::SingleColumn](Fxtran%3A%3ASingleColumn.md), [Fxtran::SingleBlock](Fxtran%3A%3ASingleBlock.md)
-
-# AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-# COPYRIGHT
-
-Meteo-France 2025
-
 ## processSingleSection
 
 Process a single parallel section within a routine, generating the OpenACC kernel loop.
@@ -228,3 +216,15 @@ Allocate temporary NPROMA arrays using the stack allocator within a routine.
 ## processSingleModule
 
 Apply the manyblocks transformation to all subroutines within a module.
+
+# SEE ALSO
+
+[Fxtran::SingleColumn](Fxtran%3A%3ASingleColumn.md), [Fxtran::SingleBlock](Fxtran%3A%3ASingleBlock.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

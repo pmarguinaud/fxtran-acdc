@@ -14,18 +14,6 @@ set to `archive`).
 In this case, the archive is expanded into single objects and these objects
 replace the item in the argument list.
 
-# SEE ALSO
-
-[fxtran-f90](fxtran-f90.md), [fxtran-cxx](fxtran-cxx.md), [Fxtran::F90Compiler](Fxtran%3A%3AF90Compiler.md)
-
-# AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-# COPYRIGHT
-
-Meteo-France 2025
-
 ## sysAR
 
 Run the `ar` archiver with the given arguments. If the first argument is `t`,
@@ -47,3 +35,15 @@ keyword arguments and returns a blessed hash reference.
 
 Returns the full path of the temporary object file by joining `dir` and
 `file`. Used as the string overload for `Fxtran::AR::Object::Temp`.
+
+# SEE ALSO
+
+[fxtran-f90](fxtran-f90.md), [fxtran-cxx](fxtran-cxx.md), [Fxtran::F90Compiler](Fxtran%3A%3AF90Compiler.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

@@ -57,19 +57,6 @@ is transformed into:
     ...
 
   ENDIF
-
-=head1 SEE ALSO
-
-L<Fxtran::TopLevel>
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use Data::Dumper;
@@ -232,4 +219,18 @@ EOF
 }
 
 
+
+=head1 SEE ALSO
+
+L<Fxtran::TopLevel>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

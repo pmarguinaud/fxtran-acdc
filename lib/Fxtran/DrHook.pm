@@ -7,19 +7,6 @@ Fxtran::DrHook
 =head1 DESCRIPTION
 
 This module provides utilities to remove DrHook calls.
-
-=head1 SEE ALSO
-
-L<Fxtran::NVTX>
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2022
-
 =cut
 
 use strict;
@@ -74,4 +61,18 @@ Declarations of C<ZHOOK_HANDLE*> variables in the declaration-part.
     }
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::NVTX>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2022
+
+=cut
 1;

@@ -211,19 +211,6 @@ L<cucalln_mf.F90|url:../tests/49t2_openacc-manyblocks-auto/src/main/arpifs/phys_
 L<cucalln_mf_manyblocks.F90|url:../tests/49t2_openacc-manyblocks-auto/ref/manyblocks/src/local/arpifs/phys_ec/cucalln_mf_manyblocks.F90>.
 
 =back
-
-=head1 SEE ALSO
-
-L<Fxtran::SingleColumn>, L<Fxtran::SingleBlock>
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use Data::Dumper;
@@ -926,4 +913,18 @@ Apply the manyblocks transformation to all subroutines within a module.
     }
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::SingleColumn>, L<Fxtran::SingleBlock>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

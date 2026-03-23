@@ -11,15 +11,6 @@ Generate interface block for different transformation methods.
 =head1 AUTHOR
 
 philippe.marguinaud@meteo.fr
-
-=head1 SEE ALSO
-
-L<Fxtran::Generate>, L<Fxtran::Interface>
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use FileHandle;
@@ -87,4 +78,14 @@ interface block body.
   return $intfb;
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::Generate>, L<Fxtran::Interface>
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

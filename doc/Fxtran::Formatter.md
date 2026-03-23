@@ -34,22 +34,6 @@ The module also provides unit wide reformatting:
 
     Align argument declarations statements.
 
-# SEE ALSO
-
-[Fxtran::Formatter::Call](Fxtran%3A%3AFormatter%3A%3ACall.md), [Fxtran::Formatter::Associate](Fxtran%3A%3AFormatter%3A%3AAssociate.md), [Fxtran::Formatter::Subroutine](Fxtran%3A%3AFormatter%3A%3ASubroutine.md)
-
-# AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-# COPYRIGHT
-
-Meteo-France 2025
-
-# SEE ALSO
-
-[fxtran-formatter](fxtran-formatter.md), [Fxtran::Formatter::regular](Fxtran%3A%3AFormatter%3A%3Aregular.md), [Fxtran::Formatter::block](Fxtran%3A%3AFormatter%3A%3Ablock.md)
-
 ## getIndent
 
 Return the indentation level (in characters) of a given XML node by inspecting preceding text nodes.
@@ -113,3 +97,19 @@ Remove a dummy argument node and its adjacent separator nodes from a subroutine 
 ## removeUnusedLocalVariables
 
 Remove local variable declarations (and optionally unused dummy arguments) that are never referenced in the execution part of a program unit.
+
+# SEE ALSO
+
+[Fxtran::Formatter::Call](Fxtran%3A%3AFormatter%3A%3ACall.md), [Fxtran::Formatter::Associate](Fxtran%3A%3AFormatter%3A%3AAssociate.md), [Fxtran::Formatter::Subroutine](Fxtran%3A%3AFormatter%3A%3ASubroutine.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025
+
+# SEE ALSO
+
+[fxtran-formatter](fxtran-formatter.md), [Fxtran::Formatter::regular](Fxtran%3A%3AFormatter%3A%3Aregular.md), [Fxtran::Formatter::block](Fxtran%3A%3AFormatter%3A%3Ablock.md)

@@ -55,19 +55,6 @@ Applying cycle specific simplifications.
 
 Another important function provided by this module is C<indent> which
 indents a FORTRAN/XML document.
-
-=head1 SEE ALSO
-
-L<Fxtran::Formatter>, L<Fxtran::Style>
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2022
-
 =cut
 
 use Data::Dumper;
@@ -550,4 +537,18 @@ via C<indentCr>. Returns the indented source as a string.
 }
 
 
+
+=head1 SEE ALSO
+
+L<Fxtran::Formatter>, L<Fxtran::Style>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2022
+
+=cut
 1;

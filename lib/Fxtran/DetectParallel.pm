@@ -17,15 +17,6 @@ do not exceed the C<max-statements-per-parallel> argument.
 The C<parallel-iterator-list> contain the list of iterators
 of loops that should be included in parallel sections (NPROMA and
 vertical iterators are the default).
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use Data::Dumper;
@@ -166,4 +157,14 @@ parallelisation is controlled by the C<parallel-iterator-list> option
   
 }
 
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

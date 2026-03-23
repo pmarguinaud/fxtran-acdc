@@ -22,14 +22,6 @@ annotations.
 The `new` constructor also serves as an entry point for
 creating such objects.
 
-# AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-# COPYRIGHT
-
-Meteo-France 2025
-
 ## new
 
 Constructor and factory method for pragma annotation objects.  When the
@@ -38,3 +30,11 @@ Constructor and factory method for pragma annotation objects.  When the
 called.  When called directly on a concrete subclass (i.e. `$class` is not
 `Fxtran::Pragma`), the provided arguments are blessed into that class and
 returned.
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

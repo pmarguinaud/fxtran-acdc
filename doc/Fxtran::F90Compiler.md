@@ -87,3 +87,11 @@ philippe.marguinaud@meteo.fr
 # COPYRIGHT
 
 Meteo-France 2025
+
+# POD ERRORS
+
+Hey! **The above document had some coding errors, which are explained below:**
+
+- Around line 547:
+
+    &#x3d;cut found outside a pod block.  Skipping to next block.

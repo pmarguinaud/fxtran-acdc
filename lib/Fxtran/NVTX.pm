@@ -8,19 +8,6 @@ Fxtran::NVTX
 
 This module provides the C<drHookToNVTX> function, whose purpose is
 to convert C<DR_HOOK> calls to C<NVTX> calls. 
-
-=head1 SEE ALSO
-
-L<Fxtran::DrHook>
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use strict;
@@ -92,4 +79,18 @@ Convert C<DR_HOOK> calls in a program unit to their C<NVTX> equivalents.
 
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::DrHook>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

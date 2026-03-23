@@ -24,14 +24,6 @@ We currently provide concrete classes for the following environments:
 - gmkpack
 - A simple directory containing all source files.
 
-# AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-# COPYRIGHT
-
-Meteo-France 2025
-
 ## new
 
 Factory constructor.  Inspect the current environment and return the most
@@ -45,3 +37,11 @@ variable is set.
 directory (gmkpack layout).
 - `Fxtran::Finder::Files` when an explicit `files` list is provided.
 - `Fxtran::Finder::Include` as the default fall-back.
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

@@ -32,6 +32,17 @@ section we are working with).
 
     ASSOCIATE (XX => YY%X)
 
+## resolveAssociates
+
+Resolve all `ASSOCIATE` constructs reachable from the given XML node `$d`.
+Each associate selector is inlined - occurrences of the associate name inside
+the block are replaced by the associated expression, including any additional
+references (array subscripts, component accesses) appended to the name.
+
+When the `outer` option is set, only `ASSOCIATE` blocks that are ancestors
+of `$d` (i.e. outside the current scope) are processed and are not removed.
+Without `outer`, the `ASSOCIATE` construct itself is removed after inlining.
+
 # SEE ALSO
 
 [Fxtran::Call](Fxtran%3A%3ACall.md), [Fxtran::Formatter](Fxtran%3A%3AFormatter.md)
@@ -43,14 +54,3 @@ philippe.marguinaud@meteo.fr
 # COPYRIGHT
 
 Meteo-France 2022
-
-## resolveAssociates
-
-Resolve all `ASSOCIATE` constructs reachable from the given XML node `$d`.
-Each associate selector is inlined - occurrences of the associate name inside
-the block are replaced by the associated expression, including any additional
-references (array subscripts, component accesses) appended to the name.
-
-When the `outer` option is set, only `ASSOCIATE` blocks that are ancestors
-of `$d` (i.e. outside the current scope) are processed and are not removed.
-Without `outer`, the `ASSOCIATE` construct itself is removed after inlining.

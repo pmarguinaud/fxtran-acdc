@@ -15,19 +15,6 @@ set to C<archive>).
 
 In this case, the archive is expanded into single objects and these objects
 replace the item in the argument list.
-
-=head1 SEE ALSO
-
-L<fxtran-f90>, L<fxtran-cxx>, L<Fxtran::F90Compiler>
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use Data::Dumper;
@@ -168,4 +155,18 @@ C<file>. Used as the string overload for C<Fxtran::AR::Object::Temp>.
 }
 
 
+
+=head1 SEE ALSO
+
+L<fxtran-f90>, L<fxtran-cxx>, L<Fxtran::F90Compiler>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

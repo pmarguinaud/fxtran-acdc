@@ -27,18 +27,6 @@ execution part with all executions statements.
 Another important function provided by this module is `indent` which
 indents a FORTRAN/XML document.
 
-# SEE ALSO
-
-[Fxtran::Formatter](Fxtran%3A%3AFormatter.md), [Fxtran::Style](Fxtran%3A%3AStyle.md)
-
-# AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-# COPYRIGHT
-
-Meteo-France 2022
-
 ## removeIfDef
 
 Remove all `#ifdef T` ... `#endif` preprocessor blocks from the document
@@ -101,3 +89,15 @@ Produce an indented FORTRAN source string from an fxtran XML document.
 Statements longer than `width` characters (default 100) are split across
 continuation lines. `IF` statements and constructs receive block indentation
 via `indentCr`. Returns the indented source as a string.
+
+# SEE ALSO
+
+[Fxtran::Formatter](Fxtran%3A%3AFormatter.md), [Fxtran::Style](Fxtran%3A%3AStyle.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2022

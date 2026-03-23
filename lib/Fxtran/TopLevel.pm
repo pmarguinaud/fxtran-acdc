@@ -173,15 +173,6 @@ F<scan2m_ctvtot_drv.F90>
 =head1 AUTHOR
 
 philippe.marguinaud@meteo.fr
-
-=head1 SEE ALSO
-
-L<Fxtran::Generate>
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use Data::Dumper;
@@ -339,4 +330,14 @@ EOF
 
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::Generate>
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;
