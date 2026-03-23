@@ -57,6 +57,20 @@ use Fxtran;
 
 sub makeParallel
 {
+
+=head2 makeParallel
+
+Overloaded parallelisation method for spectral routines.  Given a program
+unit and a candidate C<DO> construct, this method first checks whether all
+arrays that are written inside the loop are updated within a C<JLEV> loop
+over levels.  If some are not, only a simple gang/vector loop over the
+spectral wavenumber is inserted.  Otherwise all existing C<JLEV> loops
+inside the construct are hoisted out, a single enclosing C<JLEV> loop is
+wrapped around the contents, and a collapsed (level x wavenumber) parallel
+loop is generated.
+
+=cut
+
   my $class = shift;
   my ($pu, $do, %opts) = @_;
 

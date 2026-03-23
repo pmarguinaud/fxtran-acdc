@@ -58,6 +58,10 @@ is transformed into:
 
   ENDIF
 
+=head1 SEE ALSO
+
+L<Fxtran::TopLevel>
+
 =head1 AUTHOR
 
 philippe.marguinaud@meteo.fr
@@ -78,11 +82,25 @@ use Fxtran;
 
 sub processSingleRoutine
 {
+
+=head2 processSingleRoutine
+
+Dispatch to C<processSingleRoutineMethod> for the spectral top-level transformation.
+
+=cut
+
   __PACKAGE__->processSingleRoutineMethod (@_);
 }
 
 sub renameProc
 {
+
+=head2 renameProc
+
+Rename a called procedure by appending the singleblock suffix when its name matches the C<SP*> or C<ESP*> pattern.
+
+=cut
+
   my $class = shift;
   my ($pu, $proc, %opts) = @_;
 
@@ -94,6 +112,13 @@ sub renameProc
 
 sub processSingleRoutineMethod
 {
+
+=head2 processSingleRoutineMethod
+
+Transform all C<ACDC PARALLEL> sections in a top-level spectral routine into guarded dispatch blocks supporting OpenACC, singleblock, and fallback execution paths.
+
+=cut
+
   my $class = shift;
   my ($pu, %opts) = @_;
 

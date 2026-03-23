@@ -17,3 +17,11 @@ philippe.marguinaud@meteo.fr
 # COPYRIGHT
 
 Meteo-France 2025
+
+## processSingleRoutine
+
+Dispatch to `processSingleRoutineMethod` for the semi-implicit singleblock transformation.
+
+## renameProc
+
+Rename a called procedure by appending the semi-implicit suffix when its name matches the `SP*SI` pattern.

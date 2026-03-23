@@ -34,11 +34,25 @@ use Fxtran;
 
 sub processSingleRoutine
 {
+
+=head2 processSingleRoutine
+
+Dispatch to C<processSingleRoutineMethod> for the semi-implicit singleblock transformation.
+
+=cut
+
   __PACKAGE__->processSingleRoutineMethod (@_);
 }
 
 sub renameProc
 {
+
+=head2 renameProc
+
+Rename a called procedure by appending the semi-implicit suffix when its name matches the C<SP*SI> pattern.
+
+=cut
+
   my $class = shift;
   my ($pu, $proc, %opts) = @_;
 

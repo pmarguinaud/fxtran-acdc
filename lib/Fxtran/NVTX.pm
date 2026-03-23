@@ -9,6 +9,10 @@ Fxtran::NVTX
 This module provides the C<drHookToNVTX> function, whose purpose is
 to convert C<DR_HOOK> calls to C<NVTX> calls. 
 
+=head1 SEE ALSO
+
+L<Fxtran::DrHook>
+
 =head1 AUTHOR
 
 philippe.marguinaud@meteo.fr
@@ -27,6 +31,13 @@ use Fxtran;
 
 sub ifdef
 {
+
+=head2 ifdef
+
+Wrap a statement with C<#ifdef> / C<#endif> preprocessor guards for the given macro.
+
+=cut
+
   my ($macro, $stmt) = @_;
 
   my $p = $stmt->parentNode ();
@@ -37,6 +48,13 @@ sub ifdef
 
 sub drHookToNVTX
 {
+
+=head2 drHookToNVTX
+
+Convert C<DR_HOOK> calls in a program unit to their C<NVTX> equivalents.
+
+=cut
+
   my $pu = shift;
 
   my $cpp = 1;

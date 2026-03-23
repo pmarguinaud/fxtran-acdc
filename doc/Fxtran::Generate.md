@@ -8,6 +8,18 @@ This module contains entry points for source code transformation and generation 
 
 # METHODS
 
+## changeKidiaToYDCPG\_OPTS
+
+Replace references to `KIDIA`, `KFDIA` and `NPROMA` style variables with their `YDCPG_OPTS`/`YDCPG_BNDS` equivalents.
+
+## routineToRoutineHead
+
+Parse a FORTRAN source file and prepare it for transformation, returning the parsed document and the output file path.
+
+## routineToRoutineTail
+
+Finalise a transformation by writing the transformed document to the output file.
+
 ## semiimplicit
 
 ```
@@ -536,6 +548,24 @@ See `Fxtran::SingleBlock::Spectral` for more details.
 
 
 Parse a file, inline some routines (optional) and write back the result.
+
+## openaccconvert
+
+```
+* openaccconvert
+  --cycle                               : 49                   : Cycle
+  --dir                                 : .                    : Dump result in this directory
+  --expand-openacc               (FLAG) :                      : Expand OpenACC directives
+  --ifdef-fxtran                 (FLAG) :                      : OpenMP Target directives in #ifdef/#endif
+  --pragma                              : OpenACC              : Pragma (OpenACC or OpenMP)
+  --style                               : NONE                 : Source code style (default: guess from file contents)
+  --tmp                                 : .                    : Temporary directory for processing
+  --write-metadata               (FLAG) :                      : Add metadata to generated files                               
+
+```
+
+
+Convert a FORTRAN source file for OpenACC using the idem transformation pipeline.
 
 ## update
 

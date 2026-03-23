@@ -47,6 +47,13 @@ use Fxtran;
 
 sub newFromStyle
 {
+
+=head2 newFromStyle
+
+Create a new style object from a style name.
+
+=cut
+
   my $class = shift;
   my %args = @_;
   $class = "Fxtran::Style::$args{style}";
@@ -57,6 +64,13 @@ sub newFromStyle
 
 sub newFromDocument
 {
+
+=head2 newFromDocument
+
+Create a new style object by detecting the style from a FORTRAN source document.
+
+=cut
+
   my $class = shift;
   my %args = @_;
   my $doc = $args{document};
@@ -120,6 +134,13 @@ sub newFromDocument
 
 sub new
 {
+
+=head2 new
+
+Constructor. Dispatches to C<newFromStyle> or C<newFromDocument> depending on the arguments provided.
+
+=cut
+
   my $class = shift;
   my %args = @_;
 
@@ -139,29 +160,70 @@ sub new
 
 sub removeUnusedIncludes
 {
+
+=head2 removeUnusedIncludes
+
+Returns 0 by default. Subclasses may override this to enable removal of unused include statements.
+
+=cut
+
   return 0;
 }
 
 sub noComputeRoutine
 {
+
+=head2 noComputeRoutine
+
+Returns 0 by default. Subclasses may override this to suppress generation of compute routines.
+
+=cut
+
   return 0;
 }
 
 sub preProcessForOpenACC
 {
 
+=head2 preProcessForOpenACC
+
+Pre-process a document before OpenACC conversion. Base implementation is a no-op; subclasses may override.
+
+=cut
+
 }
 
 sub customIterator
 {
+
+=head2 customIterator
+
+Return a custom iterator expression for this style, if any. Base implementation returns nothing.
+
+=cut
+
 }
 
 sub updateCustomIterator
 {
+
+=head2 updateCustomIterator
+
+Update the custom iterator in a document. Base implementation is a no-op; subclasses may override.
+
+=cut
+
 }
 
 sub getActualNproma
 {
+
+=head2 getActualNproma
+
+Return the actual nproma argument used in a program unit, by matching dummy argument names against the style's nproma list.
+
+=cut
+
   my $self = shift;
   my $pu = shift;
 
@@ -177,6 +239,10 @@ sub getActualNproma
     }
 
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::Style::MFPHYS>, L<Fxtran::Style::IAL>, L<Fxtran::Style::ECPHYS>, L<Fxtran::Style::MESONH>.
 
 =head1 AUTHOR
 

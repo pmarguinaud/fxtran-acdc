@@ -246,6 +246,13 @@ use Fxtran;
 
 sub processSingleSection
 {
+
+=head2 processSingleSection
+
+Process a single parallel section within a routine, generating the OpenACC kernel loop.
+
+=cut
+
   my ($pu, $par, $var2dim, $typearg, $dims, $LDACC, %opts) = @_;
 
   my ($style, $pragma) = @opts{qw (style pragma)};
@@ -470,6 +477,13 @@ EOF
 
 sub processSingleRoutine
 {
+
+=head2 processSingleRoutine
+
+Apply the manyblocks transformation to a single subroutine program unit.
+
+=cut
+
   my ($pu, %opts) = @_;
 
   if (%{ $opts{'fuse-outer-dimension-names'} })
@@ -770,6 +784,13 @@ NPROMA:
 
 sub stackAllocateTemporaries
 {
+
+=head2 stackAllocateTemporaries
+
+Allocate temporary NPROMA arrays using the stack allocator within a routine.
+
+=cut
+
   my ($pu, $var2dim, %opts) = @_;
 
   my $pragma = $opts{pragma};
@@ -878,6 +899,13 @@ EOF
 
 sub processSingleModule
 {
+
+=head2 processSingleModule
+
+Apply the manyblocks transformation to all subroutines within a module.
+
+=cut
+
   my ($pu, %opts) = @_;
 
   my @pu = &F ('./program-unit', $pu);

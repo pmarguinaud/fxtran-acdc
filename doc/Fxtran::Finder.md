@@ -31,3 +31,17 @@ philippe.marguinaud@meteo.fr
 # COPYRIGHT
 
 Meteo-France 2025
+
+## new
+
+Factory constructor.  Inspect the current environment and return the most
+appropriate concrete finder object:
+
+- `Fxtran::Finder::CMake` when the `CMAKE_BUILD_DIRECTORY` environment
+variable is set.
+- `Fxtran::Finder::Pack::Build` when the `TARGET_PACK` environment
+variable is set.
+- `Fxtran::Finder::Pack` when a `.gmkview` file exists in the current
+directory (gmkpack layout).
+- `Fxtran::Finder::Files` when an explicit `files` list is provided.
+- `Fxtran::Finder::Include` as the default fall-back.

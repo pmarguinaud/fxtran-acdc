@@ -27,6 +27,10 @@ execution part with all executions statements.
 Another important function provided by this module is `indent` which
 indents a FORTRAN/XML document.
 
+# SEE ALSO
+
+[Fxtran::Formatter](Fxtran%3A%3AFormatter.md), [Fxtran::Style](Fxtran%3A%3AStyle.md)
+
 # AUTHOR
 
 philippe.marguinaud@meteo.fr
@@ -34,3 +38,66 @@ philippe.marguinaud@meteo.fr
 # COPYRIGHT
 
 Meteo-France 2022
+
+## removeIfDef
+
+Remove all `#ifdef T` ... `#endif` preprocessor blocks from the document
+where `T` matches the given tag string.
+
+## makeCanonicReferences
+
+Disambiguate all parenthesised references in the document: convert them to
+array references or function references depending on whether a preceding
+reference part exists, whether the name is an intrinsic, or whether it starts
+with `F`.
+
+## makeCanonic
+
+Apply the full canonic transformation to an fxtran XML document or program
+unit: expand `IF` statements into constructs, resolve associates, attach
+array specs, disambiguate references, force single declarations, strip
+architecture-specific `#ifdef` blocks, remove compiler directives, reorganise
+specification parts, and apply cycle-specific simplifications.
+
+## makeCanonicUnit
+
+Dispatch the canonic transformation for a single program unit to the
+appropriate handler (`makeCanonicSubroutine`, `makeCanonicFunction`, or
+`makeCanonicModule`) based on the first child statement.
+
+## makeCanonicModule
+
+Apply the canonic transformation to a module program unit: recursively
+canonicalise all contained and interface program units, then reorganise
+the module-level declarations into a structured specification part.
+
+## makeCanonicFunction
+
+Apply the canonic transformation to a function program unit by delegating to
+`makeCanonicSubroutine`.
+
+## makeCanonicSubroutine
+
+Apply the canonic transformation to a subroutine program unit: recursively
+canonicalise contained and interface program units, group executable statements
+into an `execution-part` element (honouring `DR_HOOK` boundaries), and
+reorganise the remaining statements into a structured specification part.
+
+## fillSpecificationPart
+
+Populate a `specification-part` element with the given nodes, distributing
+them into `use-part`, `implicit-part`, and `declaration-part` children
+according to their statement type, and insert the resulting structure into
+the parent program unit.
+
+## indentCr
+
+Add two-space indentation after every newline inside the given element,
+skipping newlines that are immediately followed by a `cpp` node.
+
+## indent
+
+Produce an indented FORTRAN source string from an fxtran XML document.
+Statements longer than `width` characters (default 100) are split across
+continuation lines. `IF` statements and constructs receive block indentation
+via `indentCr`. Returns the indented source as a string.

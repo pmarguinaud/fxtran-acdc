@@ -24,6 +24,13 @@ use Fxtran::DrHook;
 
 sub replaceDummyArgumentByActual
 {
+
+=head2 replaceDummyArgumentByActual
+
+Dispatch replacement of a dummy argument expression C<$e> by its actual argument C<$a>, branching on whether C<$a> is a named expression, an operator expression, or a literal.
+
+=cut
+
   my ($e, $a) = @_;
 
   if ($a->nodeName eq 'named-E')
@@ -44,6 +51,13 @@ sub replaceDummyArgumentByActual
 
 sub replaceDummyArgumentByActualOpE
 {
+
+=head2 replaceDummyArgumentByActualOpE
+
+Replace a dummy argument expression node with a parenthesised copy of the actual operator expression; die if the dummy carries array references.
+
+=cut
+
   my ($e, $a) = @_;
 
   $a = &n ('<parens-E>(' . $a->textContent . ')</parens-E>');
@@ -58,6 +72,13 @@ sub replaceDummyArgumentByActualOpE
 
 sub resolveArrayRef
 {
+
+=head2 resolveArrayRef
+
+Substitute colon section-subscripts in an actual array reference C<$ra> with the corresponding subscripts from the dummy array reference C<$re>, then replace C<$re> in the tree with the updated C<$ra>.
+
+=cut
+
   my ($ra, $re) = @_;
 
   $ra = $ra->cloneNode (1);
@@ -98,6 +119,13 @@ sub resolveArrayRef
 
 sub replaceDummyArgumentByActualNamedE
 {
+
+=head2 replaceDummyArgumentByActualNamedE
+
+Replace a dummy named-expression node with its actual named-expression equivalent, resolving component references and array section subscripts as needed.
+
+=cut
+
   my ($e, $a) = @_;
 
   my ($ne) = &F ('./N/n/text()', $e);
@@ -158,6 +186,13 @@ END:
 
 sub removeStmt
 {
+
+=head2 removeStmt
+
+Remove a statement node and all surrounding whitespace/text nodes up to and including the end-of-line, trimming the preceding newline to keep formatting clean.
+
+=cut
+
   my $stmt = shift;
   # Remove everything until eol
  
@@ -200,6 +235,13 @@ sub removeStmt
 
 sub inlineSingleCall
 {
+
+=head2 inlineSingleCall
+
+Inline a single CALL statement by replacing dummy arguments with actuals, removing dummy declarations, merging USE/declarations from the callee into the caller, and inserting the callee's executable statements in place of the call.
+
+=cut
+
   my ($d1, $d2, $s2, $n2, $call, %opts) = @_;
 
 # d1 is the outer program unit
@@ -431,6 +473,12 @@ SKIP:
 sub loopElementalSingleCall
 {
 
+=head2 loopElementalSingleCall
+
+Wrap a single call to an ELEMENTAL subroutine with DO loops over the array dimensions of its array arguments, replacing whole-array section subscripts with loop indices.
+
+=cut
+
 # Add loops around a single call to an ELEMENTAL subroutine
 
   my ($d1, $call, %opts) = @_;
@@ -580,6 +628,13 @@ sub loopElementalSingleCall
 
 sub loopElemental
 {
+
+=head2 loopElemental
+
+Add DO loops around all calls to an ELEMENTAL subroutine named C<$n2> within program unit C<$d1>.
+
+=cut
+
   my ($d1, $n2, %opts) = @_;
 
 # Add appropriate loops around calls around calls of ELEMENTAL subroutines
@@ -593,6 +648,13 @@ sub loopElemental
 
 sub inlineContainedSubroutine
 {
+
+=head2 inlineContainedSubroutine
+
+Inline all calls to the contained subroutine named C<$n2> within program unit C<$d1>, adding DO loops first if the subroutine is ELEMENTAL.
+
+=cut
+
   my ($d1, $n2, %opts) = @_;
 
 # d1 is the outer program unit
@@ -618,6 +680,12 @@ sub inlineContainedSubroutine
 
 sub sortContainedSubroutines
 {
+
+=head2 sortContainedSubroutines
+
+Sort a list of contained subroutine name nodes so that subroutines called by no other contained subroutine are inlined first, using a dependency-counting approach.
+
+=cut
 
 # CONTAINed subroutines to be inlined have to be sorted
 # we inline first routines which are called by no other
@@ -724,6 +792,13 @@ Remove the CONTAINS statement and the CONTAINed subroutines.
 
 sub suffixVariables
 {
+
+=head2 suffixVariables
+
+Append a suffix to the names of all local variables (excluding dummy arguments and style-defined loop indices) in a program unit, updating both declarations and all references.
+
+=cut
+
   my ($pu, %opts) = @_;
 
   my ($dp) = &F ('./specification-part/declaration-part', $pu);
@@ -872,6 +947,10 @@ Inline external subroutine. Suffix inlined routine variables with inlined routin
   $include && &removeStmt ($include);
 
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::Generate>, L<Fxtran::Include>
 
 =head1 AUTHOR
 

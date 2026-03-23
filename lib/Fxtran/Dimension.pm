@@ -223,6 +223,10 @@ will yield:
   
 }
 
+=head1 SEE ALSO
+
+L<Fxtran::Decl>, L<Fxtran::ReDim>.
+
 =head1 AUTHOR
 
 philippe.marguinaud@meteo.fr

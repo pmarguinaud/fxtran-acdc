@@ -18,7 +18,7 @@ replace the item in the argument list.
 
 =head1 SEE ALSO
 
-L<fxtran-f90>, L<fxtran-cxx>
+L<fxtran-f90>, L<fxtran-cxx>, L<Fxtran::F90Compiler>
 
 =head1 AUTHOR
 
@@ -42,6 +42,15 @@ my $AR = '/usr/bin/ar';
 
 sub sysAR
 {
+
+=head2 sysAR
+
+Run the C<ar> archiver with the given arguments. If the first argument is C<t>,
+returns the list of members in the archive. Otherwise, runs the command and
+dies on failure.
+
+=cut
+
   my @cmd = ($AR, @_);
   if ($cmd[1] eq 't')
     {
@@ -63,6 +72,15 @@ ERROR:
 
 sub expandObjects
 {
+
+=head2 expandObjects
+
+Expand C<.o> arguments that are actually archives (C<application/x-ar>) into
+their individual object files. Non-archive C<.o> files and non-object arguments
+are passed through unchanged. The C<$args> array ref is modified in place.
+
+=cut
+
   my $args = shift;
 
   my $ft = 'File::Type'->new ();
@@ -123,12 +141,28 @@ use overload '""' => \&asString;
 
 sub new
 {
+
+=head2 new
+
+Constructor for C<Fxtran::AR::Object::Temp>. Accepts C<dir> and C<file>
+keyword arguments and returns a blessed hash reference.
+
+=cut
+
   my $class = shift;
   return bless {@_}, $class;
 }
 
 sub asString
 {
+
+=head2 asString
+
+Returns the full path of the temporary object file by joining C<dir> and
+C<file>. Used as the string overload for C<Fxtran::AR::Object::Temp>.
+
+=cut
+
   my $self = shift;
   return "$self->{dir}/$self->{file}";
 }

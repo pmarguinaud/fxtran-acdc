@@ -30,9 +30,13 @@ as argument to a call statement.
 We rely on the `$find` argument of `getArgumentIntent` to find
 the subroutine interface and retrieve the dummy argument intent.
 
-# grokIntent
+## grokIntent
 
 This function finds the intent of an expression (IN or INOUT) in any statement.
+
+# SEE ALSO
+
+[Fxtran::Associate](Fxtran%3A%3AAssociate.md), [Fxtran::Formatter](Fxtran%3A%3AFormatter.md)
 
 # AUTHOR
 

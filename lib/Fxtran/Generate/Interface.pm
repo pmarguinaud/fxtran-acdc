@@ -14,7 +14,7 @@ philippe.marguinaud@meteo.fr
 
 =head1 SEE ALSO
 
-L<Fxtran::Generate>
+L<Fxtran::Generate>, L<Fxtran::Interface>
 
 =head1 COPYRIGHT
 
@@ -43,6 +43,18 @@ use Fxtran::Interface;
 
 sub interface
 {
+
+=head2 interface
+
+Generate the interface block for a given transformation method.  The
+function writes the source document to a temporary F90 file prefixed with
+the appropriate C<!$ACDC> directive, invokes C<fxtran-f90> in dry-run mode
+to perform the transformation, then parses the resulting file, makes it
+canonic, strips all assignment statements, and returns the text of the
+interface block body.
+
+=cut
+
   my ($doc, $opts, $method, @args) = @_;
 
   my $tmpdir = 'File::Temp'->newdir ();

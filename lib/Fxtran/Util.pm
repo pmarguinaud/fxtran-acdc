@@ -155,6 +155,10 @@ Read the contents of a file.
   return do { local $/ = undef; my $fh = 'FileHandle'->new ("<$f"); <$fh> };
 } 
 
+=head1 SEE ALSO
+
+L<Fxtran::Generate>, L<Fxtran::Finder>.
+
 =head1 AUTHOR
 
 philippe.marguinaud@meteo.fr

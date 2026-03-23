@@ -25,6 +25,10 @@ and:
 Convert `OpenMP` directives to ACDC parallel sections. The document has to be parsed
 with `OpenMP` directives parsing enabled.
 
+# SEE ALSO
+
+[Fxtran::DIR](Fxtran%3A%3ADIR.md), [Fxtran::Pragma](Fxtran%3A%3APragma.md).
+
 # AUTHOR
 
 philippe.marguinaud@meteo.fr

@@ -157,6 +157,10 @@ is transformed to:
       ENDDO
     ENDDO
 
+=head1 SEE ALSO
+
+L<Fxtran::ManyBlocks>, L<Fxtran::SingleColumn>
+
 =head1 AUTHOR
 
 philippe.marguinaud@meteo.fr
@@ -185,11 +189,25 @@ use Fxtran;
 
 sub processSingleRoutine
 {
+
+=head2 processSingleRoutine
+
+Dispatch to C<processSingleRoutineMethod> on the current package for the singleblock transformation.
+
+=cut
+
   return __PACKAGE__->processSingleRoutineMethod (@_);
 }
 
 sub processSingleRoutineMethod
 {
+
+=head2 processSingleRoutineMethod
+
+Apply the full singleblock transformation to a subroutine program unit, generating OpenACC kernels.
+
+=cut
+
   my $class = shift;
   my ($pu, %opts) = @_;
 
@@ -402,6 +420,13 @@ EOF
 
 sub makeParallel
 {
+
+=head2 makeParallel
+
+Insert an OpenACC C<PARALLEL LOOP GANG VECTOR> directive around a do-construct.
+
+=cut
+
   my $class = shift;
   my ($pu, $do, %opts) = @_;
 

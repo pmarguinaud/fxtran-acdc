@@ -17,6 +17,10 @@ statements and/or a `STOP` statement.
 Replace calls to `ABOR1` by calls to `FXTRAN_ACDC_ABORT`, which can be used 
 on the device.
 
+## removeTRIM
+
+Remove `TRIM` function calls from an expression, replacing each `TRIM(x)` with `x`.
+
 ## changeWRITEintoPRINT
 
 Change `WRITE` statements (not supported on the device) into `PRINT` statements.
@@ -24,6 +28,10 @@ Change `WRITE` statements (not supported on the device) into `PRINT` statements.
 ## changePRINT\_MSGintoPRINT
 
 Change calls to `PRINT_MSG` into calls to `ABOR1` or `PRINT` statements.
+
+# SEE ALSO
+
+[Fxtran::Message](Fxtran%3A%3AMessage.md).
 
 # AUTHOR
 

@@ -36,6 +36,17 @@ use Fxtran;
 
 sub useAcpy
 {
+
+=head2 useAcpy
+
+Transform array-to-array assignment statements into calls to
+C<FXTRAN_ACDC_ARRAY_COPY>, passing the NPROMA loop variable and both
+array expressions as arguments.  Only assignments where both the
+left-hand side and the right-hand side carry section subscripts with an
+unknown lower-bound (C<?>) are rewritten.
+
+=cut
+
   my $do_jlon = shift;
   my %opts = @_;
 
@@ -70,6 +81,17 @@ sub useAcpy
 
 sub useBcpy
 {
+
+=head2 useBcpy
+
+Like C<useAcpy>, but generates a more explicit call to
+C<FXTRAN_ACDC_ARRAY_COPY> that also passes each dimension size via
+C<SIZE()> calls.  This variant is intended for the NVHPC compiler, which
+benefits from the explicit dimension information to avoid overly
+conservative aliasing assumptions.
+
+=cut
+
   my $do_jlon = shift;
   my %opts = @_;
 
@@ -110,6 +132,10 @@ sub useBcpy
       $acpy->replaceNode ($call);
     }
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::ManyBlocks>, L<Fxtran::SingleBlock>
 
 =head1 AUTHOR
 

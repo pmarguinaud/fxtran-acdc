@@ -292,6 +292,10 @@ EOF
 
 }
 
+=head1 SEE ALSO
+
+L<Fxtran::ManyBlocks>, L<Fxtran::SingleBlock>.
+
 =head1 EXAMPLES
 
 You can find examples in all single-column routines; for instance:

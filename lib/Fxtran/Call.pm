@@ -179,7 +179,7 @@ sub grokIntent
 {
   my ($expr, $pintent, $find) = @_;
 
-=head1 grokIntent
+=head2 grokIntent
 
 This function finds the intent of an expression (IN or INOUT) in any statement.
 
@@ -236,6 +236,10 @@ This function finds the intent of an expression (IN or INOUT) in any statement.
   $$pintent ||= 'INOUT';
 
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::Associate>, L<Fxtran::Formatter>
 
 =head1 AUTHOR
 

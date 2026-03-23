@@ -212,3 +212,19 @@ philippe.marguinaud@meteo.fr
 # COPYRIGHT
 
 Meteo-France 2025
+
+## processSingleSection
+
+Process a single parallel section within a routine, generating the OpenACC kernel loop.
+
+## processSingleRoutine
+
+Apply the manyblocks transformation to a single subroutine program unit.
+
+## stackAllocateTemporaries
+
+Allocate temporary NPROMA arrays using the stack allocator within a routine.
+
+## processSingleModule
+
+Apply the manyblocks transformation to all subroutines within a module.

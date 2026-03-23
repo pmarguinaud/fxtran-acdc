@@ -53,6 +53,10 @@ will yield:
       ENDDO
     ENDDO
 
+# SEE ALSO
+
+[Fxtran::Decl](Fxtran%3A%3ADecl.md), [Fxtran::ReDim](Fxtran%3A%3AReDim.md).
+
 # AUTHOR
 
 philippe.marguinaud@meteo.fr

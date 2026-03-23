@@ -36,6 +36,21 @@ use Fxtran;
 
 sub createParallelSections
 {
+
+=head2 createParallelSections
+
+Scan a program unit (or execution-part node) for assignment statements that
+involve arrays dimensioned along the NPROMA axis and wrap each qualifying
+C<DO> loop or array-syntax statement in a C<parallel-section> XML element.
+
+Adjacent parallel sections that contain no C<CALL> statements and whose
+combined statement count does not exceed C<max-statements-per-parallel> are
+merged into a single section.  The set of loop iterators that qualify for
+parallelisation is controlled by the C<parallel-iterator-list> option
+(defaulting to the NPROMA and vertical iterators).
+
+=cut
+
   my ($pu, $var2dim, %opts) = @_;
 
   return unless ($opts{'max-statements-per-parallel'});
