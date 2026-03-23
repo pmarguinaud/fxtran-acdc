@@ -1,0 +1,11 @@
+# NAME
+
+[Fxtran::DIR](../lib/Fxtran/DIR.pm)
+
+# DESCRIPTION
+
+Handles compiler-specific directive comments in Fortran source trees.
+Provides a function to remove `!DIR$`, `!DEC$`, and `!NEC$` directive
+comments from a parsed document.
+
+# FUNCTIONS
