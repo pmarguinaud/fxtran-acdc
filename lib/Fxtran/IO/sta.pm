@@ -17,8 +17,6 @@ C<skip> and C<getFieldAPIMember> methods used by C<Fxtran::IO> when
 generating I/O code.  Only pointer components are examined; the
 special component C<P> is always skipped.
 
-=head1 FUNCTIONS
-
 =cut
 
 use strict;

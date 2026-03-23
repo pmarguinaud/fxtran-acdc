@@ -34,6 +34,15 @@ use Fxtran;
 
 sub registerFieldAPI1
 {
+
+=head2 registerFieldAPI1
+
+Parse a single C<T-construct> node and return a hash describing the type's
+name, supertype, FieldAPI component layout (pointers, rank, type specifier),
+and whether it has an C<UPDATE_VIEW> procedure.
+
+=cut
+
   my ($tc, $opts, $class) = @_;
 
   my %h;
@@ -85,6 +94,15 @@ sub registerFieldAPI1
 
 sub registerFieldAPI
 {
+
+=head2 registerFieldAPI
+
+Scan all C<T-construct> nodes in document C<$d>, call C<registerFieldAPI1> for
+each non-skipped type, and serialise the resulting metadata hash to a C<.pl>
+file in the directory given by C<types-fieldapi-dir>.
+
+=cut
+
   my ($d, $opts) = @_;
 
   my $class;

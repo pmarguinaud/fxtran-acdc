@@ -46,12 +46,27 @@ my %INTRINSIC = map { ($_, 1) } (@INTRINSIC, @BR);
 
 sub isIntrinsic
 {
+
+=head2 isIntrinsic
+
+Returns a true value if the given name is a known Fortran intrinsic (including
+bit-reproducibility candidates), false otherwise.
+
+=cut
+
   my $s = shift;
   return $INTRINSIC{$s};
 }
 
 sub slurp
 {
+
+=head2 slurp
+
+Reads and returns the entire contents of a file as a single string.
+
+=cut
+
   my $file = shift;
   return do { my $fh = 'FileHandle'->new ("<$file"); local $/ = undef; <$fh> };
 }
@@ -60,6 +75,15 @@ sub slurp
 
 sub makeBitReproducibleSection
 {
+
+=head2 makeBitReproducibleSection
+
+Replaces intrinsic function calls and C<**> operators within a single AST
+subtree with their C<FXTRAN_ACDC_BR_*> bit-reproducible equivalents.
+Returns the number of replacements made.
+
+=cut
+
   my $s = shift;
   my %opts = @_;
 
@@ -95,7 +119,16 @@ sub makeBitReproducibleSection
 }
 
 sub makeBitReproducible
-{ 
+{
+
+=head2 makeBitReproducible
+
+Applies bit-reproducibility substitutions to an entire program unit, including
+inline C<*.func.h> include files and post-CONTAINS include files.  Adds the
+required C<USE FXTRAN_ACDC_BR_INTRINSICS> statement when substitutions are made.
+
+=cut
+
   my $pu = shift;
 
   my %opts = @_;

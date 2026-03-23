@@ -12,3 +12,10 @@ GET\_HALO\_PHY.  Additional variables can be overridden at run time via the
 `set-variables` option.
 
 # FUNCTIONS
+
+## simplify
+
+Rewrites named Boolean and string variables to their known compile-time values
+for IFS cycle 50, removes calls to GET\_HALO\_PHY, and renames YDGEO to
+YDGEOMETRY.  Additional variables can be substituted at run time via the
+`set-variables` option.

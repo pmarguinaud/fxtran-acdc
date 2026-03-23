@@ -15,3 +15,15 @@ An optional class (e.g. `Fxtran::IO::cpg`) can be supplied via the
 identified for a particular family of types.
 
 # FUNCTIONS
+
+## registerFieldAPI1
+
+Parse a single `T-construct` node and return a hash describing the type's
+name, supertype, FieldAPI component layout (pointers, rank, type specifier),
+and whether it has an `UPDATE_VIEW` procedure.
+
+## registerFieldAPI
+
+Scan all `T-construct` nodes in document `$d`, call `registerFieldAPI1` for
+each non-skipped type, and serialise the resulting metadata hash to a `.pl`
+file in the directory given by `types-fieldapi-dir`.

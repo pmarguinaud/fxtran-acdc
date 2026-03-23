@@ -18,8 +18,6 @@ generating I/O code.  Components whose names end in C<_B> or that
 match C<TYPE_XFU>, C<YXFUPT>, C<TYPE_CFU>, or C<YCFUPT> are always
 skipped.
 
-=head1 FUNCTIONS
-
 =cut
 
 use strict;

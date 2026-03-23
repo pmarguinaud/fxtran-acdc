@@ -19,8 +19,6 @@ group-name components as C<Fxtran::IO::sfc> are skipped.  When
 looking up the corresponding FieldAPI member, the leading character of
 the component name is stripped before prepending C<F_>.
 
-=head1 FUNCTIONS
-
 =cut
 
 use strict;

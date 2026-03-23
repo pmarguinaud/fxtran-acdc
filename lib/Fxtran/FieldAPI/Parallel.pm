@@ -48,6 +48,14 @@ use Fxtran::Outline;
 
 sub tsToArray
 {
+
+=head2 tsToArray
+
+Convert an intrinsic type-spec node and a rank C<$nd> to the name of the
+corresponding FieldAPI array wrapper type (e.g. C<ARRAY_2D>, C<ARRAY_INT1D>).
+
+=cut
+
   my ($ts, $nd) = @_;
 
   die unless ($ts->nodeName eq 'intrinsic-T-spec');
@@ -75,6 +83,16 @@ sub tsToArray
 
 sub wrapArrays
 {
+
+=head2 wrapArrays
+
+Replace NPROMA-dimensioned local array declarations with FieldAPI wrapper
+types, insert C<INIT>/C<FINAL> calls around the executable section, and
+rewrite in-code array references to go through the C<%P> data pointer inside
+parallel regions.
+
+=cut
+
   my $d = shift;
   my %args = @_;
 
@@ -228,6 +246,15 @@ sub wrapArrays
 
 sub makeBlockViewSection
 {
+
+=head2 makeBlockViewSection
+
+Wrap a parallel section in a block-index C<DO IBL> loop, inserting
+C<UPDATE_VIEW> calls for all updatable FieldAPI objects found in the section,
+and attach an OpenMP C<PARALLEL DO> directive.
+
+=cut
+
   my $d = shift;
   my %args = @_;
   my $para = $args{section};
@@ -270,6 +297,13 @@ sub makeBlockViewSection
 sub getUpdatables
 {
 
+=head2 getUpdatables
+
+Scan all declarations and return a hash-ref mapping each derived-type variable
+name to a boolean indicating whether it is an updatable FieldAPI object.
+
+=cut
+
 # Look for updatable objects; as a side effect
 
   my $d = shift;
@@ -293,6 +327,15 @@ sub getUpdatables
 
 sub makeUpdatablesInout
 {
+
+=head2 makeUpdatablesInout
+
+For each updatable FieldAPI variable that appears as a dummy argument, promote
+its INTENT attribute to C<INOUT> and remove it from the updatable set if it
+has no INTENT at all.
+
+=cut
+
   my $d = shift;
   my $updatable = shift;
 
@@ -311,6 +354,16 @@ sub makeUpdatablesInout
 
 sub makeBlockFieldAPISection
 {
+
+=head2 makeBlockFieldAPISection
+
+Transform a parallel section into a block-loop construct that calls
+C<YDCPG_BNDS%UPDATE_VIEW> per iteration, rewrites pointer references for the
+requested target (host/device), appends a call-suffix, and wraps the loop with
+an OpenMP C<PARALLEL DO> directive.
+
+=cut
+
   my $d = shift;
   my %args = @_;
   my $para = $args{section};
@@ -352,6 +405,15 @@ sub makeBlockFieldAPISection
 
 sub makePostSyncSection
 {
+
+=head2 makePostSyncSection
+
+Generate a host-sync variant of an already-outlined parallel section (renaming
+C<SYNC_DEVICE> to C<SYNC_HOST> throughout) and insert the corresponding call
+and interface include after the original section.
+
+=cut
+
   my $d = shift;
   my ($para, $outline, $call, $include) = @_;
 
@@ -400,6 +462,14 @@ sub makePostSyncSection
 
 sub saveFileWithSubroutineName
 {
+
+=head2 saveFileWithSubroutineName
+
+Write a cloned program-unit document to a C<.F90> file whose name is derived
+from the subroutine name found inside the document; returns that name.
+
+=cut
+
   use Fxtran::Canonic;
   my $body = shift;
   $body = $body->cloneNode (1);
@@ -410,6 +480,16 @@ sub saveFileWithSubroutineName
 
 sub makeSyncSection
 {
+
+=head2 makeSyncSection
+
+Outline a parallel section into a separate subroutine, generate a FieldAPI
+sync variant of that routine, write both to disk, and optionally produce a
+host-sync post-processing section.  Returns an array-ref of
+C<[$outline, $call, $include]>.
+
+=cut
+
   my $d = shift;
   my %args = @_;
   my $para = $args{section};
@@ -466,6 +546,17 @@ sub makeSyncSection
 
 sub makeSingleColumnFieldAPIOutlineSection
 {
+
+=head2 makeSingleColumnFieldAPIOutlineSection
+
+Handle a single-column parallel section by placing the computation in a
+separate outlined vector subroutine (workaround for a PGI compiler bug with
+nested derived-type pointers).  Wraps the call in a block C<DO IBL> loop,
+inserts a C<DO JLON> single-column loop inside the outlined routine, and emits
+the appropriate OpenMP or OpenACC directives.
+
+=cut
+
   # Parallel section with vector JLON loop in a separate vector subroutine; workaround for PGI bug: 
   # PROGRAM WRAP_CPG_DIA_FLU
   #
@@ -679,6 +770,16 @@ sub makeSingleColumnFieldAPIOutlineSection
 
 sub makeSingleColumnFieldAPISection
 {
+
+=head2 makeSingleColumnFieldAPISection
+
+Transform a parallel section in-place into a nested C<DO IBL>/C<DO JLON> loop
+construct that iterates over blocks and single columns, rewrites pointer
+references for the target (host/device), removes JLON constructs, and attaches
+OpenMP or OpenACC directives.
+
+=cut
+
   my $d = shift;
   my %args = @_;
   my $para = $args{section};
@@ -777,6 +878,16 @@ sub makeSingleColumnFieldAPISection
 
 sub makeParallel
 {
+
+=head2 makeParallel
+
+Top-level driver for the FieldAPI parallel transformation: resolves associates,
+forces single declarations, inlines contained subroutines, wraps NPROMA arrays,
+then dispatches each parallel section to the appropriate section-building helper
+(block, single-column, or view layout) based on its attributes.
+
+=cut
+
   my $d = shift;
   my %args = @_;
   my $suffix = $args{suffix};

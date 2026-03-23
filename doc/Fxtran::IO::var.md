@@ -10,5 +10,3 @@ Provides `skip` and `getFieldAPIMember` methods used by
 examined; the special component `P` is mapped to `T0` before
 looking for the corresponding FieldAPI member (using the `F` prefix
 rather than `F_`).
-
-# FUNCTIONS

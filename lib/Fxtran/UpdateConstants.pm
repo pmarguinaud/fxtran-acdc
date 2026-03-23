@@ -35,6 +35,15 @@ my %intf;
 
 sub getActualArgumentIntent
 {
+
+=head2 getActualArgumentIntent
+
+Look up the INTENT of a specific actual argument in a call statement by
+fetching and parsing the callee's interface file, then matching the argument
+by position or keyword name.
+
+=cut
+
   my ($p, %opts) = @_;
 
   my $find = $opts{find};
@@ -89,6 +98,16 @@ sub getActualArgumentIntent
 
 sub processSingleRoutine
 {
+
+=head2 processSingleRoutine
+
+For each INOUT dummy argument of a tracked derived type, inject a C<LLDO_N>
+flag, set it to C<.TRUE.> after every mutation, and append a conditional
+C<CALL UPDATE(N, LDCOMPONENT=.TRUE.)> block at the end of the executable
+section, together with the corresponding C<USE UTIL_<TYPE>_MOD> statement.
+
+=cut
+
   my ($pu, %opts) = @_;
 
   my $find = $opts{find};

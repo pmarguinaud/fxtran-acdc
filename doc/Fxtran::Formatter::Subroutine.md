@@ -11,3 +11,17 @@ method reassembles the argument list into a compact form respecting the
 line-length limit.
 
 # FUNCTIONS
+
+## expand
+
+Takes a Fortran `SUBROUTINE` statement node and an indentation string.
+Normalises the statement to its canonical form, then rewrites the dummy
+argument list so that each argument appears on its own continuation line.
+Returns the re-parsed statement node.
+
+## repack
+
+Takes an expanded `SUBROUTINE` statement node and an indentation string.
+Extracts the subroutine name and the dummy argument list, then reassembles
+them into a compact multi-line form that respects the line-length limit via
+`repackCallLikeStatement`.

@@ -18,8 +18,6 @@ a three-way merge inside Vim. The base file is first copied to the merged
 output path, which is then opened alongside the local and remote files for
 interactive editing.
 
-=head1 FUNCTIONS
-
 =cut
 
 use base qw (Fxtran::MergeTool);

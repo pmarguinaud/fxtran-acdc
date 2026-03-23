@@ -34,6 +34,16 @@ use fxtran::xpath;
 
 sub expand
 {
+
+=head2 expand
+
+Takes a Fortran C<ASSOCIATE> statement node and an indentation string. Parses
+the selector list, sorts the selectors alphabetically by associate name, and
+rewrites the statement so that each selector appears on its own continuation
+line. Returns the re-parsed statement node.
+
+=cut
+
   my $class = shift;
   my ($stmt, $indent) = @_;
 
@@ -62,6 +72,16 @@ sub expand
 
 sub repack
 {
+
+=head2 repack
+
+Takes an expanded C<ASSOCIATE> statement node and an indentation string.
+Extracts the sorted associate selectors and reassembles them into a compact
+multi-line form that respects the project line-length limit, via
+C<repackCallLikeStatement>.
+
+=cut
+
   my $class = shift;
   my ($stmt, $indent) = @_;
   my @associate = &F ('./associate-LT/associate', $stmt, 1);

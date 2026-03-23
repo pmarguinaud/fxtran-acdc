@@ -19,8 +19,6 @@ examined; the special component C<P> is mapped to C<T0> before
 looking for the corresponding FieldAPI member (using the C<F> prefix
 rather than C<F_>).
 
-=head1 FUNCTIONS
-
 =cut
 
 use strict;

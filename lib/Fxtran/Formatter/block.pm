@@ -20,8 +20,6 @@ Provides C<canonic> and C<reparse> methods that temporarily append the
 appropriate C<END> statement so that fxtran can parse the opening statement
 in context.
 
-=head1 FUNCTIONS
-
 =cut
 
 use base qw (Fxtran::Formatter);

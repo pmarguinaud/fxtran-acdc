@@ -31,6 +31,16 @@ use strict;
 
 sub link
 {
+
+=head2 link
+
+Load all C<.pl> type-description files from the FieldAPI directory, resolve
+supertype inheritance and cross-type component references, synthesise JPRB
+variants from JPRD array definitions, and return a unified hash with keys
+C<types>, C<update-view>, and C<decls>.
+
+=cut
+
   my %opts = @_;
 
   my $dir = $opts{'types-fieldapi-dir'};
@@ -154,6 +164,14 @@ sub link
 
 sub list
 {
+
+=head2 list
+
+Return an array-ref of type names (one per C<.pl> file) found in the given
+directory.
+
+=cut
+
   my %opts = @_;
 
   my $dir = $opts{'dir'};

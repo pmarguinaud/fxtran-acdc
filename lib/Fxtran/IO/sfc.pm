@@ -18,8 +18,6 @@ C<Fxtran::IO> when generating I/O code.  Components matching
 C<P.*_T[019]> (tiled pointer arrays) or named C<F_GROUP>,
 C<VARIABLE_GROUP>, or C<PGROUP> are unconditionally skipped.
 
-=head1 FUNCTIONS
-
 =cut
 
 use strict;

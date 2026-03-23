@@ -9,5 +9,3 @@ FieldAPI class policy module for array-type derived types.  Provides
 generating I/O code for Fortran derived types that hold pointer
 components backed by FieldAPI array objects (names prefixed with
 `F_`).
-
-# FUNCTIONS

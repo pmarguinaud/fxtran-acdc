@@ -32,6 +32,16 @@ use fxtran::xpath;
 
 sub expand
 {
+
+=head2 expand
+
+Takes a Fortran C<SUBROUTINE> statement node and an indentation string.
+Normalises the statement to its canonical form, then rewrites the dummy
+argument list so that each argument appears on its own continuation line.
+Returns the re-parsed statement node.
+
+=cut
+
   my $class = shift;
   my ($stmt, $indent) = @_;
 
@@ -50,6 +60,16 @@ sub expand
 
 sub repack
 {
+
+=head2 repack
+
+Takes an expanded C<SUBROUTINE> statement node and an indentation string.
+Extracts the subroutine name and the dummy argument list, then reassembles
+them into a compact multi-line form that respects the line-length limit via
+C<repackCallLikeStatement>.
+
+=cut
+
   my $class = shift;
   my ($stmt, $indent) = @_;
 

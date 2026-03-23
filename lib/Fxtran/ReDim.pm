@@ -34,6 +34,17 @@ use Fxtran;
 
 sub reDim
 {
+
+=head2 reDim
+
+Removes the NPROMA (first) dimension from array declarations and all
+corresponding array subscripts in the parse tree.  When the
+C<redim-arguments> option is set, also replaces bare C<:> first subscripts
+in actual subroutine arguments with the scalar JLON index.  Variables whose
+remaining dimensions are not simple literals are left unchanged.
+
+=cut
+
   my $d = shift;
   my %args = @_;
 
@@ -138,6 +149,15 @@ sub reDim
 
 sub redimArguments
 {
+
+=head2 redimArguments
+
+Replaces the bare C<:> first subscript with the scalar JLON index in actual
+subroutine arguments that are arrays whose last subscript is JBLK, targeting
+the JBLK-blocked calling convention used in the outer parallel loop.
+
+=cut
+
   my $d = shift;
   my %args = @_;
 

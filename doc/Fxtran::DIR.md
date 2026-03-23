@@ -9,3 +9,8 @@ Provides a function to remove `!DIR$`, `!DEC$`, and `!NEC$` directive
 comments from a parsed document.
 
 # FUNCTIONS
+
+## removeDIR
+
+Removes all `!DIR$`, `!DEC$`, and `!NEC$` compiler-specific directive
+comments from the parsed document.

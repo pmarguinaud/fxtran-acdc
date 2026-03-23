@@ -18,8 +18,6 @@ C<Fxtran::IO> when generating I/O code.  In addition to the standard
 pointer check, this module unconditionally skips components named
 C<ZVIEW>, C<F_DATA>, and C<ZDATA>.
 
-=head1 FUNCTIONS
-
 =cut
 
 use strict;

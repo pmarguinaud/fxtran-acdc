@@ -17,8 +17,6 @@ L<Fxtran::MergeTool> by invoking the C<meld> external command to perform
 a three-way merge of base, local, and remote files, writing the result to
 the merged output file.
 
-=head1 FUNCTIONS
-
 =cut
 
 use base qw (Fxtran::MergeTool);

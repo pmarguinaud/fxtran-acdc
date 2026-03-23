@@ -9,3 +9,8 @@ Both expression references (`named-E`) and declaration names (`EN-N`) are
 updated consistently.
 
 # FUNCTIONS
+
+## rename
+
+Renames Fortran identifiers in the parsed document according to a mapping hash.
+Updates both expression references (`named-E`) and declaration names (`EN-N`).

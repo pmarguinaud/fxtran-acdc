@@ -28,6 +28,14 @@ use Data::Dumper;
 
 sub getFieldAPIList
 {
+
+=head2 getFieldAPIList
+
+Return a list of variable names (C<EN-N> nodes) whose declared type has a
+corresponding C<.pl> description file in C<$dir> or matches C<FIELD_xRB_ARRAY>.
+
+=cut
+
   my ($doc, $dir) = @_;
 
   # Guess object list 
@@ -51,6 +59,14 @@ sub getFieldAPIList
 
 sub getConstantList
 {
+
+=head2 getConstantList
+
+Return a list of variable names (C<EN-N> nodes) whose declared type has a
+corresponding C<.pl> description file in the constants directory C<$dir>.
+
+=cut
+
   my ($doc, $dir) = @_;
  
   # Guess constant list 
@@ -74,6 +90,15 @@ sub getConstantList
 
 sub getSymbolTable
 {
+
+=head2 getSymbolTable
+
+Build and return a hash-ref mapping each declared variable name to a record
+describing its kind (FIELD API object, constant, pointer, subroutine argument,
+or plain local), type specifier, array spec, and rank.
+
+=cut
+
   my ($doc, %opts) = @_;
 
   my %skip = map { ($_, 1) } @{ $opts{skip} || [] };
@@ -160,6 +185,14 @@ sub getSymbolTable
 
 sub getFieldType
 {
+
+=head2 getFieldType
+
+Map a rank C<$nd> and a type-specifier node C<$ts> to the corresponding FIELD
+API type name (e.g. C<FIELD_2RB>), or return C<undef> for unrecognised types.
+
+=cut
+
   my ($nd, $ts) = @_;
 
   ($ts = $ts->textContent) =~ s/\s+//go;

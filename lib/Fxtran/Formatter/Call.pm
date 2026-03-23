@@ -32,6 +32,16 @@ use fxtran::xpath;
 
 sub expand
 {
+
+=head2 expand
+
+Takes a Fortran C<CALL> statement node and an indentation string. Extracts the
+procedure name and the actual argument list, then rewrites the statement so
+that each argument appears on its own continuation line. Returns the re-parsed
+statement node.
+
+=cut
+
   my $class = shift;
   my ($stmt, $indent) = @_;
 
@@ -47,6 +57,16 @@ sub expand
 
 sub repack
 {
+
+=head2 repack
+
+Takes an expanded C<CALL> statement node and an indentation string. Extracts
+the procedure designator and the argument list, then reassembles them into a
+compact form that fits within the line-length limit via
+C<repackCallLikeStatement>. Returns the reformatted statement.
+
+=cut
+
   my $class = shift;
   my ($stmt, $indent) = @_;
   my ($proc) = &F ('./procedure-designator', $stmt, 1);

@@ -11,3 +11,17 @@ method reassembles the argument list into a compact form that respects the
 line-length limit.
 
 # FUNCTIONS
+
+## expand
+
+Takes a Fortran `CALL` statement node and an indentation string. Extracts the
+procedure name and the actual argument list, then rewrites the statement so
+that each argument appears on its own continuation line. Returns the re-parsed
+statement node.
+
+## repack
+
+Takes an expanded `CALL` statement node and an indentation string. Extracts
+the procedure designator and the argument list, then reassembles them into a
+compact form that fits within the line-length limit via
+`repackCallLikeStatement`. Returns the reformatted statement.

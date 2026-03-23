@@ -12,3 +12,21 @@ subroutine name and updates DR\_HOOK strings accordingly.  `getInterface`
 locates and parses the interface block for a named subroutine.
 
 # FUNCTIONS
+
+## addSuffix
+
+Appends `$suffix` to the subroutine name in both the SUBROUTINE and END
+SUBROUTINE statements of the program unit `$pu`, and updates any DR\_HOOK
+call string literals to include the same suffix.
+
+## rename
+
+Renames a subroutine by applying the user-supplied transformation function
+`$sub` to the current name and updating the SUBROUTINE, END SUBROUTINE, and
+DR\_HOOK string nodes accordingly.
+
+## getInterface
+
+Locates the interface file for the named subroutine via the `$find` helper,
+reads it, and returns the parsed program-unit or interface-construct node.
+Dies if the interface file cannot be found or opened.

@@ -33,6 +33,14 @@ my %decl;
 
 sub getObjectDecl
 {
+
+=head2 getObjectDecl
+
+Look up and cache the parsed declaration node for a given type component key.
+Dies unless the key is found in the type hash or C<allowConstant> is set.
+
+=cut
+
   my ($key, $types, %opts) = @_;
 
   my $h = $types;
@@ -60,6 +68,13 @@ my %type;
 
 sub getObjectType
 {
+
+=head2 getObjectType
+
+Return and cache the type name (C<T-N> text) for the given symbol table entry.
+
+=cut
+
   my ($s, $obj) = @_;
 
   unless ($type{$obj})
@@ -74,6 +89,14 @@ sub getObjectType
 
 sub isField
 {
+
+=head2 isField
+
+Return true when the component path C<@ctl> of symbol C<$s> is backed by a
+FIELD API entry in the C<$types> hash.
+
+=cut
+
   my ($types, $s, @ctl) = @_;
 
   my $ts = $s->{ts};
@@ -89,6 +112,13 @@ sub isField
 
 sub asFromDecl
 {
+
+=head2 asFromDecl
+
+Extract the C<array-spec> node from a declaration node, or return C<undef>.
+
+=cut
+
   my $decl = shift;
 
   my ($as) = &F ('.//EN-decl/array-spec', $decl);
@@ -98,6 +128,15 @@ sub asFromDecl
 
 sub getFieldFromExpr
 {
+
+=head2 getFieldFromExpr
+
+Clone a named-E expression and rewrite its last component name to the
+corresponding FIELD API name (e.g. C<PT0> -> C<FT0>, C<P*> -> C<F_*>),
+stripping trailing array and parentheses references.
+
+=cut
+
   my ($expr) = @_;
 
   my @Ctl = &F ('./R-LT/component-R/ct/text()', $expr);
@@ -164,6 +203,14 @@ sub getFieldFromExpr
 
 sub getFieldFromObjectComponents
 {
+
+=head2 getFieldFromObjectComponents
+
+Build a new C<named-E> XML node for the FIELD API counterpart of an object
+component path, applying the same naming rules as C<getFieldFromExpr>.
+
+=cut
+
   my ($obj, @ctl) = @_;
 
   my %ydvars = map { ($_, 1) } qw (YDVARS YDGEOMVARS);

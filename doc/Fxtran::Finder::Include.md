@@ -11,3 +11,16 @@ The current directory `.` is always prepended to the search path. The first
 directory that contains the requested file wins.
 
 # FUNCTIONS
+
+## new
+
+Constructor. Accepts an `I` array-ref of include directories (each entry may
+optionally carry a leading `-I` prefix, which is stripped). The current
+directory `.` is always prepended to the resulting search path.
+
+## resolve
+
+Searches each directory in the include path (`I` list) in order and returns
+the first path `I/file` for which the file actually exists on disk. The
+`file` argument is passed as a named parameter. Returns undef if the file is
+not found in any of the include directories.

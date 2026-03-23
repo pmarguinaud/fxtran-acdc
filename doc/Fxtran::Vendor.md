@@ -10,4 +10,15 @@ AMD ROCm compilers (amdlang/amdflang) it returns a `Fxtran::Vendor::ROCM`
 object.  The base class `preprocessOptions` method is a pass-through that
 returns its arguments unchanged.
 
-# FUNCTIONS
+## new
+
+Constructor.  Takes a compiler executable path as its sole argument.  If the
+basename of the executable matches `amd.*lang` (i.e. amdlang or amdflang),
+returns a blessed `Fxtran::Vendor::ROCM` object; otherwise returns a
+plain `Fxtran::Vendor` object.
+
+## preprocessOptions
+
+Base-class pass-through.  Returns its argument list unchanged.  Subclasses
+override this method to apply vendor-specific transformations to the compiler
+argument list before it is passed to the preprocessor invocation.

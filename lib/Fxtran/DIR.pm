@@ -25,6 +25,14 @@ use Fxtran;
 
 sub removeDIR
 {
+
+=head2 removeDIR
+
+Removes all C<!DIR$>, C<!DEC$>, and C<!NEC$> compiler-specific directive
+comments from the parsed document.
+
+=cut
+
   my $d = shift;
 
   # !DIR$ 

@@ -25,6 +25,15 @@ use base qw (Fxtran::Finder::Basic);
 
 sub resolve
 {
+
+=head2 resolve
+
+Resolves a filename (passed as the C<file> named argument) by simply
+prepending the configured C<directory> attribute. Returns the resulting path
+string; no existence check is performed.
+
+=cut
+
   my $self = shift;
   my %args = @_;
   my $file = $args{file};

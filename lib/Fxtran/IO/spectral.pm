@@ -18,8 +18,6 @@ generating I/O code.  Pointer components that do not start with C<F_>
 are skipped, as are components matching C<SP\dD> (spectral
 dimensioned arrays).
 
-=head1 FUNCTIONS
-
 =cut
 
 use strict;

@@ -9,5 +9,3 @@ FieldAPI class policy module for spectral derived types.  Provides
 generating I/O code.  Pointer components that do not start with `F_`
 are skipped, as are components matching `SP\dD` (spectral
 dimensioned arrays).
-
-# FUNCTIONS

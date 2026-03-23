@@ -38,6 +38,15 @@ use Fxtran::Scope;
 
 sub removeNpromaConstructs
 {
+
+=head2 removeNpromaConstructs
+
+Removes DO-loop constructs whose loop variable matches the JLON column index.
+The loop header and footer are discarded and the body nodes are spliced directly
+into the parent.
+
+=cut
+
   my $d = shift;
   my %opts = @_;
 
@@ -61,6 +70,15 @@ sub removeNpromaConstructs
 
 sub fixCOUNTIdiom
 {
+
+=head2 fixCOUNTIdiom
+
+Replaces C<COUNT(var(KIDIA:KFDIA))> array-reduction idioms with the scalar
+equivalent C<MERGE(1, 0, var(JLON))>, operating on the right-hand side of
+assignment statements.
+
+=cut
+
   my ($s, %opts) = @_;
 
   my $jlon  = $opts{style}->jlon ();
@@ -87,6 +105,15 @@ sub fixCOUNTIdiom
 
 sub fixSUMIdiom
 {
+
+=head2 fixSUMIdiom
+
+Replaces C<SUM(var(KIDIA:KFDIA))> array-reduction idioms with the scalar
+element C<var(JLON)>, eliminating the horizontal reduction for the
+single-column execution model.
+
+=cut
+
   my ($s, %opts) = @_;
 
   my $kidia = $opts{style}->kidia ();
@@ -137,6 +164,16 @@ sub fixSUMIdiom
 
 sub removeNpromaLoopsInSection
 {
+
+=head2 removeNpromaLoopsInSection
+
+Applies all NPROMA-loop removal transformations to a single execution-part
+section: fixes SUM and COUNT idioms, removes DO-loop constructs, and rewrites
+array subscripts to scalar JLON indexing for every variable listed in
+C<var2dim>.
+
+=cut
+
   my $s = shift;
   my %opts = @_;
 
@@ -162,6 +199,17 @@ sub removeNpromaLoopsInSection
 
 sub getVarToDim
 {
+
+=head2 getVarToDim
+
+Scans the declaration part of a program unit and returns a hash ref mapping
+each NPROMA-dimensioned variable name to its total number of dimensions.
+When called in list context, also returns a second hash ref mapping each such
+variable to the index position of the NPROMA dimension.  Pointer associations
+are followed so that pointer variables inherit their target's dimension count.
+
+=cut
+
   my $pu = shift;
   my %opts = @_;
 
@@ -256,6 +304,15 @@ DONE:
 
 sub removeNpromaLoops
 {
+
+=head2 removeNpromaLoops
+
+Top-level entry point to strip NPROMA DO loops from a program unit.  Ensures
+the JLON scalar variable is declared and initialised to KIDIA, then delegates
+to C<removeNpromaLoopsInSection> for the full execution part.
+
+=cut
+
   my $pu = shift;
   my %opts = @_;
   
@@ -289,6 +346,16 @@ sub removeNpromaLoops
 
 sub removeNpromaLoopsFieldAPI
 {
+
+=head2 removeNpromaLoopsFieldAPI
+
+Rewrites NPROMA-indexed array subscripts that are accessed through FieldAPI
+pointer members (C<DEVPTR> or C<PTR> component references).  Looks up each
+pointer variable's underlying FieldAPI type to determine the correct dimension
+count, then calls C<setJlon> to insert the JLON scalar index.
+
+=cut
+
   my ($d, $s, %opts) = @_;
 
   my $TI = &Fxtran::FieldAPI::getTypeInfo ();
@@ -324,6 +391,17 @@ sub removeNpromaLoopsFieldAPI
  
 sub setJlon
 {
+
+=head2 setJlon
+
+Modifies an array-expression node so that its first (or NPROMA-position)
+subscript is replaced by the scalar JLON index.  If the node has no subscript
+list yet, one is created with the appropriate number of C<:> placeholders.
+Does nothing for PRESENT() arguments and skips pointer-assignment left-hand
+sides.
+
+=cut
+
   my ($expr, $nd, %opts) = @_;
 
   my $jlon = $opts{style}->jlon ();

@@ -25,6 +25,14 @@ use Fxtran;
 
 sub rename
 {
+
+=head2 rename
+
+Renames Fortran identifiers in the parsed document according to a mapping hash.
+Updates both expression references (C<named-E>) and declaration names (C<EN-N>).
+
+=cut
+
   my $d = shift;
 
   my %map = @_;

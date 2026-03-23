@@ -10,3 +10,14 @@ MODULE and END MODULE statements) and to rename a module using a user-supplied
 transformation function.
 
 # FUNCTIONS
+
+## addSuffix
+
+Appends `$suffix` to the module name in both the MODULE and END MODULE
+statements of the parse tree node `$d`.
+
+## rename
+
+Renames a module by applying the user-supplied transformation function `$sub`
+to the current module name, then updating the MODULE and END MODULE statement
+nodes in the parse tree.

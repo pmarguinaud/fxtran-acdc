@@ -12,3 +12,15 @@ JPRB array definitions by duplicating the corresponding JPRD
 definitions.
 
 # FUNCTIONS
+
+## link
+
+Load all `.pl` type-description files from the FieldAPI directory, resolve
+supertype inheritance and cross-type component references, synthesise JPRB
+variants from JPRD array definitions, and return a unified hash with keys
+`types`, `update-view`, and `decls`.
+
+## list
+
+Return an array-ref of type names (one per `.pl` file) found in the given
+directory.

@@ -35,6 +35,15 @@ use FileHandle;
 
 sub scanView
 {
+
+=head2 scanView
+
+Populates (or updates) a scan hash-ref with the C<.F90> and C<.h> files found
+under C<pack/src/view/>. Each entry maps the file's basename to its absolute
+path. Called internally by C<scanpack> for each view in the pack.
+
+=cut
+
   my $self = shift;
 
   my $pack = $self->{pack};
@@ -60,6 +69,19 @@ sub scanView
 
 sub scanpack
 {
+
+=head2 scanpack
+
+Builds the full basename-to-path index for the gmkpack pack. Reads the view
+list from C<.gmkview>, treats the first entry as the local (mutable) view, and
+reverses the remaining views so that higher-priority views overwrite
+lower-priority ones in the index. Non-local views are loaded from a
+C<.scan.pl> cache file if it exists; otherwise they are scanned and the cache
+is written. The local view is always rescanned to capture recent edits. Stores
+the result in C<$self-E<gt>{scan}>.
+
+=cut
+
   my $self = shift;
 
   my $pack = $self->{pack};
@@ -96,6 +118,15 @@ sub scanpack
 
 sub new
 {
+
+=head2 new
+
+Constructor. Calls the parent constructor, then resolves the C<pack> attribute
+to an absolute path (defaulting to the current directory C<.> if not
+provided).
+
+=cut
+
   my $class = shift;
   my $self = $class->SUPER::new (@_);
 
@@ -108,6 +139,15 @@ sub new
 
 sub resolve
 {
+
+=head2 resolve
+
+Resolves a filename (C<file> named argument) to its absolute path within the
+pack. Triggers C<scanpack> on the first call to populate the index. Returns
+the path if found in the index, or undef otherwise.
+
+=cut
+
   my $self = shift;
   my %args = @_;
   my $file = $args{file};

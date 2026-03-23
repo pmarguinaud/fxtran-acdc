@@ -9,5 +9,3 @@ FieldAPI class policy module for flux (FLU) derived types.  Provides
 generating I/O code.  Components whose names end in `_B` or that
 match `TYPE_XFU`, `YXFUPT`, `TYPE_CFU`, or `YCFUPT` are always
 skipped.
-
-# FUNCTIONS

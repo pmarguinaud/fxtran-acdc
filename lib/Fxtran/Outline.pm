@@ -36,6 +36,15 @@ use Data::Dumper;
 
 sub sortArgs
 {
+
+=head2 sortArgs
+
+Sorts a list of variable names so that dummy arguments of the subroutine C<$d>
+appear first (in their original declaration order), followed by local variables
+in alphabetical order.
+
+=cut
+
   my ($d, @args) = @_;
 
   my @dum = &F ('.//dummy-arg-LT/arg-N', $d, 1);
@@ -54,6 +63,16 @@ sub sortArgs
 
 sub renameVariables
 {
+
+=head2 renameVariables
+
+Builds a name-mapping hash that renames variables according to DOCTOR Fortran
+naming conventions (e.g. C<K> prefix becomes C<P>, C<I> becomes C<K>).
+Variables already conforming to a target prefix, or marked as local or
+parameter, are kept unchanged.  Returns a hash ref from old name to new name.
+
+=cut
+
   my ($Nl, $local, $param) = @_;
 
   my %N2M;
@@ -107,6 +126,18 @@ my %PARKIND = map { ($_, 1) } @PARKIND;
 
 sub outlineSection
 {
+
+=head2 outlineSection
+
+Extracts a single ACDC-directive-delimited section from subroutine C<$d> into
+a new standalone subroutine.  Analyses which symbols must be passed as dummy
+arguments versus kept local, copies and adapts declarations, renames variables
+to DOCTOR conventions, replaces the section with a CALL statement, and returns
+an array ref containing the new subroutine node, the call statement node, and
+the include node.
+
+=cut
+
   my $d = shift;
   my %args = @_;
 
@@ -362,6 +393,15 @@ EOF
 
 sub outline
 {
+
+=head2 outline
+
+Finds all ACDC-directive sections in the subroutine parse tree C<$d> and
+calls C<outlineSection> on each one.  Returns a list of C<[$subroutine,
+$call, $include]> array refs, one per outlined section.
+
+=cut
+
   my $d = shift;
   
   my @s = &Fxtran::Directive::parseDirectives ($d, name => 'ACDC');

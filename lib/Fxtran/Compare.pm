@@ -31,6 +31,15 @@ use File::Copy;
 
 sub compareFiles
 {
+
+=head2 compareFiles
+
+Compares two Fortran source files by parsing each into canonical form and
+running C<diff>.  With the C<compare-prompt> option the user is offered the
+choice to overwrite the first file with the second when a difference is found.
+
+=cut
+
   my ($f1, $f2, %opts) = @_;
 
   my ($d1, $d2) = map { &Fxtran::parse (location => $_, fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]) } ($f1, $f2);
@@ -62,6 +71,14 @@ sub compareFiles
 
 sub compareDirectories
 {
+
+=head2 compareDirectories
+
+Compares all C<*.F90> files found in two directories by calling C<compareFiles>
+on each matched pair.
+
+=cut
+
   my ($dir1, $dir2, %opts) = @_;
 
   my @f = map { &basename ($_) } glob ("$dir1/*.F90");
@@ -74,6 +91,14 @@ sub compareDirectories
 
 sub compare
 {
+
+=head2 compare
+
+Dispatches to C<compareDirectories> or C<compareFiles> depending on whether the
+two arguments are directories or files.
+
+=cut
+
   if (all { -d } @_[0,1])
     {
       &compareDirectories (@_);

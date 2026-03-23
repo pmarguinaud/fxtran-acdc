@@ -12,3 +12,10 @@ inserts a call to the generated C stub into the program unit so that the linker
 can resolve the symbol.
 
 # FUNCTIONS
+
+## generateCCode
+
+Generate a C stub file (`parallelmethod_<name`.c>) containing ELF-section
+strings that map code-section names to their parallel methods, and insert a
+call to the stub function into the program unit so the linker can resolve the
+symbol.

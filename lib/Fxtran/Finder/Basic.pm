@@ -26,6 +26,15 @@ use Data::Dumper;
 
 sub new
 {
+
+=head2 new
+
+Constructor. Accepts a hash of keyword arguments and blesses them into the
+class. Subclasses typically call C<SUPER::new> and then add their own
+initialisation on top.
+
+=cut
+
   my $class = shift;
   my $self = bless {@_}, $class;
   return $self;
@@ -33,6 +42,18 @@ sub new
 
 sub getInterface
 {
+
+=head2 getInterface
+
+Given a subroutine or function C<name> (via the C<name> named argument),
+attempts to locate its interface file. First tries the ARPEGE/IFS convention
+(C<name.intfb.h>, then C<name.h>); if neither is found it falls back to the
+MesoNH convention (C<modi_name.F90>). Returns the resolved path, or undef if
+no interface file can be found. Relies on the C<resolve> method implemented by
+the concrete subclass.
+
+=cut
+
   my $self = shift;
   my %args = @_;
 

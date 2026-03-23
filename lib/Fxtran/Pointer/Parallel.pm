@@ -50,6 +50,15 @@ use Fxtran::Util;
 
 sub processSingleParallel
 {
+
+=head2 processSingleParallel
+
+Transform one C<parallel-section> node into an C<IF/ELSEIF/ELSE> dispatch
+construct that selects the appropriate back-end at runtime, cloning and
+processing the section for each requested parallel target.
+
+=cut
+
   my ($pu, $parallel, $ipar, $NAME, $t, $find, $types, $puseUtilMod, %opts) = @_;
 
   my $target = $parallel->getAttribute ('target');
@@ -166,6 +175,17 @@ EOF
 
 sub processSingleRoutine
 {
+
+=head2 processSingleRoutine
+
+Apply the full pointer-parallel transformation to one program unit: rename the
+subroutine, add required USE statements and local variables, build the symbol
+table, fieldify declarations, process ABORT/PARALLEL sections, replace NPROMA
+arguments in call statements, set up local FIELD API objects, and declare all
+required pointers.
+
+=cut
+
   my ($pu, $NAME, $types, %opts) = @_;
 
   my $find = $opts{find};
@@ -397,6 +417,14 @@ sub processSingleRoutine
 
 sub getWhereTargetFromTarget
 {
+
+=head2 getWhereTargetFromTarget
+
+Strip the trailing C<%WHERE> qualifier from a target string (in-place), and
+optionally capture the stripped qualifier into the second argument.
+
+=cut
+
   my $class = shift;
   $_[0] =~ s/\%(\w+)$//o;
   $_[1] = $1 if (scalar (@_) > 1);
@@ -406,6 +434,15 @@ my %class;
 
 sub class
 {
+
+=head2 class
+
+Return (and load) the back-end class corresponding to a target name (e.g.
+C<OpenMP>, C<OpenACC>), discovering available back-ends from sibling C<.pm>
+files on first call.
+
+=cut
+
   my $class = shift;
   my $target = shift;
 
@@ -436,6 +473,15 @@ sub class
 
 sub fieldifySync
 {
+
+=head2 fieldifySync
+
+Remove FIELD API array declarations and their dummy arguments, then replace
+each use of a FieldAPI variable in every statement with an appropriate sync
+call (host/device), and comment out or remove the original statement.
+
+=cut
+
   my %args = @_;
 
   my $doc        = $args{'program-unit'};
@@ -584,6 +630,16 @@ KEEP:
 
 sub fieldifyDecl
 {
+
+=head2 fieldifyDecl
+
+Transform NPROMA array declarations into FIELD API object / Fortran pointer
+pairs: local arrays gain an extra block dimension and a POINTER attribute,
+dummy arguments are replaced by C<CLASS(FIELD_xD)> objects, and pointer
+assignments are updated to reference the new field objects.
+
+=cut
+
   my %args = @_;
 
   my $doc        = $args{'program-unit'};
@@ -698,6 +754,15 @@ sub fieldifyDecl
 
 sub replaceObjectExprByPointerExpr
 {
+
+=head2 replaceObjectExprByPointerExpr
+
+Walk all C<named-E> expressions in a parallel section and replace references to
+FIELD API-backed object components or local NPROMA arrays with the corresponding
+pointer variable, optionally appending a block index.
+
+=cut
+
   my ($par, $t, $onlysimplefields, $intent, $types, $blockLoop, $find) = @_;
 
   # Process each expression (only NPROMA local arrays and FIELD API backed data) in the parallel section
@@ -823,6 +888,16 @@ sub replaceObjectExprByPointerExpr
 
 sub makeParallel
 {
+
+=head2 makeParallel
+
+Transform a single parallel section: handle filter masks, replace object and
+array expressions with pointer expressions, set pointer associations from FIELD
+API views, generate the block loop and parallel directives for the chosen
+back-end, and insert sync/compute DR_HOOK regions.
+
+=cut
+
   my ($pu, $par, $t, $find, $types, $NAME, $POST, $onlysimplefields, $blockLoop) = @_;
 
   my %POST = map { ($_, 1) } grep { $_ } @$POST;
@@ -1051,6 +1126,15 @@ EOF
 
 sub addExtraIndex
 {
+
+=head2 addExtraIndex
+
+Append an extra subscript C<$ind> (typically C<JBLK>) to an array or
+parentheses reference node, creating the reference list if it does not yet
+exist.
+
+=cut
+
   my ($expr, $ind, $s) = @_;
 
   # Add reference list if needed
@@ -1112,6 +1196,16 @@ sub addExtraIndex
 
 sub callParallelRoutine
 {
+
+=head2 callParallelRoutine
+
+Rewrite a CALL statement outside parallel sections so that NPROMA array
+arguments are replaced by FIELD API descriptor arguments, object-component
+arguments are replaced by their FIELD counterparts, and C<YDCPG_OPTS> is
+appended when absent.
+
+=cut
+
 # Process CALL statement outside PARALLEL sections
 # Replace NPROMA array arguments by field descriptor arguments; no array section allowed
 
@@ -1194,6 +1288,15 @@ sub callParallelRoutine
 
 sub setupLocalFields
 {
+
+=head2 setupLocalFields
+
+Insert C<FIELD_NEW>/C<FIELD_DELETE> calls around the executable section (just
+after/before the DR_HOOK entry/exit calls) to allocate and release FIELD API
+objects backing local NPROMA arrays.
+
+=cut
+
 # Use FIELD_NEW at the beginning of the routine (after the call to DR_HOOK) to create
 # FIELD API objects backing local NPROMA arrays
 # Use FIELD_DELETE to delete these FIELD API objects
@@ -1271,6 +1374,15 @@ sub setupLocalFields
 
 sub getPrivateVariables
 {
+
+=head2 getPrivateVariables
+
+Return a sorted list of variable names that are assigned or used as a DO
+variable inside a parallel section and are not FIELD API arrays (i.e. are
+candidates for C<PRIVATE> in a parallel directive).
+
+=cut
+
   my ($par, $t) = @_;
 
   my @N = &F ('.//named-E/N', $par);
@@ -1293,6 +1405,14 @@ sub getPrivateVariables
 
 sub getConstantObjects
 {
+
+=head2 getConstantObjects
+
+Return a sorted list of variable names that are classified as constant objects
+in the symbol table and appear in the given parallel section.
+
+=cut
+
   my ($par, $t) = @_;
 
   my @N = &F ('.//named-E/N', $par);

@@ -31,6 +31,15 @@ use Fxtran;
 
 sub parensToArrayRef
 {
+
+=head2 parensToArrayRef
+
+Converts a C<parens-R> function-call reference node into an C<array-R>
+subscript node in-place by renaming the node and its child list, and wrapping
+each element in a C<lower-bound> child so it becomes a proper section subscript.
+
+=cut
+
   my $r = shift;
   if ($r->nodeName eq 'parens-R')
     {   
@@ -51,6 +60,15 @@ sub parensToArrayRef
 
 sub resolveParensRef
 {
+
+=head2 resolveParensRef
+
+Walks all direct C<parens-R> children of the given node and converts each
+ambiguous one (i.e. not a genuine function call whose name starts with C<F>)
+to an C<array-R> subscript node via C<parensToArrayRef>.
+
+=cut
+
   my $d = shift;
   my @r = &F ('./parens-R', $d);
 
@@ -71,6 +89,14 @@ sub resolveParensRef
 
 sub getRLT
 {
+
+=head2 getRLT
+
+Returns the C<R-LT> (reference list) child of an expression node, creating
+and appending an empty one if it does not already exist.
+
+=cut
+
   my $expr = shift;
 
   my ($rlt) = &F ('./R-LT', $expr);

@@ -12,8 +12,6 @@ AMD ROCm compilers (amdlang/amdflang) it returns a C<Fxtran::Vendor::ROCM>
 object.  The base class C<preprocessOptions> method is a pass-through that
 returns its arguments unchanged.
 
-=head1 FUNCTIONS
-
 =cut
 
 use File::Basename;
@@ -24,6 +22,16 @@ use Fxtran::Vendor::ROCM;
 
 sub new
 {
+
+=head2 new
+
+Constructor.  Takes a compiler executable path as its sole argument.  If the
+basename of the executable matches C<amd.*lang> (i.e. amdlang or amdflang),
+returns a blessed C<Fxtran::Vendor::ROCM> object; otherwise returns a
+plain C<Fxtran::Vendor> object.
+
+=cut
+
   my $class = shift;
 
   my $compiler = shift;
@@ -38,6 +46,15 @@ sub new
 
 sub preprocessOptions
 {
+
+=head2 preprocessOptions
+
+Base-class pass-through.  Returns its argument list unchanged.  Subclasses
+override this method to apply vendor-specific transformations to the compiler
+argument list before it is passed to the preprocessor invocation.
+
+=cut
+
   shift;
   return @_;
 }

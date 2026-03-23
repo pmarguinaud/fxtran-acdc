@@ -27,6 +27,14 @@ use FileHandle;
   
 sub addSuffix
 {
+
+=head2 addSuffix
+
+Appends C<$suffix> to the module name in both the MODULE and END MODULE
+statements of the parse tree node C<$d>.
+
+=cut
+
   my ($d, $suffix) = @_;
 
   my @sn = &F ('./module-stmt/module-N/N/n/text()|./end-module-stmt/module-N/N/n/text()', $d);
@@ -40,7 +48,16 @@ sub addSuffix
 
 sub rename
 {
-  my ($d, $sub) = @_; 
+
+=head2 rename
+
+Renames a module by applying the user-supplied transformation function C<$sub>
+to the current module name, then updating the MODULE and END MODULE statement
+nodes in the parse tree.
+
+=cut
+
+  my ($d, $sub) = @_;
 
   $d = &getProgramUnit ($d);
 

@@ -16,8 +16,6 @@ Backend for the meld diff tool. Implements the C<diff> method from
 L<Fxtran::DiffTool> by invoking the C<meld> external command to display
 a side-by-side comparison of two files.
 
-=head1 FUNCTIONS
-
 =cut
 
 use base qw (Fxtran::DiffTool);

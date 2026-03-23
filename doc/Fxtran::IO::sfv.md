@@ -10,5 +10,3 @@ Provides `skip` and `getFieldAPIMember` methods used by
 group-name components as `Fxtran::IO::sfc` are skipped.  When
 looking up the corresponding FieldAPI member, the leading character of
 the component name is stripped before prepending `F_`.
-
-# FUNCTIONS

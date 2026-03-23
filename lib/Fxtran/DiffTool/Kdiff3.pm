@@ -16,8 +16,6 @@ Backend for the kdiff3 diff tool. Implements the C<diff> method from
 L<Fxtran::DiffTool> by invoking the C<kdiff3> external command to display
 a side-by-side comparison of two files.
 
-=head1 FUNCTIONS
-
 =cut
 
 use base qw (Fxtran::DiffTool);

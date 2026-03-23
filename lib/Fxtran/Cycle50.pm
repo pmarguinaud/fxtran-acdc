@@ -30,6 +30,16 @@ use Data::Dumper;
 
 sub simplify
 {
+
+=head2 simplify
+
+Rewrites named Boolean and string variables to their known compile-time values
+for IFS cycle 50, removes calls to GET_HALO_PHY, and renames YDGEO to
+YDGEOMETRY.  Additional variables can be substituted at run time via the
+C<set-variables> option.
+
+=cut
+
   shift;
   my $d = shift;
   my %opts = @_;

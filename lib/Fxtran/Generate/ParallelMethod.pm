@@ -31,6 +31,16 @@ use Fxtran;
 
 sub generateCCode
 {
+
+=head2 generateCCode
+
+Generate a C stub file (C<parallelmethod_<name>.c>) containing ELF-section
+strings that map code-section names to their parallel methods, and insert a
+call to the stub function into the program unit so the linker can resolve the
+symbol.
+
+=cut
+
   my ($d, $opts) = @_;
 
   my ($pu) = &F ('.//program-unit[1]', $d);

@@ -17,8 +17,6 @@ Inherits from L<Fxtran::Formatter>. Provides C<canonic> and C<reparse> methods
 that parse a single statement in isolation using fxtran, without needing a
 matching C<END> construct.
 
-=head1 FUNCTIONS
-
 =cut
 
 use base qw (Fxtran::Formatter);

@@ -29,6 +29,14 @@ use Fxtran::Canonic;
 
 sub removeUnusedIncludes
 {
+
+=head2 removeUnusedIncludes
+
+Removes interface-block include directives from the declaration part that are no
+longer referenced by any call statement in the execution part.
+
+=cut
+
   my $d = shift;
 
   my ($dp) = &F ('./specification-part/declaration-part', $d);
@@ -55,6 +63,15 @@ sub removeUnusedIncludes
 
 sub addInclude
 {
+
+=head2 addInclude
+
+Inserts one or more include directives into the declaration part of a program
+unit, placing them after any existing include or at the end of the declaration
+part.
+
+=cut
+
   my $pu = shift;
 
   my ($dp) = &F ('./specification-part/declaration-part', $pu);
@@ -82,6 +99,15 @@ sub addInclude
 
 sub loadContainedIncludes
 {
+
+=head2 loadContainedIncludes
+
+Inlines include files that appear after a CONTAINS statement: each such include
+is parsed, canonicalised, and its program units are inserted in place of the
+include directive.
+
+=cut
+
   my $d = shift;
   my %opts = @_;
 

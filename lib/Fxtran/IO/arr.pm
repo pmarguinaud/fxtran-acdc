@@ -18,8 +18,6 @@ generating I/O code for Fortran derived types that hold pointer
 components backed by FieldAPI array objects (names prefixed with
 C<F_>).
 
-=head1 FUNCTIONS
-
 =cut
 
 use strict;

@@ -35,6 +35,16 @@ use Fxtran::Util;
 
 sub intfbBody
 {
+
+=head2 intfbBody
+
+Transforms a parsed Fortran document in-place into interface-block form:
+removes execution parts, contained procedures, unused declarations, labels,
+comments (except OpenACC/OMP declare-target), includes, and defines, keeping
+only the statements required to describe each dummy argument list.
+
+=cut
+
   my $doc = shift;
 
   my @pu = &F ('./object/file/program-unit', $doc);
@@ -266,6 +276,15 @@ sub intfbBody
 
 sub intfb
 {
+
+=head2 intfb
+
+Generates a C<.intfb.h> interface-block file from a Fortran source file.
+Optionally merges an OpenACC interface variant when C<merge-interfaces> is set.
+Returns the path of the written file.
+
+=cut
+
   my ($F90, $dir, $ext, %opts) = @_;
 
   $dir ||= '.';
@@ -319,6 +338,15 @@ EOF
 
 sub modi
 {
+
+=head2 modi
+
+Generates a C<modi_*.F90> MODI module wrapper from a Fortran source file,
+wrapping the interface block inside a C<MODULE MODI_*> / C<END MODULE>.
+Returns the path of the written file.
+
+=cut
+
   my ($F90, $dir) = @_;
   
   $dir ||= '.';

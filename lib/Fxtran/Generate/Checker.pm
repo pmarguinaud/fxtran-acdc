@@ -44,6 +44,15 @@ use Fxtran::Message;
 
 sub checkVariables
 {
+
+=head2 checkVariables
+
+Validate variable declarations in a program unit, reporting missing INTENT
+attributes, forbidden derived-type locals, assumed-shape arrays, allocatable
+and pointer variables via C<Fxtran::Message>.
+
+=cut
+
   my ($pu, %opts) = @_;
 
   my $style = $opts{style};
@@ -119,6 +128,14 @@ sub checkVariables
 
 sub checkArraySyntax
 {
+
+=head2 checkArraySyntax
+
+Check that array-syntax assignments are limited to simple array copies or
+initialisation, and that call-statement array sections are contiguous.
+
+=cut
+
   my ($pu, %opts) = @_;
 
   my ($ep) = &F ('./execution-part', $pu);
@@ -175,6 +192,14 @@ sub checkArraySyntax
 
 sub checkExpressions
 {
+
+=head2 checkExpressions
+
+Verify that every NPROMA-dimensioned array reference in the execution part is
+indexed with the expected loop variable (C<JLON>) or range (C<KIDIA:KFDIA>).
+
+=cut
+
   my ($pu, %opts) = @_;
 
   my $style = $opts{style};
@@ -229,6 +254,14 @@ OK:
 
 sub singlecolumn
 {
+
+=head2 singlecolumn
+
+Run all three checker passes (variables, array syntax, expressions) on every
+program unit in the document for the single-column parallel back-end.
+
+=cut
+
   shift;
   my ($d, %opts) = @_;
 
@@ -242,6 +275,14 @@ sub singlecolumn
 
 sub pointerparallel
 {
+
+=head2 pointerparallel
+
+Run all three checker passes on every program unit for the pointer-parallel
+back-end.
+
+=cut
+
   shift;
   my ($d, %opts) = @_;
 
@@ -255,6 +296,14 @@ sub pointerparallel
 
 sub manyblocks
 {
+
+=head2 manyblocks
+
+Run all three checker passes on every program unit for the many-blocks
+back-end.
+
+=cut
+
   shift;
   my ($d, %opts) = @_;
 
@@ -268,6 +317,14 @@ sub manyblocks
 
 sub singleblock
 {
+
+=head2 singleblock
+
+Run all three checker passes on every program unit for the single-block
+back-end.
+
+=cut
+
   shift;
   my ($d, %opts) = @_;
 

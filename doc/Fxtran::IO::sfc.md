@@ -9,5 +9,3 @@ Provides `skip` and `getFieldAPIMember` methods used by
 `Fxtran::IO` when generating I/O code.  Components matching
 `P.*_T[019]` (tiled pointer arrays) or named `F_GROUP`,
 `VARIABLE_GROUP`, or `PGROUP` are unconditionally skipped.
-
-# FUNCTIONS
