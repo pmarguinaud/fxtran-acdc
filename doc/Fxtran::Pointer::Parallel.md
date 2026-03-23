@@ -94,3 +94,15 @@ candidates for `PRIVATE` in a parallel directive).
 
 Return a sorted list of variable names that are classified as constant objects
 in the symbol table and appear in the given parallel section.
+
+# SEE ALSO
+
+[Fxtran::Pointer](Fxtran%3A%3APointer.md), [Fxtran::Pointer::SymbolTable](Fxtran%3A%3APointer%3A%3ASymbolTable.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

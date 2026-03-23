@@ -36,3 +36,15 @@ The module contains three packages:
     equivalent OpenMP Target directive (e.g. `parallel` becomes
     `TARGET TEAMS`, `serial` becomes `TARGET`, `data` becomes
     `TARGET DATA`).
+
+# SEE ALSO
+
+[Fxtran::Pragma](Fxtran%3A%3APragma.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

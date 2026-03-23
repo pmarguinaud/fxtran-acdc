@@ -90,3 +90,15 @@ Top-level driver for the FieldAPI parallel transformation: resolves associates,
 forces single declarations, inlines contained subroutines, wraps NPROMA arrays,
 then dispatches each parallel section to the appropriate section-building helper
 (block, single-column, or view layout) based on its attributes.
+
+# SEE ALSO
+
+[Fxtran::FieldAPI](Fxtran%3A%3AFieldAPI.md), [Fxtran::FieldAPI::Register](Fxtran%3A%3AFieldAPI%3A%3ARegister.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

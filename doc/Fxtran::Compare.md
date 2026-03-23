@@ -26,3 +26,11 @@ on each matched pair.
 
 Dispatches to `compareDirectories` or `compareFiles` depending on whether the
 two arguments are directories or files.
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

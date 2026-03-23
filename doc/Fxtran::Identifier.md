@@ -14,3 +14,15 @@ updated consistently.
 
 Renames Fortran identifiers in the parsed document according to a mapping hash.
 Updates both expression references (`named-E`) and declaration names (`EN-N`).
+
+# SEE ALSO
+
+[Fxtran::Decl](Fxtran%3A%3ADecl.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

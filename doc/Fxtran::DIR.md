@@ -14,3 +14,11 @@ comments from a parsed document.
 
 Removes all `!DIR$`, `!DEC$`, and `!NEC$` compiler-specific directive
 comments from the parsed document.
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

@@ -40,3 +40,15 @@ stripping trailing array and parentheses references.
 
 Build a new `named-E` XML node for the FIELD API counterpart of an object
 component path, applying the same naming rules as `getFieldFromExpr`.
+
+# SEE ALSO
+
+[Fxtran::Pointer](Fxtran%3A%3APointer.md), [Fxtran::FieldAPI](Fxtran%3A%3AFieldAPI.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

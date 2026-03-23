@@ -74,4 +74,18 @@ C<repackCallLikeStatement>. Returns the reformatted statement.
   return $class->repackCallLikeStatement ("CALL $proc (", @arg, ")", $indent);
 }
 
+=head1 SEE ALSO
+
+L<Fxtran::Formatter>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 1;

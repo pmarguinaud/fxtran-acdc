@@ -40,3 +40,15 @@ provided).
 Resolves a filename (`file` named argument) to its absolute path within the
 pack. Triggers `scanpack` on the first call to populate the index. Returns
 the path if found in the index, or undef otherwise.
+
+# SEE ALSO
+
+[Fxtran::Finder](Fxtran%3A%3AFinder.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

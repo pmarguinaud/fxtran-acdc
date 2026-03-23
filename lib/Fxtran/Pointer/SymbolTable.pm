@@ -204,4 +204,18 @@ API type name (e.g. C<FIELD_2RB>), or return C<undef> for unrecognised types.
   return "FIELD_${nd}$ts{$ts}";
 }
 
+=head1 SEE ALSO
+
+L<Fxtran::Pointer>, L<Fxtran::FieldAPI>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 1;

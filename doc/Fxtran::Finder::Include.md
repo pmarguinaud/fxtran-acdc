@@ -24,3 +24,15 @@ Searches each directory in the include path (`I` list) in order and returns
 the first path `I/file` for which the file actually exists on disk. The
 `file` argument is passed as a named parameter. Returns undef if the file is
 not found in any of the include directories.
+
+# SEE ALSO
+
+[Fxtran::Finder](Fxtran%3A%3AFinder.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

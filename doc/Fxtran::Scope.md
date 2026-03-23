@@ -37,3 +37,15 @@ structural modifications.
 Removes consecutive blank lines from whitespace-only text nodes, reducing
 each run of multiple newlines to a single newline while preserving indentation
 on the last line.
+
+# SEE ALSO
+
+[Fxtran::Decl](Fxtran%3A%3ADecl.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

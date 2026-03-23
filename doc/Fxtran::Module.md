@@ -21,3 +21,15 @@ statements of the parse tree node `$d`.
 Renames a module by applying the user-supplied transformation function `$sub`
 to the current module name, then updating the MODULE and END MODULE statement
 nodes in the parse tree.
+
+# SEE ALSO
+
+[Fxtran::Subroutine](Fxtran%3A%3ASubroutine.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

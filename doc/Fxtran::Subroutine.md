@@ -30,3 +30,15 @@ DR\_HOOK string nodes accordingly.
 Locates the interface file for the named subroutine via the `$find` helper,
 reads it, and returns the parsed program-unit or interface-construct node.
 Dies if the interface file cannot be found or opened.
+
+# SEE ALSO
+
+[Fxtran::Module](Fxtran%3A%3AModule.md), [Fxtran::Interface](Fxtran%3A%3AInterface.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

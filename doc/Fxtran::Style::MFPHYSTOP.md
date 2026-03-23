@@ -16,3 +16,15 @@ The `matchDocument` method identifies MFPHYSTOP source files by the
 presence of `YDMF_PHYS`, `YDMF_PHYS_OUT`, or the combination of
 `YDCPG_OPTS` and `YDCPG_BNDS` dummy arguments together with a `JLON`
 local variable declaration.
+
+# SEE ALSO
+
+[Fxtran::Style](Fxtran%3A%3AStyle.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

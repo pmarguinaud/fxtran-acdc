@@ -105,4 +105,18 @@ symbol.
 
 }
 
+=head1 SEE ALSO
+
+L<Fxtran::Generate>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 1;

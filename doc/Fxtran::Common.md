@@ -7,3 +7,11 @@
 Bootstrap module that sets up the local::lib environment.  When imported, it
 tries to load the system `local::lib` and falls back to the bundled
 `Fxtran::local::lib` if the system one is unavailable.
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

@@ -25,3 +25,15 @@ attempts to locate its interface file. First tries the ARPEGE/IFS convention
 MesoNH convention (`modi_name.F90`). Returns the resolved path, or undef if
 no interface file can be found. Relies on the `resolve` method implemented by
 the concrete subclass.
+
+# SEE ALSO
+
+[Fxtran::Finder](Fxtran%3A%3AFinder.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

@@ -7,3 +7,15 @@
 Backend for the meld diff tool. Implements the `diff` method from
 [Fxtran::DiffTool](Fxtran%3A%3ADiffTool.md) by invoking the `meld` external command to display
 a side-by-side comparison of two files.
+
+# SEE ALSO
+
+[Fxtran::DiffTool](Fxtran%3A%3ADiffTool.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

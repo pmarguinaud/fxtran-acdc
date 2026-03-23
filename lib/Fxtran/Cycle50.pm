@@ -109,4 +109,18 @@ C<set-variables> option.
 
 }
 
+=head1 SEE ALSO
+
+L<Fxtran::Cycle49>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 1;

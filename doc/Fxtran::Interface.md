@@ -32,3 +32,15 @@ Returns the path of the written file.
 Generates a `modi_*.F90` MODI module wrapper from a Fortran source file,
 wrapping the interface block inside a `MODULE MODI_*` / `END MODULE`.
 Returns the path of the written file.
+
+# SEE ALSO
+
+[Fxtran::Subroutine](Fxtran%3A%3ASubroutine.md), [Fxtran::Finder](Fxtran%3A%3AFinder.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

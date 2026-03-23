@@ -14,3 +14,15 @@ directive-insertion method:
     `PRIVATE`, `REDUCTION`) before a given node in the fxtran XML document
     tree. Long clause lists are automatically wrapped across continuation
     lines.
+
+# SEE ALSO
+
+[Fxtran::Pragma](Fxtran%3A%3APragma.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

@@ -31,3 +31,11 @@ Execute a shell command and die with a descriptive message on failure.  When
 
 Search `$PATH` for `$prog` and return the first executable path found, or
 `undef` if not found.
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

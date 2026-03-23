@@ -76,4 +76,18 @@ nodes in the parse tree.
 
 }
 
+=head1 SEE ALSO
+
+L<Fxtran::Subroutine>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 1;

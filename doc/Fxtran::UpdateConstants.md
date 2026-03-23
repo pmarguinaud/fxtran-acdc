@@ -25,3 +25,15 @@ For each INOUT dummy argument of a tracked derived type, inject a `LLDO_N`
 flag, set it to `.TRUE.` after every mutation, and append a conditional
 `CALL UPDATE(N, LDCOMPONENT=.TRUE.)` block at the end of the executable
 section, together with the corresponding `USE UTIL_<TYPE`\_MOD> statement.
+
+# SEE ALSO
+
+[Fxtran::Decl](Fxtran%3A%3ADecl.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

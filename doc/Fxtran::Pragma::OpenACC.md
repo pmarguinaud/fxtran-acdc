@@ -47,3 +47,15 @@ The `expandParallelLoop` and `expandParallelData` utility functions
 split a combined `!$ACC PARALLEL LOOP` directive into separate
 `!$ACC PARALLEL` and `!$ACC LOOP` directives, and extract data clauses
 into a dedicated `!$ACC DATA` region respectively.
+
+# SEE ALSO
+
+[Fxtran::Pragma](Fxtran%3A%3APragma.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

@@ -11,3 +11,15 @@ is not installed.  It sets up a local Perl library tree by adjusting `@INC`,
 `PERL_MB_OPT` environment variables.  All shell types supported by the
 upstream `local::lib` module (bourne, csh, fish, cmd, powershell) are
 handled.
+
+# SEE ALSO
+
+[Fxtran::local](Fxtran%3A%3Alocal.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

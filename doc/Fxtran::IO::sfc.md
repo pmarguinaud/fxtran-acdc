@@ -9,3 +9,15 @@ Provides `skip` and `getFieldAPIMember` methods used by
 `Fxtran::IO` when generating I/O code.  Components matching
 `P.*_T[019]` (tiled pointer arrays) or named `F_GROUP`,
 `VARIABLE_GROUP`, or `PGROUP` are unconditionally skipped.
+
+# SEE ALSO
+
+[Fxtran::IO](Fxtran%3A%3AIO.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

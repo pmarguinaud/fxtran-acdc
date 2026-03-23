@@ -14,3 +14,15 @@ the loop bounds are `KIDIA` and `KFDIA`, and the loop size (nproma) is
 The `matchDocument` method identifies MFPHYS source files by the presence
 of a `KLON` dummy argument (or the combination of `KIDIA`, `KFDIA` and
 `YDGEOMETRY`) together with a `JLON` local variable declaration.
+
+# SEE ALSO
+
+[Fxtran::Style](Fxtran%3A%3AStyle.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

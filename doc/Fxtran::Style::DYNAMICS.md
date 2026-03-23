@@ -14,3 +14,15 @@ fields.
 The `matchDocument` method identifies dynamics source files by the
 presence of the `KST` dummy argument or local declarations of `JROF`
 or `YDCPG_SL1`.
+
+# SEE ALSO
+
+[Fxtran::Style](Fxtran%3A%3AStyle.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

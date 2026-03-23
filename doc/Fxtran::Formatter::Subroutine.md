@@ -25,3 +25,15 @@ Takes an expanded `SUBROUTINE` statement node and an indentation string.
 Extracts the subroutine name and the dummy argument list, then reassembles
 them into a compact multi-line form that respects the line-length limit via
 `repackCallLikeStatement`.
+
+# SEE ALSO
+
+[Fxtran::Formatter](Fxtran%3A%3AFormatter.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

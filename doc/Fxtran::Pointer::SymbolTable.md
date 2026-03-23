@@ -32,3 +32,15 @@ or plain local), type specifier, array spec, and rank.
 
 Map a rank `$nd` and a type-specifier node `$ts` to the corresponding FIELD
 API type name (e.g. `FIELD_2RB`), or return `undef` for unrecognised types.
+
+# SEE ALSO
+
+[Fxtran::Pointer](Fxtran%3A%3APointer.md), [Fxtran::FieldAPI](Fxtran%3A%3AFieldAPI.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

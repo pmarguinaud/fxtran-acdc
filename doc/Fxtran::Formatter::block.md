@@ -11,3 +11,15 @@ Base class for formatters that handle block-introducing Fortran statements
 Provides `canonic` and `reparse` methods that temporarily append the
 appropriate `END` statement so that fxtran can parse the opening statement
 in context.
+
+# SEE ALSO
+
+[Fxtran::Formatter](Fxtran%3A%3AFormatter.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

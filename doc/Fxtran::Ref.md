@@ -29,3 +29,15 @@ to an `array-R` subscript node via `parensToArrayRef`.
 
 Returns the `R-LT` (reference list) child of an expression node, creating
 and appending an empty one if it does not already exist.
+
+# SEE ALSO
+
+[Fxtran::Decl](Fxtran%3A%3ADecl.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

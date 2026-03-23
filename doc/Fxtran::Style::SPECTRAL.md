@@ -13,3 +13,15 @@ The vertical level iterator is `JLEV`.
 
 The `matchDocument` method always returns false; spectral-style files are
 not auto-detected and must be selected explicitly.
+
+# SEE ALSO
+
+[Fxtran::Style](Fxtran%3A%3AStyle.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

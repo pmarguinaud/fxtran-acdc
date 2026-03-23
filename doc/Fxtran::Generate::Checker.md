@@ -54,3 +54,15 @@ back-end.
 
 Run all three checker passes on every program unit for the single-block
 back-end.
+
+# SEE ALSO
+
+[Fxtran::Generate](Fxtran%3A%3AGenerate.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

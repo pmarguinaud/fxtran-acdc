@@ -26,3 +26,15 @@ remaining dimensions are not simple literals are left unchanged.
 Replaces the bare `:` first subscript with the scalar JLON index in actual
 subroutine arguments that are arrays whose last subscript is JBLK, targeting
 the JBLK-blocked calling convention used in the outer parallel loop.
+
+# SEE ALSO
+
+[Fxtran::Loop](Fxtran%3A%3ALoop.md), [Fxtran::Decl](Fxtran%3A%3ADecl.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

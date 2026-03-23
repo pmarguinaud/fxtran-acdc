@@ -21,3 +21,11 @@ content of the statement; otherwise only the wrapped message text is printed.
 Print a diagnostic message via `message` and then terminate the program by
 calling `die` with a bare newline (so that no additional "at file line N"
 suffix is appended).
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

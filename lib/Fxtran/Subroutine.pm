@@ -120,4 +120,18 @@ Dies if the interface file cannot be found or opened.
   return $intf;
 }
 
+=head1 SEE ALSO
+
+L<Fxtran::Module>, L<Fxtran::Interface>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 1;

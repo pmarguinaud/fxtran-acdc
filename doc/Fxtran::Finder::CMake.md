@@ -36,3 +36,15 @@ basename-to-path index by recursively scanning that directory (directories
 containing a `.fxtran_acdc_cmake_ignore` file are skipped). Subsequent calls
 reuse the cached index. Dies if the file is found in more than one location.
 Returns the absolute path, or undef if the file is not present in the tree.
+
+# SEE ALSO
+
+[Fxtran::Finder](Fxtran%3A%3AFinder.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

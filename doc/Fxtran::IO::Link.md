@@ -24,3 +24,15 @@ variants from JPRD array definitions, and return a unified hash with keys
 
 Return an array-ref of type names (one per `.pl` file) found in the given
 directory.
+
+# SEE ALSO
+
+[Fxtran::IO](Fxtran%3A%3AIO.md), [Fxtran::FieldAPI](Fxtran%3A%3AFieldAPI.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

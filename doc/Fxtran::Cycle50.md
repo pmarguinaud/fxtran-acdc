@@ -19,3 +19,15 @@ Rewrites named Boolean and string variables to their known compile-time values
 for IFS cycle 50, removes calls to GET\_HALO\_PHY, and renames YDGEO to
 YDGEOMETRY.  Additional variables can be substituted at run time via the
 `set-variables` option.
+
+# SEE ALSO
+
+[Fxtran::Cycle49](Fxtran%3A%3ACycle49.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

@@ -1430,4 +1430,18 @@ in the symbol table and appear in the given parallel section.
   return sort keys (%const);
 }
 
+=head1 SEE ALSO
+
+L<Fxtran::Pointer>, L<Fxtran::Pointer::SymbolTable>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 1;

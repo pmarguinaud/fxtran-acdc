@@ -983,4 +983,18 @@ then dispatches each parallel section to the appropriate section-building helper
   return 1;
 }
 
+=head1 SEE ALSO
+
+L<Fxtran::FieldAPI>, L<Fxtran::FieldAPI::Register>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 1;

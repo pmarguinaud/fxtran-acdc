@@ -19,3 +19,15 @@ Generate a C stub file (`parallelmethod_<name`.c>) containing ELF-section
 strings that map code-section names to their parallel methods, and insert a
 call to the stub function into the program unit so the linker can resolve the
 symbol.
+
+# SEE ALSO
+
+[Fxtran::Generate](Fxtran%3A%3AGenerate.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

@@ -27,3 +27,15 @@ and whether it has an `UPDATE_VIEW` procedure.
 Scan all `T-construct` nodes in document `$d`, call `registerFieldAPI1` for
 each non-skipped type, and serialise the resulting metadata hash to a `.pl`
 file in the directory given by `types-fieldapi-dir`.
+
+# SEE ALSO
+
+[Fxtran::FieldAPI](Fxtran%3A%3AFieldAPI.md), [Fxtran::FieldAPI::Parallel](Fxtran%3A%3AFieldAPI%3A%3AParallel.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

@@ -25,3 +25,15 @@ Takes an expanded `CALL` statement node and an indentation string. Extracts
 the procedure designator and the argument list, then reassembles them into a
 compact form that fits within the line-length limit via
 `repackCallLikeStatement`. Returns the reformatted statement.
+
+# SEE ALSO
+
+[Fxtran::Formatter](Fxtran%3A%3AFormatter.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

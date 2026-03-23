@@ -14,3 +14,15 @@ The vertical level iterator is `JLEV`.
 The `matchDocument` method identifies semi-implicit source files by the
 presence of array declarations dimensioned by `KSPEC2V` or
 `YDGEOMETRY%YRMP%NSPEC2V_SI`.
+
+# SEE ALSO
+
+[Fxtran::Style](Fxtran%3A%3AStyle.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

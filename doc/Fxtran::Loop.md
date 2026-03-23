@@ -66,3 +66,15 @@ subscript is replaced by the scalar JLON index.  If the node has no subscript
 list yet, one is created with the appropriate number of `:` placeholders.
 Does nothing for PRESENT() arguments and skips pointer-assignment left-hand
 sides.
+
+# SEE ALSO
+
+[Fxtran::Decl](Fxtran%3A%3ADecl.md), [Fxtran::Scope](Fxtran%3A%3AScope.md), [Fxtran::FieldAPI](Fxtran%3A%3AFieldAPI.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

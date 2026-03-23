@@ -20,3 +20,15 @@ The `preProcessForOpenACC` method renames `JIJ` to `JI` and normalises
 The `matchDocument` method identifies MesoNH source files by the presence
 of a `D` dummy argument declared as `TYPE(DIMPHYEX_T)`, or by a `JI`
 or `JIJ` local variable declaration in a routine with a `D` argument.
+
+# SEE ALSO
+
+[Fxtran::Style](Fxtran%3A%3AStyle.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

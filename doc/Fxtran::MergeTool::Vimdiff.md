@@ -9,3 +9,15 @@ Backend for the vimdiff merge tool. Implements the `merge` method from
 a three-way merge inside Vim. The base file is first copied to the merged
 output path, which is then opened alongside the local and remote files for
 interactive editing.
+
+# SEE ALSO
+
+[Fxtran::MergeTool](Fxtran%3A%3AMergeTool.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

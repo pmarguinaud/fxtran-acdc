@@ -176,4 +176,18 @@ the JBLK-blocked calling convention used in the outer parallel loop.
     }
 }
 
+=head1 SEE ALSO
+
+L<Fxtran::Loop>, L<Fxtran::Decl>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 1;

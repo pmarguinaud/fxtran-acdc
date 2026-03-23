@@ -22,3 +22,15 @@ that `resolve` can perform O(1) lookups.
 Looks up the filename given by the `file` named argument in the basename
 index built during construction. Returns the full path (`base`/relative) if
 found, or undef otherwise.
+
+# SEE ALSO
+
+[Fxtran::Finder](Fxtran%3A%3AFinder.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

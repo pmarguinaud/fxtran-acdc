@@ -23,3 +23,15 @@ directive.
 2. `.a` static-library arguments are deduplicated (only the first occurrence is
 kept).  The flag `-lflang_rt.hostdevice` is emitted at most once and is
 always immediately followed by `-lm`.
+
+# SEE ALSO
+
+[Fxtran::Vendor](Fxtran%3A%3AVendor.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

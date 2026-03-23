@@ -248,4 +248,18 @@ component path, applying the same naming rules as C<getFieldFromExpr>.
   return $n;
 }
 
+=head1 SEE ALSO
+
+L<Fxtran::Pointer>, L<Fxtran::FieldAPI>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 1;

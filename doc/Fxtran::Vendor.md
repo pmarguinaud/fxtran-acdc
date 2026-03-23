@@ -22,3 +22,11 @@ plain `Fxtran::Vendor` object.
 Base-class pass-through.  Returns its argument list unchanged.  Subclasses
 override this method to apply vendor-specific transformations to the compiler
 argument list before it is passed to the preprocessor invocation.
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

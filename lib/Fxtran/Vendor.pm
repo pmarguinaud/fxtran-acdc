@@ -59,4 +59,14 @@ argument list before it is passed to the preprocessor invocation.
   return @_;
 }
 
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 1;

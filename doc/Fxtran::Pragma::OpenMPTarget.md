@@ -41,3 +41,15 @@ The following directive-insertion methods are available:
 Data-movement helper methods (`enterDataCreate`, `exitDataDelete`,
 `updateDevice`, `enterDataAttach`, `exitDataDetach`) return the
 corresponding `!$OMP TARGET` directive strings.
+
+# SEE ALSO
+
+[Fxtran::Pragma](Fxtran%3A%3APragma.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

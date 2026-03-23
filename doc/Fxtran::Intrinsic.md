@@ -34,3 +34,15 @@ Returns the number of replacements made.
 Applies bit-reproducibility substitutions to an entire program unit, including
 inline `*.func.h` include files and post-CONTAINS include files.  Adds the
 required `USE FXTRAN_ACDC_BR_INTRINSICS` statement when substitutions are made.
+
+# SEE ALSO
+
+[Fxtran::BitRepro](Fxtran%3A%3ABitRepro.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

@@ -14,3 +14,15 @@ iterator is `JK`.
 The `matchDocument` method identifies ECPHYS source files by the
 presence of a `KLON` dummy argument and a `JL` local variable
 declaration (without `JLON`).
+
+# SEE ALSO
+
+[Fxtran::Style](Fxtran%3A%3AStyle.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

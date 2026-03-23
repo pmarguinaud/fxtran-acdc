@@ -129,4 +129,18 @@ file in the directory given by C<types-fieldapi-dir>.
 
 }
 
+=head1 SEE ALSO
+
+L<Fxtran::FieldAPI>, L<Fxtran::FieldAPI::Parallel>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 1;

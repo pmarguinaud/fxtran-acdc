@@ -17,3 +17,15 @@ standard `KIDIA`/`KFDIA` dummy arguments.
 The `matchDocument` method identifies ACRANEB2 source files by the
 presence of both `KLON` and `KJN` dummy arguments together with either
 a `KIIDIA` argument or an `IIDIA` local variable declaration.
+
+# SEE ALSO
+
+[Fxtran::Style](Fxtran%3A%3AStyle.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

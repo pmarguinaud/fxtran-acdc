@@ -416,4 +416,18 @@ $call, $include]> array refs, one per outlined section.
   return @o;
 }
 
+=head1 SEE ALSO
+
+L<Fxtran::Generate>, L<Fxtran::Subroutine>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 1;

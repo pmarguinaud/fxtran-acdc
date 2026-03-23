@@ -22,3 +22,15 @@ It provides the following common services:
 subscripts with bare colons.
 - Interface generation via `Fxtran::Interface::intfb`.
 - Logic for inserting OpenACC-variant interface include files.
+
+# SEE ALSO
+
+[Fxtran::Style](Fxtran%3A%3AStyle.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

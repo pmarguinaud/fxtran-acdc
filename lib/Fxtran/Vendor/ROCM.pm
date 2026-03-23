@@ -93,4 +93,18 @@ always immediately followed by C<-lm>.
 }
 
 
+=head1 SEE ALSO
+
+L<Fxtran::Vendor>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 1;

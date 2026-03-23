@@ -27,3 +27,15 @@ part.
 Inlines include files that appear after a CONTAINS statement: each such include
 is parsed, canonicalised, and its program units are inserted in place of the
 include directive.
+
+# SEE ALSO
+
+[Fxtran::Finder](Fxtran%3A%3AFinder.md), [Fxtran::Interface](Fxtran%3A%3AInterface.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

@@ -41,3 +41,15 @@ the include node.
 Finds all ACDC-directive sections in the subroutine parse tree `$d` and
 calls `outlineSection` on each one.  Returns a list of `[$subroutine,
 $call, $include]` array refs, one per outlined section.
+
+# SEE ALSO
+
+[Fxtran::Generate](Fxtran%3A%3AGenerate.md), [Fxtran::Subroutine](Fxtran%3A%3ASubroutine.md)
+
+# AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+# COPYRIGHT
+
+Meteo-France 2025

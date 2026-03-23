@@ -31,4 +31,18 @@ sub diff
   $opts{runcommand}->(cmd => ['vimdiff', $local, $remote], debug => 0);
 }
 
+=head1 SEE ALSO
+
+L<Fxtran::DiffTool>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
+
 1;
