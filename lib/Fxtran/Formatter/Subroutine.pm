@@ -6,6 +6,22 @@ package Fxtran::Formatter::Subroutine;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Formatter::Subroutine
+
+=head1 DESCRIPTION
+
+Formatter for Fortran C<SUBROUTINE> statements. Inherits from
+L<Fxtran::Formatter::block>. The C<expand> method rewrites the dummy argument
+list so that each argument appears on its own continuation line. The C<repack>
+method reassembles the argument list into a compact form respecting the
+line-length limit.
+
+=head1 FUNCTIONS
+
+=cut
+
 use base qw (Fxtran::Formatter::block);
 
 use strict;
@@ -16,6 +32,16 @@ use fxtran::xpath;
 
 sub expand
 {
+
+=head2 expand
+
+Takes a Fortran C<SUBROUTINE> statement node and an indentation string.
+Normalises the statement to its canonical form, then rewrites the dummy
+argument list so that each argument appears on its own continuation line.
+Returns the re-parsed statement node.
+
+=cut
+
   my $class = shift;
   my ($stmt, $indent) = @_;
 
@@ -34,6 +60,16 @@ sub expand
 
 sub repack
 {
+
+=head2 repack
+
+Takes an expanded C<SUBROUTINE> statement node and an indentation string.
+Extracts the subroutine name and the dummy argument list, then reassembles
+them into a compact multi-line form that respects the line-length limit via
+C<repackCallLikeStatement>.
+
+=cut
+
   my $class = shift;
   my ($stmt, $indent) = @_;
 
@@ -43,5 +79,19 @@ sub repack
 
   $class->repackCallLikeStatement ("SUBROUTINE $name (", @arg, ")", $indent);
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::Formatter>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

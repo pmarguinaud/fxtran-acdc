@@ -6,6 +6,20 @@ package Fxtran::Module;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Module
+
+=head1 DESCRIPTION
+
+Utilities for manipulating Fortran MODULE program units in a parsed document.
+Provides functions to append a suffix to a module name (updating both the
+MODULE and END MODULE statements) and to rename a module using a user-supplied
+transformation function.
+
+=head1 FUNCTIONS
+
+=cut
 
 use strict;
 use Fxtran;
@@ -13,6 +27,14 @@ use FileHandle;
   
 sub addSuffix
 {
+
+=head2 addSuffix
+
+Appends C<$suffix> to the module name in both the MODULE and END MODULE
+statements of the parse tree node C<$d>.
+
+=cut
+
   my ($d, $suffix) = @_;
 
   my @sn = &F ('./module-stmt/module-N/N/n/text()|./end-module-stmt/module-N/N/n/text()', $d);
@@ -26,7 +48,16 @@ sub addSuffix
 
 sub rename
 {
-  my ($d, $sub) = @_; 
+
+=head2 rename
+
+Renames a module by applying the user-supplied transformation function C<$sub>
+to the current module name, then updating the MODULE and END MODULE statement
+nodes in the parse tree.
+
+=cut
+
+  my ($d, $sub) = @_;
 
   $d = &getProgramUnit ($d);
 
@@ -44,5 +75,19 @@ sub rename
     }   
 
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::Subroutine>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

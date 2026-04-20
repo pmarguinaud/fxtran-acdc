@@ -6,6 +6,24 @@ package Fxtran::Interface;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Interface
+
+=head1 DESCRIPTION
+
+Generates Fortran interface-block files (C<.intfb.h>) and MODI module wrappers
+from a Fortran source file.  The core transformation strips execution parts,
+contained procedures, and all declarations that are not needed to describe the
+dummy argument list, keeping only the statements that are essential for the
+interface.  Labels, comments (except OpenACC/OMP declare-target), includes, and
+defines are also removed.  The module also supports merging an additional
+OpenACC interface variant into the generated file.
+
+=head1 FUNCTIONS
+
+=cut
+
 use File::Basename;
 use FileHandle;
 use Data::Dumper;
@@ -17,6 +35,16 @@ use Fxtran::Util;
 
 sub intfbBody
 {
+
+=head2 intfbBody
+
+Transforms a parsed Fortran document in-place into interface-block form:
+removes execution parts, contained procedures, unused declarations, labels,
+comments (except OpenACC/OMP declare-target), includes, and defines, keeping
+only the statements required to describe each dummy argument list.
+
+=cut
+
   my $doc = shift;
 
   my @pu = &F ('./object/file/program-unit', $doc);
@@ -248,6 +276,15 @@ sub intfbBody
 
 sub intfb
 {
+
+=head2 intfb
+
+Generates a C<.intfb.h> interface-block file from a Fortran source file.
+Optionally merges an OpenACC interface variant when C<merge-interfaces> is set.
+Returns the path of the written file.
+
+=cut
+
   my ($F90, $dir, $ext, %opts) = @_;
 
   $dir ||= '.';
@@ -301,6 +338,15 @@ EOF
 
 sub modi
 {
+
+=head2 modi
+
+Generates a C<modi_*.F90> MODI module wrapper from a Fortran source file,
+wrapping the interface block inside a C<MODULE MODI_*> / C<END MODULE>.
+Returns the path of the written file.
+
+=cut
+
   my ($F90, $dir) = @_;
   
   $dir ||= '.';
@@ -330,5 +376,19 @@ EOF
 }
 
 
+
+=head1 SEE ALSO
+
+L<Fxtran::Subroutine>, L<Fxtran::Finder>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

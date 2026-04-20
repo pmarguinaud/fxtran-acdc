@@ -12,19 +12,6 @@ After applying the singleblock transformation, horizontal sections
 (marked with C<!$ACDC HORIZONTAL>) are
 scanned and call to routines implementing horizontal operators are added
 the C<LDACC=LDACC> optional argument.
-
-=head1 SEE ALSO
-
-L<Fxtran::SingleBlock>
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use Data::Dumper;
@@ -36,6 +23,19 @@ use Fxtran::SingleBlock;
 
 sub processSingleRoutine
 {
+
+=head2 processSingleRoutine
+
+Apply the single-block transformation to a program unit and then augment
+it for the semi-implicit scheme.  First delegates to
+C<Fxtran::SingleBlock::processSingleRoutine> using the suffix
+C<_SINGLEBLOCK>, then scans every C<horizontal-section> in the transformed
+unit and appends the C<LDACC=LDACC> named argument to every C<CALL>
+statement found therein, so that horizontal operators receive the
+accumulation flag.
+
+=cut
+
   my ($pu, %opts) = @_;
 
   &Fxtran::SingleBlock::processSingleRoutine 
@@ -53,4 +53,18 @@ sub processSingleRoutine
 
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::SingleBlock>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

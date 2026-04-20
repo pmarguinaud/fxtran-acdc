@@ -6,6 +6,19 @@ package Fxtran::IO::arr;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::IO::arr
+
+=head1 DESCRIPTION
+
+FieldAPI class policy module for array-type derived types.  Provides
+C<skip> and C<getFieldAPIMember> methods used by C<Fxtran::IO> when
+generating I/O code for Fortran derived types that hold pointer
+components backed by FieldAPI array objects (names prefixed with
+C<F_>).
+
+=cut
 
 use strict;
 use Fxtran;
@@ -36,5 +49,19 @@ sub getFieldAPIMember
       return "F_$comp" if ($tname =~ m/^FIELD_/o);
     }
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::IO>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

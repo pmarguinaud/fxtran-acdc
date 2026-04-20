@@ -22,6 +22,15 @@ annotations.
 The `new` constructor also serves as an entry point for
 creating such objects.
 
+## new
+
+Constructor and factory method for pragma annotation objects.  When the
+`pragma` argument is supplied, the matching subclass (e.g.
+`Fxtran::Pragma::OpenMP`) is loaded dynamically and its `new` method is
+called.  When called directly on a concrete subclass (i.e. `$class` is not
+`Fxtran::Pragma`), the provided arguments are blessed into that class and
+returned.
+
 # AUTHOR
 
 philippe.marguinaud@meteo.fr

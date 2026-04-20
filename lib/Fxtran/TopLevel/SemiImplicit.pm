@@ -7,19 +7,6 @@ Fxtran::TopLevel::SemiImplicit
 =head1 DESCRIPTION
 
 Process high level routines of semi-implicit calculations. 
-
-=head1 SEE ALSO
-
-L<Fxtran::TopLevel::Spectral>
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use Data::Dumper;
@@ -34,11 +21,25 @@ use Fxtran;
 
 sub processSingleRoutine
 {
+
+=head2 processSingleRoutine
+
+Dispatch to C<processSingleRoutineMethod> for the semi-implicit singleblock transformation.
+
+=cut
+
   __PACKAGE__->processSingleRoutineMethod (@_);
 }
 
 sub renameProc
 {
+
+=head2 renameProc
+
+Rename a called procedure by appending the semi-implicit suffix when its name matches the C<SP*SI> pattern.
+
+=cut
+
   my $class = shift;
   my ($pu, $proc, %opts) = @_;
 
@@ -48,4 +49,18 @@ sub renameProc
   return 1;
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::TopLevel::Spectral>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

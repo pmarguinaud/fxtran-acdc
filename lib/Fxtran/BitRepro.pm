@@ -24,20 +24,6 @@ number in a well defined order.
 
 The generated code has to be compiled with the C<-O0> option, so that results 
 be reproduced between CPU and GPU.
-
-=head1 SEE ALSO
-
-L<fxtran_acdc_br_intrinsics.F90|url:../src/fxtran_acdc_br_intrinsics.F90>,
-L<fxtran_acdc_br_transcendentals.cc|url:../src/fxtran_acdc_br_transcendentals.cc>
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use Data::Dumper;
@@ -52,6 +38,15 @@ use Fxtran;
 
 sub makeBitReproducible
 {
+
+=head2 makeBitReproducible
+
+Entry point for the bit-reproducibility transformation. Iterates over all
+program units in the document and dispatches to C<processSingleModule> or
+C<processSingleRoutine> depending on the kind of program unit.
+
+=cut
+
   my ($d, %opts) = @_;
 
   for my $pu (&F ('./object/file/program-unit', $d))
@@ -78,6 +73,14 @@ sub makeBitReproducible
 
 sub processSingleModule
 {
+
+=head2 processSingleModule
+
+Apply the bit-reproducibility transformation to every program unit contained
+in a module, and then rename the module by appending the bit-repro suffix.
+
+=cut
+
   my ($d, %opts) = @_;
 
   for my $pu (&F ('./program-unit', $d))
@@ -91,6 +94,15 @@ sub processSingleModule
 
 sub traverseAdditionSubstractionExpr
 {
+
+=head2 traverseAdditionSubstractionExpr
+
+Recursively decompose an addition/subtraction expression into a flat list of
+operand and operator nodes. Returns the expression unchanged if it is not a
+two-operand addition or subtraction.
+
+=cut
+
   my $expr = shift;
 
   my ($e1, $e2) = &F ('./ANY-E', $expr);
@@ -107,6 +119,15 @@ sub traverseAdditionSubstractionExpr
 
 sub addBitReproParens
 {
+
+=head2 addBitReproParens
+
+Insert explicit parentheses around addition/subtraction chains in a statement
+so that the evaluation order is fixed and results are reproducible across
+different compiler optimisation levels.
+
+=cut
+
   my $s = shift;
 
 
@@ -141,6 +162,16 @@ sub addBitReproParens
 
 sub processSingleRoutine
 {
+
+=head2 processSingleRoutine
+
+Apply the full bit-reproducibility transformation to a single subroutine: replace
+transcendental intrinsics, optionally bracket additions, rename call targets and
+the subroutine itself with the bit-repro suffix, then recurse into contained
+program units.
+
+=cut
+
   my ($pu, %opts) = @_;
 
   &Fxtran::Intrinsic::makeBitReproducible ($pu, %opts);
@@ -171,4 +202,20 @@ sub processSingleRoutine
 
 }
 
+
+=head1 SEE ALSO
+
+L<fxtran_acdc_br_intrinsics.F90|url:../src/fxtran_acdc_br_intrinsics.F90>,
+L<fxtran_acdc_br_transcendentals.cc|url:../src/fxtran_acdc_br_transcendentals.cc>,
+L<Fxtran::Intrinsic>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

@@ -23,21 +23,24 @@ annotations.
 
 The C<new> constructor also serves as an entry point for
 creating such objects.
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use strict;
 
 sub new
 {
+
+=head2 new
+
+Constructor and factory method for pragma annotation objects.  When the
+C<pragma> argument is supplied, the matching subclass (e.g.
+C<Fxtran::Pragma::OpenMP>) is loaded dynamically and its C<new> method is
+called.  When called directly on a concrete subclass (i.e. C<$class> is not
+C<Fxtran::Pragma>), the provided arguments are blessed into that class and
+returned.
+
+=cut
+
   my $class = shift;
   my %args = @_;
 
@@ -54,4 +57,14 @@ sub new
     }
 }
 
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

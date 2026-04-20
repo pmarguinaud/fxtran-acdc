@@ -65,6 +65,13 @@ on the device.
 
 sub removeTRIM
 {
+
+=head2 removeTRIM
+
+Remove C<TRIM> function calls from an expression, replacing each C<TRIM(x)> with C<x>.
+
+=cut
+
   my $expr = shift;
 
   my @TRIM = &F ('.//named-E[string(N)="TRIM"]', $expr);
@@ -134,6 +141,10 @@ Change calls to C<PRINT_MSG> into calls to C<ABOR1> or C<PRINT> statements.
     }
 
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::Message>.
 
 =head1 AUTHOR
 

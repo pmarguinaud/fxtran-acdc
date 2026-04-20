@@ -58,6 +58,13 @@ use Fxtran;
 
 sub callSubroutineMethod
 {
+
+=head2 callSubroutineMethod
+
+Return a Fortran CALL statement string for invoking a derived-type method as either a Field API procedure, a type-bound method, or a free-standing subroutine, depending on options.
+
+=cut
+
   my ($opts, $object, $methodName, $methodNameLong, $isFieldAPI, @args) = @_;
 
   if ($isFieldAPI)
@@ -86,6 +93,13 @@ sub callSubroutineMethod
 
 sub callFunctionMethod
 {
+
+=head2 callFunctionMethod
+
+Return a Fortran function-call expression string for invoking a derived-type method as either a Field API function, a type-bound function, or a free-standing function, depending on options.
+
+=cut
+
   my ($opts, $object, $methodName, $methodNameLong, $isFieldAPI, @args) = @_;
 
   if ($isFieldAPI)
@@ -107,6 +121,13 @@ sub callFunctionMethod
 
 sub processDecl
 {
+
+=head2 processDecl
+
+Generate SAVE, LOAD, COPY, WIPE, HOST, LEGACY, CRC64, and SIZE code fragments for a single entity declaration of a derived type, appending them to the appropriate body arrays.
+
+=cut
+
   my ($opts, $en_decl, $sname, $prefix, $BODY, $U, $J, $L, $B, $T, $en_decl_hash) = @_;
 
   my (@BODY_SAVE, @BODY_LOAD, @BODY_COPY, @BODY_WIPE, @BODY_SIZE, @BODY_HOST, @BODY_LEGACY, @BODY_CRC64);
@@ -397,6 +418,13 @@ RETURN:
 
 sub indent
 {
+
+=head2 indent
+
+Apply simple indentation to a list of Fortran code lines, increasing indent after C<IF>/C<DO>/C<ELSE> keywords and decreasing it before C<ELSE>/C<ENDIF>/C<ENDDO>, and collapsing consecutive blank lines.
+
+=cut
+
   my $n = 0;
 
   my @line;
@@ -422,6 +450,13 @@ sub indent
 
 sub w
 {
+
+=head2 w
+
+Write content to a file, optionally embedding source-metadata (origin file, timestamp, version) via C<Fxtran::Util::updateFile>.
+
+=cut
+
   my ($f, $from, $opts) = @_;
   if ($opts->{'write-metadata'})
     {
@@ -435,6 +470,13 @@ sub w
 
 sub processTypes1
 {
+
+=head2 processTypes1
+
+Process all derived-type constructs in a parsed module document and return the generated file names, code strings, and type-bound method descriptors.
+
+=cut
+
   my ($doc, $opts) = @_;
 
   my (%code, @file, @meth);
@@ -896,6 +938,13 @@ EOF
 
 sub processTypes
 {
+
+=head2 processTypes
+
+Orchestrate code generation for all derived types in a document and write the resulting Fortran source files to disk, supporting regular, split-util, sorted, and type-bound-methods output modes.
+
+=cut
+
   my ($doc, $opts) = @_;
 
   my ($F90) = &F ('./object/file/@name', $doc, 2);
@@ -1008,6 +1057,13 @@ EOF
 
 sub process_module
 {
+
+=head2 process_module
+
+Wrap a module's scalar declarations in a synthetic derived type, invoke C<processTypes1> to generate IO code for that type, then strip the scaffolding and write the result.
+
+=cut
+
   use File::Temp;
 
   my ($doc, $opts) = @_;
@@ -1058,6 +1114,10 @@ sub process_module
 
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::FieldAPI>, L<Fxtran::IO::Link>
 
 =head1 COPYRIGHT
 

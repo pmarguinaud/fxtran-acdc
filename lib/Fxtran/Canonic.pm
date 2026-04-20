@@ -55,15 +55,6 @@ Applying cycle specific simplifications.
 
 Another important function provided by this module is C<indent> which
 indents a FORTRAN/XML document.
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2022
-
 =cut
 
 use Data::Dumper;
@@ -83,6 +74,14 @@ use Fxtran::Cycle;
 
 sub removeIfDef
 {
+
+=head2 removeIfDef
+
+Remove all C<#ifdef T> ... C<#endif> preprocessor blocks from the document
+where C<T> matches the given tag string.
+
+=cut
+
   my ($d, $t) = @_;
   my @cpp = &F ("//cpp[string(.)='#ifdef $t']", $d);
   for my $cpp (@cpp)
@@ -102,6 +101,16 @@ sub removeIfDef
 
 sub makeCanonicReferences
 {
+
+=head2 makeCanonicReferences
+
+Disambiguate all parenthesised references in the document: convert them to
+array references or function references depending on whether a preceding
+reference part exists, whether the name is an intrinsic, or whether it starts
+with C<F>.
+
+=cut
+
   my $d = shift;
 
   for my $p (&F ('.//parens-R', $d))
@@ -143,6 +152,17 @@ DONE:
 
 sub makeCanonic
 {
+
+=head2 makeCanonic
+
+Apply the full canonic transformation to an fxtran XML document or program
+unit: expand C<IF> statements into constructs, resolve associates, attach
+array specs, disambiguate references, force single declarations, strip
+architecture-specific C<#ifdef> blocks, remove compiler directives, reorganise
+specification parts, and apply cycle-specific simplifications.
+
+=cut
+
   my $d = shift;
   my %opts = @_;
 
@@ -175,6 +195,15 @@ sub makeCanonic
 
 sub makeCanonicUnit
 {
+
+=head2 makeCanonicUnit
+
+Dispatch the canonic transformation for a single program unit to the
+appropriate handler (C<makeCanonicSubroutine>, C<makeCanonicFunction>, or
+C<makeCanonicModule>) based on the first child statement.
+
+=cut
+
   my $pu = shift;
   my $first = $pu->firstChild;
 
@@ -198,6 +227,15 @@ sub makeCanonicUnit
 
 sub makeCanonicModule
 {
+
+=head2 makeCanonicModule
+
+Apply the canonic transformation to a module program unit: recursively
+canonicalise all contained and interface program units, then reorganise
+the module-level declarations into a structured specification part.
+
+=cut
+
   my $pu = shift;
 
   for (&F ('./program-unit', $pu), &F ('./interface-construct/program-unit', $pu))
@@ -220,12 +258,30 @@ sub makeCanonicModule
 
 sub makeCanonicFunction
 {
+
+=head2 makeCanonicFunction
+
+Apply the canonic transformation to a function program unit by delegating to
+C<makeCanonicSubroutine>.
+
+=cut
+
   my $pu = shift;
   &makeCanonicSubroutine ($pu);
 }
 
 sub makeCanonicSubroutine
 {
+
+=head2 makeCanonicSubroutine
+
+Apply the canonic transformation to a subroutine program unit: recursively
+canonicalise contained and interface program units, group executable statements
+into an C<execution-part> element (honouring C<DR_HOOK> boundaries), and
+reorganise the remaining statements into a structured specification part.
+
+=cut
+
   my $pu = shift;
 
   for (&F ('./program-unit', $pu), &F ('./interface-construct/program-unit', $pu))
@@ -271,6 +327,16 @@ sub makeCanonicSubroutine
 
 sub fillSpecificationPart
 {
+
+=head2 fillSpecificationPart
+
+Populate a C<specification-part> element with the given nodes, distributing
+them into C<use-part>, C<implicit-part>, and C<declaration-part> children
+according to their statement type, and insert the resulting structure into
+the parent program unit.
+
+=cut
+
   my ($pu, $spec, @node) = @_;
 
   my $first = $pu->firstChild;
@@ -329,6 +395,14 @@ sub fillSpecificationPart
 
 sub indentCr
 {
+
+=head2 indentCr
+
+Add two-space indentation after every newline inside the given element,
+skipping newlines that are immediately followed by a C<cpp> node.
+
+=cut
+
   my $e = shift;
   my @cr = &F ('.//text()[contains(.,"?")]', "\n", $e); pop (@cr);
   for my $cr (@cr)
@@ -344,6 +418,16 @@ sub indentCr
 
 sub indent
 {
+
+=head2 indent
+
+Produce an indented FORTRAN source string from an fxtran XML document.
+Statements longer than C<width> characters (default 100) are split across
+continuation lines. C<IF> statements and constructs receive block indentation
+via C<indentCr>. Returns the indented source as a string.
+
+=cut
+
   my $d = shift;
   my %args = @_;
 
@@ -453,4 +537,18 @@ sub indent
 }
 
 
+
+=head1 SEE ALSO
+
+L<Fxtran::Formatter>, L<Fxtran::Style>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2022
+
+=cut
 1;

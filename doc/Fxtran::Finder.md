@@ -24,6 +24,20 @@ We currently provide concrete classes for the following environments:
 - gmkpack
 - A simple directory containing all source files.
 
+## new
+
+Factory constructor.  Inspect the current environment and return the most
+appropriate concrete finder object:
+
+- `Fxtran::Finder::CMake` when the `CMAKE_BUILD_DIRECTORY` environment
+variable is set.
+- `Fxtran::Finder::Pack::Build` when the `TARGET_PACK` environment
+variable is set.
+- `Fxtran::Finder::Pack` when a `.gmkview` file exists in the current
+directory (gmkpack layout).
+- `Fxtran::Finder::Files` when an explicit `files` list is provided.
+- `Fxtran::Finder::Include` as the default fall-back.
+
 # AUTHOR
 
 philippe.marguinaud@meteo.fr

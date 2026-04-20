@@ -1,4 +1,21 @@
 package Fxtran::local::lib;
+
+=head1 NAME
+
+Fxtran::local::lib
+
+=head1 DESCRIPTION
+
+A bundled, self-contained copy of C<local::lib> (version 2.000029) shipped
+with fxtran-acdc as a fallback for systems where the C<local::lib> CPAN module
+is not installed.  It sets up a local Perl library tree by adjusting C<@INC>,
+C<PERL5LIB>, C<PATH>, C<PERL_LOCAL_LIB_ROOT>, and the C<PERL_MM_OPT> /
+C<PERL_MB_OPT> environment variables.  All shell types supported by the
+upstream C<local::lib> module (bourne, csh, fish, cmd, powershell) are
+handled.
+
+=cut
+
 use 5.006;
 BEGIN {
   if ($ENV{RELEASE_TESTING}) {
@@ -748,5 +765,19 @@ sub guess_shelltype {
                                  : 'bourne';
   }
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::local>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

@@ -217,6 +217,10 @@ can be removed its POINTER attribute:
 }
 
 
+=head1 SEE ALSO
+
+L<Fxtran::Scope>, L<Fxtran::Identifier>.
+
 =head1 AUTHOR
 
 philippe.marguinaud@meteo.fr

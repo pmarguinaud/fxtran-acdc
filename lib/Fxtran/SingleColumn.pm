@@ -170,19 +170,6 @@ L<shallow_mf.F90|url:../tests/49t2_openacc-bench/src/main/phyex/turb/shallow_mf.
 L<shallow_mf_openacc.F90|url:../tests/49t2_openacc-bench/ref/util/src/local/phyex/turb/shallow_mf_openacc.F90>
 
 =back
-
-=head1 SEE ALSO
-
-L<Fxtran::Stack>, L<Fxtran::Loop>, L<Fxtran::ReDim>
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2022
-
 =cut
 
 use FileHandle;
@@ -213,6 +200,13 @@ use Fxtran::Module;
 
 sub arraySliceToAddress
 {
+
+=head2 arraySliceToAddress
+
+Convert NPROMA array section arguments to pointer-based element addresses for PGI compatibility.
+
+=cut
+
   my ($pu, %opts) = @_;
 
   my $style = $opts{style};
@@ -302,6 +296,13 @@ EOF
 
 sub addValueAttribute
 {
+
+=head2 addValueAttribute
+
+Add the C<VALUE> attribute to scalar C<INTENT(IN)> arguments of a subroutine.
+
+=cut
+
   my $d = shift;
 
   my ($dp) = &F ('./specification-part/declaration-part', $d);
@@ -324,6 +325,13 @@ sub addValueAttribute
 
 sub processSingleModule
 {
+
+=head2 processSingleModule
+
+Apply the singlecolumn transformation to all subroutines and interfaces within a module.
+
+=cut
+
   my ($d, %opts) = @_;
 
   my $find = $opts{find};
@@ -352,6 +360,13 @@ sub processSingleModule
 
 sub processSingleInterface
 {
+
+=head2 processSingleInterface
+
+Apply the singlecolumn transformation to an interface body within a module.
+
+=cut
+
   my ($d, %opts) = @_;
 
   my $find = $opts{find};
@@ -382,6 +397,13 @@ sub processSingleInterface
 
 sub processSingleRoutine
 {
+
+=head2 processSingleRoutine
+
+Apply the full singlecolumn transformation to a subroutine program unit, producing an OpenACC seq routine.
+
+=cut
+
   my ($pu, %opts) = @_;
 
   # Process ABORT sections
@@ -482,4 +504,18 @@ sub processSingleRoutine
 
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::Stack>, L<Fxtran::Loop>, L<Fxtran::ReDim>, L<Fxtran::SingleBlock>, L<Fxtran::ManyBlocks>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2022
+
+=cut
 1;

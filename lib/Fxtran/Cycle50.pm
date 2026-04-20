@@ -6,6 +6,22 @@ package Fxtran::Cycle50;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Cycle50
+
+=head1 DESCRIPTION
+
+Simplification rules specific to IFS cycle 50.  Provides a C<simplify> method
+that rewrites a set of named Boolean or string variables to their known
+compile-time values for that cycle.  Compared to cycle 49 it includes
+additional variables and also renames YDGEO to YDGEOMETRY and removes calls to
+GET_HALO_PHY.  Additional variables can be overridden at run time via the
+C<set-variables> option.
+
+=head1 FUNCTIONS
+
+=cut
 
 use strict;
 use Fxtran;
@@ -14,6 +30,16 @@ use Data::Dumper;
 
 sub simplify
 {
+
+=head2 simplify
+
+Rewrites named Boolean and string variables to their known compile-time values
+for IFS cycle 50, removes calls to GET_HALO_PHY, and renames YDGEO to
+YDGEOMETRY.  Additional variables can be substituted at run time via the
+C<set-variables> option.
+
+=cut
+
   shift;
   my $d = shift;
   my %opts = @_;
@@ -82,5 +108,19 @@ sub simplify
     }
 
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::Cycle49>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

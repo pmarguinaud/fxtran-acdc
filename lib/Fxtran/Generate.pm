@@ -39,8 +39,15 @@ use Fxtran::Include;
 
 use click;
 
-sub changeKidiaToYDCPG_OPTS 
+sub changeKidiaToYDCPG_OPTS
 {
+
+=head2 changeKidiaToYDCPG_OPTS
+
+Replace references to C<KIDIA>, C<KFDIA> and C<NPROMA> style variables with their C<YDCPG_OPTS>/C<YDCPG_BNDS> equivalents.
+
+=cut
+
   my ($d, $opts) = @_;
 
   my ($pu) = &F ('./object/file/program-unit', $d);
@@ -164,6 +171,13 @@ EOF
 
 sub routineToRoutineHead
 {
+
+=head2 routineToRoutineHead
+
+Parse a FORTRAN source file and prepare it for transformation, returning the parsed document and the output file path.
+
+=cut
+
   my ($F90, $method, $opts, @fopts) = @_;
 
   $opts->{dir} = 'File::Spec'->rel2abs ($opts->{dir});
@@ -271,6 +285,13 @@ sub routineToRoutineHead
 
 sub routineToRoutineTail
 {
+
+=head2 routineToRoutineTail
+
+Finalise a transformation by writing the transformed document to the output file.
+
+=cut
+
   my ($F90out, $F90, $d, $opts) = @_;
 
   my @args = $opts->{'write-metadata'} ? (time => 1, version => 1, from => $F90) : ();
@@ -1313,6 +1334,13 @@ Parse a file, inline some routines (optional) and write back the result.
 EOF
 sub openaccconvert
 {
+
+=head2 openaccconvert
+
+Convert a FORTRAN source file for OpenACC using the idem transformation pipeline.
+
+=cut
+
   my ($opts, @args) = @_;
 
   my ($F90) = @args;

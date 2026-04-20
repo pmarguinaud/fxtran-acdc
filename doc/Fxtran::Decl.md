@@ -62,6 +62,10 @@ can be removed its POINTER attribute:
 
     REAL :: X
 
+# SEE ALSO
+
+[Fxtran::Scope](Fxtran%3A%3AScope.md), [Fxtran::Identifier](Fxtran%3A%3AIdentifier.md).
+
 # AUTHOR
 
 philippe.marguinaud@meteo.fr

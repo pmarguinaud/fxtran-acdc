@@ -7,15 +7,6 @@ Fxtran::DrHook
 =head1 DESCRIPTION
 
 This module provides utilities to remove DrHook calls.
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2022
-
 =cut
 
 use strict;
@@ -24,6 +15,30 @@ use Fxtran;
 
 sub remove
 {
+
+=head2 remove
+
+Remove all DrHook instrumentation from the given program-unit XML node C<$d>.
+This covers three kinds of nodes:
+
+=over 4
+
+=item *
+
+C<USE YOMHOOK> statements in the use-part.
+
+=item *
+
+C<IF (...) CALL DR_HOOK (...)> statements in the execution-part.
+
+=item *
+
+Declarations of C<ZHOOK_HANDLE*> variables in the declaration-part.
+
+=back
+
+=cut
+
   my $d = shift;
 
   my ($ep) = &F ('./execution-part', $d);
@@ -46,4 +61,18 @@ sub remove
     }
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::NVTX>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2022
+
+=cut
 1;

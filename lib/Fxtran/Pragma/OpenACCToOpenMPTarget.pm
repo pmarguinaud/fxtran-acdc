@@ -1,5 +1,50 @@
 package Fxtran::Pragma::OpenACCToOpenMPTarget;
 
+=head1 NAME
+
+Fxtran::Pragma::OpenACCToOpenMPTarget
+
+=head1 DESCRIPTION
+
+Utility module for converting OpenACC directives to OpenMP Target
+directives in an fxtran XML document tree. It also provides optional
+expansion of combined C<!$ACC PARALLEL LOOP> directives and optional
+wrapping of directive lines in C<#ifdef> guards.
+
+The module contains three packages:
+
+=over 4
+
+=item C<Fxtran::Pragma::OpenACCToOpenMPTarget>
+
+The top-level driver. The C<apply> method orchestrates the full
+transformation pipeline: cleaning up C<!$ACC PARALLEL LOOP> constructs,
+optionally expanding them into separate C<!$ACC PARALLEL> and C<!$ACC
+LOOP> directives, optionally converting everything to C<!$OMP TARGET>
+syntax, and optionally wrapping directive lines in
+C<#ifdef _FXTRAN_ACDC_USE_OPENACC> or
+C<#ifdef _FXTRAN_ACDC_USE_OPENMPTARGET> guards.
+
+=item C<Fxtran::Pragma::OpenACCToOpenMPTarget::openacc::clause>
+
+Handles clause-level conversion from OpenACC to OpenMP Target. Each
+method corresponds to an OpenACC clause name and rewrites it to the
+equivalent OpenMP Target clause (e.g. C<gang> becomes
+C<TEAMS DISTRIBUTE>, C<vector> becomes C<PARALLEL DO SIMD>,
+C<create> becomes C<MAP(ALLOC:...>).
+
+=item C<Fxtran::Pragma::OpenACCToOpenMPTarget::openacc::directive>
+
+Handles directive-level conversion from OpenACC to OpenMP Target. Each
+method corresponds to an OpenACC directive name and rewrites it to the
+equivalent OpenMP Target directive (e.g. C<parallel> becomes
+C<TARGET TEAMS>, C<serial> becomes C<TARGET>, C<data> becomes
+C<TARGET DATA>).
+
+=back
+
+=cut
+
 use strict;
 
 use Fxtran;
@@ -631,5 +676,19 @@ sub wait
   $class->prune (@_);
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::Pragma>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

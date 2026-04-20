@@ -1,5 +1,22 @@
 package Fxtran::UpdateConstants;
 
+=head1 NAME
+
+Fxtran::UpdateConstants
+
+=head1 DESCRIPTION
+
+Inserts update calls for derived-type arguments after they have been modified
+inside a subroutine.  For each INOUT dummy argument whose type belongs to a
+configurable list, the module tracks every assignment or INOUT call-site that
+could mutate the object and injects a conditional C<CALL UPDATE(...)> after
+each such statement, guarded by a LOGICAL flag.  The corresponding utility
+module (C<USE UTIL_<TYPE>_MOD>) is added to the use-part automatically.
+
+=head1 FUNCTIONS
+
+=cut
+
 use Data::Dumper;
 
 use strict;
@@ -18,6 +35,15 @@ my %intf;
 
 sub getActualArgumentIntent
 {
+
+=head2 getActualArgumentIntent
+
+Look up the INTENT of a specific actual argument in a call statement by
+fetching and parsing the callee's interface file, then matching the argument
+by position or keyword name.
+
+=cut
+
   my ($p, %opts) = @_;
 
   my $find = $opts{find};
@@ -72,6 +98,16 @@ sub getActualArgumentIntent
 
 sub processSingleRoutine
 {
+
+=head2 processSingleRoutine
+
+For each INOUT dummy argument of a tracked derived type, inject a C<LLDO_N>
+flag, set it to C<.TRUE.> after every mutation, and append a conditional
+C<CALL UPDATE(N, LDCOMPONENT=.TRUE.)> block at the end of the executable
+section, together with the corresponding C<USE UTIL_<TYPE>_MOD> statement.
+
+=cut
+
   my ($pu, %opts) = @_;
 
   my $find = $opts{find};
@@ -153,5 +189,19 @@ EOF
 
 
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::Decl>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

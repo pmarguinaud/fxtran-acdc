@@ -13,21 +13,23 @@ dependent.
 
 The C<Fxtran::Cycle::simplify> will invoke the appropriate
 C<Fxtran::CycleNN::simplify> method, using the cycle value.
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use strict;
 
 sub simplify
 {
+
+=head2 simplify
+
+Dispatch cycle-dependent simplifications to the appropriate
+C<Fxtran::CycleNN> module, where C<NN> is the numeric value supplied via
+the C<cycle> option.  The target module is loaded dynamically with C<use>
+and its own C<simplify> class method is then called with the same
+arguments.  Returns immediately if no C<cycle> option is provided.
+
+=cut
+
   shift;
 
   my ($d, %opts) = @_;
@@ -43,4 +45,18 @@ sub simplify
   $class->simplify ($d, %opts);
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::Cycle49>, L<Fxtran::Cycle50>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

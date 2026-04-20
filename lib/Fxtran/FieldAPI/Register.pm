@@ -6,6 +6,25 @@ package Fxtran::FieldAPI::Register;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::FieldAPI::Register
+
+=head1 DESCRIPTION
+
+Scans Fortran type definitions in an fxtran XML document and records
+which components are backed by FieldAPI objects.  For each type
+construct found, C<registerFieldAPI1> collects component metadata
+(pointer attributes, array rank, type specifier, and inheritance) and
+C<registerFieldAPI> serialises the resulting hash to a per-type C<.pl>
+file under the directory given by the C<types-fieldapi-dir> option.
+An optional class (e.g. C<Fxtran::IO::cpg>) can be supplied via the
+C<field-api-class> option to customise how FieldAPI members are
+identified for a particular family of types.
+
+=head1 FUNCTIONS
+
+=cut
 
 use strict;
 use FileHandle;
@@ -15,6 +34,15 @@ use Fxtran;
 
 sub registerFieldAPI1
 {
+
+=head2 registerFieldAPI1
+
+Parse a single C<T-construct> node and return a hash describing the type's
+name, supertype, FieldAPI component layout (pointers, rank, type specifier),
+and whether it has an C<UPDATE_VIEW> procedure.
+
+=cut
+
   my ($tc, $opts, $class) = @_;
 
   my %h;
@@ -66,6 +94,15 @@ sub registerFieldAPI1
 
 sub registerFieldAPI
 {
+
+=head2 registerFieldAPI
+
+Scan all C<T-construct> nodes in document C<$d>, call C<registerFieldAPI1> for
+each non-skipped type, and serialise the resulting metadata hash to a C<.pl>
+file in the directory given by C<types-fieldapi-dir>.
+
+=cut
+
   my ($d, $opts) = @_;
 
   my $class;
@@ -91,5 +128,19 @@ sub registerFieldAPI
   }
 
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::FieldAPI>, L<Fxtran::FieldAPI::Parallel>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

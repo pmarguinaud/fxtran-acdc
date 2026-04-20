@@ -6,6 +6,23 @@ package Fxtran::Subroutine;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Subroutine
+
+=head1 DESCRIPTION
+
+Utilities for manipulating Fortran SUBROUTINE program units in a parsed
+document.  C<addSuffix> appends a string to the subroutine name in both the
+SUBROUTINE and END SUBROUTINE statements as well as in any DR_HOOK call
+strings.  C<rename> applies a user-supplied transformation function to the
+subroutine name and updates DR_HOOK strings accordingly.  C<getInterface>
+locates and parses the interface block for a named subroutine.
+
+=head1 FUNCTIONS
+
+=cut
+
 use FileHandle;
 use Data::Dumper;
 
@@ -15,6 +32,15 @@ use Fxtran;
   
 sub addSuffix
 {
+
+=head2 addSuffix
+
+Appends C<$suffix> to the subroutine name in both the SUBROUTINE and END
+SUBROUTINE statements of the program unit C<$pu>, and updates any DR_HOOK
+call string literals to include the same suffix.
+
+=cut
+
   my ($pu, $suffix) = @_;
 
   my @sn = &F ('./subroutine-stmt/subroutine-N/N/n/text()|./end-subroutine-stmt/subroutine-N/N/n/text()', $pu);
@@ -38,7 +64,16 @@ sub addSuffix
 
 sub rename
 {
-  my ($d, $sub) = @_; 
+
+=head2 rename
+
+Renames a subroutine by applying the user-supplied transformation function
+C<$sub> to the current name and updating the SUBROUTINE, END SUBROUTINE, and
+DR_HOOK string nodes accordingly.
+
+=cut
+
+  my ($d, $sub) = @_;
 
   my @name = (
                &F ('./subroutine-stmt/subroutine-N/N/n/text()', $d),
@@ -67,6 +102,15 @@ sub rename
 
 sub getInterface
 {
+
+=head2 getInterface
+
+Locates the interface file for the named subroutine via the C<$find> helper,
+reads it, and returns the parsed program-unit or interface-construct node.
+Dies if the interface file cannot be found or opened.
+
+=cut
+
   my ($name, $find) = @_;
   my $file = $find->getInterface (name => $name);
   $file or die ("Could not find interface for $name");
@@ -75,5 +119,19 @@ sub getInterface
   my ($intf) = grep { $_->nodeName =~ m/^(?:program-unit|interface-construct)$/o } @code;
   return $intf;
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::Module>, L<Fxtran::Interface>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

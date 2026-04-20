@@ -60,6 +60,13 @@ several files have to be compiled.
 
 sub touch
 {
+
+=head2 touch
+
+Update the access and modification timestamps of one or more files. If the time argument is negative, the current time is used.
+
+=cut
+
   my $time = shift;
   $time = time () if ($time < 0);
   for my $f (@_)
@@ -189,11 +196,25 @@ Save files from current directory (mostly generated code) into this directory.
 
 sub slurp
 {
+
+=head2 slurp
+
+Read all lines of a file and return them as a list.
+
+=cut
+
   do { my $fh = 'FileHandle'->new ("<$_[0]"); <$fh> };
 }
 
 sub study
 {
+
+=head2 study
+
+Analyse a FORTRAN source file to extract the modules it defines and the modules it uses. Returns a hash with keys C<mod> and C<use>.
+
+=cut
+
   my $f = shift;
   my @line = &slurp ($f);
 
@@ -224,6 +245,13 @@ sub study
 
 sub obj
 {
+
+=head2 obj
+
+Derive the object file name from a source file name.
+
+=cut
+
   my $src = shift;
   (my $obj = &basename ($src)) =~ s/\.(?:F90|f90|c|cc)$/.o/o;
   return "O_$obj";
@@ -231,6 +259,13 @@ sub obj
 
 sub make
 {
+
+=head2 make
+
+Generate a Makefile for the given sources and invoke C<make> to build a library or object file.
+
+=cut
+
   my %args = @_;
 
   my $obj = $args{obj};
@@ -385,6 +420,13 @@ EOF
 
 sub sortFilesByLevel
 {
+
+=head2 sortFilesByLevel
+
+Sort FORTRAN source files by dependency level so that files with no dependencies come first.
+
+=cut
+
   my @F90 = @_;
 
   # Compile first with zero dependencies, then with a single dependency, etc.
@@ -433,6 +475,13 @@ sub sortFilesByLevel
 
 sub concatenateSource
 {
+
+=head2 concatenateSource
+
+Concatenate all FORTRAN source files into a single file (in dependency order) and compile it.
+
+=cut
+
   my %args = @_;
 
   my @f90flags = @{ $args{f90flags} };
@@ -462,6 +511,13 @@ sub concatenateSource
 
 sub concatenateIncludeSource
 {
+
+=head2 concatenateIncludeSource
+
+Concatenate FORTRAN source files via C<#include> directives into a single file (in dependency order) and compile it.
+
+=cut
+
   my %args = @_;
 
   my @f90flags = @{ $args{f90flags} };
@@ -488,6 +544,12 @@ sub concatenateIncludeSource
 }
 
 1;
+=cut
+
+
+=head1 SEE ALSO
+
+L<Fxtran::AR>, L<Fxtran::Tool>.
 
 =head1 AUTHOR
 
@@ -498,3 +560,4 @@ philippe.marguinaud@meteo.fr
 Meteo-France 2025
 
 =cut
+1;

@@ -41,15 +41,6 @@ gmkpack
 A simple directory containing all source files.
 
 =back
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use Data::Dumper;
@@ -64,6 +55,41 @@ use Fxtran::Finder::CMake;
 
 sub new
 {
+
+=head2 new
+
+Factory constructor.  Inspect the current environment and return the most
+appropriate concrete finder object:
+
+=over 4
+
+=item *
+
+C<Fxtran::Finder::CMake> when the C<CMAKE_BUILD_DIRECTORY> environment
+variable is set.
+
+=item *
+
+C<Fxtran::Finder::Pack::Build> when the C<TARGET_PACK> environment
+variable is set.
+
+=item *
+
+C<Fxtran::Finder::Pack> when a C<.gmkview> file exists in the current
+directory (gmkpack layout).
+
+=item *
+
+C<Fxtran::Finder::Files> when an explicit C<files> list is provided.
+
+=item *
+
+C<Fxtran::Finder::Include> as the default fall-back.
+
+=back
+
+=cut
+
   my $class = shift;
 
   my %args;
@@ -95,4 +121,14 @@ sub new
     }
 }
 
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

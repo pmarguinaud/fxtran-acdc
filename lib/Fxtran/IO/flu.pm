@@ -6,6 +6,19 @@ package Fxtran::IO::flu;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::IO::flu
+
+=head1 DESCRIPTION
+
+FieldAPI class policy module for flux (FLU) derived types.  Provides
+C<skip> and C<getFieldAPIMember> methods used by C<Fxtran::IO> when
+generating I/O code.  Components whose names end in C<_B> or that
+match C<TYPE_XFU>, C<YXFUPT>, C<TYPE_CFU>, or C<YCFUPT> are always
+skipped.
+
+=cut
 
 use strict;
 use Fxtran;
@@ -38,5 +51,19 @@ sub getFieldAPIMember
       return "F_$comp" if ($tname =~ m/^FIELD_/o);
     }
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::IO>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

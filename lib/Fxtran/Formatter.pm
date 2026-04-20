@@ -43,19 +43,6 @@ Align use statements, remove unused imported entities.
 Align argument declarations statements.
 
 =back
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
-=head1 SEE ALSO
-
-L<fxtran-formatter>, L<Fxtran::Formatter::regular>, L<Fxtran::Formatter::block>
-
 =cut
 
 use Data::Dumper;
@@ -71,6 +58,13 @@ use strict;
 
 sub getIndent
 {
+
+=head2 getIndent
+
+Return the indentation level (in characters) of a given XML node by inspecting preceding text nodes.
+
+=cut
+
   my $stmt = shift;
 
   $stmt or die;
@@ -111,6 +105,13 @@ sub getIndent
 
 sub runcommand
 {
+
+=head2 runcommand
+
+Execute a system command given as an array reference in C<$args{cmd}>; die on failure.
+
+=cut
+
   my %args = @_;
   my @cmd = @{ $args{cmd} };
   system (@cmd) && die ("Command `@cmd' failed");
@@ -118,6 +119,13 @@ sub runcommand
 
 sub getDocument
 {
+
+=head2 getDocument
+
+Parse a Fortran source file with fxtran and return the resulting XML document.
+
+=cut
+
   my ($f, %opts) = @_;
 
   my @fopts = qw (-construct-tag -line-length 1000 -no-cpp -no-include);
@@ -129,6 +137,13 @@ sub getDocument
 
 sub simplifyAssociateBlocks
 {
+
+=head2 simplifyAssociateBlocks
+
+Remove unused selectors from C<ASSOCIATE> blocks in a document node, unwrapping the block entirely when all selectors are unused.
+
+=cut
+
   my $d = shift;
 
   for my $block (reverse (&F ('.//associate-construct', $d)))
@@ -203,6 +218,13 @@ my %class;
 
 sub loadClass
 {
+
+=head2 loadClass
+
+Attempt to load a Perl class by name and cache the result; return the class name on success or C<undef> if the module is not found.
+
+=cut
+
   my $class = shift;
 
 
@@ -233,6 +255,13 @@ sub loadClass
 
 sub class
 {
+
+=head2 class
+
+Derive the formatter class name for a statement node and return it if the class can be loaded, or C<undef> otherwise.
+
+=cut
+
   my $stmt = shift;
 
   (my $class = $stmt->nodeName) =~ s/-stmt$//o; 
@@ -244,6 +273,13 @@ sub class
 
 sub prepareFileForMerging
 {
+
+=head2 prepareFileForMerging
+
+Expand all formattable statements in a Fortran file to single-line form in preparation for a merge operation, optionally simplifying ASSOCIATE blocks first.
+
+=cut
+
   shift;
   my ($f, %opts) = @_;
 
@@ -270,6 +306,13 @@ sub prepareFileForMerging
 
 sub repackStatementsAfterMerge
 {
+
+=head2 repackStatementsAfterMerge
+
+Re-format (repack) all statements in a Fortran file after a merge, writing the result back in place.
+
+=cut
+
   my $class = shift;
   my ($f, %opts) = @_;
 
@@ -284,6 +327,13 @@ sub repackStatementsAfterMerge
 
 sub formatStatements
 {
+
+=head2 formatStatements
+
+Apply all requested formatting transformations to a Fortran file (simplify ASSOCIATE, align USE/declarations, remove unused locals, repack statements) and write the output.
+
+=cut
+
   my $class = shift;
   my ($f, %opts) = @_;
 
@@ -309,6 +359,13 @@ sub formatStatements
 
 sub alignUseStatements
 {
+
+=head2 alignUseStatements
+
+Remove unused imported entities from USE statements in a program unit and reformat them with aligned module names.
+
+=cut
+
   my $pu = shift;
 
   for my $use (&F ('./use-stmt[./rename-LT]', $pu))
@@ -365,6 +422,13 @@ sub alignUseStatements
 
 sub alignArgumentDeclarations
 {
+
+=head2 alignArgumentDeclarations
+
+Reformat argument declaration statements in a program unit so that type specifiers and attributes are column-aligned.
+
+=cut
+
   use List::Util qw (max);
 
   my $pu = shift;
@@ -436,6 +500,13 @@ sub alignArgumentDeclarations
 
 sub repackStatements
 {
+
+=head2 repackStatements
+
+Repack (reformat to multiline) all formattable statements in a document by running canonic normalisation followed by the per-class C<repack> method.
+
+=cut
+
   shift;
   my ($d, %opts) = @_;
 
@@ -455,6 +526,13 @@ sub repackStatements
 
 sub repackCallLikeStatement
 {
+
+=head2 repackCallLikeStatement
+
+Build a multiline continuation string for a call-like statement (CALL or similar), splitting argument lists at a configurable line-length limit, and return the reparsed node.
+
+=cut
+
   my $class = shift;
 
   my $prefix = shift (@_);
@@ -495,6 +573,13 @@ sub repackCallLikeStatement
 
 sub removeEnDecl
 {
+
+=head2 removeEnDecl
+
+Remove a single entity declaration node and its surrounding comma/separator nodes from a declaration statement, removing the whole statement if it becomes empty.
+
+=cut
+
   my $en_decl = shift;
 
   my $lt = $en_decl->parentNode;
@@ -519,6 +604,13 @@ sub removeEnDecl
 
 sub removeArg
 {
+
+=head2 removeArg
+
+Remove a dummy argument node and its adjacent separator nodes from a subroutine argument list.
+
+=cut
+
   my $arg = shift;
 
   my @n = &F ('following-sibling::node()', $arg);
@@ -535,6 +627,13 @@ sub removeArg
 
 sub removeUnusedLocalVariables
 {
+
+=head2 removeUnusedLocalVariables
+
+Remove local variable declarations (and optionally unused dummy arguments) that are never referenced in the execution part of a program unit.
+
+=cut
+
   my $pu = shift;
   my %opts = @_;
 
@@ -563,4 +662,22 @@ sub removeUnusedLocalVariables
     }
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::Formatter::Call>, L<Fxtran::Formatter::Associate>, L<Fxtran::Formatter::Subroutine>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=head1 SEE ALSO
+
+L<fxtran-formatter>, L<Fxtran::Formatter::regular>, L<Fxtran::Formatter::block>
+
+=cut
 1;

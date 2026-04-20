@@ -6,6 +6,56 @@ package Fxtran::Pragma::OpenMPTarget;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Pragma::OpenMPTarget
+
+=head1 DESCRIPTION
+
+Pragma class for generating OpenMP Target directives in FORTRAN source
+code. This class derives from C<Fxtran::Pragma> and provides the same
+interface as C<Fxtran::Pragma::OpenACC> but emits C<!$OMP> directives
+instead of C<!$ACC> directives. It is intended to be used as a drop-in
+replacement when targeting OpenMP offloading instead of OpenACC.
+
+The following directive-insertion methods are available:
+
+=over 4
+
+=item C<insertParallelLoopGang>
+
+Inserts a C<!$OMP TARGET TEAMS DISTRIBUTE> directive before a given node.
+
+=item C<insertParallelLoopGangVector>
+
+Inserts a C<!$OMP TARGET TEAMS DISTRIBUTE PARALLEL DO SIMD> directive
+before a given node.
+
+=item C<insertData>
+
+Inserts a C<!$OMP TARGET DATA> / C<!$OMP END TARGET DATA> pair around a
+given node.
+
+=item C<insertLoopVector>
+
+Inserts a C<!$OMP PARALLEL DO SIMD> directive before a given node.
+
+=item C<insertRoutineSeq>
+
+Inserts a C<!$OMP DECLARE TARGET> annotation inside a subroutine.
+
+=item C<insertSerial>
+
+Inserts a C<!$OMP TARGET> / C<!$OMP END TARGET> pair around a given node.
+
+=back
+
+Data-movement helper methods (C<enterDataCreate>, C<exitDataDelete>,
+C<updateDevice>, C<enterDataAttach>, C<exitDataDetach>) return the
+corresponding C<!$OMP TARGET> directive strings.
+
+=cut
+
 use strict;
 
 use base qw (Fxtran::Pragma);
@@ -180,5 +230,19 @@ sub exitDataDetach
   shift;
   return @_ ? '!$OMP TARGET EXIT DATA MAP (RELEASE: ' .  join (', ', @_) . ')' : '';
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::Pragma>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

@@ -28,6 +28,10 @@ each time the software is run.
 
 Read the contents of a file.
 
+# SEE ALSO
+
+[Fxtran::Generate](Fxtran%3A%3AGenerate.md), [Fxtran::Finder](Fxtran%3A%3AFinder.md).
+
 # AUTHOR
 
 philippe.marguinaud@meteo.fr

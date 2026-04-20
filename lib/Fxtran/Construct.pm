@@ -71,6 +71,16 @@ EOF
 
 sub simplify
 {
+
+=head2 simplify
+
+Constant-fold a single expression node C<$e1> within its parent expression.
+Handles arithmetic (C<+>), comparison (C<==> / C</=>), and logical (C<.AND.>,
+C<.OR.>, C<.NOT.>) operators with literal operands, and removes redundant
+parentheses. Recursively simplifies the result if it is a literal.
+
+=cut
+
   my $e1 = shift;
   my $e = $e1->parentNode;
   return unless ($e->nodeName =~ m/-E$/o);
@@ -278,6 +288,16 @@ This is achieved by calling C<apply> like this:
 
 sub simplifyIfConstructs
 {
+
+=head2 simplifyIfConstructs
+
+Remove dead branches from C<IF> constructs whose condition has been reduced to
+a literal C<.TRUE.> or C<.FALSE.>. When a single-block construct with a
+C<.TRUE.> condition remains, the surrounding C<IF>/C<ENDIF> markers are
+removed and the body is inlined.
+
+=cut
+
   my $d = shift;
 
   my @if_construct = &F ('.//if-construct[./if-block/ANY-stmt/condition-E[string(.)=".TRUE." or string(.)=".FALSE."]]', $d);
@@ -362,6 +382,15 @@ sub simplifyIfConstructs
 
 sub removeEmptyDoConstructs
 {
+
+=head2 removeEmptyDoConstructs
+
+Remove C<DO> constructs that contain no statements other than the C<DO> and
+C<ENDDO> delimiters. Empty C<IF> constructs nested inside each C<DO> are
+removed first.
+
+=cut
+
   my $d = shift;
 
   for my $do_construct (reverse (&F ('.//do-construct', $d)))
@@ -375,6 +404,14 @@ sub removeEmptyDoConstructs
 
 sub removeEmptyIfConstructs
 {
+
+=head2 removeEmptyIfConstructs
+
+Remove C<IF> constructs where every block contains only its delimiter
+statement (i.e. there are no executable statements inside any branch).
+
+=cut
+
   my $d = shift;
 
   for my $if_construct (reverse (&F ('.//if-construct', $d)))
@@ -391,10 +428,22 @@ sub removeEmptyIfConstructs
 
 sub removeEmptyConstructs
 {
+
+=head2 removeEmptyConstructs
+
+Convenience wrapper that removes both empty C<IF> constructs and empty C<DO>
+constructs from the given document or program unit.
+
+=cut
+
   my $d = shift;
   &removeEmptyIfConstructs ($d);
   &removeEmptyDoConstructs ($d);
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::Decl>, L<Fxtran::Loop>
 
 =head1 AUTHOR
 

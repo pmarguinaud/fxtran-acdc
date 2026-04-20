@@ -131,15 +131,6 @@ L<apl_arpege.F90|url:../tests/49t2_openacc-outline1/ref/outline1/src/local/arpif
 L<apl_arpege_zde2mr.F90|url:../tests/49t2_openacc-outline1/ref/outline1/src/local/arpifs/phys_dmn/apl_arpege_zde2mr.F90>,
 L<apl_arpege_zbay_qrconv.F90|url:../tests/49t2_openacc-outline1/ref/outline1/src/local/arpifs/phys_dmn/apl_arpege_zbay_qrconv.F90>,
 etc ...
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use Data::Dumper;
@@ -162,6 +153,13 @@ use click;
 
 sub variableDependencies
 {
+
+=head2 variableDependencies
+
+Return the declaration statement and dependent symbol names for a given symbol in a program unit.
+
+=cut
+
   my ($pu, $n, %opts) = @_;
 
   my ($up) = &F ('./specification-part/use-part', $pu);
@@ -221,6 +219,13 @@ FOUND:
 
 sub getVariables
 {
+
+=head2 getVariables
+
+Collect all symbols used in a program unit along with their declarations and dependency ranks.
+
+=cut
+
   my $pu = shift;
   my %opts = @_;
 
@@ -275,6 +280,13 @@ sub getVariables
 
 sub outline
 {
+
+=head2 outline
+
+Extract a parallel section from a program unit into a new external subroutine and replace it with a call.
+
+=cut
+
 # outline $sect from $pu
 # $VAR is the hash returned by getVariables
 
@@ -505,6 +517,13 @@ EOF
 
 sub printCanonic
 {
+
+=head2 printCanonic
+
+Parse a Fortran text fragment and write it to a file in canonical indented form.
+
+=cut
+
   use File::Temp;
 
   my ($file, $text, $intf) = @_;
@@ -533,6 +552,13 @@ sub printCanonic
 EOF
 sub outline1
 {
+
+=head2 outline1
+
+Top-level entry point: parse a Fortran source file and outline all C<ACDC PARALLEL> sections.
+
+=cut
+
   my ($opts, @args) = @_;
 
   &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 5000));
@@ -584,4 +610,18 @@ sub outline1
 
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::Outline>, L<Fxtran::Generate>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

@@ -6,6 +6,24 @@ package Fxtran::Style::SPECTRAL;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Style::SPECTRAL
+
+=head1 DESCRIPTION
+
+Style class for IFS/Arpege spectral-space routines (horizontal diffusion
+and related transforms). This class derives from C<Fxtran::Style::IAL> and
+defines the naming conventions for spectral code, where the horizontal loop
+iterator is C<JSP>, the loop bounds are C<KSTA> and C<KEND>, and the loop
+size (nproma) is one of several C<YDGEOMETRY%YRMP%NSPEC2_*_HD> fields.
+The vertical level iterator is C<JLEV>.
+
+The C<matchDocument> method always returns false; spectral-style files are
+not auto-detected and must be selected explicitly.
+
+=cut
+
 use Data::Dumper;
 
 use base qw (Fxtran::Style::IAL);
@@ -52,5 +70,19 @@ sub matchDocument
   my $d = shift;
   return;
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::Style>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

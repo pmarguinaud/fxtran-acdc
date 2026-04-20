@@ -6,12 +6,33 @@ package Fxtran::DIR;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::DIR
+
+=head1 DESCRIPTION
+
+Handles compiler-specific directive comments in Fortran source trees.
+Provides a function to remove C<!DIR$>, C<!DEC$>, and C<!NEC$> directive
+comments from a parsed document.
+
+=head1 FUNCTIONS
+
+=cut
 
 use strict;
 use Fxtran;
 
 sub removeDIR
 {
+
+=head2 removeDIR
+
+Removes all C<!DIR$>, C<!DEC$>, and C<!NEC$> compiler-specific directive
+comments from the parsed document.
+
+=cut
+
   my $d = shift;
 
   # !DIR$ 
@@ -27,5 +48,15 @@ sub removeDIR
     }   
 
 }
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

@@ -17,15 +17,6 @@ do not exceed the C<max-statements-per-parallel> argument.
 The C<parallel-iterator-list> contain the list of iterators
 of loops that should be included in parallel sections (NPROMA and
 vertical iterators are the default).
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use Data::Dumper;
@@ -36,6 +27,21 @@ use Fxtran;
 
 sub createParallelSections
 {
+
+=head2 createParallelSections
+
+Scan a program unit (or execution-part node) for assignment statements that
+involve arrays dimensioned along the NPROMA axis and wrap each qualifying
+C<DO> loop or array-syntax statement in a C<parallel-section> XML element.
+
+Adjacent parallel sections that contain no C<CALL> statements and whose
+combined statement count does not exceed C<max-statements-per-parallel> are
+merged into a single section.  The set of loop iterators that qualify for
+parallelisation is controlled by the C<parallel-iterator-list> option
+(defaulting to the NPROMA and vertical iterators).
+
+=cut
+
   my ($pu, $var2dim, %opts) = @_;
 
   return unless ($opts{'max-statements-per-parallel'});
@@ -151,4 +157,14 @@ sub createParallelSections
   
 }
 
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

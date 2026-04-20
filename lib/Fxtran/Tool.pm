@@ -6,6 +6,22 @@ package Fxtran::Tool;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Tool
+
+=head1 DESCRIPTION
+
+General-purpose helper utilities for the fxtran-acdc toolchain.  Provides a
+simple logging function (C<ll>) that writes caller location and message to a
+log file, C<runCommand> to execute a shell command and die on failure (with an
+optional interactive debug mode that opens an xterm), and C<which> to locate
+an executable in C<$PATH>.
+
+=head1 FUNCTIONS
+
+=cut
+
 use Data::Dumper;
 use FileHandle;
 
@@ -22,6 +38,14 @@ my $log;
 
 sub ll
 {
+
+=head2 ll
+
+Append the current file/line location and a message to C<fxtran-tool.txt>,
+opening the log file on first use.
+
+=cut
+
   $log ||= 'FileHandle'->new (">>fxtran-tool.txt");
 
   my @call = caller (0);
@@ -32,6 +56,14 @@ sub ll
 
 sub debugCommand
 {
+
+=head2 debugCommand
+
+Open an interactive xterm with the failing command pre-aliased, letting the
+developer re-run or edit the offending file in an interactive shell session.
+
+=cut
+
   use File::Temp;
   my %args = @_;
 
@@ -69,6 +101,14 @@ EOF
 
 sub runCommand
 {
+
+=head2 runCommand
+
+Execute a shell command and die with a descriptive message on failure.  When
+C<debug> is set, opens a C<debugCommand> xterm before retrying once.
+
+=cut
+
   my %args = @_;
 
   my @cmd = @{ $args{cmd} };
@@ -90,6 +130,14 @@ FAILED:
 
 sub which
 {
+
+=head2 which
+
+Search C<$PATH> for C<$prog> and return the first executable path found, or
+C<undef> if not found.
+
+=cut
+
   my $prog = shift;
   for my $path (split (m/:/o, $ENV{PATH}))
     {
@@ -97,5 +145,15 @@ sub which
       return $p if ((-f $p) && (-x $p));
     }
 }
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

@@ -6,6 +6,23 @@ package Fxtran::IO::Link;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::IO::Link
+
+=head1 DESCRIPTION
+
+Loads FieldAPI type description files (C<.pl> files produced by
+C<Fxtran::FieldAPI::Register>) from a directory, resolves inheritance
+and cross-type references, and returns a unified data structure that
+maps type names to their FieldAPI member layouts.  Also synthesises
+JPRB array definitions by duplicating the corresponding JPRD
+definitions.
+
+=head1 FUNCTIONS
+
+=cut
+
 use File::Spec;
 use File::Basename;
 use Data::Dumper;
@@ -14,6 +31,16 @@ use strict;
 
 sub link
 {
+
+=head2 link
+
+Load all C<.pl> type-description files from the FieldAPI directory, resolve
+supertype inheritance and cross-type component references, synthesise JPRB
+variants from JPRD array definitions, and return a unified hash with keys
+C<types>, C<update-view>, and C<decls>.
+
+=cut
+
   my %opts = @_;
 
   my $dir = $opts{'types-fieldapi-dir'};
@@ -137,6 +164,14 @@ sub link
 
 sub list
 {
+
+=head2 list
+
+Return an array-ref of type names (one per C<.pl> file) found in the given
+directory.
+
+=cut
+
   my %opts = @_;
 
   my $dir = $opts{'dir'};
@@ -151,5 +186,19 @@ sub list
 
   return \@type;
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::IO>, L<Fxtran::FieldAPI>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

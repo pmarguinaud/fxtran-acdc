@@ -6,6 +6,25 @@ package Fxtran::Style::DYNAMICS;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Style::DYNAMICS
+
+=head1 DESCRIPTION
+
+Style class for the IFS/Arpege dynamics code. This class derives from
+C<Fxtran::Style::IAL> and defines the naming conventions used in dynamics
+routines, where the horizontal loop iterator is C<JROF>, the loop bounds
+are C<KST> and C<KEND>, and the loop size (nproma) may be given by
+C<KPROMA>, C<YDCPG_OPTS%KLON>, or one of the C<YDGEOMETRY%YRDIM%NPROMA*>
+fields.
+
+The C<matchDocument> method identifies dynamics source files by the
+presence of the C<KST> dummy argument or local declarations of C<JROF>
+or C<YDCPG_SL1>.
+
+=cut
+
 use base qw (Fxtran::Style::IAL);
 use Fxtran;
 
@@ -58,5 +77,19 @@ sub matchDocument
       return 1 if (&F ('./object/file/program-unit/specification-part/declaration-part/T-decl-stmt//EN-N[string(.)="YDCPG_SL1"]', $d));
     }
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::Style>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

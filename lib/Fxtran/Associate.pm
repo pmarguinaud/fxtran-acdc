@@ -33,15 +33,6 @@ C<ASSOCIATE> selectors mapped to complex slices are not supported; for instance:
   TYPE (TT) :: YY (N)
 
   ASSOCIATE (XX => YY%X)
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2022
-
 =cut
 
 use FileHandle;
@@ -53,6 +44,20 @@ use Fxtran;
 
 sub resolveAssociates
 {
+
+=head2 resolveAssociates
+
+Resolve all C<ASSOCIATE> constructs reachable from the given XML node C<$d>.
+Each associate selector is inlined - occurrences of the associate name inside
+the block are replaced by the associated expression, including any additional
+references (array subscripts, component accesses) appended to the name.
+
+When the C<outer> option is set, only C<ASSOCIATE> blocks that are ancestors
+of C<$d> (i.e. outside the current scope) are processed and are not removed.
+Without C<outer>, the C<ASSOCIATE> construct itself is removed after inlining.
+
+=cut
+
   my $d = shift;
   my %args = @_;
 
@@ -119,6 +124,18 @@ sub resolveAssociates
   
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::Call>, L<Fxtran::Formatter>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2022
+
+=cut
 1;
-  
-  

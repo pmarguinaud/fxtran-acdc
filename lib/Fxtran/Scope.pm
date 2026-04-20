@@ -6,6 +6,23 @@ package Fxtran::Scope;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Scope
+
+=head1 DESCRIPTION
+
+Navigation and whitespace-management utilities for fxtran XML parse trees.
+C<getExec> returns the first executable statement or construct in a subtree.
+C<getNoExec> returns the last non-executable node that precedes the first
+executable statement, which is useful as an insertion point for new
+declarations or directives.  C<removeWhiteSpaces> and C<removeWhiteLines>
+collapse redundant whitespace text nodes in the tree.
+
+=head1 FUNCTIONS
+
+=cut
+
 use Data::Dumper;
 
 use strict;
@@ -14,6 +31,15 @@ use Fxtran;
 
 sub getExec
 {
+
+=head2 getExec
+
+Returns the first executable statement or construct node found in the subtree
+rooted at C<$d>, walking up through ancestor construct and statement nodes so
+that the returned node is a top-level executable unit.
+
+=cut
+
   my $d = shift;
  
   my ($exec) = grep { &Fxtran::stmt_is_executable ($_) } &F ('.//ANY-stmt', $d);
@@ -33,6 +59,16 @@ sub getExec
 
 sub getNoExec
 {
+
+=head2 getNoExec
+
+Returns the last non-executable node that immediately precedes the first
+executable statement or ACC directive in the subtree.  Useful as an insertion
+point when adding declarations or directives without disturbing the executable
+section.
+
+=cut
+
   my $d = shift;
  
   my @stmt = &F ('.//ANY-stmt|.//acc', $d); 
@@ -80,6 +116,15 @@ sub getNoExec
 
 sub removeWhiteSpaces
 {
+
+=head2 removeWhiteSpaces
+
+Collapses runs of whitespace-only text nodes (spaces and non-newline
+characters) in the subtree to a single newline, normalising the tree after
+structural modifications.
+
+=cut
+
   my $d = shift;
 
   if ($d->isa ('XML::LibXML::Document'))
@@ -102,6 +147,15 @@ sub removeWhiteSpaces
 
 sub removeWhiteLines
 {
+
+=head2 removeWhiteLines
+
+Removes consecutive blank lines from whitespace-only text nodes, reducing
+each run of multiple newlines to a single newline while preserving indentation
+on the last line.
+
+=cut
+
   my $d = shift;
 
   if ($d->isa ('XML::LibXML::Document'))
@@ -124,5 +178,19 @@ sub removeWhiteLines
     }    
 }
 
+
+=head1 SEE ALSO
+
+L<Fxtran::Decl>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

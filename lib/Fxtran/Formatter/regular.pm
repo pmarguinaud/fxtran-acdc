@@ -6,6 +6,19 @@ package Fxtran::Formatter::regular;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Formatter::regular
+
+=head1 DESCRIPTION
+
+Base class for formatters that handle ordinary (non-block) Fortran statements.
+Inherits from L<Fxtran::Formatter>. Provides C<canonic> and C<reparse> methods
+that parse a single statement in isolation using fxtran, without needing a
+matching C<END> construct.
+
+=cut
+
 use base qw (Fxtran::Formatter);
 
 use strict;
@@ -29,5 +42,19 @@ sub canonic
   $stmt = $stmt->textContent if (ref ($stmt));
   return &parse (statement => $stmt, fopts => [qw (-line-length 10000 -canonic)]);
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::Formatter>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

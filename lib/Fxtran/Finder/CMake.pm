@@ -6,6 +6,23 @@ package Fxtran::Finder::CMake;
 # philippe.marguinaud@meteo.fr
 #
 
+=head1 NAME
+
+Fxtran::Finder::CMake
+
+=head1 DESCRIPTION
+
+Finder implementation for CMake-based projects. Resolves source files by first
+searching the include paths (via L<Fxtran::Finder::Include>) and then falling
+back to a full recursive scan of the CMake home directory read from
+C<CMakeCache.txt>. The environment variable C<CMAKE_BUILD_DIRECTORY> must point
+to the CMake build directory. Directories containing a C<.fxtran_acdc_cmake_ignore>
+file are excluded from the scan.
+
+=head1 FUNCTIONS
+
+=cut
+
 use File::Find;
 use File::Basename;
 use File::Spec;
@@ -21,6 +38,16 @@ use Fxtran::Finder::Include;
 
 sub new
 {
+
+=head2 new
+
+Constructor. Calls the parent constructor, then reads the
+C<CMAKE_BUILD_DIRECTORY> environment variable (converting it to an absolute
+path) and instantiates an L<Fxtran::Finder::Include> helper that will be tried
+first on every C<resolve> call.
+
+=cut
+
   my $class = shift;
 
   my $self = $class->SUPER::new (@_);
@@ -36,6 +63,17 @@ sub new
 
 sub resolve
 {
+
+=head2 resolve
+
+Resolves a filename (passed as the C<file> named argument) to an absolute
+path. First delegates to L<Fxtran::Finder::Include> (which searches the
+C<-I> include paths). If that fails, falls back to
+C<resolveInCMakeHomeDirectory>. Returns the absolute path on success, or undef
+if the file cannot be found.
+
+=cut
+
   my $self = shift;
 
   my $r;
@@ -52,6 +90,18 @@ sub resolve
 
 sub resolveInCMakeHomeDirectory
 {
+
+=head2 resolveInCMakeHomeDirectory
+
+Resolves a filename against the CMake home directory. On the first call,
+parses C<CMakeCache.txt> to discover C<CMAKE_HOME_DIRECTORY> and then builds a
+basename-to-path index by recursively scanning that directory (directories
+containing a C<.fxtran_acdc_cmake_ignore> file are skipped). Subsequent calls
+reuse the cached index. Dies if the file is found in more than one location.
+Returns the absolute path, or undef if the file is not present in the tree.
+
+=cut
+
   my $self = shift;
   my %args = @_;
 
@@ -107,5 +157,19 @@ sub resolveInCMakeHomeDirectory
     }
 
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::Finder>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

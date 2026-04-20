@@ -200,6 +200,10 @@ with C<OpenMP> directives parsing enabled.
 
 }
 
+=head1 SEE ALSO
+
+L<Fxtran::DIR>, L<Fxtran::Pragma>.
+
 =head1 AUTHOR
 
 philippe.marguinaud@meteo.fr

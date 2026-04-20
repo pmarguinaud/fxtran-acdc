@@ -6,7 +6,23 @@ package Fxtran::ReDim;
 # philippe.marguinaud@meteo.fr
 #
 
-#
+=head1 NAME
+
+Fxtran::ReDim
+
+=head1 DESCRIPTION
+
+Removes the NPROMA (horizontal) dimension from array declarations and
+references when converting to single-column layout.  For every variable whose
+first dimension matches NPROMA, the module strips that dimension from the
+declaration and from every array subscript in the code.  A separate helper
+replaces bare C<:> section subscripts with a scalar JLON index in actual
+subroutine arguments that are passed as JBLK-blocked arrays.
+
+=head1 FUNCTIONS
+
+=cut
+
 use strict;
 use FileHandle;
 use Data::Dumper;
@@ -18,6 +34,17 @@ use Fxtran;
 
 sub reDim
 {
+
+=head2 reDim
+
+Removes the NPROMA (first) dimension from array declarations and all
+corresponding array subscripts in the parse tree.  When the
+C<redim-arguments> option is set, also replaces bare C<:> first subscripts
+in actual subroutine arguments with the scalar JLON index.  Variables whose
+remaining dimensions are not simple literals are left unchanged.
+
+=cut
+
   my $d = shift;
   my %args = @_;
 
@@ -122,6 +149,15 @@ sub reDim
 
 sub redimArguments
 {
+
+=head2 redimArguments
+
+Replaces the bare C<:> first subscript with the scalar JLON index in actual
+subroutine arguments that are arrays whose last subscript is JBLK, targeting
+the JBLK-blocked calling convention used in the outer parallel loop.
+
+=cut
+
   my $d = shift;
   my %args = @_;
 
@@ -139,5 +175,19 @@ sub redimArguments
       $ss->replaceNode (&n ("<lower-bound><named-E><N><n>$jlon</n></N></named-E></lower-bound>"));
     }
 }
+
+=head1 SEE ALSO
+
+L<Fxtran::Loop>, L<Fxtran::Decl>
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 
 1;

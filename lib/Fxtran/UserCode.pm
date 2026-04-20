@@ -9,15 +9,6 @@ Fxtran::UserCode
 Instead of generating code for a routine, look for user provided code (option C<user-code>).
 
 The user provided code is renamed according using the appropriate routine name and suffix.
-
-=head1 AUTHOR
-
-philippe.marguinaud@meteo.fr
-
-=head1 COPYRIGHT
-
-Meteo-France 2025
-
 =cut
 
 use Data::Dumper;
@@ -29,6 +20,20 @@ use Fxtran::Util;
 
 sub getUserCode
 {
+
+=head2 getUserCode
+
+Load user-provided replacement code instead of generating it automatically.
+Both the original source file (C<$F90>) and the user-supplied file (resolved
+via the C<user-code> option) are parsed.  When a method suffix is configured,
+every program-unit name in the user file is renamed to match the original
+name with the suffix appended, and any C<DR_HOOK> string literals that
+reference the routine name are updated accordingly.  The resulting text is
+written to C<$F90out> and, if C<FXTRAN_F90_COMMAND> is set in the
+environment, a dry-run compilation is performed to validate the output.
+
+=cut
+
   my ($F90, $F90out, $method, %opts) = @_;
 
   my @fxtran_f90_command = do
@@ -95,4 +100,14 @@ sub getUserCode
 }
 
 
+
+=head1 AUTHOR
+
+philippe.marguinaud@meteo.fr
+
+=head1 COPYRIGHT
+
+Meteo-France 2025
+
+=cut
 1;

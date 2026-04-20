@@ -24,6 +24,17 @@ loop when possible.
 
 philippe.marguinaud@meteo.fr
 
+## makeParallel
+
+Overloaded parallelisation method for spectral routines.  Given a program
+unit and a candidate `DO` construct, this method first checks whether all
+arrays that are written inside the loop are updated within a `JLEV` loop
+over levels.  If some are not, only a simple gang/vector loop over the
+spectral wavenumber is inserted.  Otherwise all existing `JLEV` loops
+inside the construct are hoisted out, a single enclosing `JLEV` loop is
+wrapped around the contents, and a collapsed (level x wavenumber) parallel
+loop is generated.
+
 # SEE ALSO
 
 [Fxtran::SingleBlock](Fxtran%3A%3ASingleBlock.md)
