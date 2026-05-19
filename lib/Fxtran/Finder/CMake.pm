@@ -119,25 +119,45 @@ Returns the absolute path, or undef if the file is not present in the tree.
 
   unless ($self->{cmake_home_directory_index})
     {
-      my $dir = $self->{cmake_home_directory};
+      my $cmake_home_directory = $self->{cmake_home_directory};
+
+      my @dir = ($cmake_home_directory); # main source directory
+
+      my %seen; # seen symlinks (pointees)
+
+      # but we may have some symlinks inside source directory...
+
+      for my $d (<$cmake_home_directory/*>)
+        {  
+          next unless ((-l $d) && (-d "$d/")); # keep only symlinks
+
+          my $ll = readlink ($d);   # pointee
+          next if ($ll =~ m/^\w/o); # points inside source/
+          next if ($seen{$ll}++);   # already registered
+
+          push @dir, "$d/";
+        }
 
       my %index;
 
-      &find ({
-      wanted => sub 
-      { 
-        my $f = $File::Find::name; 
-        return unless (-f $f); 
-        $f = 'File::Spec'->rel2abs ($f, $dir); 
-        push @{ $index{ &basename ($f) } }, $f;
-      }, 
-      preprocess => sub 
-      {
-        my $dir = $File::Find::dir;
-        return -f "$File::Find::dir/.fxtran_acdc_cmake_ignore" ? () : @_;
-      },
-      no_chdir => 1,
-      }, $dir);
+      for my $dir (@dir)
+        {
+          &find ({
+          wanted => sub 
+          { 
+            my $f = $File::Find::name; 
+            return unless (-f $f); 
+            $f = 'File::Spec'->rel2abs ($f, $dir); 
+            push @{ $index{ &basename ($f) } }, $f;
+          }, 
+          preprocess => sub 
+          {
+            my $dir = $File::Find::dir;
+            return -f "$File::Find::dir/.fxtran_acdc_cmake_ignore" ? () : @_;
+          },
+          no_chdir => 1,
+          }, $dir);
+        }
 
       $self->{cmake_home_directory_index} = \%index;
     }
