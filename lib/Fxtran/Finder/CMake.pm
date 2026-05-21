@@ -82,9 +82,13 @@ if the file cannot be found.
     {
       return $r;
     }
-  else
+  elsif ($r = $self->resolveInCMakeHomeDirectory (@_))
     {
-      return $self->resolveInCMakeHomeDirectory (@_);
+      return $r;
+    }
+  elsif ($r = $self->resolveInCMakeBuildDirectory (@_))
+    {
+      return $r;
     }
 }
 
@@ -163,6 +167,49 @@ Returns the absolute path, or undef if the file is not present in the tree.
     }
 
   my $r = $self->{cmake_home_directory_index}{$file};
+
+  return unless ($r);
+
+  if (scalar (@$r) > 1)
+    {
+      die (sprintf ("File `%s' was found in %s locations:\n - ", 
+           $file, scalar (@$r)) . join ("\n - ", @$r) . "\n");
+    }
+  elsif (scalar (@$r) == 1)
+    {
+      return $r->[0];
+    }
+
+}
+
+sub resolveInCMakeBuildDirectory
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $file = $args{file};
+
+  my $cmake_build_directory = $self->{cmake_build_directory};
+
+  my %index;
+
+  &find ({
+  wanted => sub 
+  { 
+    my $f = $File::Find::name; 
+    return unless (-f $f); 
+    $f = 'File::Spec'->rel2abs ($f, $cmake_build_directory); 
+    push @{ $index{ &basename ($f) } }, $f;
+  }, 
+  preprocess => sub 
+  {
+    my $dir = $File::Find::dir;
+    return -f "$File::Find::dir/.fxtran_acdc_cmake_ignore" ? () : @_;
+  },
+  no_chdir => 1,
+  }, $cmake_build_directory);
+
+  my $r = $index{$file};
 
   return unless ($r);
 

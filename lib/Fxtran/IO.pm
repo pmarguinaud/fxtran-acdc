@@ -80,14 +80,7 @@ Return a Fortran CALL statement string for invoking a derived-type method as eit
     }
   else
     {
-      if ($opts->{'type-bound-methods'})
-        {
-          return "CALL $object%$opts->{'method-prefix'}$methodName (" . join (', ', @args) . ")";
-        }
-      else
-        {
-          return "CALL $opts->{'method-prefix'}$methodNameLong (" . join (', ', $object, @args) . ")";
-        }
+      return "CALL $opts->{'method-prefix'}$methodNameLong (" . join (', ', $object, @args) . ")";
     }
 }
 
@@ -108,14 +101,7 @@ Return a Fortran function-call expression string for invoking a derived-type met
     }
   else
     {
-      if ($opts->{'type-bound-methods'})
-        {
-          return "$object%$opts->{'method-prefix'}$methodName (" . join (', ', @args) . ")";
-        }
-      else
-        {
-          return "$opts->{'method-prefix'}$methodNameLong (" . join (', ', $object, @args) . ")";
-        }
+      return "$opts->{'method-prefix'}$methodNameLong (" . join (', ', $object, @args) . ")";
     }
 }
 
@@ -479,7 +465,7 @@ Process all derived-type constructs in a parsed module document and return the g
 
   my ($doc, $opts) = @_;
 
-  my (%code, @file, @meth);
+  my (%code, @file);
 
   my ($mod) = &F ('.//module-stmt/module-N/N/n/text()', $doc);
   
@@ -637,34 +623,21 @@ Process all derived-type constructs in a parsed module document and return the g
   
       my @U;
 
-      if ($opts->{'type-bound-methods'})
+      @U = map { "UTIL_${_}_MOD" } sort keys (%U);
+
+      if ($tname =~ m/^FIELD_\d\w\w_ARRAY$/o)  # Field API arrays have to be processed differently; here we translate UTIL_FIELD_1IM_MOD into FIELD_1IM_UTIL_MODULE
         {
-          for my $T (sort keys (%U))
+          for (@U)
             {
-              if (my $mod = $opts->{'module-map'}{"UTIL_${T}_MOD"})
+              if (m/^UTIL_FIELD_(\d\w\w)_MOD$/o)
                 {
-                  push @U, $mod;
+                  $_ = "FIELD_${1}_UTIL_MODULE";
                 }
             }
         }
       else
         {
-          @U = map { "UTIL_${_}_MOD" } sort keys (%U);
-
-          if ($tname =~ m/^FIELD_\d\w\w_ARRAY$/o)  # Field API arrays have to be processed differently; here we translate UTIL_FIELD_1IM_MOD into FIELD_1IM_UTIL_MODULE
-            {
-              for (@U)
-                {
-                  if (m/^UTIL_FIELD_(\d\w\w)_MOD$/o)
-                    {
-                      $_ = "FIELD_${1}_UTIL_MODULE";
-                    }
-                }
-            }
-          else
-            {
-              @U = map { (exists ($opts->{'module-map'}{$_}) ? $opts->{'module-map'}{$_} : $_) } @U;
-            }
+          @U = map { (exists ($opts->{'module-map'}{$_}) ? $opts->{'module-map'}{$_} : $_) } @U;
         }
 
       %U = map { ($_, 1) } @U;
@@ -682,7 +655,7 @@ Process all derived-type constructs in a parsed module document and return the g
           $USE{load} .= "USE PARKIND1, ONLY : JPRD\n";
         }
 
-      if ($extends && (! $opts->{'type-bound-methods'}))
+      if ($extends)
         {
           for my $method (@method)
             {
@@ -699,7 +672,6 @@ Process all derived-type constructs in a parsed module document and return the g
   
       my $type = 'TYPE';
       $type = 'CLASS' if ($abstract);
-      $type = 'CLASS' if ($opts->{'type-bound-methods'});
 
       $USE{update} = '';
 
@@ -763,13 +735,6 @@ $type ($name), INTENT (IN), TARGET :: SELF
 LOGICAL, OPTIONAL, INTENT (IN) :: LDDELETED, LDFIELDAPI
 EOF
 
-      if ($opts->{'type-bound-methods'})
-        {
-      $HEAD{update} = ''; # Not yet
-        }
-      else
-        {
-
       $HEAD{update} = << "EOF";
 SUBROUTINE $opts->{'method-prefix'}UPDATE_$name (SELF, LDCOMPONENT)
 $USE{update}
@@ -787,7 +752,6 @@ CALL $opts->{'method-prefix'}COPY_$name (SELF, LDCREATED=LDCOMPONENT)
 ENDIF
 
 EOF
-        }
 
       $HEAD{size} = << "EOF";
 FUNCTION $opts->{'method-prefix'}SIZE_$name (SELF, CDPATH, LDPRINT) RESULT (KSIZE)
@@ -839,7 +803,7 @@ EOF
           $GENERIC{$method} = "INTERFACE $opts->{'method-prefix'}\U$method\n$GENERIC{$method}\nEND INTERFACE\n";
         }
 
-      if ($abstract || $opts->{'type-bound-methods'})
+      if ($abstract)
         {
           for my $method (@method)
             {
@@ -852,24 +816,7 @@ EOF
           $GENERIC{$method} = '' unless ($opts->{$method});
         }
 
-      if ($opts->{'type-bound-methods'})
-        {
-          push @meth,
-            { 
-              name => $n,
-              tconst => $tconst,
-              methods =>
-              {
-                map 
-                {
-                  my $method = $_;
-                  ($opts->{$method} ? ($method => {head => $HEAD{$method}  , impl => $IMPL{$method}  }) : ())
-                }
-                @method
-              },
-            };
-        }
-      elsif ($opts->{'split-util'})
+      if ($opts->{'split-util'})
         {
 
           $code{"util_${n}_mod.F90"} = << "EOF";
@@ -933,7 +880,7 @@ EOF
         }
     }
 
-  return (\@file, \%code, \@meth);
+  return (\@file, \%code);
 }
 
 sub processTypes
@@ -949,92 +896,9 @@ Orchestrate code generation for all derived types in a document and write the re
 
   my ($F90) = &F ('./object/file/@name', $doc, 2);
 
-  my ($file, $code, $type) = &processTypes1 ($doc, $opts);
+  my ($file, $code) = &processTypes1 ($doc, $opts);
 
-  if ($opts->{'type-bound-methods'})
-    {
-      my ($MOD) = &F ('.//module-N', $doc, 1); my $mod = lc ($MOD);
-
-      my $count = 1;
-
-      my $interface = "INTERFACE\n\n";
-
-      for my $type (@$type)
-        {
-          my $methods = $type->{methods};
-          my $tconst = $type->{tconst};
-
-          my ($end) = &F ('./end-T-stmt', $tconst);
-
-          unless (&F ('./contains-stmt', $tconst))
-            {
-              $tconst->insertBefore ($_, $end) for (&n ("<contains-stmt>CONTAINS</contains-stmt>"), &t ("\n"));
-            }
- 
-          for my $methodName (sort keys (%$methods))
-            {
-              my $method = $methods->{$methodName};
-
-              my $sub = $opts->{'numbered-submodules'}
-                       ? $mod . '_' . $count . '_smod'
-                       : $mod . '_' . $type->{name} . '_' . $methodName . '_smod'; 
-
-
-              $methodName = $opts->{'method-prefix'} . $methodName;
-
-              my $SUB = uc ($sub);
-
-              my $file = "$sub.F90";
-     
-              $file = sprintf ('%4.4d.', $count) . $file if ($opts->{sorted});
-
-              $file = "$opts->{dir}/$file";
-     
-              &w ($file, $F90, $opts, << "EOF");
-SUBMODULE ($MOD) $SUB
-
-IMPLICIT NONE
-
-CONTAINS
-
-MODULE $method->{impl}
-
-END SUBMODULE
-EOF
-
-              $interface .= "MODULE $method->{head}\n";
-
-              $tconst->insertBefore (&t ('PROCEDURE :: ' . uc ($methodName) . ' => ' . uc ($methodName) . '_' . uc ($type->{name}) . "\n"), $end);
-
-              $count++;
-            }
-     
-        }
-
-      my ($pu) = &F ('./object/file/program-unit', $doc);
-      my ($stmt) = &F ('./contains-stmt', $pu);
-
-      unless ($stmt)
-        {
-          ($stmt) = &F ('./end-module-stmt', $pu);
-        }
-
-      $interface .= "\nEND INTERFACE\n\n";
-
-      $pu->insertBefore (&t ($interface), $stmt);
-
-
-      if ($opts->{sorted})
-        {
-          &w ("$opts->{dir}/0000.$mod.F90", $F90, $opts, $doc->textContent);
-        }
-      else
-        {
-          &w ("$opts->{dir}/$mod.F90", $F90, $opts, $doc->textContent);
-        }
-
-    }
-  elsif ($opts->{out})
+  if ($opts->{out})
     {
       &w ("$opts->{dir}/$opts->{out}", $F90, $opts, join ('', map { $code->{$_} } @$file));
     }

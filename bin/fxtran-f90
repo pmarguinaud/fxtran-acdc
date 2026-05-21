@@ -363,7 +363,6 @@ unless ($c)
   {
     &Fxtran::AR::expandObjects (\@ARGV);
     @ARGV = $vendor->preprocessOptions (@ARGV);
-
     exec ($f90compiler, @ARGV) 
       unless ($opts{dryrun});
     exit (0);

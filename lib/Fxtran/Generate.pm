@@ -137,7 +137,6 @@ my %options= do
   tmp=s                           -- Temporary directory for processing                                                                           -- .
   value-attribute                 -- Add VALUE attribute to scalar intrinsic arguments
   inline-contained                -- Inline contained routines
-  type-bound-methods              -- Generate & use type bound methods
   types-constant-dir=s            -- Directory with constant type information                                                                     --  types-constant
   types-fieldapi-dir=s            -- Directory with Field API type information                                                                    --  types-fieldapi
   suffix-pointerparallel=s        -- Suffix for parallel routines                                                                                 --  _PARALLEL
@@ -464,7 +463,7 @@ See L<Fxtran::SingleColumn> for more details.
 
 &click (<< "EOF");
 @options{qw (cycle dir tmp only-if-newer merge-interfaces pragma stack84 stack-method style redim-arguments ydcpg_opts checker suffix-manyblocks write-metadata
-             suffix-singlecolumn suffix-pointerparallel type-bound-methods types-constant-dir types-fieldapi-dir method-prefix use-stack-manyblocks
+             suffix-singlecolumn suffix-pointerparallel types-constant-dir types-fieldapi-dir method-prefix use-stack-manyblocks
              max-statements-per-parallel parallel-iterator-list)}
   base                            -- Base directory for file lookup
   contiguous-pointers             -- Add CONTIGUOUS attribute to pointer accessors
@@ -700,7 +699,7 @@ See L<Fxtran::ManyBlocks> for more details.
 }
 
 &click (<< "EOF");
-@options{qw (dir pragma tmp type-bound-methods types-constant-dir types-fieldapi-dir checker method-prefix write-metadata)}
+@options{qw (dir pragma tmp types-constant-dir types-fieldapi-dir checker method-prefix write-metadata)}
   field-api                       -- Dump Field API information
   field-api-class=s               -- Field API structure category
   methods-list=s@                 -- List of methods (copy, crc64, host, legacy, load, save, size, wipe
@@ -714,6 +713,7 @@ See L<Fxtran::ManyBlocks> for more details.
   sorted                          -- Sort files (with number prefix) in compilation order
   numbered-submodules             -- Do not generate submodules with full names, use numbers instead
   split-util                      -- Split util module into several modules (one per method)
+  module-file=s                   -- Use this source file instead of passed .F90 file
 EOF
 sub methods
 {
@@ -769,16 +769,19 @@ See L<Fxtran::IO> for more details.
 
   my ($F90) = @args;  
 
-  if ($opts->{'type-bound-methods'})
+  if ($opts->{'module-file'}) # type definitions taken from another file
     {
-      if (&dirname ($F90) eq $opts->{dir})
-        {
-          die ("Dumping code in `$opts->{dir}` would overwrite `$F90'");
-        }
+      my $find = 'Fxtran::Finder'->new ();
+      my $file = $find->resolve (file => $opts->{'module-file'});
+      $opts->{'original-file'} = 'File::Spec'->rel2abs ($F90);
+      $F90 = $file;
     }
-  elsif ($opts->{dir} ne 'File::Spec'->rel2abs (&dirname ($F90)))
+
+  my $f90 = $opts->{'original-file'} || $F90; # copy the original file if type definitions are taken from somewhere else
+
+  if ($opts->{dir} ne 'File::Spec'->rel2abs (&dirname ($f90)))
     {
-      &copy ($F90, join ('/', $opts->{dir}, &basename ($F90)));
+      &copy ($f90, join ('/', $opts->{dir}, &basename ($f90)));
     }
 
   ( -d $opts->{dir}) or &mkpath ($opts->{dir});
