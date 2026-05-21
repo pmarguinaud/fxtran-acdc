@@ -19,6 +19,7 @@ use File::Basename;
 use strict;
 
 use Fxtran::Vendor::ROCM;
+use Fxtran::Vendor::NVIDIA;
 
 sub new
 {
@@ -36,9 +37,15 @@ plain C<Fxtran::Vendor> object.
 
   my $compiler = shift;
 
-  if (&basename ($compiler) =~ m/^amd.*lang/o)
+  $compiler = &basename ($compiler);
+
+  if ($compiler =~ m/^amd.*lang/o)
     {
       $class = 'Fxtran::Vendor::ROCM';
+    }
+  elsif ($compiler =~ m/^(?:pgf90|nvfortran)$/o)
+    {
+      $class = 'Fxtran::Vendor::NVIDIA';
     }
 
   return bless {}, $class;
