@@ -1337,14 +1337,13 @@ Parse a file, inline some routines (optional) and write back the result.
 EOF
 sub openaccconvert
 {
+  my ($opts, @args) = @_;
 
 =head2 openaccconvert
 
 Convert a FORTRAN source file for OpenACC using the idem transformation pipeline.
 
 =cut
-
-  my ($opts, @args) = @_;
 
   my ($F90) = @args;
 
