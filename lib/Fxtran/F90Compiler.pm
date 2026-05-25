@@ -415,7 +415,7 @@ EOF
   
   $fh->close ();
 
-  &Fxtran::Util::runCommand (cmd => ['make', -j => 4], %args);
+  &Fxtran::Util::runCommand (cmd => ['make', -j => 16], %args);
 }
 
 sub sortFilesByLevel
