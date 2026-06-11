@@ -33,6 +33,272 @@ use strict;
 use Fxtran;
 use Fxtran::Util;
 
+sub intfbBodyProgramUnit
+{
+  my $pu = shift;
+
+  my $contains;
+
+  for my $p (&F ('./node()', $pu))
+    {
+      my $nn = $p->nodeName;
+      if ($nn eq 'contains-stmt')
+        {
+          $contains = 1;
+          $p->unbindNode ();
+        }
+      elsif ($nn eq 'program-unit')
+        {
+          $p->unbindNode ();
+        }
+      elsif ($nn eq 'include-stmt')
+        {
+          $p->unbindNode ();
+        }
+    }
+
+  for my $n (&F ('.//n/text()', $pu))
+    {
+      my $t = $n->textContent;
+      if ((my $T = uc ($t)) ne $t)
+        {
+          $n->setData ($T);
+        }
+    }
+
+  if (my ($ep) = &F ('./execution-part', $pu))
+    {
+      $ep->unbindNode ();
+    }
+
+  my ($up) = &F ('./specification-part/use-part', $pu);
+  my ($dp) = &F ('./specification-part/declaration-part', $pu);
+  my ($ip) = &F ('./specification-part/implicit-part', $pu);
+
+  for (&F ('.//program-unit', $pu))
+    {
+      $_->unbindNode ();
+    }
+
+  for (&F ('.//cpp-section|.//cpp', $pu))
+    {
+      $_->unbindNode ();
+    }
+
+  my $first = $pu->firstChild;
+  
+  if ($first->nodeName =~ m/^(?:module|program)-stmt$/o)
+    {
+      $pu->unbindNode ();
+      next;
+    }
+  
+  # Strip blocks (these may contain use statements)
+  
+  for (&F ('.//ANY-construct', $pu))
+    {
+      $_->unbindNode ();
+    }
+  
+  (my $kind = $first->nodeName ()) =~ s/-stmt$//o;
+  
+  my ($name) = &F ('./' . $kind . '-N/N/n/text()', $first, 1);
+  my @args = &F ('.//dummy-arg-LT//arg-N/N/n/text()', $first, 1);
+  
+  my %stmt;
+  
+  # Keep first & last statements
+  
+  $stmt{$pu->firstChild} = $pu->firstChild;
+  $stmt{$pu->lastChild}  = $pu->lastChild;
+  
+  # %symb holds symbols whose declaration should be kept
+  # %undf holds symbols which are not defined with T-decl-stmt nor imported by use statements
+
+  my (%symb, %undf);
+
+  for my $arg (@args)
+    {
+      $symb{$arg} = 1;
+    }
+  
+  # Keep result declaration (function)
+
+  if ($first->nodeName eq 'function-stmt')
+    {
+      my ($result) = &F ('./result-spec/N', $first, 1);
+       
+      unless ($result)
+        {
+          ($result) = &F ('./function-N', $first, 1);
+        }
+
+      $symb{$result} = 1;
+    }
+
+  # Index decl statements
+
+  my %s2d;
+
+  for my $decl (&F ('./ANY-stmt[.//EN-decl]', $dp || $pu))
+    {
+      for my $symb (&F ('.//EN-N', $decl, 1))
+        {
+          push @{ $s2d{$symb} }, $decl;
+        }
+    }
+
+  # Index use statements
+  
+  my %s2u;
+
+  for my $use (&F ('./use-stmt', $up || $pu))
+    {
+      for my $symb (&F ('.//use-N', $use, 1))
+        {
+          push @{ $s2u{$symb} }, $use;
+        }
+    }
+  
+  
+  # Symbols used in decl statements of arguments
+  
+  my @symb = sort keys (%symb);
+
+  while (my $symb = shift (@symb))
+    {
+      if (my @decl = @{ $s2d{$symb} || [] })
+        {
+          for my $decl (@decl)
+            {
+              $stmt{$decl} = $decl;
+              for my $s (&F ('.//named-E/N', $decl), &F ('.//T-N', $decl))
+                {
+                  my $t = $s->parentNode;
+                  if ($t->nodeName ne 'intrinsic-T-spec')
+                    {
+                      $s = $s->textContent;
+                      push @symb, $s unless ($symb{$s});
+                      $symb{$s} = 1; 
+                    }
+                }
+            }
+        }
+      elsif (my @use = @{ $s2u{$symb} || [] })
+        {
+          for my $use (@use)
+            {
+              $stmt{$use} = $use; 
+            }
+        }
+      else
+        {
+          $undf{$symb} = 1;
+        }
+    }
+
+  if (%undf)
+    {
+      # Keep use statements without ONLY list : they may import some of the undefined symbols
+
+      for my $use (&F ('./use-stmt[not(./rename-LT)]', $up || $pu))
+        {
+          $stmt{$use} = $use;
+        }
+    }
+
+  my @stmt;
+ 
+  if ($dp)
+    {
+      push @stmt,
+        &F ('./ANY-stmt', $up),
+        &F ('./ANY-stmt', $ip),
+        &F ('./ANY-stmt', $dp);
+    }
+  else
+    {
+      @stmt = &F ('./ANY-stmt', $pu);
+    }
+  
+  for my $stmt (@stmt)
+    {
+      next if ($stmt->nodeName eq 'implicit-none-stmt');
+      $stmt->unbindNode () unless ($stmt{$stmt});
+    }
+
+  for my $n (&F ('.//n/text()', $pu))
+    {
+      my $t = $n->textContent;
+      if ((my $T = uc ($t)) ne $t)
+        {
+          $n->setData ($T);
+        }
+    }
+
+}
+  
+sub intfbBodyCleaning
+{
+  my $d = shift;
+
+  # Strip labels
+  for (&F ('.//label', $d))
+    {
+      $_->unbindNode ();
+    }
+  
+  # Strip comments
+  
+  for (&F ('.//C', $d))
+    {
+      next if ($_->textContent =~ m/^!\$acc\s+routine/io);
+      next if ($_->textContent =~ m/^!\$omp\s+declare\s+target/io);
+      $_->unbindNode ();
+    }
+  
+  # Strip includes
+  
+  for (&F ('.//include', $d))
+    {
+      $_->unbindNode ();
+    }
+
+  # Strip defines
+
+  for (&F ('.//cpp[starts-with (text(),"#define ")]', $d))
+    {
+      $_->unbindNode ();
+    }
+
+
+  for (&F ('.//unseen', $d))
+    {
+      $_->unbindNode ();
+    }
+
+
+  if ($d->isa ('XML::LibXML::Document'))
+    {
+      $d->documentElement->normalize ();
+    }
+  else
+    {
+      $d->normalize ();
+    }
+
+  my @text = &F ('.//text()[translate(.," ?","")=""]', "\n", $d);
+
+  for my $text (@text)
+    {
+      if ($text->data =~ m/\n/goms)
+        {
+          $text->setData ("\n");
+        }
+    }
+
+}
+
 sub intfbBody
 {
 
@@ -49,229 +315,12 @@ only the statements required to describe each dummy argument list.
 
   my @pu = &F ('./object/file/program-unit', $doc);
 
-  for my $n (&F ('.//n/text()', $doc))
-    {
-      my $t = $n->textContent;
-      if ((my $T = uc ($t)) ne $t)
-        {
-          $n->setData ($T);
-        }
-    }
-
   for my $pu (@pu)
     {
-      if (my ($ep) = &F ('./execution-part', $pu))
-        {
-          $ep->unbindNode ();
-        }
-
-      my ($up) = &F ('./specification-part/use-part', $pu);
-      my ($dp) = &F ('./specification-part/declaration-part', $pu);
-      my ($ip) = &F ('./specification-part/implicit-part', $pu);
-
-      for (&F ('.//program-unit', $pu))
-        {
-          $_->unbindNode ();
-        }
-
-      for (&F ('.//cpp-section|.//cpp', $pu))
-        {
-          $_->unbindNode ();
-        }
-
-      my $first = $pu->firstChild;
-   
-      if ($first->nodeName =~ m/^(?:module|program)-stmt$/o)
-        {
-          $pu->unbindNode ();
-          next;
-        }
-  
-      # Strip blocks (these may contain use statements)
-      
-      for (&F ('.//ANY-construct', $pu))
-        {
-          $_->unbindNode ();
-        }
-  
-      (my $kind = $first->nodeName ()) =~ s/-stmt$//o;
-  
-      my ($name) = &F ('./' . $kind . '-N/N/n/text()', $first, 1);
-      my @args = &F ('.//dummy-arg-LT//arg-N/N/n/text()', $first, 1);
-      
-      my %stmt;
-      
-      # Keep first & last statements
-      
-      $stmt{$pu->firstChild} = $pu->firstChild;
-      $stmt{$pu->lastChild}  = $pu->lastChild;
-      
-      # %symb holds symbols whose declaration should be kept
-      # %undf holds symbols which are not defined with T-decl-stmt nor imported by use statements
-
-      my (%symb, %undf);
-
-      for my $arg (@args)
-        {
-          $symb{$arg} = 1;
-        }
-      
-      # Keep result declaration (function)
-
-      if ($first->nodeName eq 'function-stmt')
-        {
-          my ($result) = &F ('./result-spec/N', $first, 1);
-           
-          unless ($result)
-            {
-              ($result) = &F ('./function-N', $first, 1);
-            }
-
-          $symb{$result} = 1;
-        }
-
-      # Index decl statements
-
-      my %s2d;
-
-      for my $decl (&F ('./ANY-stmt[.//EN-decl]', $dp || $pu))
-        {
-          for my $symb (&F ('.//EN-N', $decl, 1))
-            {
-              push @{ $s2d{$symb} }, $decl;
-            }
-        }
-
-      # Index use statements
-      
-      my %s2u;
-
-      for my $use (&F ('./use-stmt', $up || $pu))
-        {
-          for my $symb (&F ('.//use-N', $use, 1))
-            {
-              push @{ $s2u{$symb} }, $use;
-            }
-        }
-      
-      
-      # Symbols used in decl statements of arguments
-      
-      my @symb = sort keys (%symb);
-
-      while (my $symb = shift (@symb))
-        {
-          if (my @decl = @{ $s2d{$symb} || [] })
-            {
-              for my $decl (@decl)
-                {
-                  $stmt{$decl} = $decl;
-                  for my $s (&F ('.//named-E/N', $decl), &F ('.//T-N', $decl))
-                    {
-                      my $t = $s->parentNode;
-                      if ($t->nodeName ne 'intrinsic-T-spec')
-                        {
-                          $s = $s->textContent;
-                          push @symb, $s unless ($symb{$s});
-                          $symb{$s} = 1; 
-                        }
-                    }
-                }
-            }
-          elsif (my @use = @{ $s2u{$symb} || [] })
-            {
-              for my $use (@use)
-                {
-                  $stmt{$use} = $use; 
-                }
-            }
-          else
-            {
-              $undf{$symb} = 1;
-            }
-        }
-
-      if (%undf)
-        {
-          # Keep use statements without ONLY list : they may import some of the undefined symbols
-
-          for my $use (&F ('./use-stmt[not(./rename-LT)]', $up || $pu))
-            {
-              $stmt{$use} = $use;
-            }
-        }
-
-      my @stmt;
- 
-      if ($dp)
-        {
-          push @stmt,
-            &F ('./ANY-stmt', $up),
-            &F ('./ANY-stmt', $ip),
-            &F ('./ANY-stmt', $dp);
-        }
-      else
-        {
-          @stmt = &F ('./ANY-stmt', $pu);
-        }
-      
-      for my $stmt (@stmt)
-        {
-          next if ($stmt->nodeName eq 'implicit-none-stmt');
-          $stmt->unbindNode () unless ($stmt{$stmt});
-        }
-  
-    }
-  
-
-  # Strip labels
-  for (&F ('.//label', $doc))
-    {
-      $_->unbindNode ();
-    }
-  
-  # Strip comments
-  
-  for (&F ('.//C', $doc))
-    {
-      next if ($_->textContent =~ m/^!\$acc\s+routine/io);
-      next if ($_->textContent =~ m/^!\$omp\s+declare\s+target/io);
-      $_->unbindNode ();
-    }
-  
-  # Strip includes
-  
-  for (&F ('.//include', $doc))
-    {
-      $_->unbindNode ();
+      &intfbBodyProgramUnit ($pu);
     }
 
-  # Strip defines
-
-  for (&F ('.//cpp[starts-with (text(),"#define ")]', $doc))
-    {
-      $_->unbindNode ();
-    }
-
-
-  for (&F ('.//unseen', $doc))
-    {
-      $_->unbindNode ();
-    }
-
-
-  $doc->documentElement->normalize ();
-
-  my @text = &F ('.//text()[translate(.," ?","")=""]', "\n", $doc);
-
-  for my $text (@text)
-    {
-      if ($text->data =~ m/\n/goms)
-        {
-          $text->setData ("\n");
-        }
-    }
-
+  &intfbBodyCleaning ($doc);
 }
 
 sub intfb

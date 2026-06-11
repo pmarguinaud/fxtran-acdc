@@ -471,7 +471,8 @@ Apply the full singlecolumn transformation to a subroutine program unit, produci
 
   if ($opts{dummy})
     {
-      &Fxtran::Interface::intfbBody ($pu->ownerDocument ());
+      &Fxtran::Interface::intfbBodyProgramUnit ($pu);
+      &Fxtran::Interface::intfbBodyCleaning ($pu);
       my ($end) = &F ('./end-subroutine-stmt', $pu);  
       my $ep = &n ('<execution-part/>');
       my $abort = &s ('CALL FXTRAN_ACDC_ABORT ("ERROR : WRONG SETTINGS")');
