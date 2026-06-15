@@ -69,6 +69,7 @@ C<set-variables> option.
     '//named-E[string(.)="BUCONF%LBUDGET_U"]'                      => &e ('.FALSE.'),
     '//named-E[string(.)="BUCONF%LBUDGET_V"]'                      => &e ('.FALSE.'),
     '//named-E[string(.)="BUCONF%LBUDGET_W"]'                      => &e ('.FALSE.'),
+    '//named-E[string(.)="BUCONF%LBUDGET_TKE"]'                    => &e ('.FALSE.'),
     '//named-E[string(.)="LLVERINT_ON_CPU"]'                       => &e ('.FALSE.'),
     '//named-E[string(.)="TURBN%LTURB_FLX"]'                       => &e ('.FALSE.'),
     '//named-E[string(.)="TURBN%CTOM"]'                            => &e ('"NONE"'),
