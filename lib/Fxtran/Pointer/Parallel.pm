@@ -277,8 +277,6 @@ required pointers.
   
   my @parallel = &F ('.//parallel-section', $pu);
   
-  my ($FILTER);
-
   my %customIterator;
   
   for my $parallel (@parallel)
@@ -295,21 +293,11 @@ required pointers.
               $customIterator{$it} = $style->customIteratorCopyDecl ();
             }
         }
-      if (my $filter = $parallel->getAttribute ('filter'))
-        {
-          $FILTER ||= 1;
-        }
     }
   
   for (values (%customIterator))
     {
       &Fxtran::Decl::declare ($pu, $_);
-    }
-  
-  if ($FILTER)
-    {
-      &Fxtran::Decl::use ($pu, "USE FIELD_GATHSCAT_MODULE");
-      &Fxtran::Decl::declare ($pu, 'TYPE(FIELD_GATHSCAT) :: YL_FGS');
     }
   
   # Process call to parallel routines
@@ -899,7 +887,7 @@ sub makeParallel
 
 =head2 makeParallel
 
-Transform a single parallel section: handle filter masks, replace object and
+Transform a single parallel section: replace object and
 array expressions with pointer expressions, set pointer associations from FIELD
 API views, generate the block loop and parallel directives for the chosen
 back-end, and insert sync/compute DR_HOOK regions.
@@ -910,77 +898,13 @@ back-end, and insert sync/compute DR_HOOK regions.
 
   my %POST = map { ($_, 1) } grep { $_ } @$POST;
 
-  my $FILTER = $par->getAttribute ('filter');
-
-  if ($FILTER)
-    {
-
-# Remove the IF condition in this case :
-#
-#  IF (ANY(LLTRIG1(:))) THEN
-#  
-#     CALL SHALLOW_CONVECTION_PART2_SELECT &
-#     & (YDCVP_SHAL, YDCVPEXT, YDCST_MNH, D, YDNSV, YDCONVPAR,                     &
-#     & IKICE, LSETTADJ, OTADJS, ZPABS, ZZZ, ZT, ZRV, ZRC, ZRI,                    &
-#     & LLOCHTRANS, I_KCH1, ZSHAL_ZCH1, ZRDOCP, ZTHT, ZSTHV, ZSTHES, ISDPL, ISPBL, &
-#     & ISLCL, ZSTHLCL, ZSTLCL, ZSRVLCL, ZSWLCL, ZSZLCL, ZSTHVELCL, LLTRIG1,       &
-#     & ZZUMF, ZTTEN, ZRVTEN, ZRCTEN, ZRITEN, ICLTOPS, ICLBASS, ZSHAL_ZCH1TENS,    &   
-#     & COUNT(LLTRIG1(D%NIB:D%NIE)))
-#  
-#  ENDIF
-
-      for my $if_construct (&F ('.//if-construct[./if-block/if-then-stmt[./condition-E/named-E[string(N)="?"]]]', $FILTER, $par))
-        {
-          my @block = &F ('./if-block', $if_construct);
-
-          die ("Multiple blocks in filter") if (scalar (@block) > 1);
-
-          my @node = &F ('./node()', $block[0]);
-
-          pop (@node); shift (@node); # Remove IF (...) THEN & ENDIF
-
-          # Drop if construct
-
-          for (@node)
-            {
-              $if_construct->parent->insertBefore ($_, $if_construct);
-            }
-
-          $if_construct->unbindNode ();
-        }
-    }
-
-  my $SUBROUTINE = $FILTER && $par->getAttribute ('subroutine');
-
-  if ($SUBROUTINE)
-    {
-      my @proc = &F ('.//procedure-designator/named-E/N/n/text()[string(.)="?"]', $SUBROUTINE, $par);
-      for my $proc (@proc)
-        {
-          my $stmt = &Fxtran::stmt ($proc);
-          my @arg = &F ('./arg-spec/arg', $stmt);
-          &Fxtran::removeListElement ($arg[-1]);
-          (my $tt = $proc->textContent) =~ s/_SELECT$//o;
-          $proc->setData ($tt);
-        }
-    }
-
   # Add a loop nest on blocks
 
   my ($stmt) = &F ('.//ANY-stmt', $par);
 
   $stmt or return;
 
-  my ($JBLKMIN, $JBLKMAX);
-
-  if ($FILTER)
-    {
-      ($JBLKMIN, $JBLKMAX) = ('1', 'YL_FGS%KGPBLKS');
-    }
-  else
-    {
-      ($JBLKMIN, $JBLKMAX) = ('YDCPG_OPTS%JBLKMIN', 'YDCPG_OPTS%JBLKMAX');
-    }
+  my ($JBLKMIN, $JBLKMAX) = ('YDCPG_OPTS%JBLKMIN', 'YDCPG_OPTS%JBLKMAX');
 
   my $loop;
 
@@ -1052,14 +976,6 @@ EOF
 
   $par->insertAfter (&t ("\n"), $loop);
 
-  if ($FILTER)
-    {
-      $par->insertAfter (&s ("CALL YL_FGS%SCATTER ()"), $loop);
-      $par->insertAfter (&t ("\n"), $loop);
-      $prep->appendChild (&s ("CALL YL_FGS%INIT (YL_$FILTER, YDCPG_OPTS%KGPTOTB)"));
-      $prep->appendChild (&t ("\n"));
-    }
-
   $par->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)"), $loop);
   $par->insertAfter (&t ("\n"), $loop);
 
@@ -1085,15 +1001,7 @@ EOF
       my $access = $intent2access{$intent{$ptr}};
       my $var = $s->{field}->textContent;
 
-      my $stmt;
-      if ($FILTER)
-        {
-          $stmt = &s ("$ptr => GATHER_HOST_DATA_$access (YL_FGS, $var)");
-        }
-      else
-        {
-          $stmt = &s ("$ptr => GET_HOST_DATA_$access ($var)");
-        }
+      my $stmt = &s ("$ptr => GET_HOST_DATA_$access ($var)");
       $prep->appendChild ($stmt);
       $prep->appendChild (&t ("\n"));
 

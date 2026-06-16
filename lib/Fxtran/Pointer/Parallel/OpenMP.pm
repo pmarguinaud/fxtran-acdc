@@ -65,18 +65,7 @@ sub makeParallel
   my $style = $par1->getAttribute ('style');
   $style = $style ? 'Fxtran::Style'->new (style => $style) : $opts{style};
   
-  my $FILTER = $par1->getAttribute ('filter');
-
-  my $init;
-  
-  if ($FILTER)
-    {
-      $init = &s ('CALL YLCPG_BNDS%INIT (YL_FGS%KLON, YL_FGS%KGPTOT)');
-    }
-  else
-    {
-      $init = &s ('CALL YLCPG_BNDS%INIT (YDCPG_OPTS)');
-    }
+  my $init = &s ('CALL YLCPG_BNDS%INIT (YDCPG_OPTS)');
 
   my ($do) = &F ('./do-construct', $par1);
 

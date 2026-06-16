@@ -42,13 +42,6 @@ sub makeParallel
   my $style = $opts{style};
   $style ||= 'Fxtran::Style'->new (style => ($par1->getAttribute ('style') || 'IAL'));
   
-  my $FILTER = $par1->getAttribute ('filter');
-
-  if ($FILTER)
-    {
-      die;
-    }
-
   my ($do) = &F ('./do-construct', $par1);
   my $do_jblk = $do->firstChild;
 

@@ -75,8 +75,6 @@ sub makeParallel
   my $style = $par1->getAttribute ('style');
   $style = $style ? 'Fxtran::Style'->new (style => $style) : $opts{style};
 
-  my $FILTER = $par1->getAttribute ('filter');
-
   &Fxtran::DIR::removeDIR ($par1);
 
   my ($do) = &F ('./do-construct', $par1);
@@ -104,22 +102,7 @@ sub makeParallel
       $x->unbindNode ();
     }
 
-  my ($KLON, $KGPTOT, $KGPBLKS, $JBLKMIN);
-
-  if ($FILTER)
-    {
-      $KLON    = 'YL_FGS%KLON';
-      $KGPTOT  = 'YL_FGS%KGPTOT';
-      $KGPBLKS = 'YL_FGS%KGPBLKS';
-      $JBLKMIN = '1';
-    }
-  else
-    {
-      $KLON    = 'YDCPG_OPTS%KLON';
-      $KGPTOT  = 'YDCPG_OPTS%KGPCOMP';
-      $KGPBLKS = 'YDCPG_OPTS%KGPBLKS';
-      $JBLKMIN = 'YDCPG_OPTS%JBLKMIN';
-    }
+  my ($KLON, $KGPTOT, $KGPBLKS, $JBLKMIN) = ('YDCPG_OPTS%KLON', 'YDCPG_OPTS%KGPCOMP', 'YDCPG_OPTS%KGPBLKS', 'YDCPG_OPTS%JBLKMIN');
 
   my $jlon = $opts{style}->jlon ();
 
