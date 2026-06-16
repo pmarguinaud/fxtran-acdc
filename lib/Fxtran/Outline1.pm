@@ -552,14 +552,13 @@ Parse a Fortran text fragment and write it to a file in canonical indented form.
 EOF
 sub outline1
 {
+  my ($opts, @args) = @_;
 
 =head2 outline1
 
 Top-level entry point: parse a Fortran source file and outline all C<ACDC PARALLEL> sections.
 
 =cut
-
-  my ($opts, @args) = @_;
 
   &fxtran::setOptions (qw (Fragment -construct-tag -no-include -line-length 5000));
   &fxtran::setOptions (qw (Statement -line-length 5000));

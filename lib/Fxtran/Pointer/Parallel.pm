@@ -59,6 +59,14 @@ processing the section for each requested parallel target.
 
 =cut
 
+# pu          = program unit
+# parallel    = parallel section
+# ipar        = rank of parallel section in program-unit
+# t           = symbol table
+# find        = source finder
+# types       = types information (on Field API members)
+# puseUtilMod = should util modules be pulled in ?
+
   my ($pu, $parallel, $ipar, $NAME, $t, $find, $types, $puseUtilMod, %opts) = @_;
 
   my $target = $parallel->getAttribute ('target');

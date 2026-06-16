@@ -201,13 +201,7 @@ if ($opts{all})
     chdir ("$Bin/../tests");
     for my $test (grep { -d } <*>)
       {
-
-print "test=$test\n";
-
         chdir ("$Bin/../tests/$test");
-
-system ('pwd');
-
         &test (%opts);
       }
     chdir ($cwd);
