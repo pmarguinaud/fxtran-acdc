@@ -47,6 +47,7 @@ use Fxtran::Style::IAL;
 use Fxtran::Style::MESONH;
 use Fxtran::Pragma;
 use Fxtran::Util;
+use Fxtran::Pointer::Filter;
 
 sub processSingleParallel
 {
@@ -91,7 +92,14 @@ EOF
   my @block;
   
   my $name = $parallel->getAttribute ('name') || $ipar;
-  
+
+  my $filter = $parallel->getAttribute ('filter');
+
+  if ($filter)
+    {
+      'Fxtran::Pointer::Filter'->preprocess ($pu, $parallel, %opts);
+    }
+
   # Do it once for all sections
 
   my %parallel;
@@ -158,8 +166,6 @@ EOF
         {
           my @get = &F ('./prep//named-E[string(N)="GET_HOST_DATA_RDONLY" '
                               .     ' or string(N)="GET_HOST_DATA_RDWR" '
-                              .     ' or string(N)="GATHER_HOST_DATA_RDONLY" '
-                              .     ' or string(N)="GATHER_HOST_DATA_RDWR" '
                               .     ' ]/N/n/text()', $parallel1);
           for my $get (@get)
             {
@@ -169,6 +175,11 @@ EOF
         }
 
       push @block, $block;
+
+      if ($filter)
+        {
+          'Fxtran::Pointer::Filter'->apply ($pu, $parallel1, %opts);
+        }
 
     }
 
@@ -906,11 +917,11 @@ back-end, and insert sync/compute DR_HOOK regions.
 
   my ($JBLKMIN, $JBLKMAX) = ('YDCPG_OPTS%JBLKMIN', 'YDCPG_OPTS%JBLKMAX');
 
-  my $loop;
+  my $comp = &n ('<comp/>');
 
   if ($blockLoop)
     {
-      ($loop) = &Fxtran::parse (fragment => << "EOF");
+      my ($loop) = &Fxtran::parse (fragment => << "EOF");
 DO JBLK = $JBLKMIN, $JBLKMAX
 CALL YLCPG_BNDS%UPDATE (JBLK)
 ENDDO
@@ -924,18 +935,17 @@ EOF
           $p->insertBefore ($node, $enddo);
         }
       
-      $par->appendChild ($loop);
+      $comp->appendChild ($loop);
+      $par->appendChild ($comp);
     }
   else
     {
-      $loop = &n ('<comp/>');
-
       for my $node ($par->childNodes ())
         {
-          $loop->appendChild ($node);
+          $comp->appendChild ($node);
         }
       
-      $par->appendChild ($loop);
+      $par->appendChild ($comp);
     }
 
 
@@ -953,11 +963,11 @@ EOF
 
   my %intent2access = qw (IN RDONLY INOUT RDWR OUT WRONLY);
 
-  $par->insertBefore (&t ("\n"), $loop);
-  $par->insertBefore (my $prep = &n ('<prep/>'), $loop);
+  $par->insertBefore (&t ("\n"), $comp);
+  $par->insertBefore (my $prep = &n ('<prep/>'), $comp);
 
-  $par->insertAfter (my $nullify = &n ('<nullify/>'), $loop);
-  $par->insertAfter (&t ("\n"), $loop);
+  $par->insertAfter (my $nullify = &n ('<nullify/>'), $comp);
+  $par->insertAfter (&t ("\n"), $comp);
 
   my $synchost;
 
@@ -967,17 +977,16 @@ EOF
 IF (FXTRAN_ACDC_LSYNCHOST ('$NAME')) THEN
 ENDIF
 EOF
-      $par->insertAfter ($if_construct, $loop);
+      $par->insertAfter ($if_construct, $comp);
       my $if_block = $if_construct->firstChild;
       my $if_then = $if_block->firstChild;
       $if_block->insertAfter ($synchost = &n ('<synchost/>'), $if_then);
       $if_block->insertAfter (&t ("\n"), $if_then);
     }
 
-  $par->insertAfter (&t ("\n"), $loop);
+  $comp->appendChild ($_) for (&t ("\n"), &s ("IF (LHOOK) CALL DR_HOOK ('$NAME:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)"));
 
-  $par->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)"), $loop);
-  $par->insertAfter (&t ("\n"), $loop);
+  $par->insertAfter (&t ("\n"), $comp);
 
 
   $prep->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:GET_DATA',0,ZHOOK_HANDLE_FIELD_API)"));
@@ -1017,10 +1026,8 @@ EOF
         }
     }
   $prep->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:GET_DATA',1,ZHOOK_HANDLE_FIELD_API)"));
-  $prep->appendChild (&t ("\n"));
 
-  $prep->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:COMPUTE',0,ZHOOK_HANDLE_COMPUTE)"));
-  $prep->appendChild (&t ("\n"));
+  $comp->insertBefore ($_, $comp->firstChild) for (&t ("\n"), &s ("IF (LHOOK) CALL DR_HOOK ('$NAME:COMPUTE',0,ZHOOK_HANDLE_COMPUTE)"));
 
   if ($POST{nullify})
     {

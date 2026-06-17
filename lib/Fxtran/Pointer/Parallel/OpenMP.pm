@@ -36,8 +36,7 @@ sub setOpenMPDirective
 {
   my ($par, $t, %opts) = @_;
 
-  my $style = $par->getAttribute ('style');
-  $style = $style ? 'Fxtran::Style'->new (style => $style) : $opts{style};
+  my $style = $opts{style};
 
   my @firstprivate = ('YLCPG_BNDS');
 
@@ -67,8 +66,9 @@ sub makeParallel
   
   my $init = &s ('CALL YLCPG_BNDS%INIT (YDCPG_OPTS)');
 
-  my ($do) = &F ('./do-construct', $par1);
+  my ($comp) = &F ('./comp', $par1);
 
+  my ($do) = &F ('./do-construct', $comp);
 
   if ($style->customIterator ())
     {
@@ -76,10 +76,10 @@ sub makeParallel
       $style->updateCustomIterator ($update);
     }
 
-  $par1->insertBefore ($init, $do);
-  $par1->insertBefore (&t ("\n"), $do);
+  $comp->insertBefore ($init, $do);
+  $comp->insertBefore (&t ("\n"), $do);
 
-  &setOpenMPDirective ($par1, $t, %opts);
+  &setOpenMPDirective ($comp, $t, %opts, style => $style);
 
   return $par1;
 }

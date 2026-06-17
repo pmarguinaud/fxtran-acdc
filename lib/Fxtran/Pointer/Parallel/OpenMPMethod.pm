@@ -40,8 +40,10 @@ sub makeParallel
 
   my $style = $opts{style};
   $style ||= 'Fxtran::Style'->new (style => ($par1->getAttribute ('style') || 'IAL'));
+
+  my ($comp) = &F ('./comp', $par1);
   
-  my ($do) = &F ('./do-construct', $par1);
+  my ($do) = &F ('./do-construct', $comp);
   my $do_jblk = $do->firstChild;
 
   my @stmt = &F ('./ANY-stmt', $do);

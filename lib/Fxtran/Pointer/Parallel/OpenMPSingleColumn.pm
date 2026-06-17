@@ -43,8 +43,7 @@ sub setOpenMPDirective
 {
   my ($par, $t, %opts) = @_;
 
-  my $style = $par->getAttribute ('style');
-  $style = $style ? 'Fxtran::Style'->new (style => $style) : $opts{style};
+  my $style = $opts{style};
 
   my @priv = &Fxtran::Pointer::Parallel::getPrivateVariables ($par, $t);
 
@@ -75,13 +74,15 @@ sub makeParallel
   my $style = $par1->getAttribute ('style');
   $style = $style ? 'Fxtran::Style'->new (style => $style) : $opts{style};
 
-  &Fxtran::DIR::removeDIR ($par1);
+  my ($comp) = &F ('./comp', $par1);
 
-  my ($do) = &F ('./do-construct', $par1);
+  &Fxtran::DIR::removeDIR ($comp);
+
+  my ($do) = &F ('./do-construct', $comp);
 
   die unless ($do);
 
-  &Fxtran::Loop::removeNpromaConstructs ($par1, %opts);
+  &Fxtran::Loop::removeNpromaConstructs ($comp, %opts);
 
   my @call = &F ('.//call-stmt', $do);
 
@@ -180,9 +181,9 @@ EOF
 
   &Fxtran::Print::useABOR1_ACC ($do_jlon);
 
-  &setOpenMPDirective ($par1, $t, %opts);
+  &setOpenMPDirective ($comp, $t, %opts, style => $style);
 
-  &Fxtran::ReDim::redimArguments ($par1) if ($opts{'redim-arguments'});
+  &Fxtran::ReDim::redimArguments ($comp) if ($opts{'redim-arguments'});
 
   return $par1;
 }
