@@ -79,7 +79,7 @@ sub makeParallel
 
   my ($comp) = &F ('./comp', $par1);
 
-  $comp->insertBefore ($_, $comp->firstChild) for (&s ("YLOFFSET = FXTRAN_ACDC_STACK (0, 0, 0, 0)"), &t ("\n"));
+  $comp->insertBefore ($_, $comp->firstChild) for (&t ("\n"), &s ("YLOFFSET = FXTRAN_ACDC_STACK (0, 0, 0, 0)"), &t ("\n"));
 
   my $pragma = $opts{pragma};
 
@@ -98,6 +98,7 @@ sub makeParallel
       my ($proc) = &F ('./procedure-designator/named-E/N/n/text()', $call);
 
       next if ($proc->textContent eq 'ABOR1');
+      next if ($proc->textContent eq 'DR_HOOK');
       next if ($proc =~ m/$opts{'suffix-singlecolumn'}$/i);
 
       if (my $it = $style->customIterator ())
