@@ -56,14 +56,24 @@ corresponding C<!$OMP TARGET> directive strings.
 
 =cut
 
-use strict;
-
 use base qw (Fxtran::Pragma);
 
-use Fxtran;
 use List::MoreUtils qw (uniq);
 
-sub insertDirective
+use strict;
+
+use Fxtran;
+use fxtran;
+use fxtran::parser;
+
+my $PARSER = 'fxtran::parser'->new (optionsFragment => [qw (-openmp-target)]);
+
+sub openmptarget
+{
+  return $PARSER->parse (fragment => $_[0]);
+}
+
+sub insertDirectiveBefore
 {
   my ($p, $d, %c)  = @_;
 
@@ -115,26 +125,29 @@ sub insertDirective
     {
       if ($i < $#d)
         {
-          $d[$i] = $d[$i] . '&amp;'
+          $d[$i] = $d[$i] . '&'
         }
       if ($i > 0)
         {
-          $d[$i] = '&amp;' . $d[$i];
+          $d[$i] = '&' . $d[$i];
         }
       $d[$i] = "!\$OMP$d[$i]";
     }
 
   $P->insertBefore (&t ("\n"), $p);
 
-  for my $d (@d)
+  my $dir = join ("\n", @d, '');
+
+  for my $x (&openmptarget ($dir))
     {
-      $P->insertBefore (&n ("<C>$d</C>"), $p);
-      $P->insertBefore (&t ("\n"), $p);
+      $P->insertBefore ($x, $p);
     }
+}
 
-
-  $P->insertBefore (&t ("\n"), $p);
-      
+sub insertDirectiveAfter
+{
+  my ($p, $d) = @_;
+  $p->parentNode->insertAfter ($_, $p) for (reverse (&openmptarget ($d)), &t ("\n"));
 }
 
 sub insertParallelLoopGang
@@ -143,31 +156,29 @@ sub insertParallelLoopGang
   my ($p, %c) = @_;
   delete $c{PRESENT};
   $c{THREAD_LIMIT} = delete $c{VECTOR_LENGTH};
-  &insertDirective ($p, 'TARGET TEAMS DISTRIBUTE', %c);
+  &insertDirectiveBefore ($p, 'TARGET TEAMS DISTRIBUTE', %c);
 }
 
 sub insertParallelLoopGangVector
 {
   shift;
   my ($p, %c) = @_;
-  &insertDirective ($p, 'TARGET TEAMS DISTRIBUTE PARALLEL DO SIMD', %c);
+  &insertDirectiveBefore ($p, 'TARGET TEAMS DISTRIBUTE PARALLEL DO SIMD', %c);
 }
 
 sub insertData
 {
   shift;
   my ($p, %c) = @_;
-  &insertDirective ($p, 'TARGET DATA ', %c);
-  $p->parentNode->insertAfter (&t ("\n"), $p);
-  $p->parentNode->insertAfter (&n ("<C>!\$OMP END TARGET DATA</C>"), $p);
-  $p->parentNode->insertAfter (&t ("\n"), $p);
+  &insertDirectiveBefore ($p, 'TARGET DATA ', %c);
+  &insertDirectiveAfter ($p, '!$OMP END TARGET DATA');
 }
 
 sub insertLoopVector
 {
   shift;
   my ($p, %c) = @_;
-  &insertDirective ($p, 'PARALLEL DO SIMD', %c);
+  &insertDirectiveBefore ($p, 'PARALLEL DO SIMD', %c);
 }
 
 sub insertRoutineVector
@@ -181,20 +192,18 @@ sub insertRoutineSeq
   shift;
   my $d = shift;
   my ($N) = &F ('./subroutine-stmt/subroutine-N', $d, 1); 
-  $d->insertAfter (&n ("<C>!\$OMP DECLARE TARGET</C>"), $d->firstChild);
-  $d->insertAfter (&t ("\n"), $d->firstChild);
+  &insertDirectiveAfter ($d->firstChild, '!$OMP DECLARE TARGET');
 }
 
 sub insertSerial
 {
   shift;
   my ($p, %c) = @_;
-  &insertDirective ($p, 'TARGET', %c);
-  $p->parentNode->insertAfter (&n ("<C>!\$OMP END TARGET</C>"), $p);
-  $p->parentNode->insertAfter (&t ("\n"), $p);
+  &insertDirectiveBefore ($p, 'TARGET', %c);
+  insertDirectiveAfter ($p, '!$OMP END TARGET');
 
 # Maybe this should be (need to check) : 
-# &insertDirective ($p, 'TARGET TEAMS PARALLEL NUM_THREADS (1)', %c);
+# &insertDirectiveBefore ($p, 'TARGET TEAMS PARALLEL NUM_THREADS (1)', %c);
 # $p->parentNode->insertAfter (&n ("<C>!\$OMP END TEAMS</C>"), $p);
 # $p->parentNode->insertAfter (&t ("\n"), $p);
 # $p->parentNode->insertAfter (&n ("<C>!\$OMP END PARALLEL</C>"), $p);
