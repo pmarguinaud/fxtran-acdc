@@ -64,9 +64,14 @@ into a dedicated C<!$ACC DATA> region respectively.
 
 use base qw (Fxtran::Pragma);
 
-use strict;
-use Fxtran;
+use Data::Dumper;
 use List::MoreUtils qw (uniq);
+
+use strict;
+
+use Fxtran;
+use fxtran;
+use fxtran::parser;
 
 sub unfoldDirectives
 {
@@ -90,7 +95,14 @@ sub unfoldDirectives
     }
 }
 
-sub insertDirective
+my $PARSER = 'fxtran::parser'->new (optionsFragment => [qw (-openacc)]);
+
+sub openacc
+{
+  return $PARSER->parse (fragment => $_[0]);
+}
+
+sub insertDirectiveBefore
 {
   my ($p, $d, %c)  = @_;
 
@@ -134,57 +146,59 @@ sub insertDirective
     {
       if ($i < $#d)
         {
-          $d[$i] = $d[$i] . '&amp;'
+          $d[$i] = $d[$i] . '&'
         }
       if ($i > 0)
         {
-          $d[$i] = '&amp;' . $d[$i];
+          $d[$i] = '&' . $d[$i];
         }
       $d[$i] = "!\$ACC$d[$i]";
     }
 
   $P->insertBefore (&t ("\n"), $p);
 
-  for my $d (@d)
+  my $dir = join ("\n", @d, '');
+
+  for my $x (&openacc ($dir))
     {
-      $P->insertBefore (&n ("<C>$d</C>"), $p);
-      $P->insertBefore (&t ("\n"), $p);
+      $P->insertBefore ($x, $p);
     }
-
-
-  $P->insertBefore (&t ("\n"), $p);
       
+}
+
+sub insertDirectiveAfter
+{
+  my ($p, $d) = @_;
+  $p->parentNode->insertAfter ($_, $p) for (reverse (&openacc ($d)), &t ("\n"));
 }
 
 sub insertParallelLoopGang
 {
   shift;
   my ($p, %c) = @_;
-  &insertDirective ($p, 'PARALLEL LOOP GANG', %c);
+  &insertDirectiveBefore ($p, 'PARALLEL LOOP GANG', %c);
 }
 
 sub insertParallelLoopGangVector
 {
   shift;
   my ($p, %c) = @_;
-  &insertDirective ($p, 'PARALLEL LOOP GANG VECTOR', %c);
+  &insertDirectiveBefore ($p, 'PARALLEL LOOP GANG VECTOR', %c);
 }
 
 sub insertData
 {
   shift;
   my ($p, %c) = @_;
-  &insertDirective ($p, 'DATA', %c);
-  $p->parentNode->insertAfter (&t ("\n"), $p);
-  $p->parentNode->insertAfter (&n ("<C>!\$ACC END DATA</C>"), $p);
-  $p->parentNode->insertAfter (&t ("\n"), $p);
+  &insertDirectiveBefore ($p, 'DATA', %c);
+  &insertDirectiveAfter ($p, '!$ACC END DATA');
 }
 
 sub insertLoopVector
 {
   shift;
   my ($p, %c) = @_;
-  &insertDirective ($p, 'LOOP VECTOR', %c);
+  &insertDirectiveBefore ($p, 'LOOP VECTOR', %c);
 }
 
 sub insertRoutineVector
@@ -192,8 +206,7 @@ sub insertRoutineVector
   shift;
   my $d = shift;
   my ($N) = &F ('./subroutine-stmt/subroutine-N', $d, 1); 
-  $d->insertAfter (&n ("<C>!\$ACC ROUTINE ($N) VECTOR</C>"), $d->firstChild);
-  $d->insertAfter (&t ("\n"), $d->firstChild);
+  &insertDirectiveAfter ($d->firstChild, "!\$ACC ROUTINE ($N) VECTOR");
 }
 
 sub insertRoutineSeq
@@ -201,17 +214,15 @@ sub insertRoutineSeq
   shift;
   my $d = shift;
   my ($N) = &F ('./subroutine-stmt/subroutine-N', $d, 1); 
-  $d->insertAfter (&n ("<C>!\$ACC ROUTINE ($N) SEQ</C>"), $d->firstChild);
-  $d->insertAfter (&t ("\n"), $d->firstChild);
+  &insertDirectiveAfter ($d->firstChild, "!\$ACC ROUTINE ($N) SEQ");
 }
 
 sub insertSerial
 {
   shift;
   my ($p, %c) = @_;
-  &insertDirective ($p, 'SERIAL', %c);
-  $p->parentNode->insertAfter (&n ("<C>!\$ACC END SERIAL</C>"), $p);
-  $p->parentNode->insertAfter (&t ("\n"), $p);
+  &insertDirectiveBefore ($p, 'SERIAL', %c);
+  &insertDirectiveAfter ($p, '!$ACC END SERIAL');
 }
 
 sub enterDataCreate
