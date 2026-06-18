@@ -59,6 +59,7 @@ corresponding C<!$OMP TARGET> directive strings.
 use base qw (Fxtran::Pragma);
 
 use List::MoreUtils qw (uniq);
+use Data::Dumper;
 
 use strict;
 
@@ -154,7 +155,6 @@ sub insertParallelLoopGang
 {
   shift;
   my ($p, %c) = @_;
-  delete $c{PRESENT};
   $c{THREAD_LIMIT} = delete $c{VECTOR_LENGTH};
   &insertDirectiveBefore ($p, 'TARGET TEAMS DISTRIBUTE', %c);
 }
