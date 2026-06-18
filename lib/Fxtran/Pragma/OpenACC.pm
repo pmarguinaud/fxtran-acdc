@@ -163,7 +163,6 @@ sub insertDirectiveBefore
     {
       $P->insertBefore ($x, $p);
     }
-      
 }
 
 sub insertDirectiveAfter
