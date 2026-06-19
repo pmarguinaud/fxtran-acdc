@@ -35,7 +35,8 @@ use strict;
 use Fxtran;
 use List::MoreUtils qw (uniq);
 
-my $PARSER = 'fxtran::parser'->new (optionsFragment => [qw (-openmp)]);
+my $PARSER = 'fxtran::parser'->new ();
+$PARSER->setOptions (qw (Fragment -openmp));
 
 sub openmp
 {

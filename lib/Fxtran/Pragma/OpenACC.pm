@@ -95,11 +95,32 @@ sub unfoldDirectives
     }
 }
 
-my $PARSER = 'fxtran::parser'->new (optionsFragment => [qw (-openacc)]);
+my $PARSER = 'fxtran::parser'->new ();
+$PARSER->setOptions (qw (Fragment -openacc));
 
 sub openacc
 {
   return $PARSER->parse (fragment => $_[0]);
+}
+
+sub findParallel
+{
+  my ($self, $node) = @_;
+  return &F ('.//parallel-loop-openacc', $node);
+}
+
+sub copyin
+{
+  my $self = shift;
+  (undef, undef, my $acc) = &openacc ('!$ACC DATA COPYIN (' . join (', ', @_) . ')' . "\n");
+  my ($c) = &F ('./clause', $acc);
+  return $c;
+}
+
+sub sentinel
+{
+  my $self = shift;
+  return &n ('<acc>!$ACC</acc>');
 }
 
 sub insertDirectiveBefore
@@ -146,11 +167,11 @@ sub insertDirectiveBefore
     {
       if ($i < $#d)
         {
-          $d[$i] = $d[$i] . '&'
+          $d[$i] = $d[$i] . ' & '
         }
       if ($i > 0)
         {
-          $d[$i] = '&' . $d[$i];
+          $d[$i] = ' & ' . $d[$i];
         }
       $d[$i] = "!\$ACC$d[$i]";
     }

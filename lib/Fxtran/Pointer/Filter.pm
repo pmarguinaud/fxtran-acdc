@@ -98,18 +98,16 @@ sub apply
 
   $comp->appendChild ($_) for (&t ("\n"), &s ('CALL YL_FGS%SCATTER ()'));
 
-  my @C = &F ('./C[starts-with(string(.),"!$")]', $comp);
 
-  for my $C (@C)
+  my $pragma = $opts{pragma};
+
+  for my $parallel ($pragma->findParallel ($comp))
     {
-      if ($C->textContent =~ m/^!\$ACC PARALLEL LOOP GANG/o)
+      for my $n (&t (' '), &n ("<cnt>&amp;</cnt>"), &t ("\n"), $pragma->sentinel (), &t (' '), &n ("<cnt>&amp;</cnt>"), &t (' '), $pragma->copyin ('YL_FGS'))
         {
-          my $p = $C->parentNode;
-          $p->insertAfter ($_, $C) for (&n ("<C>!\$ACC&amp;COPYIN (YL_FGS) &amp;</C>"), &t ("\n"));
+          $parallel->appendChild ($n) 
         }
     }
-
-
 
 }
 

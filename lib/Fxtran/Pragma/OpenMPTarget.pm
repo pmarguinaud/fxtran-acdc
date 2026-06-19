@@ -67,11 +67,32 @@ use Fxtran;
 use fxtran;
 use fxtran::parser;
 
-my $PARSER = 'fxtran::parser'->new (optionsFragment => [qw (-openmp-target)]);
+my $PARSER = 'fxtran::parser'->new ();
+$PARSER->setOptions (qw (Fragment -openmp-target));
 
 sub openmptarget
 {
   return $PARSER->parse (fragment => $_[0]);
+}
+
+sub findParallel
+{
+  my ($self, $node) = @_;
+  return &F ('.//target-teams-openmp[clause[string(.)="DISTRIBUTE"]', $node);
+}
+
+sub copyin
+{
+  my $self = shift;
+  (undef, undef, my $acc) = &openmptarget ('!$OMP TARGET DATA  MAP(TO:' . join (', ', @_) . ')' . "\n");
+  my ($c) = &F ('./clause', $acc);
+  return $c;
+}
+
+sub sentinel
+{
+  my $self = shift;
+  return &n ('<omptarget>!$OMP</omptarget>');
 }
 
 sub insertDirectiveBefore
@@ -126,11 +147,11 @@ sub insertDirectiveBefore
     {
       if ($i < $#d)
         {
-          $d[$i] = $d[$i] . '&'
+          $d[$i] = $d[$i] . ' & '
         }
       if ($i > 0)
         {
-          $d[$i] = '&' . $d[$i];
+          $d[$i] = ' & ' . $d[$i];
         }
       $d[$i] = "!\$OMP$d[$i]";
     }
@@ -200,14 +221,7 @@ sub insertSerial
   shift;
   my ($p, %c) = @_;
   &insertDirectiveBefore ($p, 'TARGET', %c);
-  insertDirectiveAfter ($p, '!$OMP END TARGET');
-
-# Maybe this should be (need to check) : 
-# &insertDirectiveBefore ($p, 'TARGET TEAMS PARALLEL NUM_THREADS (1)', %c);
-# $p->parentNode->insertAfter (&n ("<C>!\$OMP END TEAMS</C>"), $p);
-# $p->parentNode->insertAfter (&t ("\n"), $p);
-# $p->parentNode->insertAfter (&n ("<C>!\$OMP END PARALLEL</C>"), $p);
-# $p->parentNode->insertAfter (&t ("\n"), $p);
+  &insertDirectiveAfter ($p, '!$OMP END TARGET');
 }
 
 sub enterDataCreate
