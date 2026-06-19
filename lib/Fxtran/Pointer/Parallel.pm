@@ -97,7 +97,7 @@ EOF
 
   if ($filter)
     {
-      'Fxtran::Pointer::Filter'->preprocess ($pu, $parallel, %opts);
+      'Fxtran::Pointer::Filter'->preprocess ($pu, $parallel, $t, %opts);
     }
 
   # Do it once for all sections
@@ -178,7 +178,7 @@ EOF
 
       if ($filter)
         {
-          'Fxtran::Pointer::Filter'->apply ($pu, $parallel1, %opts);
+          'Fxtran::Pointer::Filter'->apply ($pu, $parallel1, $t, %opts);
         }
 
     }
