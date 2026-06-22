@@ -43,8 +43,7 @@ sub setOpenMPDirective
 {
   my ($par, $t, %opts) = @_;
 
-  my $style = $par->getAttribute ('style');
-  $style = $style ? 'Fxtran::Style'->new (style => $style) : $opts{style};
+  my $style = $opts{style};
 
   my @priv = &Fxtran::Pointer::Parallel::getPrivateVariables ($par, $t);
 
@@ -75,15 +74,15 @@ sub makeParallel
   my $style = $par1->getAttribute ('style');
   $style = $style ? 'Fxtran::Style'->new (style => $style) : $opts{style};
 
-  my $FILTER = $par1->getAttribute ('filter');
+  my ($comp) = &F ('./comp', $par1);
 
-  &Fxtran::DIR::removeDIR ($par1);
+  &Fxtran::DIR::removeDIR ($comp);
 
-  my ($do) = &F ('./do-construct', $par1);
+  my ($do) = &F ('./do-construct', $comp);
 
   die unless ($do);
 
-  &Fxtran::Loop::removeNpromaConstructs ($par1, %opts);
+  &Fxtran::Loop::removeNpromaConstructs ($comp, %opts);
 
   my @call = &F ('.//call-stmt', $do);
 
@@ -104,22 +103,7 @@ sub makeParallel
       $x->unbindNode ();
     }
 
-  my ($KLON, $KGPTOT, $KGPBLKS, $JBLKMIN);
-
-  if ($FILTER)
-    {
-      $KLON    = 'YL_FGS%KLON';
-      $KGPTOT  = 'YL_FGS%KGPTOT';
-      $KGPBLKS = 'YL_FGS%KGPBLKS';
-      $JBLKMIN = '1';
-    }
-  else
-    {
-      $KLON    = 'YDCPG_OPTS%KLON';
-      $KGPTOT  = 'YDCPG_OPTS%KGPCOMP';
-      $KGPBLKS = 'YDCPG_OPTS%KGPBLKS';
-      $JBLKMIN = 'YDCPG_OPTS%JBLKMIN';
-    }
+  my ($KLON, $KGPTOT, $KGPBLKS, $JBLKMIN) = ('YDCPG_OPTS%KLON', 'YDCPG_OPTS%KGPCOMP', 'YDCPG_OPTS%KGPBLKS', 'YDCPG_OPTS%JBLKMIN');
 
   my $jlon = $opts{style}->jlon ();
 
@@ -197,9 +181,9 @@ EOF
 
   &Fxtran::Print::useABOR1_ACC ($do_jlon);
 
-  &setOpenMPDirective ($par1, $t, %opts);
+  &setOpenMPDirective ($comp, $t, %opts, style => $style);
 
-  &Fxtran::ReDim::redimArguments ($par1) if ($opts{'redim-arguments'});
+  &Fxtran::ReDim::redimArguments ($comp) if ($opts{'redim-arguments'});
 
   return $par1;
 }

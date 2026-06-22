@@ -41,15 +41,10 @@ sub makeParallel
 
   my $style = $opts{style};
   $style ||= 'Fxtran::Style'->new (style => ($par1->getAttribute ('style') || 'IAL'));
+
+  my ($comp) = &F ('./comp', $par1);
   
-  my $FILTER = $par1->getAttribute ('filter');
-
-  if ($FILTER)
-    {
-      die;
-    }
-
-  my ($do) = &F ('./do-construct', $par1);
+  my ($do) = &F ('./do-construct', $comp);
   my $do_jblk = $do->firstChild;
 
   my %update;
@@ -75,8 +70,8 @@ sub makeParallel
 
   my $init = &s ('CALL YLCPG_BNDS%INIT (YDCPG_OPTS)');
 
-  $par1->insertBefore ($init, $do);
-  $par1->insertBefore (&t ("\n"), $do);
+  $comp->insertBefore ($init, $do);
+  $comp->insertBefore (&t ("\n"), $do);
 
 
   my @prep_stmt = &F ('./ANY-stmt', $prep);
