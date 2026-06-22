@@ -345,7 +345,7 @@ required pointers.
     }
   
   # Create/delete fields for local arrays
-  
+
   &Fxtran::Pointer::Parallel::setupLocalFields ($pu, $t, '', $opts{gpumemstat});
   
   unless ($opts{'merge-interfaces'})
@@ -1226,7 +1226,7 @@ objects backing local NPROMA arrays.
 
   my ($doc, $t, $hook_suffix, $gpumemstat) = @_;
 
-  &Fxtran::Decl::use ($doc, 'USE FXTRAN_ACDC_GPUMEM_MOD');
+  &Fxtran::Decl::use ($doc, 'USE FXTRAN_ACDC_GPUMEM_MOD') if ($gpumemstat);
 
   my @drhook = &F ('.//if-stmt[.//call-stmt[string(.//procedure-designator)="DR_HOOK"]]', $doc);
   @drhook = @drhook[0,-1];
@@ -1240,8 +1240,11 @@ objects backing local NPROMA arrays.
   $p1->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('CREATE_TEMPORARIES$hook_suffix',1,ZHOOK_HANDLE_FIELD_API)"), $drhook1);
   $p1->insertAfter (&t ("\n"), $drhook1);
 
+  if ($gpumemstat)
+    {
+      $p2->insertBefore ($_, $drhook2) for (&t ("\n\n"), &s ("CALL FXTRAN_ACDC_GPUMEMSTAT (FXTRAN_FILE, FXTRAN_LINE, \"END\")"), &t ("\n\n"));
+    }
 
-  $p2->insertBefore (&t ("\nCALL FXTRAN_ACDC_GPUMEMSTAT (__FILE__, __LINE__, \"END\")\n\n"), $drhook2) if ($gpumemstat);
   $p2->insertBefore (&s ("IF (LHOOK) CALL DR_HOOK ('DELETE_TEMPORARIES$hook_suffix',0,ZHOOK_HANDLE_FIELD_API)"), $drhook2);
   $p2->insertBefore (&t ("\n"), $drhook2);
 
@@ -1287,7 +1290,12 @@ objects backing local NPROMA arrays.
 
   $p1->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('CREATE_TEMPORARIES$hook_suffix',0,ZHOOK_HANDLE_FIELD_API)"), $drhook1);
   $p1->insertAfter (&t ("\n"), $drhook1);
-  $p1->insertAfter (&t ("\n\nCALL FXTRAN_ACDC_GPUMEMSTAT (__FILE__, __LINE__, \"BEGIN\")\n\n"), $drhook1) if ($gpumemstat);
+  
+
+  if ($gpumemstat)
+    {
+      $p1->insertAfter ($_, $drhook1) for (&t ("\n\n"), &s ("CALL FXTRAN_ACDC_GPUMEMSTAT (FXTRAN_FILE, FXTRAN_LINE, \"BEGIN\")"), &t ("\n\n"));
+    }
 
   $p2->insertBefore (&s ("IF (LHOOK) CALL DR_HOOK ('DELETE_TEMPORARIES$hook_suffix',1,ZHOOK_HANDLE_FIELD_API)"), $drhook2);
   $p2->insertBefore (&t ("\n"), $drhook2);
