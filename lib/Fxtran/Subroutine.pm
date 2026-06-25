@@ -100,6 +100,8 @@ DR_HOOK string nodes accordingly.
   
 }
 
+my %intf;
+
 sub getInterface
 {
 
@@ -112,11 +114,19 @@ Dies if the interface file cannot be found or opened.
 =cut
 
   my ($name, $find) = @_;
-  my $file = $find->getInterface (name => $name);
-  $file or die ("Could not find interface for $name");
-  my $code = do { local $/ = undef; my $fh = 'FileHandle'->new ("<$file"); $fh or die ("Cannot open $file"); <$fh> };
-  my @code = &Fxtran::parse (fragment => $code);
-  my ($intf) = grep { $_->nodeName =~ m/^(?:program-unit|interface-construct)$/o } @code;
+
+  my $intf;
+
+  unless ($intf = $intf{$find}{$name})
+    {
+      my $file = $find->getInterface (name => $name);
+      $file or die ("Could not find interface for $name");
+      my $code = do { local $/ = undef; my $fh = 'FileHandle'->new ("<$file"); $fh or die ("Cannot open $file"); <$fh> };
+      my @code = &Fxtran::parse (fragment => $code);
+      ($intf) = grep { $_->nodeName =~ m/^(?:program-unit|interface-construct)$/o } @code;
+      $intf{$find}{$name} = $intf;
+    }
+
   return $intf;
 }
 
