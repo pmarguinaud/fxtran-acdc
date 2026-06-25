@@ -320,6 +320,14 @@ sub setOpenACCInterfaces
   
 }
 
+sub getAbortStatement
+{
+  my $self = shift;
+  my %args = @_;
+  my $mess = $args{message};
+  return &s ("CALL PRINT_MSG (NVERB_FATAL, '', '', '$mess')");
+}
+
 =head1 SEE ALSO
 
 L<Fxtran::Style>
