@@ -49,20 +49,20 @@ sub makeParallel
   my $style = $par1->getAttribute ('style');
   $style = $style ? 'Fxtran::Style'->new (style => $style) : $opts{style};
 
-  my $FILTER = $par1->getAttribute ('filter');
+  my ($comp) = &F ('./comp', $par1);
 
-  &Fxtran::DIR::removeDIR ($par1);
+  &Fxtran::DIR::removeDIR ($comp);
 
-  my ($do) = &F ('./do-construct', $par1);
+  my ($do) = &F ('./do-construct', $comp);
 
   die unless ($do);
 
-  &Fxtran::Loop::removeNpromaConstructs ($par1, %opts);
+  &Fxtran::Loop::removeNpromaConstructs ($comp, %opts);
 
   if (my $it = $style->customIterator ())
     {
       my $it1 = $style->customIteratorCopy ();
-      my @D = &F ('.//named-E[string(N)="?"]/N/n/text()', $it, $par1);
+      my @D = &F ('.//named-E[string(N)="?"]/N/n/text()', $it, $comp);
       for my $D (@D)
         {
           $D->setData ($it1);
@@ -88,22 +88,7 @@ sub makeParallel
       $x->unbindNode ();
     }
 
-  my ($KLON, $KGPTOT, $KGPBLKS, $JBLKMIN);
-
-  if ($FILTER)
-    {
-      $KLON    = 'YL_FGS%KLON';
-      $KGPTOT  = 'YL_FGS%KGPTOT';
-      $KGPBLKS = 'YL_FGS%KGPBLKS';
-      $JBLKMIN = '1';
-    }
-  else
-    {
-      $KLON    = 'YDCPG_OPTS%KLON';
-      $KGPTOT  = 'YDCPG_OPTS%KGPCOMP';
-      $KGPBLKS = 'YDCPG_OPTS%KGPBLKS';
-      $JBLKMIN = 'YDCPG_OPTS%JBLKMIN';
-    }
+  my ($KLON, $KGPTOT, $KGPBLKS, $JBLKMIN) = ('YDCPG_OPTS%KLON', 'YDCPG_OPTS%KGPCOMP', 'YDCPG_OPTS%KGPBLKS', 'YDCPG_OPTS%JBLKMIN');
 
   my $jlon = $opts{style}->jlon ();
 
@@ -186,7 +171,7 @@ EOF
 
   my @NPROMA = sort grep { $t->{$_}{isFieldAPI} } &F ('.//named-E/N', $do_jlon, 1);
 
-  my ($do_jblk) = &F ('./do-construct/do-stmt[string(do-V)="JBLK"]', $par1);
+  my ($do_jblk) = &F ('./do-construct/do-stmt[string(do-V)="JBLK"]', $comp);
 
   my @priv = &Fxtran::Pointer::Parallel::getPrivateVariables ($do_jlon, $t);
 
@@ -201,12 +186,7 @@ EOF
       push @copyin, 'D';
     }
 
-  if ($FILTER)
-    {
-      push @copyin, 'YL_FGS';
-    }
-
-  $opts{pragma}->insertParallelLoopGang ($do_jblk, 
+  $opts{pragma}->insertParallelLoopGang ($do_jblk->parentNode, 
                                          PRIVATE => ['JBLK'], 
                                          COPYIN => \@copyin,
                                          PRESENT => [@NPROMA, @const, 'YFXTRAN_ACDC_STACK'], 
@@ -216,7 +196,7 @@ EOF
 
   $opts{pragma}->insertLoopVector ($do_jlon, PRIVATE => \@priv);
 
-  &Fxtran::ReDim::redimArguments ($par1) if ($opts{'redim-arguments'});
+  &Fxtran::ReDim::redimArguments ($comp) if ($opts{'redim-arguments'});
 
   return $par1;
 }

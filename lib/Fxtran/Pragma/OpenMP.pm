@@ -35,6 +35,14 @@ use strict;
 use Fxtran;
 use List::MoreUtils qw (uniq);
 
+my $PARSER = 'fxtran::parser'->new ();
+$PARSER->setOptions (qw (Fragment -openmp));
+
+sub openmp
+{
+  return $PARSER->parse (fragment => $_[0]);
+}
+
 sub parallelDo
 {
   my ($p, %c)  = @_;
@@ -74,11 +82,11 @@ sub parallelDo
     {
       if ($i < $#d)
         {
-          $d[$i] = $d[$i] . '&amp;'
+          $d[$i] = $d[$i] . '&'
         }
       if ($i > 0)
         {
-          $d[$i] = '&amp;' . $d[$i];
+          $d[$i] = '&' . $d[$i];
         }
       $d[$i] = "!\$OMP$d[$i]";
     }
@@ -92,8 +100,12 @@ sub parallelDo
     }
 
 
-  $P->insertBefore (&t ("\n"), $p);
-      
+  my $dir = join ("\n", @d, '');
+
+  for my $x (&openmp ($dir))
+    {
+      $P->insertBefore ($x, $p);
+    }
 }
 
 =head1 SEE ALSO

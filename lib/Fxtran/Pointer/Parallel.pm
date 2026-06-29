@@ -47,6 +47,7 @@ use Fxtran::Style::IAL;
 use Fxtran::Style::MESONH;
 use Fxtran::Pragma;
 use Fxtran::Util;
+use Fxtran::Pointer::Filter;
 
 sub processSingleParallel
 {
@@ -91,7 +92,14 @@ EOF
   my @block;
   
   my $name = $parallel->getAttribute ('name') || $ipar;
-  
+
+  my $filter = $parallel->getAttribute ('filter');
+
+  if ($filter)
+    {
+      'Fxtran::Pointer::Filter'->preprocess ($pu, $parallel, $t, %opts);
+    }
+
   # Do it once for all sections
 
   my %parallel;
@@ -158,8 +166,6 @@ EOF
         {
           my @get = &F ('./prep//named-E[string(N)="GET_HOST_DATA_RDONLY" '
                               .     ' or string(N)="GET_HOST_DATA_RDWR" '
-                              .     ' or string(N)="GATHER_HOST_DATA_RDONLY" '
-                              .     ' or string(N)="GATHER_HOST_DATA_RDWR" '
                               .     ' ]/N/n/text()', $parallel1);
           for my $get (@get)
             {
@@ -169,6 +175,11 @@ EOF
         }
 
       push @block, $block;
+
+      if ($filter)
+        {
+          'Fxtran::Pointer::Filter'->apply ($pu, $parallel1, $t, %opts);
+        }
 
     }
 
@@ -277,8 +288,6 @@ required pointers.
   
   my @parallel = &F ('.//parallel-section', $pu);
   
-  my ($FILTER);
-
   my %customIterator;
   
   for my $parallel (@parallel)
@@ -295,21 +304,11 @@ required pointers.
               $customIterator{$it} = $style->customIteratorCopyDecl ();
             }
         }
-      if (my $filter = $parallel->getAttribute ('filter'))
-        {
-          $FILTER ||= 1;
-        }
     }
   
   for (values (%customIterator))
     {
       &Fxtran::Decl::declare ($pu, $_);
-    }
-  
-  if ($FILTER)
-    {
-      &Fxtran::Decl::use ($pu, "USE FIELD_GATHSCAT_MODULE");
-      &Fxtran::Decl::declare ($pu, 'TYPE(FIELD_GATHSCAT) :: YL_FGS');
     }
   
   # Process call to parallel routines
@@ -346,7 +345,7 @@ required pointers.
     }
   
   # Create/delete fields for local arrays
-  
+
   &Fxtran::Pointer::Parallel::setupLocalFields ($pu, $t, '', $opts{gpumemstat});
   
   unless ($opts{'merge-interfaces'})
@@ -899,7 +898,7 @@ sub makeParallel
 
 =head2 makeParallel
 
-Transform a single parallel section: handle filter masks, replace object and
+Transform a single parallel section: replace object and
 array expressions with pointer expressions, set pointer associations from FIELD
 API views, generate the block loop and parallel directives for the chosen
 back-end, and insert sync/compute DR_HOOK regions.
@@ -910,83 +909,19 @@ back-end, and insert sync/compute DR_HOOK regions.
 
   my %POST = map { ($_, 1) } grep { $_ } @$POST;
 
-  my $FILTER = $par->getAttribute ('filter');
-
-  if ($FILTER)
-    {
-
-# Remove the IF condition in this case :
-#
-#  IF (ANY(LLTRIG1(:))) THEN
-#  
-#     CALL SHALLOW_CONVECTION_PART2_SELECT &
-#     & (YDCVP_SHAL, YDCVPEXT, YDCST_MNH, D, YDNSV, YDCONVPAR,                     &
-#     & IKICE, LSETTADJ, OTADJS, ZPABS, ZZZ, ZT, ZRV, ZRC, ZRI,                    &
-#     & LLOCHTRANS, I_KCH1, ZSHAL_ZCH1, ZRDOCP, ZTHT, ZSTHV, ZSTHES, ISDPL, ISPBL, &
-#     & ISLCL, ZSTHLCL, ZSTLCL, ZSRVLCL, ZSWLCL, ZSZLCL, ZSTHVELCL, LLTRIG1,       &
-#     & ZZUMF, ZTTEN, ZRVTEN, ZRCTEN, ZRITEN, ICLTOPS, ICLBASS, ZSHAL_ZCH1TENS,    &   
-#     & COUNT(LLTRIG1(D%NIB:D%NIE)))
-#  
-#  ENDIF
-
-      for my $if_construct (&F ('.//if-construct[./if-block/if-then-stmt[./condition-E/named-E[string(N)="?"]]]', $FILTER, $par))
-        {
-          my @block = &F ('./if-block', $if_construct);
-
-          die ("Multiple blocks in filter") if (scalar (@block) > 1);
-
-          my @node = &F ('./node()', $block[0]);
-
-          pop (@node); shift (@node); # Remove IF (...) THEN & ENDIF
-
-          # Drop if construct
-
-          for (@node)
-            {
-              $if_construct->parent->insertBefore ($_, $if_construct);
-            }
-
-          $if_construct->unbindNode ();
-        }
-    }
-
-  my $SUBROUTINE = $FILTER && $par->getAttribute ('subroutine');
-
-  if ($SUBROUTINE)
-    {
-      my @proc = &F ('.//procedure-designator/named-E/N/n/text()[string(.)="?"]', $SUBROUTINE, $par);
-      for my $proc (@proc)
-        {
-          my $stmt = &Fxtran::stmt ($proc);
-          my @arg = &F ('./arg-spec/arg', $stmt);
-          &Fxtran::removeListElement ($arg[-1]);
-          (my $tt = $proc->textContent) =~ s/_SELECT$//o;
-          $proc->setData ($tt);
-        }
-    }
-
   # Add a loop nest on blocks
 
   my ($stmt) = &F ('.//ANY-stmt', $par);
 
   $stmt or return;
 
-  my ($JBLKMIN, $JBLKMAX);
+  my ($JBLKMIN, $JBLKMAX) = ('YDCPG_OPTS%JBLKMIN', 'YDCPG_OPTS%JBLKMAX');
 
-  if ($FILTER)
-    {
-      ($JBLKMIN, $JBLKMAX) = ('1', 'YL_FGS%KGPBLKS');
-    }
-  else
-    {
-      ($JBLKMIN, $JBLKMAX) = ('YDCPG_OPTS%JBLKMIN', 'YDCPG_OPTS%JBLKMAX');
-    }
-
-  my $loop;
+  my $comp = &n ('<comp/>');
 
   if ($blockLoop)
     {
-      ($loop) = &Fxtran::parse (fragment => << "EOF");
+      my ($loop) = &Fxtran::parse (fragment => << "EOF");
 DO JBLK = $JBLKMIN, $JBLKMAX
 CALL YLCPG_BNDS%UPDATE (JBLK)
 ENDDO
@@ -1000,18 +935,17 @@ EOF
           $p->insertBefore ($node, $enddo);
         }
       
-      $par->appendChild ($loop);
+      $comp->appendChild ($loop);
+      $par->appendChild ($comp);
     }
   else
     {
-      $loop = &n ('<comp/>');
-
       for my $node ($par->childNodes ())
         {
-          $loop->appendChild ($node);
+          $comp->appendChild ($node);
         }
       
-      $par->appendChild ($loop);
+      $par->appendChild ($comp);
     }
 
 
@@ -1029,11 +963,11 @@ EOF
 
   my %intent2access = qw (IN RDONLY INOUT RDWR OUT WRONLY);
 
-  $par->insertBefore (&t ("\n"), $loop);
-  $par->insertBefore (my $prep = &n ('<prep/>'), $loop);
+  $par->insertBefore (&t ("\n"), $comp);
+  $par->insertBefore (my $prep = &n ('<prep/>'), $comp);
 
-  $par->insertAfter (my $nullify = &n ('<nullify/>'), $loop);
-  $par->insertAfter (&t ("\n"), $loop);
+  $par->insertAfter (my $nullify = &n ('<nullify/>'), $comp);
+  $par->insertAfter (&t ("\n"), $comp);
 
   my $synchost;
 
@@ -1043,25 +977,16 @@ EOF
 IF (FXTRAN_ACDC_LSYNCHOST ('$NAME')) THEN
 ENDIF
 EOF
-      $par->insertAfter ($if_construct, $loop);
+      $par->insertAfter ($if_construct, $comp);
       my $if_block = $if_construct->firstChild;
       my $if_then = $if_block->firstChild;
       $if_block->insertAfter ($synchost = &n ('<synchost/>'), $if_then);
       $if_block->insertAfter (&t ("\n"), $if_then);
     }
 
-  $par->insertAfter (&t ("\n"), $loop);
+  $comp->appendChild ($_) for (&t ("\n"), &s ("IF (LHOOK) CALL DR_HOOK ('$NAME:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)"));
 
-  if ($FILTER)
-    {
-      $par->insertAfter (&s ("CALL YL_FGS%SCATTER ()"), $loop);
-      $par->insertAfter (&t ("\n"), $loop);
-      $prep->appendChild (&s ("CALL YL_FGS%INIT (YL_$FILTER, YDCPG_OPTS%KGPTOTB)"));
-      $prep->appendChild (&t ("\n"));
-    }
-
-  $par->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:COMPUTE',1,ZHOOK_HANDLE_COMPUTE)"), $loop);
-  $par->insertAfter (&t ("\n"), $loop);
+  $par->insertAfter (&t ("\n"), $comp);
 
 
   $prep->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:GET_DATA',0,ZHOOK_HANDLE_FIELD_API)"));
@@ -1085,15 +1010,7 @@ EOF
       my $access = $intent2access{$intent{$ptr}};
       my $var = $s->{field}->textContent;
 
-      my $stmt;
-      if ($FILTER)
-        {
-          $stmt = &s ("$ptr => GATHER_HOST_DATA_$access (YL_FGS, $var)");
-        }
-      else
-        {
-          $stmt = &s ("$ptr => GET_HOST_DATA_$access ($var)");
-        }
+      my $stmt = &s ("$ptr => GET_HOST_DATA_$access ($var)");
       $prep->appendChild ($stmt);
       $prep->appendChild (&t ("\n"));
 
@@ -1109,10 +1026,8 @@ EOF
         }
     }
   $prep->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:GET_DATA',1,ZHOOK_HANDLE_FIELD_API)"));
-  $prep->appendChild (&t ("\n"));
 
-  $prep->appendChild (&s ("IF (LHOOK) CALL DR_HOOK ('$NAME:COMPUTE',0,ZHOOK_HANDLE_COMPUTE)"));
-  $prep->appendChild (&t ("\n"));
+  $comp->insertBefore ($_, $comp->firstChild) for (&t ("\n"), &s ("IF (LHOOK) CALL DR_HOOK ('$NAME:COMPUTE',0,ZHOOK_HANDLE_COMPUTE)"));
 
   if ($POST{nullify})
     {
@@ -1311,7 +1226,7 @@ objects backing local NPROMA arrays.
 
   my ($doc, $t, $hook_suffix, $gpumemstat) = @_;
 
-  &Fxtran::Decl::use ($doc, 'USE FXTRAN_ACDC_GPUMEM_MOD');
+  &Fxtran::Decl::use ($doc, 'USE FXTRAN_ACDC_GPUMEM_MOD') if ($gpumemstat);
 
   my @drhook = &F ('.//if-stmt[.//call-stmt[string(.//procedure-designator)="DR_HOOK"]]', $doc);
   @drhook = @drhook[0,-1];
@@ -1325,8 +1240,11 @@ objects backing local NPROMA arrays.
   $p1->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('CREATE_TEMPORARIES$hook_suffix',1,ZHOOK_HANDLE_FIELD_API)"), $drhook1);
   $p1->insertAfter (&t ("\n"), $drhook1);
 
+  if ($gpumemstat)
+    {
+      $p2->insertBefore ($_, $drhook2) for (&t ("\n\n"), &s ("CALL FXTRAN_ACDC_GPUMEMSTAT (FXTRAN_FILE, FXTRAN_LINE, \"END\")"), &t ("\n\n"));
+    }
 
-  $p2->insertBefore (&t ("\nCALL FXTRAN_ACDC_GPUMEMSTAT (__FILE__, __LINE__, \"END\")\n\n"), $drhook2) if ($gpumemstat);
   $p2->insertBefore (&s ("IF (LHOOK) CALL DR_HOOK ('DELETE_TEMPORARIES$hook_suffix',0,ZHOOK_HANDLE_FIELD_API)"), $drhook2);
   $p2->insertBefore (&t ("\n"), $drhook2);
 
@@ -1372,7 +1290,12 @@ objects backing local NPROMA arrays.
 
   $p1->insertAfter (&s ("IF (LHOOK) CALL DR_HOOK ('CREATE_TEMPORARIES$hook_suffix',0,ZHOOK_HANDLE_FIELD_API)"), $drhook1);
   $p1->insertAfter (&t ("\n"), $drhook1);
-  $p1->insertAfter (&t ("\n\nCALL FXTRAN_ACDC_GPUMEMSTAT (__FILE__, __LINE__, \"BEGIN\")\n\n"), $drhook1) if ($gpumemstat);
+  
+
+  if ($gpumemstat)
+    {
+      $p1->insertAfter ($_, $drhook1) for (&t ("\n\n"), &s ("CALL FXTRAN_ACDC_GPUMEMSTAT (FXTRAN_FILE, FXTRAN_LINE, \"BEGIN\")"), &t ("\n\n"));
+    }
 
   $p2->insertBefore (&s ("IF (LHOOK) CALL DR_HOOK ('DELETE_TEMPORARIES$hook_suffix',1,ZHOOK_HANDLE_FIELD_API)"), $drhook2);
   $p2->insertBefore (&t ("\n"), $drhook2);
