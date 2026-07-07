@@ -43,8 +43,10 @@ sub apply
 
   my ($dp) = &F ('./specification-part/declaration-part', $pu);
 
-  my ($comp) = &F ('./comp', $parallel);
-  my ($prep) = &F ('./prep', $parallel);
+  my ($comp    ) = &F ('./comp',    $parallel);
+  my ($prep    ) = &F ('./prep',    $parallel);
+  my ($nullify ) = &F ('./nullify', $parallel);
+  my ($synchost) = &F ('.//synchost', $parallel);
 
   my %data;
 
@@ -83,12 +85,23 @@ sub apply
       $dp->insertAfter ($_, $decl) for ($declg, &t ("\n"));
     }
 
-  for my $n (&F ('.//named-E/N/n/text()', $parallel))
+  for my $p ($prep, $comp, $nullify)
     {
-      next unless ($data{$n->textContent});
-      $n->setData ("${n}_GATHER");
+      for my $n (&F ('.//named-E/N/n/text()', $p))
+        {
+          next unless ($data{$n->textContent});
+          $n->setData ("${n}_GATHER");
+        }
     }
 
+  # Nullify pointers after synchronization on the host
+  
+  for my $pa (&F ('./pointer-a-stmt', $synchost))
+    {
+      my ($n) = &F ('./E-1', $pa, 1);
+      next unless ($data{$n});
+      $synchost->insertAfter ($_, $pa) for (&s ("$n => NULL ()"), &t ("\n"));
+    }
 
   # Initialize bounds with the set of gathered points 
 
