@@ -89,6 +89,9 @@ sub apply
       $n->setData ("${n}_GATHER");
     }
 
+
+  # Initialize bounds with the set of gathered points 
+
   for my $call (&F ('.//call-stmt[string(procedure-designator)="YLCPG_BNDS%INIT"]', $parallel))
     {
       $call->replaceNode (&s ("CALL YLCPG_BNDS%INIT (YL_FGS%KLON, YL_FGS%KGPTOT)"));
@@ -115,6 +118,8 @@ sub apply
       $stel->appendChild ($_) for (&e ('YFXTRAN_ACDC_STACK'), &t (', '), &e ('(JBLK-1)+1'), &t (', '), &e ('YL_FGS%KGPBLKS'));
     }
 
+  # Replace with target subroutine 
+
   my $SUBROUTINE = uc ($parallel->getAttribute ('subroutine'));
   (my $SUB = $SUBROUTINE) =~ s/_SELECT$//o;
 
@@ -132,7 +137,11 @@ sub apply
         }
     }
 
+  # Scatter back after computations
+
   $comp->appendChild ($_) for (&t ("\n"), &s ('CALL YL_FGS%SCATTER ()'));
+
+  # Load gather object on the device
 
   my $pragma = $opts{pragma};
 
