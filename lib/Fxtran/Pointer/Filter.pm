@@ -15,6 +15,7 @@ sub preprocess
   my ($pu, $parallel, $t, %opts) = @_;
 
   my $SUBROUTINE = uc ($parallel->getAttribute ('subroutine'));
+  my $collapse = $parallel->getAttribute ('collapse') || 1;
 
   for my $call (&F ('.//call-stmt[string(procedure-designator)="?"]', $SUBROUTINE, $parallel))
     {
@@ -25,8 +26,20 @@ sub preprocess
         }
     }
 
-  &Fxtran::Decl::use ($pu, 'USE FIELD_GATHSCAT_MODULE');
-  &Fxtran::Decl::declare ($pu, 'TYPE(FIELD_GATHSCAT) :: YL_FGS');
+  if ($collapse == 2)
+    {
+      &Fxtran::Decl::use ($pu, "USE FIELD_GATHSCAT_COLLAPSE${collapse}_MODULE");
+      &Fxtran::Decl::declare ($pu, "TYPE(FIELD_GATHSCAT_COLLAPSE${collapse}) :: YL_FGS");
+    }
+  elsif ($collapse == 1)
+    {
+      &Fxtran::Decl::use ($pu, 'USE FIELD_GATHSCAT_MODULE');
+      &Fxtran::Decl::declare ($pu, 'TYPE(FIELD_GATHSCAT) :: YL_FGS');
+    }
+  else
+    {
+      die;
+    }
 }
 
 sub apply
@@ -34,6 +47,8 @@ sub apply
   shift;
 
   my ($pu, $parallel, $t, %opts) = @_;
+
+  my $collapse = $parallel->getAttribute ('collapse') || 1;
 
 # pu = program unit
 # parallel = parallel section
@@ -80,9 +95,37 @@ sub apply
 
       my ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $n, $dp);
       my $declg = $decl->cloneNode (1);
-      my ($t) = &F ('.//EN-N/N/n/text()', $declg);
+
+      my ($en_decl) = &F ('.//EN-decl',, $declg);
+      my ($t) = &F ('./EN-N/N/n/text()', $en_decl);
+
       $t->setData ("${n}_GATHER");
       $dp->insertAfter ($_, $decl) for ($declg, &t ("\n"));
+
+      if ($collapse == 2) # Drop first dimension
+        {
+          my @ss = &F ('./array-spec/shape-spec-LT/node()', $en_decl);
+          for ($ss[0], $ss[1])
+            {
+              $_->unbindNode ();
+            }
+        }
+    }
+
+  if ($collapse == 2) # Merge first two dimensions
+    {
+      for my $expr (&F ('.//named-E', $comp))
+        {
+          my ($n) = &F ('./N', $expr, 1);
+          next unless ($data{$n});
+ 
+          my @ss = &F ('./R-LT/array-R/section-subscript-LT/node()', $expr);
+
+          for ($ss[1], $ss[2])
+            {
+              $_->unbindNode ();
+            }
+        }
     }
 
   for my $p ($prep, $comp, $nullify)
@@ -134,20 +177,24 @@ sub apply
   # Replace with target subroutine 
 
   my $SUBROUTINE = uc ($parallel->getAttribute ('subroutine'));
-  (my $SUB = $SUBROUTINE) =~ s/_SELECT$//o;
+
+
+  my $SUB = $parallel->getAttribute ('targetsubroutine');
+
+  if ($SUB)
+    {
+      $SUB = uc ($SUB);
+    }
+  else
+    {
+      ($SUB = $SUBROUTINE) =~ s/_SELECT$//o;
+    }
 
   for my $call (&F ('.//call-stmt[starts-with(string(procedure-designator),"?")]', $SUBROUTINE, $parallel))
     {
       my ($proc) = &F ('./procedure-designator/ANY-E', $call);
       (my $suff = $proc->textContent) =~ s/^$SUBROUTINE//;
       $proc->replaceNode (&e ("$SUB$suff"));
-
-      my @arg = grep { $_->getAttribute ('origin')  } &F ('./arg-spec/arg', $call);
-      
-      for ($arg[-1]->previousSibling, $arg[-1])
-        {
-          $_->unbindNode ();
-        }
     }
 
   # Scatter back after computations
