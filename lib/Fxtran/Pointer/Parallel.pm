@@ -164,9 +164,9 @@ EOF
 
       if ($where ne 'HOST')
         {
-          my @get = &F ('./prep//named-E[string(N)="GET_HOST_DATA_RDONLY" '
-                              .     ' or string(N)="GET_HOST_DATA_RDWR" '
-                              .     ' ]/N/n/text()', $parallel1);
+          my @get = &F ('./prep//call-stmt[string(procedure-designator)="SGET_HOST_DATA_RDONLY" '
+                                .     ' or string(procedure-designator)="SGET_HOST_DATA_RDWR" '
+                                .     ' ]/N/n/text()', $parallel1);
           for my $get (@get)
             {
               (my $t = $get->data) =~ s/_HOST_/_${where}_/go;
@@ -1010,7 +1010,7 @@ EOF
       my $access = $intent2access{$intent{$ptr}};
       my $var = $s->{field}->textContent;
 
-      my $stmt = &s ("$ptr => GET_HOST_DATA_$access ($var)");
+      my $stmt = &s ("CALL SGET_HOST_DATA_$access ($ptr, $var)");
       $prep->appendChild ($stmt);
       $prep->appendChild (&t ("\n"));
 
@@ -1021,7 +1021,7 @@ EOF
         }
       if ($POST{synchost})
         {
-          $synchost->appendChild (&s ("$ptr => GET_HOST_DATA_RDWR ($var)"));
+          $synchost->appendChild (&s ("CALL SGET_HOST_DATA_RDWR ($ptr, $var)"));
           $synchost->appendChild (&t ("\n"));
         }
     }

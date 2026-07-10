@@ -65,25 +65,27 @@ sub apply
 
   my %data;
 
+
 # Change simple field GET by a GATHER operation
 
-  for my $get (&F ('.//named-E[string(N)="GET_HOST_DATA_RDONLY" '
-                    .     ' or string(N)="GET_HOST_DATA_RDWR" '
-                    .     ' or string(N)="GET_DEVICE_DATA_RDONLY" '
-                    .     ' or string(N)="GET_DEVICE_DATA_RDWR" '
-                    .     ' ]', $prep))
+  for my $get (&F ('.//call-stmt[string(procedure-designator)="SGET_HOST_DATA_RDONLY" '
+                       .    ' or string(procedure-designator)="SGET_HOST_DATA_RDWR" '
+                       .    ' or string(procedure-designator)="SGET_DEVICE_DATA_RDONLY" '
+                       .    ' or string(procedure-designator)="SGET_DEVICE_DATA_RDWR" '
+                       .    ' ]', $prep))
     {
-      my ($tt) = &F ('./N/n/text()', $get);
+      my ($tt) = &F ('./procedure-designator/named-E/N/n/text()', $get);
 
-      (my $t = $tt->data) =~ s/^GET_/GATHER_/go;
+      (my $t = $tt->data) =~ s/^SGET_/SGATHER_/go;
       $tt->setData ($t);
 
-      my ($elt) = &F ('./R-LT/parens-R/element-LT', $get);
-      $elt->insertBefore ($_, $elt->firstChild) for (&t(', '), &e ('YL_FGS'));
 
-      my $stmt = &Fxtran::stmt ($get);
-     
-      my ($n) = &F ('./E-1', $stmt, 1);
+      my ($argspec) = &F ('./arg-spec', $get);
+      $argspec->insertBefore ($_, $argspec->firstChild) for (&t(', '), &n ('<arg>' . &e ('YL_FGS')->toString . '</arg>'));
+
+      my @arg = &F ('./arg', $argspec);
+
+      my $n = $arg[1]->textContent;
       $data{$n} = 1;
     }
 
@@ -94,6 +96,7 @@ sub apply
       next if (&F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', "${n}_GATHER", $dp));
 
       my ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $n, $dp);
+
       my $declg = $decl->cloneNode (1);
 
       my ($en_decl) = &F ('.//EN-decl',, $declg);
@@ -112,7 +115,7 @@ sub apply
         }
     }
 
-  if ($collapse == 2) # Merge first two dimensions
+  if ($collapse == 2) # Merge first two dimensions in compute section
     {
       for my $expr (&F ('.//named-E', $comp))
         {
@@ -127,7 +130,9 @@ sub apply
             }
         }
     }
-
+ 
+  # Replace ZFLD by ZFLD_GATHER
+ 
   for my $p ($prep, $comp, $nullify)
     {
       for my $n (&F ('.//named-E/N/n/text()', $p))
@@ -139,9 +144,9 @@ sub apply
 
   # Nullify pointers after synchronization on the host
   
-  for my $pa (&F ('./pointer-a-stmt', $synchost))
+  for my $pa (&F ('./call-stmt', $synchost))
     {
-      my ($n) = &F ('./E-1', $pa, 1);
+      my ($n) = &F ('./arg-spec/arg/named-E', $pa, 1);
       next unless ($data{$n});
       $synchost->insertAfter ($_, $pa) for (&s ("$n => NULL ()"), &t ("\n"));
     }
