@@ -588,7 +588,7 @@ IF (102<=KWIS.AND.KWIS<=106) THEN
     ENDDO
 
 
-    IF (ANY (ABS (KNOWENO (JROF, 1:KFLEV))>1+IBCLIM))  THEN
+    IF (ABS (KNOWENO (JROF, 1:KFLEV))>1+IBCLIM)  THEN
       CALL FXTRAN_ACDC_ABORT (' LASCAW: Something strange is happening about level shifts.')
     ENDIF
 
