@@ -59,13 +59,15 @@ sub makeParallel
 
   &Fxtran::Loop::removeNpromaConstructs ($comp, %opts);
 
-  if (my $it = $style->customIterator ())
+  my $customIterator;
+
+  if ($customIterator = $style->customIterator ())
     {
-      my $it1 = $style->customIteratorCopy ();
-      my @D = &F ('.//named-E[string(N)="?"]/N/n/text()', $it, $comp);
+      my $it = $style->customIteratorCopy ();
+      my @D = &F ('.//named-E[string(N)="?"]/N/n/text()', $customIterator, $comp);
       for my $D (@D)
         {
-          $D->setData ($it1);
+          $D->setData ($it);
         }
     }
 
@@ -180,10 +182,10 @@ EOF
   my @const = grep { ! $priv{$_} } &Fxtran::Pointer::Parallel::getConstantObjects ($do_jlon, $t);
 
   my @copyin;
-  
-  if ($style eq 'MESONH')
+
+  if ($customIterator)
     {
-      push @copyin, 'D';
+      push @copyin, $customIterator;
     }
 
   $opts{pragma}->insertParallelLoopGang ($do_jblk->parentNode, 
