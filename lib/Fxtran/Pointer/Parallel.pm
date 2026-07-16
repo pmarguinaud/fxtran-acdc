@@ -164,9 +164,11 @@ EOF
 
       if ($where ne 'HOST')
         {
-          my @get = &F ('./prep//call-stmt[string(procedure-designator)="SGET_HOST_DATA_RDONLY" '
-                                .     ' or string(procedure-designator)="SGET_HOST_DATA_RDWR" '
-                                .     ' ]/N/n/text()', $parallel1);
+          my ($prep) = &F ('./prep', $parallel1);
+          my @get = &F ('.//call-stmt/procedure-designator/named-E/N/n/text()[string(.)="SGET_HOST_DATA_RDONLY" '
+                                                                   .     ' or string(.)="SGET_HOST_DATA_RDWR" '
+                                                                   .     ' ]', $prep);
+
           for my $get (@get)
             {
               (my $t = $get->data) =~ s/_HOST_/_${where}_/go;
