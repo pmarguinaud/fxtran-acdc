@@ -406,13 +406,15 @@ Apply the full singlecolumn transformation to a subroutine program unit, produci
 
   my ($pu, %opts) = @_;
 
+  my $style = $opts{style};
+
   # Process ABORT sections
 
   for my $abort (&F ('.//abort-section', $pu))
     {    
       $_->unbindNode () for ($abort->childNodes ());
       $abort->appendChild ($_) 
-        for (&s ('CALL ABOR1 ("ERROR: WRONG SETTINGS")'), &t ("\n"));
+        for ($style->getAbortStatement (message => "ERROR: WRONG SETTINGS"), &t ("\n"));
     }    
 
   # Process SKIP sections
@@ -467,6 +469,7 @@ Apply the full singlecolumn transformation to a subroutine program unit, produci
     style => $opts{style},
     pointer => \@pointer,
     'stack-method' => $opts{'stack-method'},
+    dummy => $opts{dummy},
   );
 
   if ($opts{dummy})

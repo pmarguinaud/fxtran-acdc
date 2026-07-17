@@ -141,7 +141,7 @@ with C<F>.
           $p->setNodeName ('function-R');
           goto DONE;
         }
- 
+
       &Fxtran::Ref::parensToArrayRef ($p);
 
 DONE:

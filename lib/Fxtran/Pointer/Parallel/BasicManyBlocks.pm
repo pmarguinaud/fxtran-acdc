@@ -26,8 +26,6 @@ sub makeParallel
 
   my @nproma = $style->nproma (); my %nproma = map { ($_, 1) } @nproma;
 
-  my $FILTER = $par1->getAttribute ('filter');
-
   if (my $it = $style->customIterator ())
     {
       my $it1 = $style->customIteratorCopy ();
@@ -38,22 +36,7 @@ sub makeParallel
         }
     }
 
-  my ($KLON, $KGPTOT, $KGPBLKS, $JBLKMIN);
-
-  if ($FILTER)
-    {
-      $KLON    = 'YL_FGS%KLON';
-      $KGPTOT  = 'YL_FGS%KGPTOT';
-      $KGPBLKS = 'YL_FGS%KGPBLKS';
-      $JBLKMIN = '1';
-    }
-  else
-    {
-      $KLON    = 'YDCPG_OPTS%KLON';
-      $KGPTOT  = 'YDCPG_OPTS%KGPCOMP';
-      $KGPBLKS = 'YDCPG_OPTS%KGPBLKS';
-      $JBLKMIN = 'YDCPG_OPTS%JBLKMIN';
-    }
+  my ($KLON, $KGPTOT, $KGPBLKS, $JBLKMIN) = ('YDCPG_OPTS%KLON', 'YDCPG_OPTS%KGPCOMP', 'YDCPG_OPTS%KGPBLKS', 'YDCPG_OPTS%JBLKMIN');
 
   my (%var2dim, %typearg);
 
@@ -96,7 +79,7 @@ sub makeParallel
 
   my ($comp) = &F ('./comp', $par1);
 
-  $comp->insertBefore ($_, $comp->firstChild) for (&s ("YLOFFSET = FXTRAN_ACDC_STACK (0, 0, 0, 0)"), &t ("\n"));
+  $comp->insertBefore ($_, $comp->firstChild) for (&t ("\n"), &s ("YLOFFSET = FXTRAN_ACDC_STACK (0, 0, 0, 0)"), &t ("\n"));
 
   my $pragma = $opts{pragma};
 
@@ -115,6 +98,7 @@ sub makeParallel
       my ($proc) = &F ('./procedure-designator/named-E/N/n/text()', $call);
 
       next if ($proc->textContent eq 'ABOR1');
+      next if ($proc->textContent eq 'DR_HOOK');
       next if ($proc =~ m/$opts{'suffix-singlecolumn'}$/i);
 
       if (my $it = $style->customIterator ())

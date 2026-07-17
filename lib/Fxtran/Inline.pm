@@ -330,8 +330,6 @@ Inline a single CALL statement by replacing dummy arguments with actuals, removi
 
           my @ss_aa = &F ('./shape-spec-LT/shape-spec', $as_aa, 1);
 
-          die if (&F ('./R-LT/parens-R', $aa));
-
           for (@ss_aa)
             {
               s/\s+//go;
@@ -700,10 +698,13 @@ Sort a list of contained subroutine name nodes so that subroutines called by no 
     {
       my @pu = &F ('ancestor::program-unit', $n2);
       my $pu2 = pop (@pu); # pu2 is the program unit of n2
+
+      my ($ep2) = &F ('./execution-part', $pu2);
+
       for my $n (@n2)
         {
           $ref{$n2->textContent}{$n->textContent} = 
-          &F ('.//call-stmt[string(procedure-designator)="?"]', $n->textContent, $pu2) && 1;
+          &F ('.//call-stmt[string(procedure-designator)="?"]', $n->textContent, $ep2) && 1;
         }
     }
 
@@ -743,6 +744,86 @@ Sort a list of contained subroutine name nodes so that subroutines called by no 
   return @s2;
 }
 
+sub containedFunctionToSubroutine
+{
+  my ($d1, $f2, %opts) = @_;
+
+  my ($dp1) = &F ('./specification-part/declaration-part', $d1);
+
+  my $n2 = $f2->textContent;
+
+  # Transform pu2 FUNCTION into a SUBROUTINE
+
+  my @pu = &F ('ancestor::program-unit', $f2);
+  my $pu2 = pop (@pu);
+
+  my $f = $pu2->firstChild;
+  my $l = $pu2->lastChild;
+
+  # Add an INTENT to the result
+
+  my ($rs) = &F ('./result-spec', $f);
+  my ($r) = &F ('./N/n', $rs, 1);
+ 
+  die unless ($r);
+
+  my ($dp2) = &F ('./specification-part/declaration-part', $pu2);
+
+  my ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $r, $dp2);
+
+  die unless ($decl); 
+
+  # Declare temporary variable to hold function result
+
+  my $decl2 = $decl->cloneNode (1);
+  my ($N1) = &F ('./EN-decl-LT/EN-decl/EN-N/N/n/text()', $decl2); $N1->setData ("${n2}TMP");
+  &Fxtran::Decl::declare ($d1, $decl2);
+
+
+  my ($ts) = &F ('./_T-spec_', $decl); 
+
+  $decl->insertAfter ($_, $ts) for (&n ("<attribute><attribute-N>INTENT</attribute-N> (<intent-spec>OUT</intent-spec>)</attribute>"), &t (", "));
+
+  # Add the result as an extra argument
+
+  my ($dal2) = &F ('./dummy-arg-LT', $f);
+  $dal2->appendChild ($_) for (&t (", "), &n ("<arg-N><N><n>$r</n></N></arg-N>"));
+
+
+  # Replace function-stmt / end-function-stmt by subroutine-stmt / end-subroutine-stmt
+
+  my $sub = &n ("<subroutine-stmt>SUBROUTINE <subroutine-N><N><n>" . $n2 . "</n></N></subroutine-N> (<dummy-arg-LT/>)</subroutine-stmt>");
+
+  for (&F ('./dummy-arg-LT', $sub))
+    {
+      $_->replaceNode ($dal2);
+    }
+
+  $f->replaceNode ($sub);
+
+  $l->replaceNode (&n ("<end-subroutine-stmt>ENDSUBROUTINE</end-subroutine-stmt>"));
+  
+  # Find function expressions & replace them with calls
+  
+  for my $expr (&F ('.//named-E[string(N)="?"][./R-LT/function-R]', $n2, $d1))
+    {
+      my $stmt = &Fxtran::stmt ($expr);
+
+#print &Dumper ([$stmt->textContent]);
+
+      my $p = $stmt->parentNode;
+
+      my ($argspec) = &F ('./R-LT/function-R/element-LT', $expr);
+
+      my $call = &s ("CALL $n2 (" . $argspec->textContent . ", ${n2}TMP)");
+
+#print &Dumper ([$call->textContent]);
+
+      $p->insertBefore ($_, $stmt) for ($call, &t ("\n"));
+      $expr->replaceNode (&e ("${n2}TMP"));
+    }
+}
+
 sub inlineContainedSubroutines
 {
 
@@ -758,13 +839,19 @@ Remove the CONTAINS statement and the CONTAINed subroutines.
 
   my ($d1, %opts) = @_;
 
+  my @f2 = &F ('./program-unit/function-stmt/function-N/N/n/text()', $d1);
+
+  for my $f2 (@f2)
+    {
+      &containedFunctionToSubroutine ($d1, $f2, %opts);
+    }
+
   my @n2 = &F ('./program-unit/subroutine-stmt/subroutine-N/N/n/text()', $d1);
 
   @n2 = &sortContainedSubroutines (@n2);
 
   for my $n2 (@n2)
     {
-
       &inlineContainedSubroutine ($d1, $n2, %opts);
 
       my @pu = &F ('ancestor::program-unit', $n2);

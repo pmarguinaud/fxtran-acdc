@@ -68,6 +68,38 @@ into the parent.
 
 }
 
+sub fixANYidiom
+{
+  my ($s, %opts) = @_;
+
+  my $jlon  = $opts{style}->jlon ();
+  my $kidia = $opts{style}->kidia ();
+  my $kfdia = $opts{style}->kfdia ();
+
+  my $JLONSUB = &n ("<section-subscript><lower-bound><named-E><N><n>$jlon</n></N></named-E></lower-bound></section-subscript>");
+
+  for my $ANY (&F ('.//named-E[string(N)="ANY"]', $s))
+    {
+      my @ss = &F ('.//section-subscript', $ANY);
+
+      @ss = grep { $_->textContent eq "$kidia:$kfdia" } @ss;
+
+      next unless (@ss);
+
+      # This is a logical expression involving NPROMA variables; drop the ANY and scalarize
+      # we assume this is a 1D array
+
+      for my $ss (@ss)
+        {
+          $ss->replaceNode ($JLONSUB->cloneNode (1));
+        }
+     
+      my ($arg) = &F ('./R-LT/function-R/element-LT/element/ANY-E', $ANY);
+
+      $ANY->replaceNode ($arg);
+    }
+}
+
 sub fixCOUNTIdiom
 {
 
@@ -181,6 +213,7 @@ C<var2dim>.
 
   &fixSUMIdiom ($s, %opts);
   &fixCOUNTIdiom ($s, %opts);
+  &fixANYidiom ($s, %opts);
  
   &removeNpromaConstructs ($s, %opts);
   

@@ -125,6 +125,8 @@ now) are excluded. This works on a code section.
 
   my ($s, %opts) = @_;
 
+  return if ($opts{dummy});
+
   my $skip = $opts{skip};
 
   my @call = $s ? &F ('.//call-stmt', $s) : ();

@@ -133,6 +133,20 @@ sub preProcessForOpenACC
         }
     }
 
+  for my $expr (&F ('.//named-E[string(.)="D%NIJB" or string(.)="D%NIJE"]', $d))
+    {
+      my $tt = $expr->textContent;
+
+      if ($tt eq 'D%NIJB')
+        {
+          $expr->replaceNode (&e ($kidia));
+        }
+      elsif ($tt eq 'D%NIJE')
+        {
+          $expr->replaceNode (&e ($kfdia));
+        }
+    }
+
 }
 
 sub handleMessages
@@ -318,6 +332,14 @@ sub setOpenACCInterfaces
       }
   }
   
+}
+
+sub getAbortStatement
+{
+  my $self = shift;
+  my %args = @_;
+  my $mess = $args{message};
+  return &s ("CALL PRINT_MSG (NVERB_FATAL, '', '', '$mess')");
 }
 
 =head1 SEE ALSO

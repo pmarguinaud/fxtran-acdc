@@ -24,6 +24,14 @@ sub import
 {
   my $c;
 
+  eval "use fxtran";
+
+  # fxtran available (/usr or $PERL5LIB) ?
+
+  return unless ($c = $@);
+
+  # Try ~/perl5
+
   eval "use local::lib";
 
   return unless ($c = $@);

@@ -240,6 +240,14 @@ Return the actual nproma argument used in a program unit, by matching dummy argu
 
 }
 
+sub getAbortStatement
+{
+  my $self = shift;
+  my %args = @_;
+  my $mess = $args{message};
+  return &s ("CALL ABOR1 ('$mess')");
+}
+
 =head1 SEE ALSO
 
 L<Fxtran::Style::MFPHYS>, L<Fxtran::Style::IAL>, L<Fxtran::Style::ECPHYS>, L<Fxtran::Style::MESONH>.
