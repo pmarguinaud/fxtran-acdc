@@ -119,9 +119,12 @@ sub apply
     {
       for my $expr (&F ('.//named-E', $comp))
         {
+          my $stmt = &Fxtran::stmt ($expr);
+          next unless ($stmt); # expr may belong to an OpenACC or OpenMP directive
+
           my ($n) = &F ('./N', $expr, 1);
           next unless ($data{$n});
- 
+
           my @ss = &F ('./R-LT/array-R/section-subscript-LT/node()', $expr);
 
           for ($ss[1], $ss[2])
