@@ -487,6 +487,12 @@ Apply the manyblocks transformation to a single subroutine program unit.
         for (&s ('CALL ABOR1 ("ERROR: WRONG SETTINGS")'), &t ("\n"));
     }    
 
+  # Process SKIP sections
+  for my $skip (&F ('.//skip-section', $pu))
+    {    
+      $skip->unbindNode ();
+    }
+
   my $find = $opts{find};
 
   my $KGPBLKS = 'KGPBLKS';
@@ -494,8 +500,21 @@ Apply the manyblocks transformation to a single subroutine program unit.
   my $style = $opts{style};
   my $pragma = $opts{pragma};
 
+
+  if ($opts{dummy})
+    {
+      &Fxtran::Interface::intfbBodyProgramUnit ($pu);
+      &Fxtran::Interface::intfbBodyCleaning ($pu);
+      my ($end) = &F ('./end-subroutine-stmt', $pu);  
+      my $ep = &n ('<execution-part/>');
+      my $abort = &s ('CALL FXTRAN_ACDC_ABORT ("ERROR : WRONG SETTINGS")');
+      $ep->appendChild ($abort);
+      $end->parentNode->insertBefore ($_, $end) for ($ep, &t ("\n"));
+    }#dummy
+
   my ($dp) = &F ('./specification-part/declaration-part', $pu);
   my ($ep) = &F ('./execution-part', $pu);
+
   
   my @nproma = $style->nproma ();
 
@@ -548,21 +567,26 @@ Apply the manyblocks transformation to a single subroutine program unit.
 
         @present = grep { ! $optional{$_} } @present;
 
-        $pragma->insertData ($ep, PRESENT => \@present, CREATE => [grep { ! $argument{$_} } sort keys (%target)], IF => ['LDACC']);
-
-        for my $n (sort keys (%optional))
+        unless ($opts{dummy})
           {
-            $pragma->insertData ($ep, PRESENT => [$n], IF => ["LDACC .AND. PRESENT ($n)"]);
-          }
-
+           $pragma->insertData ($ep, PRESENT => \@present, CREATE => [grep { ! $argument{$_} } sort keys (%target)], IF => ['LDACC']);
+   
+           for my $n (sort keys (%optional))
+             {
+               $pragma->insertData ($ep, PRESENT => [$n], IF => ["LDACC .AND. PRESENT ($n)"]);
+             }
+          }#dummy
       }  
     else
       {
         my @present = grep { $var2dim->{$_} || ($typearg->{$_} && (! $notpresentttype{$typearg->{$_}})) } @argument;
         my @create = grep { ! $argument{$_} } sort (keys (%$var2dim));
-       
-        # Create local arrays, assume argument arrays are on the device
-        $pragma->insertData ($ep, PRESENT => \@present, CREATE => \@create, IF => ['LDACC']);
+
+        unless ($opts{dummy})
+          {       
+          # Create local arrays, assume argument arrays are on the device
+          $pragma->insertData ($ep, PRESENT => \@present, CREATE => \@create, IF => ['LDACC']);
+          }#dummy
       }
 
   }
@@ -645,7 +669,7 @@ Apply the manyblocks transformation to a single subroutine program unit.
             }
         }
     }
-  
+
   # Add extra arguments : LDACC, KGPBLKS, YDOFFSET
   
   {
@@ -753,6 +777,7 @@ NPROMA:
   &Fxtran::Decl::declare ($pu, 'INTEGER :: JBLK');
 
   &Fxtran::Subroutine::addSuffix ($pu, $opts{'suffix-manyblocks'});
+
 
   &stackAllocateTemporaries ($pu, $var2dim, %opts)
     if ($opts{'use-stack-manyblocks'});
@@ -893,24 +918,171 @@ Apply the manyblocks transformation to all subroutines within a module.
 
 =cut
 
-  my ($pu, %opts) = @_;
+  my ($d, %opts) = @_;
 
-  my @pu = &F ('./program-unit', $pu);
+  my $find = $opts{find};
 
-  &Fxtran::Module::addSuffix ($pu, $opts{'suffix-manyblocks'});
+  my @pu = &F ('./program-unit', $d);
 
   for my $pu (@pu)
     {
-      my ($stmt) = &F ('./ANY-stmt', $pu);
-      if ($stmt->nodeName eq 'subroutine-stmt')
+      &processSingleRoutine ($pu, %opts);
+    }
+
+  my ($dp) = &F ('./specification-part/declaration-part', $d);
+
+  if ($opts{'process-interfaces'})
+    {
+      my @pu = &F ('./interface-construct/program-unit', $dp);
+     
+      for my $pu (@pu)
         {
-          &Fxtran::ManyBlocks::processSingleRoutine ($pu, %opts);
-        }
-      else
-        {
-          die ("Unexpected program unit " . $stmt->nodeName);
+          &processSingleInterface ($pu, %opts);
         }
     }
+
+  &Fxtran::Module::addSuffix ($d, $opts{'suffix-manyblocks'});
+
+#  my ($pu, %opts) = @_;
+#
+#  my @pu = &F ('./program-unit', $pu);
+#
+#  &Fxtran::Module::addSuffix ($pu, $opts{'suffix-manyblocks'});
+#
+#  for my $pu (@pu)
+#    {
+#      my ($stmt) = &F ('./ANY-stmt', $pu);
+#      if ($stmt->nodeName eq 'subroutine-stmt')
+#        {
+#          &Fxtran::ManyBlocks::processSingleRoutine ($pu, %opts);
+#        }
+#      else
+#        {
+#          die ("Unexpected program unit " . $stmt->nodeName);
+#        }
+#    }
+#
+}
+
+#added to process interfaces
+sub processSingleInterface
+{
+
+=head2 processSingleInterface
+
+Apply the manyblocks transformation to an interface body within a module.
+
+=cut
+
+  my ($d, %opts) = @_;
+
+  my $find = $opts{find};
+  my $style = $opts{style};
+  my @nproma = $style->nproma ();
+
+  my $end = $d->lastChild;
+
+  my $var2dim = &Fxtran::Loop::getVarToDim ($d, style => $style);
+
+  if ($opts{'value-attribute'})
+    {
+      &addValueAttribute ($d);
+    }
+
+  my ($dp)=&F ('./specification-part/declaration-part', $d);
+  my $KGPBLKS    = 'KGPBLKS';
+  print "affichage de d \n";
+  print "$d \n";
+  # Add extra arguments : LDACC, KGPBLKS, YDOFFSET
+  
+  my ($dal) = &F ('./subroutine-stmt/dummy-arg-LT', $d);
+  my @arg = &F ('./arg-N', $dal, 1);
+
+  my ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $arg[-1], $dp);
+
+  $dp->insertAfter ($_, $decl) for (&s ("LOGICAL, INTENT (IN) :: LDACC"), &t ("\n"));
+  $dp->insertAfter ($_, $decl) for (&s ("INTEGER, INTENT (IN) :: $KGPBLKS"), &t ("\n"));
+
+  $dal->appendChild ($_) for (&t (", "), &n ("<arg-N>LDACC</arg-N>"));
+  $dal->appendChild ($_) for (&t (", "), &n ("<arg-N>$KGPBLKS</arg-N>"));
+
+  if ($opts{'use-stack-manyblocks'})
+    {
+      $dp->insertAfter ($_, $decl) for (&s ("TYPE (FXTRAN_ACDC_STACK), INTENT (IN) :: YDOFFSET"), &t ("\n"));
+      $dal->appendChild ($_) for (&t (", "), &n ("<arg-N>YDOFFSET</arg-N>"));
+    }
+
+  for my $stmt (&F ('./T-decl-stmt', $dp))
+    {
+      next unless (my ($as) = &F ('./EN-decl-LT/EN-decl/array-spec', $stmt));
+      my ($n) = &F ('./EN-decl-LT/EN-decl/EN-N', $stmt, 1);
+
+      my ($sslt) = &F ('./shape-spec-LT', $as);
+
+      my @ss = &F ('./shape-spec', $sslt);
+
+      goto NPROMA if (($ss[0]->textContent eq ':') && $var2dim->{$n});
+
+      for my $nproma (@nproma)
+        {
+          goto NPROMA if ($ss[0]->textContent eq $nproma);
+
+          if (my ($expr) = &F ('./upper-bound/named-E[./R-LT/function-R][string(N)="MERGE"]', $ss[0]))
+            {
+              my @arg = &F ('./R-LT/function-R/element-LT/element/ANY-E', $expr);
+              goto NPROMA if ($arg[0]->textContent eq $nproma);
+            }
+        }
+
+      next;
+
+NPROMA:
+
+     if (&F ('./attribute[string(attribute-N)="INTENT"]', $stmt))
+       {
+         # Dummy argument : use implicit shape
+
+         my $comment = $as->textContent;
+
+         my $iss = &n ('<shape-spec>:</shape-spec>');
+
+         for my $ss (@ss)
+           {
+             next unless (my ($ub) = &F ('./upper-bound', $ss));  # Only for dimensions with upper-bound : (N1:N2) or (N)
+             if (my ($lb) = &F ('./lower-bound', $ss))
+               {
+                 $ub->unbindNode ();                              # (N1:N2) -> (N1:)
+               }
+             else
+               {
+                 $ub->replaceNode ($iss->cloneNode (1));          # (N) -> (:)
+               }
+           }
+
+         $sslt->appendChild ($_) for (&t (", "), $iss);
+
+         $dp->insertAfter ($_, $stmt) for (&n ("<C>! $comment</C>"), &t (' '));
+       }   
+     elsif (&F ('./attribute[string(attribute-N)="POINTER"]', $stmt))
+       {
+         if (my ($attr) = &F ('./attribute[string(attribute-N)="CONTIGUOUS"]', $stmt))
+           {
+             $_->unbindNode () for ($attr->previousSibling, $attr);
+           }
+         $sslt->appendChild ($_) for (&t (","), &n ('<shape-spec>:</shape-spec>'));
+       }
+     else
+       {
+         # Local variable : add KGPBLKS dimension
+         $sslt->appendChild ($_) for (&t (","), &n ('<shape-spec>' . &e ($KGPBLKS) . '</shape-spec>'));
+       }
+    
+
+    }
+
+
+  &Fxtran::Subroutine::addSuffix ($d, $opts{'suffix-manyblocks'});
+  
 }
 
 

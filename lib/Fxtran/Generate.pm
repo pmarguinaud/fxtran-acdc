@@ -620,8 +620,10 @@ See L<Fxtran::SingleBlock> for more details.
 @options{qw (cycle dir base tmp only-if-newer merge-interfaces pragma stack84 stack-method style inline-contained
              suffix-singlecolumn suffix-manyblocks checker array-slice-to-address use-stack-manyblocks write-metadata)}
   drhooktonvtx                    -- Change DrHook calls into NVTX calls
+  dummy                           -- Generate a dummy routine (strip all executable code)
   inlined=s@                      -- List of routines to inline
   create-interface                -- Generate an interface file
+  process-interfaces              -- Transform interfaces into single column interfaces (used for MODI MESONH files)
   fuse-outer-dimension-names=s%   -- Fuse outer dimensions
   not-present-types=s@            -- List of derived types not present on the device
   max-statements-per-parallel=s   -- Maximum number of statements per parallel section
