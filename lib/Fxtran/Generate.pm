@@ -626,6 +626,7 @@ See L<Fxtran::SingleBlock> for more details.
   process-interfaces              -- Transform interfaces into single column interfaces (used for MODI MESONH files)
   fuse-outer-dimension-names=s%   -- Fuse outer dimensions
   not-present-types=s@            -- List of derived types not present on the device
+  ignore-array-variables=s@       -- Does not process the mentionned variables as other array variables (used for ZBUDGET in MESONH files)
   max-statements-per-parallel=s   -- Maximum number of statements per parallel section
   parallel-iterator-list=s@       -- List of iterators for generating parallel sections (add to JLON, JLEV)
 EOF

@@ -88,6 +88,7 @@ sub makeParallel
       $pragma->insertData ($comp, PRESENT => [sort keys (%present)]);
     }
 
+
   my $LDACC = $opts{acc} ? &e ('.TRUE.') : &e ('.FALSE.');
   my $YDOFFSET = &e ('YLOFFSET');
 
@@ -95,11 +96,14 @@ sub makeParallel
 
   for my $call (&F ('.//call-stmt', $comp))
     {
+
       my ($proc) = &F ('./procedure-designator/named-E/N/n/text()', $call);
 
       next if ($proc->textContent eq 'ABOR1');
       next if ($proc->textContent eq 'DR_HOOK');
       next if ($proc =~ m/$opts{'suffix-singlecolumn'}$/i);
+
+      my %copyin;
 
       if (my $it = $style->customIterator ())
         {
@@ -111,6 +115,12 @@ sub makeParallel
               $_->setData ($it1);
             }
           $call->parentNode->insertBefore ($_, $call) for (&s ($kfdia->textContent . " = $KFDIA"), &t ("\n"));
+          $copyin{$it1}++;
+
+          if ($opts{acc})
+           {
+             $pragma->insertEnterDataWorkaround ($call, COPYIN => [sort keys (%copyin)]);
+           }
         }
 
       $proc->setData ($proc->textContent . $opts{'suffix-manyblocks'});

@@ -527,6 +527,11 @@ Apply the manyblocks transformation to a single subroutine program unit.
   my $var2dim = &Fxtran::Loop::getVarToDim ($pu, style => $style);
   my $typearg = {};
 
+  # Removes variables from var2dim if necessary
+  
+  my %ignorearrayvariables = map { ($_, 1) } @{ $opts{'ignore-array-variables'} || [ ] }; #variables to be removed
+  delete @{$var2dim} {grep{ $ignorearrayvariables{$_} } keys (%$var2dim) };
+
   # Add parallel sections if required
   
   &Fxtran::DetectParallel::createParallelSections ($pu, $var2dim, %opts) if ($opts{'max-statements-per-parallel'});
@@ -710,6 +715,9 @@ Apply the manyblocks transformation to a single subroutine program unit.
     {
       next unless (my ($as) = &F ('./EN-decl-LT/EN-decl/array-spec', $stmt));
       my ($n) = &F ('./EN-decl-LT/EN-decl/EN-N', $stmt, 1);
+
+      #used for ZBUDGETS (MESONH)
+      next if ($ignorearrayvariables{$n});
 
       my ($sslt) = &F ('./shape-spec-LT', $as);
 
@@ -1012,10 +1020,16 @@ Apply the manyblocks transformation to an interface body within a module.
       $dal->appendChild ($_) for (&t (", "), &n ("<arg-N>YDOFFSET</arg-N>"));
     }
 
+  #used for ZBUDGETS (MESONH)
+  my %ignorearrayvariables = map { ($_, 1) } @{ $opts{'ignore-array-variables'} || [ ] }; #variables to be removed
+
   for my $stmt (&F ('./T-decl-stmt', $dp))
     {
       next unless (my ($as) = &F ('./EN-decl-LT/EN-decl/array-spec', $stmt));
       my ($n) = &F ('./EN-decl-LT/EN-decl/EN-N', $stmt, 1);
+
+      #used for ZBUDGETS (MESONH)
+      next if ($ignorearrayvariables{$n});
 
       my ($sslt) = &F ('./shape-spec-LT', $as);
 
