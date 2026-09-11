@@ -68,6 +68,85 @@ into the parent.
 
 }
 
+sub fixNOTANYidiom
+{
+
+=head2 fixNOTANYidiom
+
+Replaces C<.NOT. ANY(var(KIDIA:KFDIA) OP threshold)> idioms with the negated
+scalar comparison C<var(JLON) NOTOP threshold>, eliminating the horizontal
+reduction for the single-column execution model. This mirrors C<fixANYidiom>
+but additionally applies De Morgan s law to drop the leading C<.NOT.> by
+inverting the comparison operator found inside C<ANY(...)>, when that
+operator is a simple relational operator; otherwise the C<.NOT.> is kept
+and only C<ANY()> is dropped, as in C<fixANYidiom>.
+
+=cut
+
+  my ($s, %opts) = @_;
+
+  my $jlon  = $opts{style}->jlon ();
+  my $kidia = $opts{style}->kidia ();
+  my $kfdia = $opts{style}->kfdia ();
+
+  my $JLONSUB = &n ("<section-subscript><lower-bound><named-E><N><n>$jlon</n></N></named-E></lower-bound></section-subscript>");
+
+  # Relational operators and their De Morgan negation
+
+  my %NEG =
+  (
+    '>'  => '&lt;=',  '.GT.' => '.LE.',
+    '>=' => '&lt;',   '.GE.' => '.LT.',
+    '<'  => '&gt;=',  '.LT.' => '.GE.',
+    '<=' => '&gt;',   '.LE.' => '.GT.',
+    '==' => '/=',  '.EQ.' => '.NE.',
+    '/=' => '==',  '.NE.' => '.EQ.',
+  );
+
+  for my $NOT (&F ('.//op-E[string(op)=".NOT."][count(./ANY-E)=1]', $s))
+    {
+      my ($ANY) = &F ('.//named-E[string(N)="ANY"]', $NOT);
+
+      next unless ($ANY);
+
+      my @ss = &F ('.//section-subscript', $ANY);
+
+      @ss = grep { $_->textContent eq "$kidia:$kfdia" } @ss;
+
+      next unless (@ss);
+
+      # This is a logical expression involving NPROMA variables; drop the ANY and scalarize
+      # we assume this is a 1D array
+
+      for my $ss (@ss)
+        {
+          $ss->replaceNode ($JLONSUB->cloneNode (1));
+        }
+
+      my ($arg) = &F ('./R-LT/function-R/element-LT/element/ANY-E', $ANY);
+
+      my ($op) = &F ('./op', $arg, 1);
+
+      if ($op && $NEG{$op} && (scalar (&F ('./ANY-E', $arg)) == 2))
+        {
+          # $arg is a relational comparison (eg "ZTEST0 (JI) > 0.5"):
+          # apply De Morgan's law and drop the .NOT. entirely, instead of
+          # just unwrapping ANY() underneath it.
+
+          my ($opnode) = &F ('./op', $arg);
+          $opnode->replaceNode (&n ("<op>$NEG{$op}</op>"));
+          $NOT->replaceNode ($arg);
+        }
+      else
+        {
+          # Not a simple relational comparison: keep the .NOT., only drop ANY()
+          $ANY->replaceNode ($arg);
+        }
+    }
+}
+
+
+
 sub fixANYidiom
 {
   my ($s, %opts) = @_;
@@ -213,6 +292,7 @@ C<var2dim>.
 
   &fixSUMIdiom ($s, %opts);
   &fixCOUNTIdiom ($s, %opts);
+  &fixNOTANYidiom ($s, %opts);
   &fixANYidiom ($s, %opts);
  
   &removeNpromaConstructs ($s, %opts);

@@ -92,7 +92,11 @@ sub makeParallel
   my $LDACC = $opts{acc} ? &e ('.TRUE.') : &e ('.FALSE.');
   my $YDOFFSET = &e ('YLOFFSET');
 
-  my $KFDIA = "MIN ($KLON, $KGPTOT - ($KGPBLKS - 1) * $KLON)";
+  #changes to enable ManyBlocks with Filter used in aro_rain_ice_mnh
+  my $filter = $par1->getAttribute('filter');
+
+  my $KFDIA = $filter ? "MIN (YL_FGS%KLON, YL_FGS%KGPTOT - (YL_FGS%KGPBLKS - 1) * YL_FGS%KLON)" : "MIN ($KLON, $KGPTOT - ($KGPBLKS - 1) * $KLON)";
+  my $KGPBLKS1 = $filter ? 'YL_FGS%KGPBLKS' : $KGPBLKS;
 
   for my $call (&F ('.//call-stmt', $comp))
     {
@@ -150,7 +154,7 @@ sub makeParallel
             }
         }
 
-      $argspec->appendChild ($_) for (&t (', '), &n ('<arg><arg-N><k>KGPBLKS</k></arg-N>=' . &e ($KGPBLKS) . '</arg>'));
+      $argspec->appendChild ($_) for (&t (', '), &n ('<arg><arg-N><k>KGPBLKS</k></arg-N>=' . &e ($KGPBLKS1) . '</arg>'));
 
     }
 
