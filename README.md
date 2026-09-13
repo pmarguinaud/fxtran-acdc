@@ -2,7 +2,9 @@
 
 ![](./images/ACDC.png)
 
-# [Compiling IAL with fxtran-acdc](./fxtran-acdc-build-process.md)
+# Compiling IAL with fxtran-acdc
+
+[Read this document.](./fxtran-acdc-build-process.md)
 
 # fxtran-acdc tools
 
