@@ -2,10 +2,12 @@
 
 ![](./images/ACDC.png)
 
-## [Compiling IAL with fxtran-acdc](./fxtran-acdc-build-process.md)
+# [Compiling IAL with fxtran-acdc](./fxtran-acdc-build-process.md)
+
+# fxtran-acdc tools
 
 
-# [fxtran-ar ...](./doc/fxtran-ar.md)
+## [fxtran-ar ...](./doc/fxtran-ar.md)
 
 `fxtran-ar` is a wrapper around the traditional `ar` utility. It is
 supposed to behave similarly to `ar` and accept the same options.
@@ -38,28 +40,28 @@ using them:
     $ ar rv a.o
     $ ar crv liba.o O_a.o O_b.o b.o ...
 
-# [fxtran-boot ...](./doc/fxtran-boot.md)
+## [fxtran-boot ...](./doc/fxtran-boot.md)
 
 `fxtran-boot` compiles and install the fxtran-acdc libraries. Compilers and
 their options may be passed directly as options, or inferred from the `ecbuild`
 environment.
 
-# [fxtran-cc ...](./doc/fxtran-cc.md)
+## [fxtran-cc ...](./doc/fxtran-cc.md)
 
 This script is a wrapper for the C and the C++ compilers. The ACDC library is included in the link,
 and archive may be replaced by list of objects if the script is invoked to perform a link.
 
-# [fxtran-checker ...](./doc/fxtran-checker.md)
+## [fxtran-checker ...](./doc/fxtran-checker.md)
 
 Apply norm checking to a FORTRAN file. The file will be scanned for ACDC directives, unless
 the `--method` option is used. `fxtran-f90` will be invoked.
 
-# [fxtran-cxx ...](./doc/fxtran-cxx.md)
+## [fxtran-cxx ...](./doc/fxtran-cxx.md)
 
 This script is a wrapper for the C and the C++ compilers. The ACDC library is included in the link,
 and archive may be replaced by list of objects if the script is invoked to perform a link.
 
-# [fxtran-difftool ...](./doc/fxtran-difftool.md)
+## [fxtran-difftool ...](./doc/fxtran-difftool.md)
 
 Reformat FORTRAN code before invoking a diff utility such as `kdiff3` or `meld`.
 
@@ -90,7 +92,7 @@ That is, reformatting the `CALL` statements make the diff trivial:
     & YDMF_PHYS%OUT%STRDV, &                      & YDMF_PHYS%OUT%STRDV, &
     & ZTRAJGWD)                                   & ZTRAJGWD)
 
-# [fxtran-f90 ...](./doc/fxtran-f90.md)
+## [fxtran-f90 ...](./doc/fxtran-f90.md)
 
 `fxtran-f90` is compiler wrapper performing the following tasks:
 
@@ -101,7 +103,7 @@ for GPU accelerators.
 
 `fxtran-f90` relies on `fxtran` for parsing and transforming FORTRAN source code.
 
-# [fxtran-fix ...](./doc/fxtran-fix.md)
+## [fxtran-fix ...](./doc/fxtran-fix.md)
 
 The purpose of `fxtran-fix` is to trap compiler errors and give the user 
 a chance to debug them, without interrupting the compiling process (cmake
@@ -125,7 +127,7 @@ When the user is done with editing/debugging, he has to exit the shell; `fxtran-
 will then attempt to compile the code once more and return control to the 
 build system.
 
-# [fxtran-formatter ...](./doc/fxtran-formatter.md)
+## [fxtran-formatter ...](./doc/fxtran-formatter.md)
 
 The purpose of `fxtran-formatter` is to reformat some statements.
 
@@ -136,7 +138,7 @@ most sensitive to merge process) :
 - `SUBROUTINE` statements.
 - `ASSOCIATE` statements.
 
-# [fxtran-gen ...](./doc/fxtran-gen.md)
+## [fxtran-gen ...](./doc/fxtran-gen.md)
 
 `fxtran-gen` is a `click` frontend to `Fxtran::Generate` and other generation modules. It
 is invoked by `fxtran-f90` to transform FORTRAN source code.
@@ -147,7 +149,7 @@ comes the method to be invoked, followed by its options and arguments.
 
 See `Fxtran::Generate` for the details of methods and options accepted by `fxtran-gen`.
 
-# [fxtran-make ...](./doc/fxtran-make.md)
+## [fxtran-make ...](./doc/fxtran-make.md)
 
 `fxtran-make` is a wrapper around `make`, performing a few tasks before starting the
 actual `make` command:
@@ -172,7 +174,7 @@ If the user want to go back to the normal situation where the file from the git 
 pre-processed and the result of the pre-processing is compiled, then the user just needs
 to remove the file from the `user-out` directory.
 
-# [fxtran-makemaker ...](./doc/fxtran-makemaker.md)
+## [fxtran-makemaker ...](./doc/fxtran-makemaker.md)
 
 `fxtran-makemaker` is a simple `Makefile` generator for external test
 cases build with `fxtran-f90`. 
@@ -186,14 +188,14 @@ When invoked, `fxtran-makemaker` will:
 The user is expected to provide a file named `Makefile.inc` which contains
 the compiler name and options.
 
-# [fxtran-markdown ...](./doc/fxtran-markdown.md)
+## [fxtran-markdown ...](./doc/fxtran-markdown.md)
 
 Generate markdown documentation from POD inline documentation. This documentation is
 meant to be visible on github.com.
 
 A `README.md` file is also generated; it contains pointers to fxtran-acdc utilities.
 
-# [fxtran-mergetool ...](./doc/fxtran-mergetool.md)
+## [fxtran-mergetool ...](./doc/fxtran-mergetool.md)
 
 Wrap kdiff3, meld or vimdiff. Expand the following FORTRAN statements before calling merge utilities:
 
@@ -203,12 +205,12 @@ Wrap kdiff3, meld or vimdiff. Expand the following FORTRAN statements before cal
 
 Repack after merging.
 
-# [fxtran-modules ...](./doc/fxtran-modules.md)
+## [fxtran-modules ...](./doc/fxtran-modules.md)
 
 The purpose of this script is to compile all modules of fxtran-acdc 
 and check they do not contain any errors.
 
-# [fxtran-parallel-method ...](./doc/fxtran-parallel-method.md)
+## [fxtran-parallel-method ...](./doc/fxtran-parallel-method.md)
 
 The purpose of this script is to extract the list of parallel methods embedded in the ELF 
 sections of an executable.
@@ -216,7 +218,7 @@ sections of an executable.
 The lists of possible methods, per ACDC section are saved in `.fxtran.acdc.*` ELF sections. We use
 `objdump` and `objcopy` to extract this information and save it into plain text files.
 
-# [fxtran-test ...](./doc/fxtran-test.md)
+## [fxtran-test ...](./doc/fxtran-test.md)
 
 The purpose of this script is to run tests, that is, to pre-process
 FORTRAN source code and compare the results to a reference.

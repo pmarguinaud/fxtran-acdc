@@ -85,7 +85,9 @@ $fh->print (<< "EOF");
 
 ![](./images/ACDC.png)
 
-## [Compiling IAL with fxtran-acdc](./fxtran-acdc-build-process.md)
+# [Compiling IAL with fxtran-acdc](./fxtran-acdc-build-process.md)
+
+# fxtran-acdc tools
 
 EOF
 
@@ -144,7 +146,7 @@ for my $perl (@perl)
 
         $fh->print (<< "EOF");
 
-# [$perl ...](./$md)
+## [$perl ...](./$md)
 
 EOF
 
