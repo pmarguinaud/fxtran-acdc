@@ -4,7 +4,7 @@
 
 # Compiling IAL with fxtran-acdc
 
-[Read this document.](./fxtran-acdc-build-process.md)
+[Read this document](./fxtran-acdc-build-process.md)
 
 # fxtran-acdc tools
 
