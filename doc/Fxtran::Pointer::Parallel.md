@@ -60,7 +60,7 @@ pointer variable, optionally appending a block index.
 
 ## makeParallel
 
-Transform a single parallel section: handle filter masks, replace object and
+Transform a single parallel section: replace object and
 array expressions with pointer expressions, set pointer associations from FIELD
 API views, generate the block loop and parallel directives for the chosen
 back-end, and insert sync/compute DR\_HOOK regions.

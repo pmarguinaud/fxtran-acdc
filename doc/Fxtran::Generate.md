@@ -143,7 +143,6 @@ See [Fxtran::SingleColumn](Fxtran%3A%3ASingleColumn.md) for more details.
   --suffix-pointerparallel              : _PARALLEL            : Suffix for parallel routines
   --suffix-singlecolumn                 : _OPENACC             : Suffix for generated routines
   --tmp                                 : .                    : Temporary directory for processing
-  --type-bound-methods           (FLAG) :                      : Generate & use type bound methods
   --types-constant-dir                  : types-constant       : Directory with constant type information
   --types-fieldapi-dir                  : types-fieldapi       : Directory with Field API type information
   --types-fieldapi-non-blocked   (LIST) : CPG_SL1F_TYPE,CPG_SL_MASK_TYPE : Non-blocked data types (without NPROMA)
@@ -262,6 +261,7 @@ See [Fxtran::ManyBlocks](Fxtran%3A%3AManyBlocks.md) for more details.
   --field-api-class                     : NONE                 : Field API structure category
   --method-prefix                       : ACDC_                : Prefix for method names
   --methods-list                 (LIST) : NONE                 : List of methods (copy, crc64, host, legacy, load, save, size, wipe
+  --module-file                         : NONE                 : Use this source file instead of passed .F90 file
   --module-map                          : NONE                 : Type/module mapping for methods
   --no-allocate                  (LIST) : NONE                 : Structures that should not be allocated/deallocated
   --numbered-submodules          (FLAG) :                      : Do not generate submodules with full names, use numbers instead
@@ -274,7 +274,6 @@ See [Fxtran::ManyBlocks](Fxtran%3A%3AManyBlocks.md) for more details.
   --sorted                       (FLAG) :                      : Sort files (with number prefix) in compilation order
   --split-util                   (FLAG) :                      : Split util module into several modules (one per method)
   --tmp                                 : .                    : Temporary directory for processing
-  --type-bound-methods           (FLAG) :                      : Generate & use type bound methods
   --types-constant-dir                  : types-constant       : Directory with constant type information
   --types-fieldapi-dir                  : types-fieldapi       : Directory with Field API type information
   --write-metadata               (FLAG) :                      : Add metadata to generated files                               
