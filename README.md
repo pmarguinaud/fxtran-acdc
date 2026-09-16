@@ -2,6 +2,10 @@
 
 ![](./images/ACDC.png)
 
+# fxtran acdc API
+
+[Read this document](./fxtran-acdc-api.md)
+
 # Compiling IAL with fxtran-acdc
 
 [Read this document](./fxtran-acdc-build-process.md)
