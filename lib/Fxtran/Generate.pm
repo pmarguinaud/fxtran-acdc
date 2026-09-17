@@ -626,6 +626,7 @@ See L<Fxtran::SingleBlock> for more details.
   not-present-types=s@            -- List of derived types not present on the device
   max-statements-per-parallel=s   -- Maximum number of statements per parallel section
   parallel-iterator-list=s@       -- List of iterators for generating parallel sections (add to JLON, JLEV)
+  reduction-to-loop               -- Transform ANY/COUNT/SUM reduction into loops
 EOF
 sub manyblocks
 {

@@ -592,3 +592,215 @@ passes (all diffs 0.0). Also checked `any.F90.xml` carries exactly 5
 `reduction="1"` attributes through the module boundary, matching round 7/8.
 
 
+Good; now I want you to replace the reduction="1" attribute by a reduction="LLANY" attribute, where LLANY is the name of the variable you may have created (if it did not exist), and used in the reduction.
+
+---
+
+# Implementation done (assistant, 2026-09-16, round 10)
+
+Reworked `markReductionLoops` to take `($nodes, $names)`: it collects every
+reduction `do-construct` in `@$nodes` (top-level or nested) *in document
+order*, and tags each one with `reduction="$names->[$i]"` at the matching
+index -- `die`ing on a count mismatch instead of guessing. For `buildLoop`
+that's just `[$acc]` (it always builds exactly one loop). For `buildCascade`
+it's `$temp` itself, unchanged: each branch's loop appears strictly after the
+previous one in the generated text (nested one level deeper inside the prior
+guard's `ELSE`), so document order already matches `@$temp`'s order -- no
+extra bookkeeping needed. Updated the module's top-level POD, which still
+described the old `reduction="1"` scheme.
+
+Verified: `any.F90` (the Fortran text) is unchanged; `any.F90.xml` now shows
+`reduction="LLANY1"`, `reduction="LLDO"`, `reduction="LLANY2"`,
+`reduction="LLANY3"`, `reduction="LLANY4"` -- one per reduction loop, matching
+the accumulator each one actually reduces into. Re-ran the standard checks:
+re-parses, compiles, numerical-equivalence check against `actke.F90` still
+passes (all diffs 0.0).
+
+Good; now I want you to generalize this algorithm (ANY processing) to the SUM intrinsic; if it is clear
+for you, then proceed, otherwise, ask questions. I have added extra code involving SUM in actke.F90.
+
+---
+
+# Questions before generalizing to SUM (assistant, 2026-09-16)
+
+I read the new code in `actke.F90`:
+
+    IF (SUM (PB (KIDIA:KFDIA,KLEV)) > 0) THEN
+      DO JLEV = 1, KLEV
+      DO JLON = KIDIA, KFDIA
+        PB (JLON, JLEV) = JLON + JLEV
+      ENDDO
+      ENDDO
+    ENDIF
+
+This is a genuinely different shape from every `ANY` case so far, in ways
+that affect correctness, not just naming -- asking before coding:
+
+- **Accumulator type**: `ANY`'s accumulator is always `LOGICAL`. `SUM`'s
+  accumulator must match the reduced array's element type -- here `PB` is
+  declared `REAL (KIND=JPRB) :: PB (KLON, KLEV)`, so the temp needs
+  `REAL (KIND=JPRB)`, not `LOGICAL`. I plan to look up the reduced array's
+  own `T-decl-stmt` in `declaration-part` and reuse its type-spec verbatim
+  for the generated temp's declaration. OK?
+
+You can safely assume that the accumulator variable type will be REAL(KIND=8).
+
+- **Naming for `SUM`-origin temps**: `ANY` gets `LLANYn` (global counter,
+  `LL` = logical). What name/prefix do you want for `SUM`'s (real-valued)
+  temps -- e.g. `ZZSUMn` (`ZZ` is the common prefix for a real scratch var in
+  this style), with its own counter? Or something else?
+
+Please use ZZSUM as a prefix.
+
+- **Rank**: every `ANY` mask so far reduced a rank-1 array (`IITER
+  (KIDIA:KFDIA)`) -- the current rank check requires the array reference to
+  have exactly one subscript, period. `PB (KIDIA:KFDIA,KLEV)` is rank-2: one
+  ranging subscript (`KIDIA:KFDIA`) and one fixed scalar subscript (`KLEV`).
+  I plan to relax the check to "exactly one subscript in the list is a
+  range" (any other subscripts must be plain fixed indices, left untouched
+  in the generated loop, e.g. `PB (JLON,KLEV)`) -- this reopens round 1's
+  "only plain 1D masks" scope limit, now for both `ANY` and `SUM`. OK to
+  generalize this way?
+
+Same assumption; the reduced array will be of rank 1, with a KIDIA:KFDIA slice.
+
+- **Scope of intrinsics**: worth a tiny per-intrinsic registry (name ->
+  accumulator-type-source / init literal / combining operator) so a future
+  third intrinsic (`COUNT`, `ALL`, `PRODUCT`, ...) drops in as one entry, or
+  keep it to exactly `ANY` + `SUM` hardcoded as two cases? I'd lean toward
+  the small registry -- it's barely more code than hardcoding two cases --
+  but flagging since it's slightly more than literally asked.
+
+Let us go for ANY + SUM + COUNT
+
+---
+
+# Implementation done (assistant, 2026-09-16, round 11)
+
+Generalized `Fxtran::Reduction` to `ANY`/`SUM`/`COUNT` via a small
+per-intrinsic registry (`%INTRINSIC`: accumulator type, init literal, and a
+`combine` closure building the per-iteration statement -- `.OR.` for `ANY`,
+`+` for `SUM`, an `IF (mask) THEN acc=acc+1 ENDIF` for `COUNT`, since
+`COUNT`'s mask can't just be added) plus a `%PREFIX` map (`LLANY`/`ZZSUM`/
+`IICOUNT`, each with its own counter). `REAL (KIND=8)` for `SUM` and
+`INTEGER (KIND=JPIM)` for `COUNT` are hardcoded per your answer, not looked
+up from the reduced array's own declaration.
+
+Other changes needed along the way:
+- `findAny`/`reduceAnyIntrinsic`'s hardcoded `string (N)="ANY"` became a
+  shared `reductionNamePredicate ()` matching any of the three names, and a
+  new `intrinsicOf ($any)` reads which one a given call actually is.
+- `reduceMask`'s rank check changed from "the array reference has exactly
+  one subscript" to "exactly one subscript is a *range*" -- other
+  subscripts (a fixed index alongside the ranging one) are now allowed and
+  left untouched, and the substitution itself now replaces only that one
+  subscript's own text, not the whole array reference -- both to honor your
+  "same assumption, rank 1 with a KIDIA:KFDIA slice" answer generally, and
+  because a whole-reference substitution would have silently dropped any
+  such extra fixed subscript.
+- The `IF`/`ELSEIF` cascade's guard changed from testing the bare
+  accumulator (`IF ($temp) THEN`, only valid when the accumulator is itself
+  `LOGICAL`, i.e. `ANY`) to testing each branch's *original condition text
+  with its intrinsic call substituted by the temp* (e.g. `ZZSUM1 > 0` for a
+  `SUM (...) > 0` branch) -- needed as soon as a chain can mix `ANY` with
+  `SUM`/`COUNT`, whose accumulators aren't `LOGICAL`.
+
+Validated three ways:
+1. `actke.F90` (now `ANY` + a single-branch `SUM (ZTEST (KIDIA:KFDIA)) > 0`
+   `IF`, `ZTEST` being a properly rank-1 array as you simplified it to):
+   output re-parses and compiles; `any.F90.xml` shows `reduction="ZZSUM1"`
+   alongside the five existing `ANY`-origin tags.
+2. A synthetic subroutine (not derived from `actke.F90`) exercising `SUM`
+   and `COUNT` in a plain assignment *and* in a mixed `SUM`/`COUNT`
+   `IF`/`ELSEIF` cascade (`IF (SUM (...) > 100) ... ELSEIF (COUNT (...) > 3)
+   ...`), including a forced high-sum case that specifically drives the
+   cascade's short-circuit "skip `COUNT`" path -- compiled original vs.
+   transformed side by side over 9 inputs (8 random + 1 forced): all
+   `SUM`/`COUNT`/branch-taken results identical.
+3. Re-ran the existing `actke.F90` PA/PB numerical-equivalence check: still
+   passes. One caveat worth flagging: `ZTEST` is a local array that's never
+   initialized before the `SUM` call, in `actke.F90` itself -- that's
+   undefined behavior in the *original* Fortran, independent of this
+   transform, so a PA/PB match here isn't a guaranteed property (it happened
+   to match this run because the two nearly-identical subroutines got the
+   same stack garbage, not because it's guaranteed to). Test 2 above is the
+   one that actually proves the `SUM`/`COUNT` logic itself is correct,
+   since its array is always properly initialized.
+
+Good; please add a few lines inside actke.F90 to exercise the COUNT intrinsic.
+
+---
+
+# Implementation done (assistant, 2026-09-16, round 12)
+
+Added `COUNT` to `actke.F90` in two contexts:
+
+- A plain assignment: `ICOUNT=COUNT (IITER (KIDIA:KFDIA)>0)` (new
+  `INTEGER (KIND=JPIM) :: ICOUNT` declaration), right after the existing
+  `LLDO`/`IF (LLDO)` block.
+- Extended the existing single-branch `SUM` `IF` into a mixed `SUM`/`COUNT`
+  `IF`/`ELSEIF`:
+
+      IF (SUM (ZTEST (KIDIA:KFDIA)) > 0) THEN
+        ... (unchanged body)
+      ELSEIF (COUNT (ZTEST (KIDIA:KFDIA) > 0.5_JPRB) > 3) THEN
+        PA (KIDIA:KFDIA, 1) = 0.0_JPRB
+      ENDIF
+
+  so the real file (not just the synthetic test from round 11) now exercises
+  the mixed-intrinsic cascade end-to-end.
+
+`any.pl` transforms both correctly: the plain assignment becomes
+`ICOUNT=0` / loop with `IF (IITER (JLON)>0) THEN ICOUNT=ICOUNT+1 ENDIF` /
+`ENDDO`; the cascade declares `ZZSUM1`/`IICOUNT1`, computes `ZZSUM1`
+unconditionally, then guards `IICOUNT1`'s computation on `IF (ZZSUM1>0) THEN
+! skip ELSE ... ENDIF`, and the final `IF (ZZSUM1>0) THEN ... ELSEIF
+(IICOUNT1>3) THEN ... ENDIF` matches the original condition shapes exactly.
+
+Verified: re-parses with `fxtran`; `any.F90.xml` now shows 8 `reduction="..."`
+tags (`LLANY1`, `LLDO`, `ICOUNT`, `LLANY2`, `LLANY3`, `LLANY4`, `ZZSUM1`,
+`IICOUNT1`), one per reduction loop; compiles; the `actke.F90` PA/PB
+numerical-equivalence check still passes. Didn't re-derive a fresh synthetic
+proof of `COUNT`'s arithmetic here, since round 11's synthetic driver already
+validated that independent of `actke.F90`'s uninitialized-`ZTEST` caveat
+(which still applies unchanged to the new `COUNT (ZTEST (...))` branch, same
+as it did to `SUM` -- this round's check is about the transform producing
+the right *shape* against this file, not re-proving the arithmetic).
+
+
+Good; please change the reduction="LLANY" attribute to reduction="LLANY,.OR.,.FALSE."
+for the processing of the ANY intrinsic, and to reduction="ZZSUM,+,0" for the SUM/COUNT
+intrinsics.
+
+---
+
+# Implementation done (assistant, 2026-09-16, round 13)
+
+Added an `op` field to `%INTRINSIC` alongside the existing `init`
+(`.OR.`/`.FALSE.` for `ANY`; `+`/`0` for both `SUM` and `COUNT` -- `COUNT`'s
+per-element contribution is a conditional increment, not a direct `+`, but
+the reduction as a whole is still an add-reduction, so per your directive it
+shares `SUM`'s `op`/`init`). `markReductionLoops` now takes a list of
+composite tag strings (`"acc,op,init"`) instead of bare names; `buildLoop`
+and `buildCascade` each build their tag(s) from the intrinsic's `op`/`init`
+before calling it. Updated the module's top-level POD, which still described
+the old single-name attribute.
+
+Verified against the current `actke.F90`: the Fortran output (`any.F90`) is
+byte-for-byte unchanged (this is a metadata-only change); `any.F90.xml` now
+shows all 8 tags in the new format:
+
+    reduction="LLANY1,.OR.,.FALSE."
+    reduction="LLDO,.OR.,.FALSE."
+    reduction="ICOUNT,+,0"
+    reduction="LLANY2,.OR.,.FALSE."
+    reduction="LLANY3,.OR.,.FALSE."
+    reduction="LLANY4,.OR.,.FALSE."
+    reduction="ZZSUM1,+,0"
+    reduction="IICOUNT1,+,0"
+
+Re-ran the standard checks: re-parses, compiles, and the `actke.F90` PA/PB
+numerical-equivalence check still passes (all diffs 0.0).
+
+
+

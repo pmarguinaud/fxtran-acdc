@@ -96,6 +96,20 @@ parallelisation is controlled by the C<parallel-iterator-list> option
   
       push @array, $assign;
     }
+
+
+  if ($opts{'reduction-to-loop'})
+    {
+
+# These were not captured by the previous loop
+
+      my @do = &F ('.//do-construct[@reduction]', $pu);
+
+      for my $do (@do)
+        {
+          $do{$do->unique_key} = $do;
+        }
+    }
   
   # Private routine to merge two parallel sections (if they are siblings)
 

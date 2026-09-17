@@ -36,9 +36,12 @@ my $d = &parse (location => $F90, fopts => [qw (-construct-tag -no-cpp -line-len
 
 &Fxtran::Canonic::makeCanonic ($d);
 
-my %opts = (jlon => 'JLON', kidia => 'KIDIA', kfdia => 'KFDIA');
+# my %opts = (jlon => 'JLON', kidia => 'KIDIA', kfdia => 'KFDIA');
+my %opts = (jlon => 'JIJ', kidia => 'D%NIJB', kfdia => 'D%NIJE');
 
-&Fxtran::Reduction::reduceAnyIntrinsic ($d, \%opts);
+my ($pu) = &F ('.//program-unit', $d);
+
+&Fxtran::Reduction::reduceAnyIntrinsic ($pu, \%opts);
 
 'FileHandle'->new (">any.F90.xml")->print ($d->toString);
 

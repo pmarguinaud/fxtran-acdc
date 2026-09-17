@@ -12,9 +12,9 @@ Fxtran::Reduction
 
 =head1 DESCRIPTION
 
-Rewrites C<ANY (mask)> reductions on a 1-D array section (bounded by the
-routine's own C<KIDIA:KFDIA>-like index pair) into an explicit loop, without
-altering the calculations:
+Rewrites C<ANY>/C<SUM>/C<COUNT> reductions on an array section (bounded by
+the routine's own C<KIDIA:KFDIA>-like index pair) into an explicit loop,
+without altering the calculations:
 
   LLDO=ANY (IITER (KIDIA:KFDIA)<IITERMAX)
 
@@ -30,32 +30,44 @@ Three contexts are handled, in this order:
 =over 4
 
 =item * C<DO WHILE (cond)> is first rewritten, generically (regardless of
-whether C<cond> mentions C<ANY>), into C<DO> / C<IF (.NOT. (cond)) THEN> /
-C<EXIT> / C<ENDIF>; any C<ANY (...)> inside C<cond> then falls into the
+whether C<cond> mentions a reduction), into C<DO> / C<IF (.NOT. (cond)) THEN>
+/ C<EXIT> / C<ENDIF>; any reduction inside C<cond> then falls into the
 C<IF>/C<ELSEIF> case below.
 
-=item * A plain assignment C<ACC=ANY (mask)> reuses C<ACC> as the reduction
-accumulator and replaces the whole statement with the init+loop.
+=item * A plain assignment C<ACC=ANY (mask)> (or C<SUM>/C<COUNT>) reuses
+C<ACC> as the reduction accumulator and replaces the whole statement with
+the init+loop.
 
-=item * An C<IF>/C<ELSEIF> chain (any number of branches) whose conditions
-test C<ANY (mask)> gets a short-circuiting cascade of reduction loops hoisted
-before the C<if-construct>: only the first branch's reduction is
-unconditional, each later one is only computed once every earlier branch's
-temp has been shown false, mirroring the C<ELSEIF> chain's own
-short-circuiting. Each branch's C<ANY (...)> is then replaced by a reference
-to its temp.
+=item * An C<IF>/C<ELSEIF> chain (any number of branches, each independently
+C<ANY>, C<SUM> or C<COUNT>) gets a short-circuiting cascade of reduction
+loops hoisted before the C<if-construct>: only the first branch's reduction
+is unconditional, each later one is only computed once every earlier
+branch's guard has been shown false, mirroring the C<ELSEIF> chain's own
+short-circuiting. Each branch's intrinsic call is then replaced by a
+reference to its temp.
 
 =back
 
 Every generated reduction C<do-construct> (top-level or nested inside a
-cascade guard) is tagged with the attribute C<reduction="1">.
+cascade guard) is tagged with the attribute
+C<reduction="ACC,OP,INIT"> -- e.g. C<reduction="LLANY1,.OR.,.FALSE.">
+or C<reduction="ZZSUM1,+,0"> -- where C<ACC> is the accumulator variable it
+reduces into (e.g. C<LLDO> for a reused assignment LHS, or a generated
+temp), C<OP> is the combining operator (as would appear in e.g. an OpenMP
+C<REDUCTION> clause), and C<INIT> is its identity value. C<COUNT>'s
+per-element contribution is conditional (see C<%INTRINSIC>), not a direct
+C<+>, but the reduction as a whole is still an add-reduction, so it shares
+C<SUM>'s C<OP>/C<INIT>.
 
-Scope: only a single 1-D array reference, indexed by the exact
-C<$opts-E<gt>{kidia}>:C<$opts-E<gt>{kfdia}> bounds, is supported per mask;
-anything else (rank > 1, unrelated bounds, no reducible reference, a
-non-C<ANY> condition mixed into an otherwise-C<ANY> C<IF>/C<ELSEIF> chain, or
-an C<ANY (...)> found outside a supported context) makes the module C<die>
-rather than silently produce incorrect Fortran.
+Scope: only a single array reference with exactly one ranging subscript,
+indexed by the exact C<$opts-E<gt>{kidia}>:C<$opts-E<gt>{kfdia}> bounds, is
+supported per intrinsic call (any other subscripts, e.g. a fixed C<KLEV>
+alongside the ranging one, are left untouched in the generated loop);
+anything else (more than one ranging subscript, unrelated bounds, no
+reducible reference, a non-reduction condition mixed into an otherwise
+all-reduction C<IF>/C<ELSEIF> chain, or a reduction call found outside a
+supported context) makes the module C<die> rather than silently produce
+incorrect Fortran.
 
 =head1 FUNCTIONS
 
@@ -69,6 +81,37 @@ use fxtran;
 use fxtran::xpath;
 
 use Fxtran;
+
+# Per-intrinsic accumulator type, "op"/init (the reduction operator symbol
+# and identity value -- as would appear in e.g. an OpenMP REDUCTION clause;
+# COUNT's per-element contribution is conditional, not a direct "+", but the
+# reduction as a whole is still an add-reduction, so it uses the same op/init
+# as SUM), and the per-iteration combining statement (given the accumulator
+# name and the JLON-substituted mask/array-expression text). Naming prefixes
+# follow this project's Hungarian-style convention: LL=logical, ZZ=real
+# scratch, II=integer scratch.
+
+my %INTRINSIC =
+  (
+    ANY   => { type => 'LOGICAL',             init => '.FALSE.', op => '.OR.',
+               combine => sub { my ($acc, $m) = @_; return "$acc=$acc .OR. $m\n"; } },
+    SUM   => { type => 'REAL (KIND=8)',       init => '0',       op => '+',
+               combine => sub { my ($acc, $m) = @_; return "$acc=$acc+$m\n"; } },
+    COUNT => { type => 'INTEGER (KIND=JPIM)', init => '0',       op => '+',
+               combine => sub { my ($acc, $m) = @_; return "IF ($m) THEN\n$acc=$acc+1\nENDIF\n"; } },
+  );
+
+my %PREFIX = (ANY => 'LLANY', SUM => 'ZZSUM', COUNT => 'IICOUNT');
+
+my @INTRINSIC_NAMES = sort keys %INTRINSIC;
+
+# The XPath predicate fragment matching any of the supported intrinsic names
+# on a named-E's N (e.g. 'string (N)="ANY" or string (N)="SUM" or ...').
+
+sub reductionNamePredicate
+{
+  return join (' or ', map { qq{string (N)="$_"} } @INTRINSIC_NAMES);
+}
 
 # parse (fragment => ...) (fxtran::parser::parseFragment) assumes the parsed
 # text is *not* wrapped in a <program-unit>, but whether fxtran wraps it
@@ -107,19 +150,30 @@ sub myParseFragment
   return @c;
 }
 
-# All ANY (mask) calls under a given root. A call-shaped R-LT is tagged
-# function-R after -canonic, but parens-R for anything we parse ourselves
-# (fresh statements never go through -canonic), so accept either.
+# All ANY/SUM/COUNT (...) calls under a given root. A call-shaped R-LT is
+# tagged function-R after -canonic, but parens-R for anything we parse
+# ourselves (fresh statements never go through -canonic), so accept either.
 
-sub findAny
+sub findReduction
 {
   my $root = shift;
-  return &F ('.//named-E[string (N)="ANY" and (R-LT/function-R or R-LT/parens-R)]', $root);
+  my $pred = &reductionNamePredicate ();
+  return &F (".//named-E[($pred) and (R-LT/function-R or R-LT/parens-R)]", $root);
 }
 
-# Given the (single) mask expression of an ANY call, locate the array
-# reference carrying the reduced dimension (ARR (lo:hi)) and return
-# (lo, hi, mask-text-with-that-reference-indexed-by $opts->{jlon}).
+# The intrinsic name (ANY/SUM/COUNT) a findReduction () node is a call to.
+
+sub intrinsicOf
+{
+  my $any = shift;
+  my ($name) = &F ('./N/n/text()', $any, 1);
+  return $name;
+}
+
+# Given the (single) mask/array-argument expression of an ANY/SUM/COUNT
+# call, locate the array reference carrying the reduced dimension
+# (ARR (lo:hi) [, other fixed subscripts]) and return (lo, hi,
+# expr-text-with-that-one-subscript-replaced-by $opts->{jlon}).
 
 sub reduceMask
 {
@@ -127,32 +181,32 @@ sub reduceMask
 
   my @arr = &F ('.//named-E[R-LT/array-R/section-subscript-LT/section-subscript[lower-bound and upper-bound]]', $mask);
 
-  die ("Fxtran::Reduction: cannot find a reducible 1-D array reference in mask: " . $mask->textContent . "\n")
+  die ("Fxtran::Reduction: cannot find a reducible array reference (indexed by $opts->{kidia}:$opts->{kfdia}) in: " . $mask->textContent . "\n")
     unless (scalar (@arr) == 1);
 
   my ($arr) = @arr;
 
-  # Basic sanity checks, since the XPath above only requires *some*
-  # subscript in the list to be a lower:upper range -- it doesn't rule out
-  # e.g. a 2-D reference like PA ($opts->{kidia}:$opts->{kfdia}, JLEV), nor an
-  # unrelated range that happens to look like one. Scope is "1-D array
-  # indexed by $opts->{kidia}:$opts->{kfdia}", so check both explicitly and
-  # fail loudly otherwise.
+  # The XPath above only requires *some* subscript in the list to be a
+  # lower:upper range -- any other subscripts (e.g. a fixed KLEV index
+  # alongside a KIDIA:KFDIA one) are left untouched in the generated loop.
+  # Reject more than one ranging subscript (ambiguous: which one is being
+  # reduced?) or a range that isn't exactly $opts->{kidia}:$opts->{kfdia}.
 
-  my @sub = &F ('./R-LT/array-R/section-subscript-LT/section-subscript', $arr);
+  my @range = &F ('./R-LT/array-R/section-subscript-LT/section-subscript[lower-bound and upper-bound]', $arr);
 
-  die ("Fxtran::Reduction: reduced array reference is not rank 1: " . $arr->textContent . "\n")
-    unless (scalar (@sub) == 1);
+  die ("Fxtran::Reduction: more than one ranging subscript in reduced array reference: " . $arr->textContent . "\n")
+    unless (scalar (@range) == 1);
 
-  my ($lo)   = &F ('.//lower-bound', $arr, 2);
-  my ($hi)   = &F ('.//upper-bound', $arr, 2);
-  my ($name) = &F ('./N/n/text()', $arr, 2);
+  my ($range) = @range;
+
+  my ($lo) = &F ('./lower-bound', $range, 2);
+  my ($hi) = &F ('./upper-bound', $range, 2);
 
   die ("Fxtran::Reduction: reduced array reference is not bounded by $opts->{kidia}:$opts->{kfdia}: " . $arr->textContent . "\n")
     unless (($lo eq $opts->{kidia}) && ($hi eq $opts->{kfdia}));
 
-  my $old = $arr->textContent;
-  my $new = "$name ($opts->{jlon})";
+  my $old = $range->textContent;
+  my $new = $opts->{jlon};
 
   my $masktext = $mask->textContent;
 
@@ -162,107 +216,142 @@ sub reduceMask
   return ($lo, $hi, $masktext);
 }
 
-# Tag every do-construct in @nodes (top-level or nested, e.g. inside a
-# buildCascade guard) with reduction="1", marking it as a generated OR-
-# reduction loop (as opposed to e.g. the DO-WHILE transform's own plain "DO").
+# Tag every do-construct in @$nodes (top-level or nested, e.g. inside a
+# buildCascade guard) with reduction="<name>,<op>,<init>" (e.g.
+# "LLANY1,.OR.,.FALSE." or "ZZSUM1,+,0"), marking it as a generated
+# reduction loop (as opposed to e.g. the DO-WHILE transform's own plain
+# "DO") and naming the accumulator, combining operator and identity value it
+# reduces with. @$tags gives one such string per reduction do-construct, in
+# the same order those do-constructs appear in @$nodes (document order) --
+# for buildCascade this is one per branch, since each branch's loop is
+# generated, and so appears in the text, strictly after the previous one.
 
 sub markReductionLoops
 {
-  my @nodes = @_;
+  my ($nodes, $tags) = @_;
 
-  for my $n (@nodes)
+  my @dc;
+  for my $n (@$nodes)
     {
       next if ($n->nodeName eq '#text');
 
-      $n->setAttribute ('reduction', '1') if ($n->nodeName eq 'do-construct');
-
-      $_->setAttribute ('reduction', '1') for (&F ('.//do-construct', $n));
+      push @dc, $n if ($n->nodeName eq 'do-construct');
+      push @dc, &F ('.//do-construct', $n);
     }
 
-  return @nodes;
+  die ("Fxtran::Reduction: found " . scalar (@dc) . " reduction loop(s) but "
+     . scalar (@$tags) . " tag(s) to mark them with\n")
+    unless (scalar (@dc) == scalar (@$tags));
+
+  $dc[$_]->setAttribute ('reduction', $tags->[$_]) for (0 .. $#dc);
+
+  return @$nodes;
 }
 
-# Build the "ACC=.FALSE. / DO <jlon>=lo,hi / ACC=ACC .OR. mask (<jlon>) / ENDDO"
-# node list replacing "ACC = ANY (mask)"; always loops over the whole array
+# Build the "ACC=<init> / DO <jlon>=lo,hi / <combine> / ENDDO" node list
+# replacing "ACC = <INTRINSIC> (mask)"; always loops over the whole array
 # (no short-circuit).
 
 sub buildLoop
 {
-  my ($acc, $mask, $opts) = @_;
+  my ($acc, $intrinsic, $mask, $opts) = @_;
 
   my ($lo, $hi, $masktext) = &reduceMask ($mask, $opts);
 
-  my $code = "$acc=.FALSE.\nDO $opts->{jlon}=$lo,$hi\n$acc=$acc .OR. $masktext\nENDDO\n";
+  my $init    = $INTRINSIC{$intrinsic}{init};
+  my $combine = $INTRINSIC{$intrinsic}{combine}->($acc, $masktext);
 
-  return &markReductionLoops (&myParseFragment ($code));
+  my $code = "$acc=$init\nDO $opts->{jlon}=$lo,$hi\n$combine" . "ENDDO\n";
+
+  my $tag = "$acc,$INTRINSIC{$intrinsic}{op},$init";
+
+  return &markReductionLoops ([&myParseFragment ($code)], [$tag]);
 }
 
-# For an if-construct whose IF/ELSEIF branches (any number of them) each test
-# ANY (mask), build the code hoisted before it: declare-and-init every temp
-# up front, then a short-circuiting cascade where only the first branch's
-# reduction is unconditional -- each later one is only computed once every
-# earlier temp has been shown false (an "! skip" comment stands in for the
-# now-unneeded branch body), mirroring how the ELSEIF chain itself would
-# short-circuit. $any and $temp are parallel arrays, one per branch, in
-# branch order.
+# For an if-construct whose IF/ELSEIF branches (any number of them, each
+# independently ANY/SUM/COUNT) test a reduction, build the code hoisted
+# before it: declare-and-init every temp up front, then a short-circuiting
+# cascade where only the first branch's reduction is unconditional -- each
+# later one is only computed once every earlier branch's guard has been
+# shown false (an "! skip" comment stands in for the now-unneeded branch
+# body), mirroring how the ELSEIF chain itself would short-circuit.
+#
+# $branches is an arrayref of hashes, one per branch, in branch order:
+#   any       => the ANY/SUM/COUNT (...) named-E node
+#   temp      => the accumulator name generated for this branch
+#   intrinsic => ANY/SUM/COUNT
+#   guard     => the branch's own original condition text, with its
+#                intrinsic call substituted by "temp" -- e.g. bare "LLANY2"
+#                for a plain ANY (...) condition, or "ZZSUM1 > 0" for
+#                SUM (...) > 0. This is what later branches test to decide
+#                whether they still need computing, so it must stay a valid
+#                LOGICAL expression regardless of the branch's own
+#                (possibly non-LOGICAL) accumulator type.
 
 sub buildCascade
 {
-  my ($any, $temp, $opts) = @_;
+  my ($branches, $opts) = @_;
 
-  my $code = join ('', map { "$_=.FALSE.\n" } @$temp) . "\n";
+  my $code = join ('', map { "$_->{temp}=" . $INTRINSIC{$_->{intrinsic}}{init} . "\n" } @$branches) . "\n";
 
-  for my $i (0 .. $#$any)
+  for my $i (0 .. $#$branches)
     {
-      my ($mask) = &F ('./R-LT/*/element-LT/element', $any->[$i]);
+      my $b = $branches->[$i];
+
+      my ($mask) = &F ('./R-LT/*/element-LT/element', $b->{any});
       my ($lo, $hi, $masktext) = &reduceMask ($mask, $opts);
+      my $combine = $INTRINSIC{$b->{intrinsic}}{combine}->($b->{temp}, $masktext);
 
       if ($i == 0)
         {
-          $code .= "DO $opts->{jlon}=$lo,$hi\n$temp->[$i]=$temp->[$i] .OR. $masktext\nENDDO\n\n";
+          $code .= "DO $opts->{jlon}=$lo,$hi\n$combine" . "ENDDO\n\n";
         }
       else
         {
-          $code .= "IF ($temp->[$i - 1]) THEN\n! skip\nELSE\n\n"
-                 . "DO $opts->{jlon}=$lo,$hi\n$temp->[$i]=$temp->[$i] .OR. $masktext\nENDDO\n\n";
+          $code .= "IF ($branches->[$i - 1]{guard}) THEN\n! skip\nELSE\n\n"
+                 . "DO $opts->{jlon}=$lo,$hi\n$combine" . "ENDDO\n\n";
         }
     }
 
-  $code .= "ENDIF\n" x $#$any;
+  $code .= "ENDIF\n" x $#$branches;
 
-  return &markReductionLoops (&myParseFragment ($code));
+  my @tag = map { "$_->{temp},$INTRINSIC{$_->{intrinsic}}{op},$INTRINSIC{$_->{intrinsic}}{init}" } @$branches;
+
+  return &markReductionLoops ([&myParseFragment ($code)], \@tag);
 }
 
 =head2 reduceAnyIntrinsic
 
-  &Fxtran::Reduction::reduceAnyIntrinsic ($d, \%opts);
+  &Fxtran::Reduction::reduceAnyIntrinsic ($pu, \%opts);
 
-Transforms every C<ANY (mask)> reduction found in the (single) program-unit
-of document C<$d> into an explicit loop, in place. C<%opts> holds the
-identifier names to use: C<jlon>, C<kidia>, C<kfdia>.
+Transforms every C<ANY>/C<SUM>/C<COUNT> reduction found in the (single)
+program-unit of document C<$pu> into an explicit loop, in place. C<%opts>
+holds the identifier names to use: C<jlon>, C<kidia>, C<kfdia>.
 
 =cut
 
 sub reduceAnyIntrinsic
 {
-  my ($d, $opts) = @_;
+  my ($pu, $opts) = @_;
 
-  my ($pu) = &F ('.//program-unit', $d);
   my ($dp) = &F ('./specification-part/declaration-part', $pu);
   my ($ep) = &F ('./execution-part', $pu);
 
-  # Fresh LOGICAL temporaries (LLANY1, LLANY2, ...), one per generated
-  # T-decl-stmt, appended after the last existing declaration.
+  # Fresh temporaries (LLANY1, LLANY2, ..., ZZSUM1, ..., IICOUNT1, ...), one
+  # per generated T-decl-stmt, appended after the last existing declaration.
+  # Each intrinsic's family is counted (and named) independently.
 
-  my $ntemp = 0;
+  my %ntemp;
   my ($lastDecl) = &F ('./T-decl-stmt[last ()]', $dp);
 
   my $newTemp = sub
     {
-      $ntemp++;
-      my $name = "LLANY$ntemp";
+      my $intrinsic = shift;
 
-      my $decl = &s ("LOGICAL :: $name");
+      $ntemp{$intrinsic}++;
+      my $name = $PREFIX{$intrinsic} . $ntemp{$intrinsic};
+
+      my $decl = &s ("$INTRINSIC{$intrinsic}{type} :: $name");
       my $nl   = &t ("\n");
 
       $lastDecl->parentNode->insertAfter ($nl, $lastDecl);
@@ -275,9 +364,9 @@ sub reduceAnyIntrinsic
 
   # 1. DO WHILE (cond) -> DO / IF (.NOT. (cond)) THEN / EXIT / ENDIF.
   #    Generic rewrite, applied to every DO WHILE regardless of whether cond
-  #    mentions ANY -- any ANY (...) inside cond survives inside the new
-  #    if-construct's condition and is picked up by the next pass, which
-  #    runs after this one.
+  #    mentions a reduction -- any reduction call inside cond survives
+  #    inside the new if-construct's condition and is picked up by the next
+  #    pass, which runs after this one.
 
   for my $dostmt (&F ('.//do-stmt[test-E]', $ep))
     {
@@ -299,51 +388,64 @@ sub reduceAnyIntrinsic
         }
     }
 
-  # 2. Every if-construct with at least one ANY (...) in an IF/ELSEIF branch:
-  #    hoist the short-circuiting cascade (see buildCascade) before it, then
-  #    replace each branch's ANY (...) with a reference to its temp.
+  # 2. Every if-construct with at least one reduction call in an IF/ELSEIF
+  #    branch: hoist the short-circuiting cascade (see buildCascade) before
+  #    it, then replace each branch's reduction call with a reference to its
+  #    temp.
 
-  for my $construct (&F ('.//if-construct[.//condition-E//named-E[string (N)="ANY" and (R-LT/function-R or R-LT/parens-R)]]', $ep))
+  my $pred = &reductionNamePredicate ();
+
+  for my $construct (&F (".//if-construct[.//condition-E//named-E[($pred) and (R-LT/function-R or R-LT/parens-R)]]", $ep))
     {
-      my @branch = &F ('./if-block/if-then-stmt | ./if-block/else-if-stmt', $construct);
+      my @branchstmt = &F ('./if-block/if-then-stmt | ./if-block/else-if-stmt', $construct);
 
-      my @any = map
+      my @branch;
+      for my $stmt (@branchstmt)
         {
-          my ($a) = &findAny ($_);
-          die ("Fxtran::Reduction: mixed ANY / non-ANY conditions in the same if-construct are not supported\n")
-            unless ($a);
-          $a;
-        } @branch;
+          my ($any) = &findReduction ($stmt);
+          die ("Fxtran::Reduction: mixed reduction / non-reduction conditions in the same if-construct are not supported\n")
+            unless ($any);
 
-      my @temp = map { $newTemp->() } @branch;
+          my $intrinsic = &intrinsicOf ($any);
+          my $temp = $newTemp->($intrinsic);
 
-      for my $n (&buildCascade (\@any, \@temp, $opts))
+          my ($condE) = &F ('./condition-E', $stmt);
+          my $condtext = $condE->textContent;
+          my $anytext  = $any->textContent;
+
+          (my $guard = $condtext) =~ s/\Q$anytext\E/$temp/;
+
+          push @branch, { any => $any, temp => $temp, guard => $guard, intrinsic => $intrinsic };
+        }
+
+      for my $n (&buildCascade (\@branch, $opts))
         {
           $construct->parentNode->insertBefore ($n, $construct);
         }
 
       $construct->parentNode->insertBefore (&t ("\n"), $construct);
 
-      for my $i (0 .. $#any)
+      for my $b (@branch)
         {
-          $any[$i]->replaceNode (&e ($temp[$i]));
+          $b->{any}->replaceNode (&e ($b->{temp}));
         }
     }
 
-  # 3. Every remaining ANY (...) is a plain assignment: reuse the LHS as the
-  #    accumulator and replace the whole statement.
+  # 3. Every remaining reduction call is a plain assignment: reuse the LHS
+  #    as the accumulator and replace the whole statement.
 
-  for my $any (&findAny ($ep))
+  for my $any (&findReduction ($ep))
     {
       my $stmt = &Fxtran::stmt ($any);
       my ($mask) = &F ('./R-LT/*/element-LT/element', $any);
 
-      die ("Fxtran::Reduction: don't know how to reduce ANY (...) found in a " . $stmt->nodeName . "\n")
+      die ("Fxtran::Reduction: don't know how to reduce " . &intrinsicOf ($any) . " (...) found in a " . $stmt->nodeName . "\n")
         unless ($stmt->nodeName eq 'a-stmt');
 
       my ($acc) = &F ('./E-1', $stmt, 2);
+      my $intrinsic = &intrinsicOf ($any);
 
-      for my $n (&buildLoop ($acc, $mask, $opts))
+      for my $n (&buildLoop ($acc, $intrinsic, $mask, $opts))
         {
           $stmt->parentNode->insertBefore ($n, $stmt);
         }
