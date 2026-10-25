@@ -1,7 +1,3 @@
-Generate markdown documentation from POD inline documentation. This documentation is
-meant to be visible on github.com.
-
-A `README.md` file is also generated; it contains pointers to fxtran-acdc utilities.
 # NAME
 
 [fxtran-markdown](../bin/fxtran-markdown)
