@@ -10,6 +10,8 @@ fxtran-fix
 
   $ FXTRANFIX=1 FXTRANFIX_TYPE=agent FXTRANFIX_BREAK='^cuascn\.F90$' fxtran-fix -- fxtran-f90 ...
 
+  $ FXTRANFIX=1 FXTRANFIX_TYPE=agent FXTRANFIX_BREAK='phys_ec/cu\w+\.F90$' fxtran-fix -- fxtran-f90 ...
+
 =head1 DESCRIPTION
 
 The purpose of C<fxtran-fix> is to trap compiler errors and give the user 
@@ -54,9 +56,10 @@ A file-based rendezvous is created, meant for non-interactive sessions
 (scripted tools, AI agents); no terminal is required. C<fxtran-fix> creates
 a session directory:
 
-  $CMAKE_BUILD_DIRECTORY/.fxtran/fix-sessions/<pid>-<basename>/
+  $CMAKE_BUILD_DIRECTORY/.fxtran/fix-sessions/<pid>-<basename>-XXXXXX/
 
-containing:
+(the C<XXXXXX> suffix is random, so that a session directory is always new,
+even if a pid is reused by a later build) containing:
 
 =over 4
 
@@ -86,9 +89,41 @@ word C<ABORT>, C<fxtran-fix> exits with a non-zero status (and the build
 fails); otherwise the command is run once more and its status is returned
 to the build system.
 
+=item TIMEOUT
+
+Created by C<fxtran-fix> if the agent showed no activity for
+C<FXTRANFIX_TIMEOUT> seconds (see below); the session is then aborted (the
+build fails).
+
 =back
 
-C<fxtran-fix> waits until the F<DONE> file appears.
+The build waits for the agent: C<fxtran-fix> waits until the F<DONE> file
+appears, or until the timeout expires. Several sessions may be waiting at
+the same time (parallel make); the following files, in the F<fix-sessions>
+directory itself, are shared by all sessions:
+
+=over 4
+
+=item DONE-ALL
+
+Terminates all sessions started before it was written, as if their own
+F<DONE> file contained the same text (this text is copied to each session's
+F<DONE>). This is useful when several files fail for the same reason
+(typically a code generation bug), and a single fix solves them all.
+A F<DONE-ALL> older than a session is ignored by this session.
+
+=item ALIVE
+
+A heartbeat: touching it tells waiting sessions that the agent is still
+at work.
+
+=back
+
+The timeout is measured from the last agent activity, not from the session
+creation: writing a F<DONE> file in any session, or touching F<ALIVE>, resets
+the clock of all waiting sessions. Sessions waiting for their turn therefore
+do not time out while the agent is busy with another one; an agent working
+for a long time on a single session should touch F<ALIVE> periodically.
 
 =head1 ENVIRONMENT VARIABLES
 
@@ -108,7 +143,17 @@ C<--type> option.
 A regular expression matched against the source file being compiled; when
 it matches, a session is started even if the compilation succeeds. This
 allows one to stop the build on a chosen file, typically to develop or
-debug code generation.
+debug code generation. The regular expression is matched against the
+basename of the file (eg C<cuascn.F90>) and against the file name as passed
+on the command line (usually an absolute path, as with cmake); a session is
+started if either matches.
+
+=item FXTRANFIX_TIMEOUT
+
+Agent sessions only: the maximum time (in seconds) without agent activity
+(see F<ALIVE>) before a session is aborted; default is 7200 (2 hours).
+A value of 0 means no timeout. When the timeout expires, the session is
+aborted and the build fails.
 
 =item CMAKE_BUILD_DIRECTORY
 
@@ -138,6 +183,8 @@ use File::Copy;
 use File::Path;
 use File::Temp;
 use File::Basename;
+use File::Glob qw (bsd_glob);
+use Time::HiRes;
 use Cwd;
 use Getopt::Long;
 use Data::Dumper;
@@ -210,13 +257,19 @@ my $file = $file[0] || '';
 
 # A break may be requested on a given source file; a session will then be
 # started even if the compilation succeeds. All file arguments are checked:
-# some commands (eg interface generation) process several files at once
+# some commands (eg interface generation) process several files at once.
+# The regex is matched against both the basename and the name as passed on
+# the command line (cmake passes absolute paths)
 
 my $break = 0;
 
 if ($ENV{FXTRANFIX_BREAK} && @file)
   {
-    $break = eval { scalar (grep { m/$ENV{FXTRANFIX_BREAK}/o } @file) } || 0;
+    $break = eval
+    {
+      my $re = qr/$ENV{FXTRANFIX_BREAK}/;
+      scalar (grep { (&basename ($_) =~ $re) || ($_ =~ $re) } @file)
+    } || 0;
   }
 
 my $status = system (@cmd);
@@ -234,9 +287,11 @@ if ($opts{type} eq 'agent')
 
     &File::Path::make_path ($root);
 
-    my $dir = "$root/$$-" . ($file ? &basename ($file) : 'unknown');
+    # A random suffix guarantees a fresh directory: a stale DONE file left
+    # by a previous build with the same pid would end the session at once
 
-    &File::Path::make_path ($dir);
+    my $dir = &File::Temp::tempdir ("$$-" . ($file ? &basename ($file) : 'unknown') . '-XXXXXX',
+                                    DIR => $root, CLEANUP => 0);
 
     &saveSession ($dir, \@cmd);
 
@@ -249,18 +304,74 @@ cwd=@{[&getcwd ()]}
 cmd=@cmd
 EOF
 
+    # Unbuffered: the build log is usually a pipe (tee), and the announcement
+    # must be visible while we wait, not when the session is over
+
+    $| = 1;
+
     print "$prog: $trigger session for `$file'\n",
           "$prog: session directory is $dir\n",
           "$prog: write `OK' or `ABORT' to $dir/DONE to terminate the session\n";
 
-    # Wait for the session to be terminated by the agent
+    # Wait for the session to be terminated by the agent, either with this
+    # session's DONE file, or with DONE-ALL (all sessions at once).
+    # Give up when the agent has shown no activity for FXTRANFIX_TIMEOUT
+    # seconds (0 = wait forever), so that a lost agent cannot hang the build;
+    # the clock is not started at session creation, otherwise sessions waiting
+    # for their turn would time out while the agent is busy with another one
 
-    until (-f "$dir/DONE")
+    my $timeout = $ENV{FXTRANFIX_TIMEOUT};
+    $timeout = 7200 unless (defined ($timeout) && ($timeout =~ m/^\d+$/o));
+
+    my $start = &Time::HiRes::time ();
+
+    my $mtime = sub { my @st = &Time::HiRes::stat ($_[0]); @st ? $st[9] : 0 };
+
+    my $slurp = sub { my $fh = 'FileHandle'->new ("<$_[0]"); $fh ? do { local ($/); <$fh> } : '' };
+
+    # Agent activity: a DONE file written in any session, or the ALIVE
+    # heartbeat file touched
+
+    my $activity = sub
+    {
+      my $last = $start;
+      for my $f ("$root/ALIVE", &bsd_glob ("$root/*/DONE"))
+        {
+          my $t = $mtime->($f);
+          $last = $t if ($t > $last);
+        }
+      return $last;
+    };
+
+    my $done;
+
+    while (1)
       {
+        if (-f "$dir/DONE")
+          {
+            $done = $slurp->("$dir/DONE");
+            last;
+          }
+
+        # DONE-ALL ends the sessions started before it was written; an older
+        # DONE-ALL (eg left by a previous build) is ignored
+
+        if ($mtime->("$root/DONE-ALL") > $start)
+          {
+            $done = $slurp->("$root/DONE-ALL");
+            'FileHandle'->new (">$dir/DONE")->print ($done);
+            last;
+          }
+
+        if ($timeout && (&Time::HiRes::time () - $activity->() > $timeout))
+          {
+            'FileHandle'->new (">$dir/TIMEOUT")->print ("timeout=$timeout\ndate=@{[scalar (localtime ())]}\n");
+            print STDERR "$prog: no agent activity for $timeout seconds, aborting session for `$file'\n";
+            exit (1);
+          }
+
         sleep (2);
       }
-
-    my $done = do { my $fh = 'FileHandle'->new ("<$dir/DONE"); local ($/); <$fh> };
 
     exit (1) if (($done || '') =~ m/^\s*ABORT/mo);
   }

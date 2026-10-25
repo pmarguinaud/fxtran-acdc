@@ -204,6 +204,46 @@ The xterm shell gets:
 - `run.sh` is executed **once automatically** by the bashrc,
 - on shell exit, `fxtran-fix` retries the compile once more and returns status to `make`.
 
+The session type is chosen with `--type` (hard-coded to `xterm` in the `arch/fxtran` wrappers) or with `FXTRANFIX_TYPE`, which takes precedence: `xterm`, `screen` or **`agent`**.
+
+### Agent sessions (`FXTRANFIX_TYPE=agent`)
+
+For non-interactive use (scripts, AI agents), no terminal is opened; `fxtran-fix` creates a file-based rendezvous instead:
+
+```
+$CMAKE_BUILD_DIRECTORY/.fxtran/fix-sessions/<pid>-<basename>-XXXXXX/
+├── SESSION   # trigger (error|break), date, pid, file, cwd, cmd
+├── env.sh    # export VAR='value' for the whole environment (secrets filtered out)
+├── cwd       # working directory of the command
+├── run.sh    # self-contained re-run: sources env.sh, cd, exec the exact command
+├── DONE      # written by the agent: `OK` → re-compile & return status; `ABORT` → fail
+└── TIMEOUT   # written by fxtran-fix if the agent showed no activity in time
+```
+
+Shared by all sessions, in `fix-sessions/` itself:
+
+```
+fix-sessions/
+├── DONE-ALL  # ends every session started before it, as if each had its own DONE with this text
+└── ALIVE     # heartbeat: touch it to show the agent is still at work
+```
+
+The build waits for the agent, by design; with `make -j32` several sessions may be waiting at once, typically because one code-generation bug breaks many files. One fix then solves them all, and a single `DONE-ALL` releases them. A `DONE-ALL` older than a session is ignored by that session.
+
+The `XXXXXX` suffix is random, so a stale `DONE` from an earlier build with the same pid can never end a new session. The announcement (`fxtran-fix: … session directory is …`) is written unbuffered, so it shows up in `build.log` while the session is waiting. `FXTRANFIX_TIMEOUT` (default 7200 s; `0` = wait forever) protects against a *lost* agent, not a busy one: it counts from the last agent activity (a `DONE` written in any session, or `ALIVE` touched), not from the session creation, so sessions waiting their turn do not expire while the agent works on another. When it expires, the session is aborted and the build fails instead of hanging.
+
+`FXTRANFIX_BREAK=<regex>` opens a session even when the compile **succeeds**, to stop on a chosen file and work on its code generation. The regex is matched against the file's basename *and* against the name on the command line (cmake passes absolute paths), so both `'^cuascn\.F90$'` and `'phys_ec/cu\w+\.F90$'` work.
+
+Typical agent loop:
+
+```bash
+FXTRANFIX=1 FXTRANFIX_TYPE=agent FXTRANFIX_BREAK='^cuascn\.F90$' ./build.sh &
+# wait for .fxtran/fix-sessions/*/SESSION, inspect, fix, re-run ./run.sh until it passes
+# (touch .fxtran/fix-sessions/ALIVE now and then during long work)
+echo OK > .fxtran/fix-sessions/<session>/DONE     # one session
+echo OK > .fxtran/fix-sessions/DONE-ALL           # or all waiting sessions
+```
+
 > [!important] This is a deliberate design, not an accident
 > `FXTRANFIX` exists **on purpose**: instead of the classic painful loop —
 > *make fails → hunt the error through megabytes of build.log → edit the source → re-run cmake/make* —
