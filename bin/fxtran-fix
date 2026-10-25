@@ -8,6 +8,8 @@ fxtran-fix
 
   $ FXTRANFIX=1 fxtran-fix --type xterm -- fxtran-f90 ...
 
+  $ FXTRANFIX=1 FXTRANFIX_TYPE=agent FXTRANFIX_BREAK='^cuascn\.F90$' fxtran-fix -- fxtran-f90 ...
+
 =head1 DESCRIPTION
 
 The purpose of C<fxtran-fix> is to trap compiler errors and give the user 
@@ -15,10 +17,10 @@ a chance to debug them, without interrupting the compiling process (cmake
 or gmkpack).
 
 When a compilation error occurs, C<fxtran-fix> will catch it, if the environment
-variable C<FXTRANFIX> is not null, and create a new shell (via xterm or screen)
-which the user can use to find and fix the issue.
+variable C<FXTRANFIX> is not null, and create a new session (xterm, screen or
+agent) which can be used to find and fix the issue.
 
-In this shell session, two commands are provided:
+In interactive shell sessions (xterm, screen), two commands are provided:
 
 =over 4
 
@@ -35,6 +37,84 @@ Rerun the compiler command.
 When the user is done with editing/debugging, he has to exit the shell; C<fxtran-fix> 
 will then attempt to compile the code once more and return control to the 
 build system.
+
+=head1 SESSION TYPES
+
+The session type may be selected with the C<--type> option or with the
+C<FXTRANFIX_TYPE> environment variable (the latter takes precedence over
+the option, which is hard-coded in some compiler wrappers).
+
+=head2 xterm (default), screen
+
+An interactive shell is started in a new xterm window or screen session.
+
+=head2 agent
+
+A file-based rendezvous is created, meant for non-interactive sessions
+(scripted tools, AI agents); no terminal is required. C<fxtran-fix> creates
+a session directory:
+
+  $CMAKE_BUILD_DIRECTORY/.fxtran/fix-sessions/<pid>-<basename>/
+
+containing:
+
+=over 4
+
+=item SESSION
+
+Metadata about the session: trigger (error or break), date, pid, source
+file, working directory and full command line.
+
+=item env.sh
+
+The environment the command was started with, as a list of C<export VAR='value'>
+statements.
+
+=item cwd
+
+The working directory the command was started from.
+
+=item run.sh
+
+A self-contained script re-running the exact command: it sources F<env.sh>,
+changes to the saved working directory, and executes the command.
+
+=item DONE
+
+To be created by the agent when the session is over. If it contains the
+word C<ABORT>, C<fxtran-fix> exits with a non-zero status (and the build
+fails); otherwise the command is run once more and its status is returned
+to the build system.
+
+=back
+
+C<fxtran-fix> waits until the F<DONE> file appears.
+
+=head1 ENVIRONMENT VARIABLES
+
+=over 4
+
+=item FXTRANFIX
+
+Enables the mechanism when non-null.
+
+=item FXTRANFIX_TYPE
+
+Session type: C<xterm>, C<screen> or C<agent>. Takes precedence over the
+C<--type> option.
+
+=item FXTRANFIX_BREAK
+
+A regular expression matched against the source file being compiled; when
+it matches, a session is started even if the compilation succeeds. This
+allows one to stop the build on a chosen file, typically to develop or
+debug code generation.
+
+=item CMAKE_BUILD_DIRECTORY
+
+Used to locate the F<fix-sessions> directory (agent sessions).
+
+=back
 
 =head1 SEE ALSO
 
@@ -58,6 +138,7 @@ use File::Copy;
 use File::Path;
 use File::Temp;
 use File::Basename;
+use Cwd;
 use Getopt::Long;
 use Data::Dumper;
 
@@ -67,6 +148,39 @@ sub script
 {
   'FileHandle'->new ('>' . $_[0])->print ($_[1]);
   chmod (0755, $_[0]);
+}
+
+sub saveSession
+{
+  # Save the environment & working directory the command was started with,
+  # and create a self-contained run.sh script re-running the exact command
+
+  my ($dir, $cmd) = @_;
+  my @cmd = @$cmd;
+
+  my %skip = map { ($_ => 1) } qw (PWD OLDPWD SHLVL _);
+
+  my $fh = 'FileHandle'->new (">$dir/env.sh");
+
+  for my $var (sort (keys (%ENV)))
+    {
+      next if ($skip{$var});
+      next if ($var =~ m/(?:TOKEN|SECRET|PASSWD|APIKEY)/io);
+      (my $val = $ENV{$var}) =~ s/'/'\\''/go;
+      $fh->print ("export $var='$val'\n");
+    }
+
+  $fh->close ();
+
+  'FileHandle'->new (">$dir/cwd")->print (&getcwd () . "\n");
+
+  &script ("$dir/run.sh", << "EOF");
+#!/bin/bash
+set -x
+. "\$(dirname "\$0")/env.sh"
+cd "\$(cat "\$(dirname "\$0")/cwd")"
+exec @cmd
+EOF
 }
 
 my %opts = qw (type xterm);
@@ -79,45 +193,103 @@ my @opts_f = qw ();
   (map { ($_ => \$opts{$_}) } @opts_f),
 );
 
+# FXTRANFIX_TYPE takes precedence over the --type option (which is hard-coded
+# to xterm in some compiler wrappers)
+
+$opts{type} = $ENV{FXTRANFIX_TYPE} || $opts{type};
+
 my @cmd = @ARGV;
 
 goto END unless ($ENV{FXTRANFIX});
 
-exit (0) unless (system (@cmd)); # Exit if it work
-
 my $user = getpwuid ($<);
 my $prog = &basename ($0, qw (.pl));
 
-my ($file) = grep { m/\.(?:F90|F|c|cc|cpp)$/io } @ARGV; $file ||= '';
+my @file = grep { m/\.(?:F90|F|c|cc|cpp)$/io } @ARGV;
+my $file = $file[0] || '';
 
-my $tmpdir = 'File::Temp'->newdir ();
+# A break may be requested on a given source file; a session will then be
+# started even if the compilation succeeds. All file arguments are checked:
+# some commands (eg interface generation) process several files at once
 
-my $shell = "$tmpdir/shell.sh";
+my $break = 0;
 
-my @session;
-
-if ($opts{type} eq 'xterm')
+if ($ENV{FXTRANFIX_BREAK} && @file)
   {
-    @session = (qw (xterm +sb -bg black -fg grey70 -geometry 150x60+0+0),  -e => $shell);
+    $break = eval { scalar (grep { m/$ENV{FXTRANFIX_BREAK}/o } @file) } || 0;
   }
-elsif ($opts{type} eq 'screen')
+
+my $status = system (@cmd);
+
+exit (0) unless ($status || $break); # Exit if it works and no break was requested
+
+my $trigger = $status ? 'error' : 'break';
+
+if ($opts{type} eq 'agent')
   {
-    @session = (qw (screen -S), $prog, '-D', -m => $shell);
+    # File-based rendezvous for non-interactive sessions (AI agents, scripts)
+
+    my $root = $ENV{CMAKE_BUILD_DIRECTORY} || $ENV{TMPDIR} || '/tmp';
+    $root = "$root/.fxtran/fix-sessions";
+
+    &File::Path::make_path ($root);
+
+    my $dir = "$root/$$-" . ($file ? &basename ($file) : 'unknown');
+
+    &File::Path::make_path ($dir);
+
+    &saveSession ($dir, \@cmd);
+
+    &script ("$dir/SESSION", << "EOF");
+trigger=$trigger
+date=@{[scalar (localtime ())]}
+pid=$$
+file=$file
+cwd=@{[&getcwd ()]}
+cmd=@cmd
+EOF
+
+    print "$prog: $trigger session for `$file'\n",
+          "$prog: session directory is $dir\n",
+          "$prog: write `OK' or `ABORT' to $dir/DONE to terminate the session\n";
+
+    # Wait for the session to be terminated by the agent
+
+    until (-f "$dir/DONE")
+      {
+        sleep (2);
+      }
+
+    my $done = do { my $fh = 'FileHandle'->new ("<$dir/DONE"); local ($/); <$fh> };
+
+    exit (1) if (($done || '') =~ m/^\s*ABORT/mo);
   }
 else
   {
-    die ("Unknown session type `$opts{type}'");
-  }
-    
-# Create scripts
-    
-&script ("$tmpdir/run.sh", << "EOF");
-#!/bin/bash
-set -x
-exec @cmd
-EOF
+    my $tmpdir = 'File::Temp'->newdir ();
 
-&script ("$tmpdir/bashrc", << "EOF");
+    my $shell = "$tmpdir/shell.sh";
+
+    my @session;
+
+    if ($opts{type} eq 'xterm')
+      {
+        @session = (qw (xterm +sb -bg black -fg grey70 -geometry 150x60+0+0),  -e => $shell);
+      }
+    elsif ($opts{type} eq 'screen')
+      {
+        @session = (qw (screen -S), $prog, '-D', -m => $shell);
+      }
+    else
+      {
+        die ("Unknown session type `$opts{type}'");
+      }
+        
+    # Create scripts
+        
+    &saveSession ($tmpdir, \@cmd);
+
+    &script ("$tmpdir/bashrc", << "EOF");
 if [ -f ~/.bashrc ]
 then
   . ~/.bashrc
@@ -140,14 +312,15 @@ fi
 $tmpdir/run.sh 
 EOF
   
-&script ("$tmpdir/shell.sh", << "EOF");
+    &script ("$tmpdir/shell.sh", << "EOF");
 #!/bin/bash
 exec bash --init-file $tmpdir/bashrc -i
 EOF
   
-# Start interactive session
+    # Start interactive session
 
-system (@session);
+    system (@session);
+  }
 
 END:
 
