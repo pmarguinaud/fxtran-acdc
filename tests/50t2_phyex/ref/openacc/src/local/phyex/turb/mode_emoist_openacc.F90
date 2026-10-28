@@ -1,0 +1,173 @@
+
+MODULE MODE_EMOIST_OPENACC
+
+
+IMPLICIT NONE
+
+
+CONTAINS
+SUBROUTINE EMOIST_OPENACC (D, CST, KRR, KRRI, PTHLM, PRM,&
+& PLOCPEXNM, PAMOIST, PSRCM, OOCEAN, PEMOIST, YDSTACK)
+!$ACC ROUTINE (EMOIST_OPENACC) SEQ      
+
+
+USE MODD_CST,ONLY:CST_T
+USE MODD_DIMPHYEX,ONLY:DIMPHYEX_T
+#include "fxtran_acdc_stack.h"
+USE FXTRAN_ACDC_STACK_MOD
+USE FXTRAN_ACDC_ABORT_MOD
+
+IMPLICIT NONE
+
+TYPE (DIMPHYEX_T), INTENT (IN)::D
+TYPE (CST_T), INTENT (IN)::CST
+INTEGER, INTENT (IN)::KRR
+INTEGER, INTENT (IN)::KRRI
+LOGICAL, INTENT (IN)::OOCEAN
+REAL, INTENT (IN)::PTHLM(D%NIJT, D%NKT)
+REAL, INTENT (IN)::PRM(D%NIJT, D%NKT, KRR)
+REAL, INTENT (IN)::PLOCPEXNM(D%NIJT, D%NKT)
+REAL, INTENT (IN)::PAMOIST(D%NIJT, D%NKT)
+REAL, INTENT (IN)::PSRCM(D%NIJT, D%NKT)
+REAL, INTENT (OUT)::PEMOIST(D%NIJT, D%NKT)
+TYPE(FXTRAN_ACDC_STACK), INTENT (IN) :: YDSTACK
+TYPE(FXTRAN_ACDC_STACK) :: YLSTACK
+fxtran_acdc_temp (REAL, ZRW, (D%NIJT, D%NKT))
+fxtran_acdc_temp (REAL, ZA, (D%NIJT, D%NKT))
+REAL::ZDELTA
+INTEGER::JRR
+INTEGER::JK
+INTEGER::JI
+INTEGER::IKT
+INTEGER::IIJE
+INTEGER::IIJB
+
+
+YLSTACK = YDSTACK
+
+
+
+IF (KIND (ZRW) == 8) THEN
+    fxtran_acdc_alloc8 (ZRW)
+ELSEIF (KIND (ZRW) == 4) THEN
+    fxtran_acdc_alloc4 (ZRW)
+ELSE
+    STOP 1
+ENDIF
+
+
+IF (KIND (ZA) == 8) THEN
+    fxtran_acdc_alloc8 (ZA)
+ELSEIF (KIND (ZA) == 4) THEN
+    fxtran_acdc_alloc4 (ZA)
+ELSE
+    STOP 1
+ENDIF
+
+
+JI = D%NIB
+
+
+IIJB=D%NIB
+IIJE=D%NIE
+IKT=D%NKT
+
+IF (OOCEAN) THEN
+
+  IF (KRR==0) THEN
+
+    DO JK=1, IKT
+      
+      PEMOIST (JI, JK)=0.
+    
+    ENDDO
+
+  ELSE
+
+    DO JK=1, IKT
+      
+      PEMOIST (JI, JK)=1.
+    
+    ENDDO
+
+  ENDIF
+
+ELSE
+
+  IF (KRR==0) THEN
+    PEMOIST (JI,:)=0.
+  ELSEIF (KRR==1) THEN
+    ZDELTA=(CST%XRV/CST%XRD)-1.
+
+    DO JK=1, IKT
+      
+      PEMOIST (JI, JK)=ZDELTA*PTHLM (JI, JK)
+    
+    ENDDO
+
+  ELSE
+    ZDELTA=(CST%XRV/CST%XRD)-1.
+    ZRW (JI,:)=PRM (JI,:, 1)
+
+    IF (KRRI>0) THEN
+
+      DO JK=1, IKT
+        
+        ZRW (JI, JK)=ZRW (JI, JK)+PRM (JI, JK, 3)
+      
+      ENDDO
+
+
+      DO JRR=5, KRR
+
+        DO JK=1, IKT
+          
+          ZRW (JI, JK)=ZRW (JI, JK)+PRM (JI, JK, JRR)
+        
+        ENDDO
+
+      ENDDO
+
+
+      DO JK=1, IKT
+        
+        ZA (JI, JK)=1.+((1.+ZDELTA)*(PRM (JI, JK, 1)-PRM (JI, JK&
+        &, 2)-PRM (JI, JK, 4))-ZRW (JI, JK))/(1.+ZRW (JI, JK))
+        PEMOIST (JI, JK)=ZDELTA*(PTHLM (JI, JK)+PLOCPEXNM (JI, JK)*(PRM (JI, JK, 2)+PRM (JI, JK, 4)))/(1&
+        &.+ZRW (JI, JK))+(PLOCPEXNM (JI, JK)*ZA (JI, JK)-(1.+ZDELTA)*(PTHLM (JI, JK)+PLOCPEXNM (JI, JK)&
+        &*(PRM (JI, JK, 2)+PRM (JI, JK, 4)))/(1.+ZRW (JI, JK)))*PAMOIST (JI, JK)*2.*PSRCM (JI, JK)
+      
+      ENDDO
+
+    ELSE
+
+      DO JRR=3, KRR
+
+        DO JK=1, IKT
+          
+          ZRW (JI, JK)=ZRW (JI, JK)+PRM (JI, JK, JRR)
+        
+        ENDDO
+
+      ENDDO
+
+
+      DO JK=1, IKT
+        
+        ZA (JI, JK)=1.+((1.+ZDELTA)*(PRM (JI, JK, 1)-PRM (JI, JK, 2))-ZRW (JI, JK))/(1.+ZRW (JI, JK))
+        PEMOIST (JI, JK)=ZDELTA*(PTHLM (JI, JK)+PLOCPEXNM (JI, JK)*PRM (JI, JK, 2))/(1.+ZRW&
+        & (JI, JK))+(PLOCPEXNM (JI, JK)*ZA (JI, JK)-(1.+ZDELTA)*(PTHLM (JI, JK)+PLOCPEXNM (JI&
+        &, JK)*PRM (JI, JK, 2))/(1.+ZRW (JI, JK)))*PAMOIST (JI, JK)*2.*PSRCM (JI, JK)
+      
+      ENDDO
+
+    ENDIF
+
+  ENDIF
+
+ENDIF
+
+
+END SUBROUTINE EMOIST_OPENACC
+
+ENDMODULE MODE_EMOIST_OPENACC
