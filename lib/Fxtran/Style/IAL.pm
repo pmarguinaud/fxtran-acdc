@@ -119,6 +119,24 @@ sub preProcessForOpenACC
   my $d = shift;
   my %args = @_;
 
+  $class->klonSlicesToColon ($d)
+    unless ($args{'keep-klon-slices'});
+}
+
+sub klonSlicesToColon
+{
+  my $class = shift;
+  my $d = shift;
+
+=head2 klonSlicesToColon
+
+Replace C<KIDIA:KFDIA> (and C<1:KLON>) section subscripts in assignments by C<:>.
+
+This is valid only for single column code, where C<:> is later replaced by C<JLON>; in
+code processing a whole C<NPROMA> block, C<:> would include the columns beyond C<KFDIA>.
+
+=cut
+
   my @s = qw (1:YDCPG_OPTS%KLON YDCPG_BNDS%KIDIA:YDCPG_BNDS%KFDIA 1:KLON KIDIA:KFIDA YLCPG_BNDS%KIDIA:YLCPG_BNDS%KFDIA);
 
   my $xpath = './/a-stmt//section-subscript[' . join (' or ', map { "string(.)=\"$_\"" } @s) . ']';

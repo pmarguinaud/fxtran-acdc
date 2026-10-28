@@ -528,11 +528,13 @@ See L<Fxtran::Pointer::Parallel> for more details.
   
   my @pu = &F ('./object/file/program-unit', $d);
   
+  # KIDIA:KFDIA slices are turned into ':' for each target in Fxtran::Pointer::Parallel
+
   for my $pu (@pu)
     {
-      $opts->{style}->preProcessForOpenACC ($pu, %$opts);
+      $opts->{style}->preProcessForOpenACC ($pu, %$opts, 'keep-klon-slices' => 1);
     }
-  
+
   my $NAME = uc (&basename ($F90out, qw (.F90)));
   
   my $linkTypes = &Fxtran::IO::Link::link ('types-fieldapi-dir' => $opts->{'types-fieldapi-dir'});

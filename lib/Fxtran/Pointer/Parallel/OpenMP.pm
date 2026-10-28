@@ -32,6 +32,11 @@ sub requireUtilMod
   0;
 }
 
+sub keepKlonSlices
+{
+  1;
+}
+
 sub setOpenMPDirective
 {
   my ($par, $t, %opts) = @_;
