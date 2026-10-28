@@ -22,10 +22,9 @@ use Fxtran::Canonic;
 use Fxtran::Inline;
 use Fxtran::Style;
 
-# Cases which the current code gets wrong; to be fixed by the rewrite of inlineSingleCall
-my %TODO = map { ($_, 1) } qw (r01_lt r02_seqassoc r03_capture r04_return r06_string r07_section
-                               r08_value r10_lbound r11_optional r12_clash r13_label
-                               r14_stride r15_bounds);
+# Cases which the current code gets wrong; MERGE simplification (r11) and renaming of local
+# variables (r12) are not implemented yet
+my %TODO = map { ($_, 1) } qw (r11_optional r12_clash);
 
 sub slurp
 {
@@ -54,7 +53,7 @@ sub inline
   for my $pu (&F ('.//program-unit', $d))
     {
       next unless ($pu->firstChild->nodeName eq 'subroutine-stmt');
-      &Fxtran::Inline::inlineContainedSubroutines ($pu, skipDimensionCheck => 1, inlineDeclarations => 1, style => $style);
+      &Fxtran::Inline::inlineContainedSubroutines ($pu, inlineDeclarations => 1, style => $style);
     }
 
   return &Fxtran::Canonic::indent ($d);
@@ -64,7 +63,7 @@ my @case = map { m{/(\w+)\.F90$}o ? ($1) : () } sort grep { ! m/\.ref\.F90$/o } 
 
 for my $case (@case)
   {
-    local $TODO = $TODO{$case} ? 'to be fixed by the rewrite of inlineSingleCall' : undef;
+    local $TODO = $TODO{$case} ? 'not implemented yet' : undef;
 
     my $out = eval { &inline ("$Bin/inline/$case.F90") };
     my $err = $@;

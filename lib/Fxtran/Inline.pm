@@ -22,166 +22,437 @@ use Fxtran::Ref;
 use Fxtran::Decl;
 use Fxtran::DrHook;
 
-sub replaceDummyArgumentByActual
+sub dieInline
 {
 
-=head2 replaceDummyArgumentByActual
+=head2 dieInline
 
-Dispatch replacement of a dummy argument expression C<$e> by its actual argument C<$a>, branching on whether C<$a> is a named expression, an operator expression, or a literal.
+Abort inlining with a message giving the callee, the caller, the CALL statement
+and the reason.
 
 =cut
 
-  my ($e, $a) = @_;
-
-  if ($a->nodeName eq 'named-E')
-    {
-      return &replaceDummyArgumentByActualNamedE ($e, $a);
-    }
-  elsif ($a->nodeName eq 'op-E')
-    {
-      return &replaceDummyArgumentByActualOpE ($e, $a);
-    }
-  elsif ($a->nodeName eq 'literal-E')
-    {
-      die $a->toString if (&F ('./R-LT', $e));
-      $e->replaceNode ($a->cloneNode (1));
-    }
-
+  my ($ctx, $message) = @_;
+  (my $call = $ctx->{call}) =~ s/\s+/ /go;
+  die ("Inlining $ctx->{callee} into $ctx->{caller} ($call): $message\n");
 }
 
-sub replaceDummyArgumentByActualOpE
+sub strip
 {
-
-=head2 replaceDummyArgumentByActualOpE
-
-Replace a dummy argument expression node with a parenthesised copy of the actual operator expression; die if the dummy carries array references.
-
-=cut
-
-  my ($e, $a) = @_;
-
-  $a = &n ('<parens-E>(' . $a->textContent . ')</parens-E>');
-
-  my @re = &F ('./R-LT/ANY-R', $e);
-
-  die $a->toString if (@re);
-
-  $e->replaceNode ($a);
-
+  my $text = shift;
+  $text =~ s/\s+//go;
+  return $text;
 }
 
-sub resolveArrayRef
+sub bindArguments
 {
 
-=head2 resolveArrayRef
+=head2 bindArguments
 
-Substitute colon section-subscripts in an actual array reference C<$ra> with the corresponding subscripts from the dummy array reference C<$re>, then replace C<$re> in the tree with the updated C<$ra>.
+Bind the dummy arguments of C<$s2> to the actual arguments of C<$call>, positionally
+or by keyword. Return the list of dummy argument names, and a hash mapping each dummy
+argument to its actual argument expression (absent arguments are not in the hash).
 
 =cut
 
-  my ($ra, $re) = @_;
+  my ($ctx, $s2, $call) = @_;
 
-  $ra = $ra->cloneNode (1);
+  my @da = &F ('./dummy-arg-LT/arg-N/N/n/text()', $s2, 1);
+  my %da = map { ($_, 1) } @da;
 
-  my $ee = sub
+  my %bind;
+
+  my $i = 0;
+  for my $arg (&F ('./arg-spec/arg', $call))
+    {
+      my $da;
+      if (($da) = &F ('./arg-N/k/text()', $arg, 1))
+        {
+          &dieInline ($ctx, "no dummy argument named $da") unless ($da{$da});
+        }
+      else
+        {
+          ($da = $da[$i++]) or &dieInline ($ctx, "too many actual arguments");
+        }
+
+      my ($aa) = &F ('./ANY-E', $arg);
+
+      &dieInline ($ctx, "dummy $da: unsupported actual argument " . $arg->textContent) unless ($aa);
+      &dieInline ($ctx, "dummy $da: bound twice") if ($bind{$da});
+
+      $bind{$da} = $aa;
+    }
+
+  return (\@da, \%bind);
+}
+
+sub lowerBounds
+{
+
+=head2 lowerBounds
+
+Return the lower bounds (as text, without whitespace) of an C<array-spec> element;
+the default lower bound is C<1>. C<$map> may map names to the text replacing them,
+so that the bounds of a dummy argument can be expressed with actual arguments.
+
+=cut
+
+  my ($as, $map) = @_;
+
+  my @lb;
+
+  for my $ss (&F ('./shape-spec-LT/shape-spec', $as))
+    {
+      my ($lb) = &F ('./lower-bound/ANY-E', $ss);
+
+      if (! $lb)
+        {
+          push @lb, '1';
+        }
+      elsif ($map && ($lb->nodeName eq 'named-E') && (! &F ('./R-LT', $lb)) && $map->{$lb->textContent})
+        {
+          push @lb, $map->{$lb->textContent};
+        }
+      else
+        {
+          push @lb, &strip ($lb->textContent);
+        }
+    }
+
+  return @lb;
+}
+
+sub arraySpec
+{
+
+=head2 arraySpec
+
+Return the C<array-spec> of the entity declaration C<$en_decl>, if any.
+
+=cut
+
+  my $en_decl = shift;
+  my ($as) = &F ('./array-spec', $en_decl);
+  ($as) = &F ('./attribute/array-spec', &Fxtran::stmt ($en_decl)) unless ($as);
+  return $as;
+}
+
+sub describeDummies
+{
+
+=head2 describeDummies
+
+Read the declarations of the dummy arguments of the inlined routine: OPTIONAL attribute,
+rank and lower bounds (expressed with the actual arguments when the bound is a dummy
+argument). Die for unsupported dummy arguments (undeclared, VALUE).
+
+=cut
+
+  my ($ctx, $dp2, $da, $bind) = @_;
+
+  my %map = map { ($_, &strip ($bind->{$_}->textContent)) }
+            grep { $bind->{$_}->nodeName =~ m/^(?:named|literal)-E$/o } keys (%$bind);
+
+  my %info;
+
+  for my $da (@$da)
+    {
+      my ($en_decl) = &F ('./T-decl-stmt/EN-decl-LT/EN-decl[string(EN-N)="?"]', $da, $dp2);
+
+      &dieInline ($ctx, "dummy $da: declaration not found") unless ($en_decl);
+
+      my $decl = &Fxtran::stmt ($en_decl);
+
+      my %attr = map { ($_, 1) } &F ('./attribute/attribute-N', $decl, 1);
+
+      &dieInline ($ctx, "dummy $da: VALUE attribute is not supported") if ($attr{VALUE});
+
+      my $as = &arraySpec ($en_decl);
+      my @lb = $as ? &lowerBounds ($as, \%map) : ();
+
+      $info{$da} = {decl => $decl, en_decl => $en_decl, optional => $attr{OPTIONAL},
+                    rank => scalar (@lb), lb => \@lb};
+
+      &dieInline ($ctx, "dummy $da: no actual argument, and not OPTIONAL")
+        unless ($bind->{$da} || $attr{OPTIONAL});
+    }
+
+  return \%info;
+}
+
+sub checkSpecificationPart
+{
+
+=head2 checkSpecificationPart
+
+Die if the specification part of the inlined routine contains statements which cannot
+be moved to the caller (only USE statements, type declarations and includes are
+supported).
+
+=cut
+
+  my ($ctx, $d2) = @_;
+
+  for my $node (&F ('./specification-part/use-part/node()|./specification-part/declaration-part/node()', $d2))
+    {
+      my $nn = $node->nodeName;
+      next if ($nn =~ m/^(?:#text|C|cpp|use-stmt|T-decl-stmt|include)$/o);
+      &dieInline ($ctx, "unsupported statement in callee: " . $node->textContent);
+    }
+}
+
+sub renumberLabels
+{
+
+=head2 renumberLabels
+
+Renumber the labels of the inlined routine which are already used in the caller.
+Return a closure returning new label numbers, counting down from 99999.
+
+=cut
+
+  my ($ep1, $ep2) = @_;
+
+  my %used = map { ($_, 1) } (&F ('.//label', $ep1, 1), &F ('.//label', $ep2, 1));
+
+  my $next = 99999;
+
+  my $newLabel = sub
   {
-    my $r = shift;
-    if ($r->nodeName eq 'parens-R')
-      {
-        &Fxtran::Ref::parensToArrayRef ($r);
-      }
-    if ($r->nodeName eq 'array-R')
-      {
-        return &F ('./section-subscript-LT/section-subscript', $r);
-      }
-    else
-      {
-       die $r;
-      }
+    $next-- while ($used{$next});
+    $used{$next} = 1;
+    return $next;
   };
 
-  my @ele = $ee->($re); #print &Dumper ([map { $_->toString } @ele]);
-  my @ssa = $ee->($ra); #print &Dumper ([map { $_->toString } @ssa]);
+  my %caller = map { ($_, 1) } &F ('.//label', $ep1, 1);
 
-  for (my ($ia, $ie) = (0, 0); $ia < @ssa; $ia++)
+  my %renum;
+
+  for my $label (&F ('.//label/text()', $ep2))
     {
-      if ($ssa[$ia]->textContent eq ':')
-        {
-          $ssa[$ia]->replaceNode ($ele[$ie]->cloneNode (1));
-          $ie++;
-        }
+      my $l = $label->data;
+      next unless ($caller{$l});
+      $renum{$l} ||= $newLabel->();
+      $label->setData ($renum{$l});
     }
-    
-  
 
-  $re->replaceNode ($ra);
+  return $newLabel;
 }
 
-sub replaceDummyArgumentByActualNamedE
+sub removeReturn
 {
 
-=head2 replaceDummyArgumentByActualNamedE
+=head2 removeReturn
 
-Replace a dummy named-expression node with its actual named-expression equivalent, resolving component references and array section subscripts as needed.
+Remove RETURN statements from the execution part of the inlined routine: the last
+statement is simply removed, others are replaced by a GOTO to a CONTINUE statement
+added at the end.
 
 =cut
 
-  my ($e, $a) = @_;
+  my ($ep2, $newLabel) = @_;
 
-  my ($ne) = &F ('./N/n/text()', $e);
-  my ($na) = &F ('./N/n/text()', $a);
+  my @ret = &F ('.//return-stmt', $ep2);
 
-  my @re = &F ('./R-LT/ANY-R', $e);
-  my @ra = &F ('./R-LT/ANY-R', $a);
+  return unless (@ret);
 
-  if (! @re)
+  my ($last) = reverse grep { $_->nodeName !~ m/^(?:#text|C)$/o } $ep2->childNodes ();
+
+  if ($last->unique_key == $ret[-1]->unique_key)
     {
-      $e->replaceNode ($a->cloneNode (1));
-      goto END;
+      &removeStmt (pop (@ret));
     }
 
-  my $se = $e->toString; my $te = $e->textContent;
-  my $sa = $a->toString; my $ta = $a->textContent;
+  return unless (@ret);
 
-  # Use actual argument name
+  my $label = $newLabel->();
 
-  $ne->replaceNode (&t ($na->textContent));
-
-  goto END unless (@ra);
-
-  my ($rlte) = &F ('./R-LT', $e);
-  unless ($rlte)
+  for my $ret (@ret)
     {
-      $e->appendChild ($rlte = &n ('<R-LT/>'));
+      $ret->replaceNode (&s ("GOTO $label"));
     }
 
-  my $re = $re[0];
-  while (my $ra = shift (@ra))
+  $ep2->appendChild ($_) for (&t ("\n"), &n ("<label>$label</label>"), &t (" "), &s ("CONTINUE"), &t ("\n"));
+}
+
+sub parenthesize
+{
+
+=head2 parenthesize
+
+Return a copy of the expression C<$e>, parenthesised if it is an operator expression.
+
+=cut
+
+  my $e = shift;
+
+  return $e->cloneNode (1) unless ($e->nodeName eq 'op-E');
+
+  my $p = &n ('<parens-E>(<x/>)</parens-E>');
+  my ($x) = &F ('./x', $p);
+  $x->replaceNode ($e->cloneNode (1));
+
+  return $p;
+}
+
+sub isTriplet
+{
+  my $ss = shift;
+  return (&F ('./text()[contains(.,":")]', $ss) || (&strip ($ss->textContent) eq ':')) ? 1 : 0;
+}
+
+sub substituteDesignator
+{
+
+=head2 substituteDesignator
+
+Return the expression replacing the occurrence C<$e> of dummy argument C<$da>, when the
+actual argument C<$aa> is a variable designator. The actual's references are inserted
+before the dummy's; if the dummy is an array, its subscripts take the place of the section
+subscripts of the actual (or follow a whole array). Lower bounds of the actual and of the
+dummy are assumed to be equal, unless they are explicit and differ.
+
+The result is built from a copy of the occurrence, so that its layout is preserved.
+
+=cut
+
+  my ($ctx, $d1, $e, $da, $aa, $info) = @_;
+
+  return $aa->cloneNode (1) unless (&F ('./R-LT/ANY-R', $e));
+
+  my $new = $e->cloneNode (1);
+
+  my ($N) = &F ('./N', $new);
+  my ($Na) = &F ('./N', $aa);
+  $N->replaceNode ($Na->cloneNode (1));
+
+  my ($rlt) = &F ('./R-LT', $new);
+  my @rd = &F ('./ANY-R', $rlt);
+  my @ra = map { $_->cloneNode (1) } &F ('./R-LT/ANY-R', $aa);
+
+  # Actual arguments of calls created from function references are not canonic
+  &Fxtran::Ref::parensToArrayRef ($ra[-1]) if (@ra);
+  &Fxtran::Ref::parensToArrayRef ($rd[0]);
+
+  if (($rd[0]->nodeName eq 'array-R') && $info->{rank})
     {
-      if ((scalar (@ra) == 0) && ($ra->nodeName =~ m/^(?:parens-R|array-R)$/o) 
-                              && ($re->nodeName =~ m/^(?:parens-R|array-R)$/o))
+      my $head = $rd[0];
+
+      my @ssd = &F ('./section-subscript-LT/section-subscript', $head);
+
+      if (@ra && ($ra[-1]->nodeName eq 'array-R'))
         {
-          &resolveArrayRef ($ra, $re);
-        }
-      elsif ($ra->nodeName eq 'component-R')
-        {
-          if ($re)
+          # Section of an array: the section takes the place of the dummy's subscripts
+          my $section = pop (@ra);
+          $head->replaceNode ($section);
+          $rd[0] = $section;
+
+          my @free = grep { &isTriplet ($_) } &F ('./section-subscript-LT/section-subscript', $section);
+
+          &dieInline ($ctx, "dummy $da: array element passed to an array dummy argument (sequence association)")
+            unless (@free);
+          &dieInline ($ctx, "dummy $da: rank mismatch between " . $aa->textContent . " and dummy argument")
+            unless (scalar (@free) == scalar (@ssd));
+
+          for my $i (0 .. $#free)
             {
-              $rlte->insertBefore ($ra->cloneNode (1), $re);
-            }
-          else
-            {
-              $rlte->appendChild ($ra->cloneNode (1));
+              if (&strip ($free[$i]->textContent) eq ':')
+                {
+                  $free[$i]->replaceNode ($ssd[$i]->cloneNode (1));
+                  next;
+                }
+              &dieInline ($ctx, "dummy $da: stride in " . $aa->textContent . " is not supported")
+                if (&F ('./stride', $free[$i]));
+              if (my ($lb) = &F ('./lower-bound', $free[$i], 1))
+                {
+                  $lb = &strip ($lb);
+                  &dieInline ($ctx, "dummy $da: lower bound $lb of " . $aa->textContent
+                                  . " differs from lower bound $info->{lb}[$i] of dummy argument")
+                    unless ($lb eq $info->{lb}[$i]);
+                }
+              $free[$i]->replaceNode ($ssd[$i]->cloneNode (1));
             }
         }
-      elsif ($re)
+      else
         {
-          die &Dumper ([$e->textContent, $a->textContent]);
+          # Whole array; check rank and lower bounds when the declaration is available
+          if ((! @ra) && (my ($en_decl) = &F ('./specification-part/declaration-part/T-decl-stmt/EN-decl-LT/EN-decl[string(EN-N)="?"]',
+                                               &F ('./N', $aa, 1), $d1)))
+            {
+              if (my $as = &arraySpec ($en_decl))
+                {
+                  my @lb = &lowerBounds ($as);
+                  &dieInline ($ctx, "dummy $da: rank mismatch between " . $aa->textContent . " and dummy argument")
+                    unless (scalar (@lb) == $info->{rank});
+                  for my $i (0 .. $#lb)
+                    {
+                      next unless (($lb[$i] =~ m/^\d+$/o) && ($info->{lb}[$i] =~ m/^\d+$/o));
+                      &dieInline ($ctx, "dummy $da: lower bound $lb[$i] of " . $aa->textContent
+                                      . " differs from lower bound $info->{lb}[$i] of dummy argument")
+                        unless ($lb[$i] == $info->{lb}[$i]);
+                    }
+                }
+            }
         }
     }
 
-END: 
+  $rlt->insertBefore ($_, $rd[0]) for (@ra);
 
+  return $new;
+}
+
+sub substituteOccurrence
+{
+
+=head2 substituteOccurrence
+
+Replace the occurrence C<$e> of dummy argument C<$da> by its actual argument C<$aa>.
+Variables are composed with the references of the dummy (see C<substituteDesignator>);
+constants and expressions are copied (operator expressions are parenthesised), and cannot
+be referenced with subscripts or components.
+
+=cut
+
+  my ($ctx, $d1, $e, $da, $aa, $info) = @_;
+
+  my $new;
+
+  if (($aa->nodeName eq 'named-E') && (! &F ('./R-LT/function-R', $aa)))
+    {
+      $new = &substituteDesignator ($ctx, $d1, $e, $da, $aa, $info);
+    }
+  else
+    {
+      &dieInline ($ctx, "dummy $da: reference " . $e->textContent . " to an expression actual argument")
+        if (&F ('./R-LT', $e));
+      $new = &parenthesize ($aa);
+    }
+
+  $e->replaceNode ($new);
+}
+
+sub removeEntity
+{
+
+=head2 removeEntity
+
+Remove the declaration of an entity: the whole statement if it declares this entity only.
+
+=cut
+
+  my $en_decl = shift;
+
+  my @en_decl = &F ('preceding-sibling::EN-decl|following-sibling::EN-decl', $en_decl);
+
+  if (! @en_decl)
+    {
+      &removeStmt (&Fxtran::stmt ($en_decl));
+      return;
+    }
+
+  my $sep = $en_decl->previousSibling || $en_decl->nextSibling;
+  $sep->unbindNode () if ($sep && ($sep->nodeName eq '#text'));
+  $en_decl->unbindNode ();
 }
 
 sub removeStmt
@@ -238,7 +509,68 @@ sub inlineSingleCall
 
 =head2 inlineSingleCall
 
-Inline a single CALL statement by replacing dummy arguments with actuals, removing dummy declarations, merging USE/declarations from the callee into the caller, and inserting the callee's executable statements in place of the call.
+Inline a single CALL statement: C<$d1> is the calling program unit, C<$d2> a copy of the
+program unit being called (it is modified), C<$s2> its subroutine statement, C<$n2> its
+name, and C<$call> the CALL statement to be replaced by the executable statements of C<$d2>.
+
+The steps are:
+
+=over 4
+
+=item
+
+Bind dummy arguments to actual arguments (by position or keyword).
+
+=item
+
+Renumber labels of the callee already used in the caller. Replace RETURN statements by a
+GOTO to the end of the inlined code.
+
+=item
+
+Replace C<PRESENT (X)> by C<.TRUE.> or C<.FALSE.>, then all occurrences of dummy arguments by
+their actual arguments. All occurrences are collected before any substitution, so that names
+coming from actual arguments are never substituted again.
+
+=item
+
+Simplify the code (constant conditions); statements still referencing absent optional
+arguments are replaced by C<STOP 1>.
+
+=item
+
+Remove dummy argument declarations; move USE statements, declarations and includes to
+the caller (option C<inlineDeclarations>); insert the executable statements in place of the
+CALL (option C<comment> adds comments around the inlined code).
+
+=back
+
+Actual arguments are substituted textually. In particular:
+
+=over 4
+
+=item
+
+Lower bounds of actual arrays and of dummy arrays are assumed to be equal; inlining fails
+when they are explicit and different (C<CALL S (X (:, N1:N2))>, or whole arrays declared with
+different integer lower bounds).
+
+=item
+
+Shapes of derived type components and of variables not declared in the caller (module or
+host variables) are not known: their rank and lower bounds are assumed to match the dummy's.
+
+=item
+
+An expression passed as actual argument is evaluated where the dummy is used, that is, after
+the inlined code may have modified the variables it references.
+
+=item
+
+Inlining fails for strided sections, array elements passed to array dummy arguments
+(sequence association), rank changes and VALUE dummy arguments.
+
+=back
 
 =cut
 
@@ -250,125 +582,62 @@ Inline a single CALL statement by replacing dummy arguments with actuals, removi
 # call is the call statement to be inlined
 
   my ($dp1) = &F ('./specification-part/declaration-part', $d1);
-  my ($up1) = &F ('./specification-part/use-part', $d1);
   my ($ep1) = &F ('./execution-part', $d1);
 
   my ($dp2) = &F ('./specification-part/declaration-part', $d2);
   my ($up2) = &F ('./specification-part/use-part', $d2);
   my ($ep2) = &F ('./execution-part', $d2);
-  
-  my @da = &F ('./dummy-arg-LT/arg-N/N/n/text()', $s2, 1);
 
-  # Dummy arguments to actual arguments
-  my %da2aa;
-  
-  {
-    my @arg = &F ('.//arg-spec/arg', $call);
+  my ($caller) = &F ('./subroutine-stmt/subroutine-N|./function-stmt/function-N', $d1, 1);
 
-    my $i = 0;
-    for my $arg (@arg)
-      {
-        my $aa;
-        if (my ($argn) = &F ('./arg-N/k/text()', $arg, 1))
-          {            
-            ($aa) = &F ('./ANY-E', $arg);
-            $da2aa{$argn} = $aa;
-          }
-        else
-          {
-            ($aa) = &F ('./ANY-E', $arg);
-            $da2aa{$da[$i++]} = $aa;
-          }
-      }
-  }
+  my $ctx = {callee => "$n2", caller => $caller, call => $call->textContent};
 
-  # Replace dummy arguments by actual arguments
-  for my $da (@da)
+  my ($da, $bind) = &bindArguments ($ctx, $s2, $call);
+
+  my $info = &describeDummies ($ctx, $dp2, $da, $bind);
+
+  &checkSpecificationPart ($ctx, $d2);
+
+  my $newLabel = &renumberLabels ($ep1, $ep2);
+
+  &removeReturn ($ep2, $newLabel);
+
+  # Handle PRESENT intrinsic
+
+  for my $da (@$da)
     {
-      my $aa = $da2aa{$da};
-
-      # Handle PRESENT attribute & intrinsic
-      my @present = &F ('.//named-E[translate(string(.)," ","")="PRESENT(?)"]', $da, $ep2);
-
-      for my $present (@present)
+      for my $present (&F ('.//named-E[translate(string(.)," ","")="PRESENT(?)"]', $da, $ep2))
         {
-          my $flag = $aa ? &TRUE () : &FALSE ();
-          $present->replaceNode ($flag);
-        }
-
-      if ($aa)
-        {
-          my @e = &F ('.//named-E[./N/n/text()="?"]', $da, $d2);
-          for my $e (@e)
-            {
-              &replaceDummyArgumentByActual ($e, $aa);
-            }
+          $present->replaceNode ($bind->{$da} ? &TRUE () : &FALSE ());
         }
     }
 
-  # Remove dummy arguments declaration
-  
-  for my $da (@da)
+  # Remove dummy arguments declarations
+
+  &removeEntity ($info->{$_}{en_decl}) for (@$da);
+
+  # Replace dummy arguments by actual arguments; collect all occurrences first, and substitute
+  # inner occurrences (subscripts) first
+
+  if (my @bound = grep { $bind->{$_} } @$da)
     {
-      my ($en_decl_da) = &F ('./T-decl-stmt/EN-decl-LT/EN-decl[string(EN-N)="?"]', $da, $dp2);
+      my @e = &F ('.//named-E[' . join (' or ', map { "string(N)=\"$_\"" } @bound) . ']', $d2);
 
-      if (my $aa = $da2aa{$da})
+      for my $e (reverse (@e))
         {
-          goto SKIP unless ($aa->nodeName eq 'named-E');
-          my @r = &F ('./R-LT/ANY-R', $aa);
-
-          goto SKIP if (scalar (@r) > 1); # Cannot check dimensions of structure members
-
-          my ($n) = &F ('./N', $aa, 1);
-          my ($en_decl_aa) = &F ('./T-decl-stmt/EN-decl-LT/EN-decl[string(EN-N)="?"]', $n, $dp1);
-
-          die "Declaration of $n was not found" unless ($en_decl_aa);
-
-          my ($as_aa) = &F ('./array-spec', $en_decl_aa);
-
-          goto SKIP unless ($as_aa);
-
-          my @ss_aa = &F ('./shape-spec-LT/shape-spec', $as_aa, 1);
-
-          for (@ss_aa)
-            {
-              s/\s+//go;
-            }
-    
-          if (my @ss = &F ('./R-LT/array-R/section-subscript-LT/section-subscript', $aa))
-            {
-              for my $i (reverse (0 .. $#ss_aa))
-                {
-                  next if ($ss[$i]->textContent eq ':'); # Keep
-                  my @b = &F ('./ANY-bound', $ss[$i]);
-                  if (scalar (@b) == 2)
-                    {
-                      die "Inlining $n2 is unsafe";
-                    }
-                  elsif (scalar (@b) == 1)
-                    {
-                      splice (@ss_aa, $i, 1); # Do not check
-                    }
-                  else
-                    {
-                      die; # Unexpected
-                    }
-                }
-            }
-SKIP:
+          my ($N) = &F ('./N', $e, 1);
+          &substituteOccurrence ($ctx, $d1, $e, $N, $bind->{$N}, $info->{$N});
         }
-
-      my ($decl) = &Fxtran::stmt ($en_decl_da);
-      &removeStmt ($decl);
     }
-  
-  # Simplify subroutine (with PRESENT (...) expressions replaced by their values
+
+  # Simplify subroutine (with PRESENT (...) expressions replaced by their values)
+
   &Fxtran::Construct::apply ($d2);
 
   # See whether some optional missing arguments remain
-  for my $da (@da)
+
+  for my $da (grep { ! $bind->{$_} } @$da)
     {
-      next if (my $aa = $da2aa{$da});
       my @stmt = &F ('.//ANY-stmt[.//named-E[./N/n/text()="?"]]', $da, $ep2);
       for my $stmt (@stmt)
         {
@@ -379,7 +648,7 @@ SKIP:
             }
           elsif ($stmt->nodeName eq 'else-if-stmt')
             {
-              die;
+              &dieInline ($ctx, "dummy $da: absent, and referenced in " . $stmt->textContent);
             }
           else
             {
@@ -394,48 +663,46 @@ SKIP:
 
   if (@use || @decl || @include)
     {
-      if ($opts{inlineDeclarations})
+      &dieInline ($ctx, "callee has declarations, and option inlineDeclarations is not set")
+        unless ($opts{inlineDeclarations});
+
+      for my $use (@use)
         {
-          for my $use (@use)
-            {
-              &Fxtran::Decl::use ($d1, $use->cloneNode (1));
-              &removeStmt ($use);
-            }
-          for my $decl (@decl)
-            {
-              &Fxtran::Decl::declare ($d1, $decl->cloneNode (1));
-              &removeStmt ($decl);
-            }
-          for my $include (@include)
-            {
-              &Fxtran::Decl::include ($d1, $include->cloneNode (1));
-              &removeStmt ($include);
-            }
+          &Fxtran::Decl::use ($d1, $use->cloneNode (1));
+          &removeStmt ($use);
         }
-      else
+      for my $decl (@decl)
         {
-          die;
+          &Fxtran::Decl::declare ($d1, $decl->cloneNode (1));
+          &removeStmt ($decl);
+        }
+      for my $include (@include)
+        {
+          &Fxtran::Decl::include ($d1, $include->cloneNode (1));
+          &removeStmt ($include);
         }
     }
 
-  # Remove possible IMPLICIT NONE statement
-  
-  for (&F ('./specifications-part/implicit-part/implicit-none-stmt', $d2))
-    {
-      $_->unbindNode (); 
-    }
-  
   my @node = &F ('./node()', $ep2);
 
+  # A label on the CALL statement is kept on a CONTINUE statement
+
+  my $prev = $call->previousSibling;
+  $prev = $prev->previousSibling if ($prev && ($prev->nodeName eq '#text') && ($prev->data !~ m/\n/o));
+  if ($prev && ($prev->nodeName eq 'label'))
+    {
+      $call->parentNode->insertBefore ($_, $call) for (&s ('CONTINUE'), &t ("\n"));
+    }
+
   # Insert executable statements from inlined routine + a few comments
-  
+
   $call->parentNode->insertAfter (&t ("\n"), $call);
   if ($opts{comment})
     {
       $call->parentNode->insertAfter (&n ("<C>!----- END INLINE $n2</C>"), $call);
       $call->parentNode->insertAfter (&t ("\n"), $call);
     }
-  
+
   for my $node (reverse @node)
     {
       $call->parentNode->insertAfter ($node, $call);
@@ -454,16 +721,16 @@ SKIP:
           $call->parentNode->insertAfter (&t ("\n"), $call);
           $call->parentNode->insertAfter (&n ("<C>" . $c . "</C>"), $call);
         }
-  
+
       $call->parentNode->insertAfter (&t ("\n"), $call);
       $call->parentNode->insertAfter (&t ("\n"), $call);
 
       $call->parentNode->insertAfter (&n ("<C>!----- BEGIN INLINE $n2</C>"), $call);
       $call->parentNode->insertAfter (&t ("\n"), $call);
     }
-  
 
-  # Remove CALL statement 
+
+  # Remove CALL statement
 
   $call->unbindNode ();
 }
@@ -972,8 +1239,7 @@ Inline external subroutine. Suffix inlined routine variables with inlined routin
       &inlineSingleCall 
         (
           $d1, $DD2, $SS2, $n2, $call, %opts, 
-          inlineDeclarations => 1, 
-          skipDimensionCheck => $opts{skipDimensionCheck},
+          inlineDeclarations => 1,
         );
     }
 

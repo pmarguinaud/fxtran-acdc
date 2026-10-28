@@ -261,7 +261,7 @@ Parse a FORTRAN source file and prepare it for transformation, returning the par
 
           if ($opts->{'inline-contained'})
             {
-              &Fxtran::Inline::inlineContainedSubroutines ($pu, skipDimensionCheck => 1, inlineDeclarations => 1, 
+              &Fxtran::Inline::inlineContainedSubroutines ($pu, inlineDeclarations => 1, 
                                                            comment => $opts->{'inline-comment'}, find => $find,
                                                            style => $opts->{style});
             }
