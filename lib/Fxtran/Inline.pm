@@ -22,6 +22,9 @@ use Fxtran::Ref;
 use Fxtran::Decl;
 use Fxtran::DrHook;
 
+# Declarations moved to callers, and the name of the routine they come from (by unique_key)
+my %MOVED;
+
 sub dieInline
 {
 
@@ -198,6 +201,250 @@ supported).
       my $nn = $node->nodeName;
       next if ($nn =~ m/^(?:#text|C|cpp|use-stmt|T-decl-stmt|include)$/o);
       &dieInline ($ctx, "unsupported statement in callee: " . $node->textContent);
+    }
+}
+
+sub doLoops
+{
+
+=head2 doLoops
+
+Return the XPath expression selecting the DO loops on variable C<$N>, along axis C<$axis>.
+
+=cut
+
+  my ($axis, $N) = @_;
+  return join ('|', map { "$axis$_\[./*/do-V/named-E[string(N)=\"$N\"]]" } qw (do-construct do-label-construct));
+}
+
+sub isDoVariableOnly
+{
+
+=head2 isDoVariableOnly
+
+Tell whether the variable C<$N> is used in C<$ep> only as the variable of DO loops,
+referenced only inside these loops, and whether these loops are not nested.
+
+=cut
+
+  my ($N, $ep) = @_;
+
+  for my $expr (&F ('.//named-E[string(N)="?"]', $N, $ep))
+    {
+      return unless (&F (&doLoops ('ancestor::', $N), $expr));
+    }
+
+  for my $loop (&F (&doLoops ('.//', $N), $ep))
+    {
+      return if (&F (&doLoops ('ancestor::', $N), $loop));
+    }
+
+  return 1;
+}
+
+sub keepLocalName
+{
+
+=head2 keepLocalName
+
+Tell whether the local variable C<$N> of the inlined routine, also declared in the caller,
+can keep its name: it has to be used as a DO variable only, in the callee and in the caller,
+with the same declaration, and the CALL must not be inside a loop on C<$N>.
+
+=cut
+
+  my ($N, $d1, $d2, $call) = @_;
+
+  my ($dp1) = &F ('./specification-part/declaration-part', $d1);
+  my ($ep1) = &F ('./execution-part', $d1);
+  my ($dp2) = &F ('./specification-part/declaration-part', $d2);
+  my ($ep2) = &F ('./execution-part', $d2);
+
+  my ($decl1) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $N, $dp1);
+
+  return unless ($decl1);
+  return unless (&isDoVariableOnly ($N, $ep2));
+
+  my ($decl2) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $N, $dp2);
+
+  return unless (&strip ($decl1->textContent) eq &strip ($decl2->textContent));
+  return unless (&isDoVariableOnly ($N, $ep1));
+  return if (&F (&doLoops ('ancestor::', $N), $call));
+
+  return 1;
+}
+
+sub writtenVariables
+{
+
+=head2 writtenVariables
+
+Return the names of the variables which may be modified in C<$ep>: assignment targets,
+DO variables, actual arguments of CALL statements (except C<$skip>) and input items. C<$map>
+may map names to other names.
+
+=cut
+
+  my ($ep, $map, $skip) = @_;
+
+  my %w;
+
+  for my $N (&F ('.//E-1/named-E/N|.//do-V/named-E/N|.//call-stmt/arg-spec/arg/named-E/N|.//input-item/named-E/N', $ep))
+    {
+      next if ($skip && (&Fxtran::stmt ($N)->unique_key == $skip->unique_key));
+      my $n = $N->textContent;
+      $w{$map->{$n} || $n} = 1;
+    }
+
+  return \%w;
+}
+
+sub keepInvariantName
+{
+
+=head2 keepInvariantName
+
+Tell whether the local variable C<$N> of the inlined routine, also declared in the caller,
+can keep its name because it always holds the same value: C<$N> is a scalar with the same
+declaration in the caller and in the callee; in both, it is modified only by plain assignments
+with the same right hand side (the callee's dummy arguments being replaced by their actual
+arguments), which references no variable modified in the caller or in the callee (INTENT(IN)
+dummy arguments of the caller are never modified); and the callee assigns it.
+
+=cut
+
+  my ($N, $d1, $d2, $bind, $call) = @_;
+
+  my ($dp1) = &F ('./specification-part/declaration-part', $d1);
+  my ($ep1) = &F ('./execution-part', $d1);
+  my ($dp2) = &F ('./specification-part/declaration-part', $d2);
+  my ($ep2) = &F ('./execution-part', $d2);
+
+  my ($decl1) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $N, $dp1);
+  my ($decl2) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $N, $dp2);
+
+  return unless ($decl1 && $decl2);
+  return unless (&strip ($decl1->textContent) eq &strip ($decl2->textContent));
+  return if (&F ('./EN-decl-LT/EN-decl/array-spec|./attribute/array-spec', $decl2));
+
+  # Map dummy arguments of the callee to the names of their actual arguments
+
+  my (%map, %base);
+  for my $da (keys (%$bind))
+    {
+      my $aa = $bind->{$da};
+      next unless ($aa->nodeName =~ m/^(?:named|literal)-E$/o);
+      $map{$da} = &strip ($aa->textContent);
+      ($base{$da}) = &F ('./N', $aa, 1) if ($aa->nodeName eq 'named-E');
+    }
+
+  # Right hand sides of the assignments of N
+
+  my %rhs;
+
+  for my $em ([$ep2, \%map], [$ep1, {}])
+    {
+      my ($ep, $m) = @$em;
+
+      for my $expr (&F ('.//named-E[string(N)="?"]', $N, $ep))
+        {
+          my $p = $expr->parentNode;
+          next unless ($p->nodeName =~ m/^(?:E-1|do-V|arg|input-item)$/o);
+          return unless (($p->nodeName eq 'E-1') && (! &F ('./R-LT', $expr)));
+          my ($rhs) = &F ('../E-2/ANY-E', $p);
+          my $text = $rhs->cloneNode (1);
+          for my $n (&F ('./descendant-or-self::named-E/N/n/text()', $text))
+            {
+              $n->setData ($m->{$n->data}) if ($m->{$n->data});
+            }
+          $rhs{&strip ($text->textContent)}++;
+        }
+
+      return unless (%rhs);  # The callee has to assign N
+    }
+
+  return unless (scalar (keys (%rhs)) == 1);
+
+  # Variables referenced by the right hand side must not be modified
+
+  my $w1 = &writtenVariables ($ep1, {}, $call);
+  my $w2 = &writtenVariables ($ep2, \%base);
+
+  my ($rhs) = &F ('.//a-stmt[./E-1/named-E[string(N)="?"]]/E-2/ANY-E', $N, $ep2);
+  for my $V (&F ('./descendant-or-self::named-E/N', $rhs, 1))
+    {
+      my $W = $base{$V} || $V;
+      # INTENT(IN) dummy arguments of the caller cannot be modified
+      next if (&F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]'
+                 . '/attribute[string(attribute-N)="INTENT"][string(intent-spec)="IN"]', $W, $dp1));
+      return if ($w1->{$W} || $w2->{$W} || $w1->{$V} || $w2->{$V});
+    }
+
+  return 1;
+}
+
+sub renameLocals
+{
+
+=head2 renameLocals
+
+Rename the local variables of the inlined routine whose names are also used in the caller
+(declarations, including those coming from other routines inlined before, or USE ... ONLY lists),
+appending C<_E<lt>CALLEEE<gt>>; DO variables keep their names when possible (see C<keepLocalName>),
+and so do variables always holding the same value (see C<keepInvariantName>).
+A declaration identical to the callee's, and coming from a previous inlining, is not a clash:
+local variables of routines inlined one after the other can be shared, since they are undefined
+on entry. Variables keeping their values between calls (SAVE attribute or initialisation) are
+shared only by the inlined copies of the same routine.
+
+=cut
+
+  my ($ctx, $d1, $d2, $da, $bind, $call) = @_;
+
+  my ($dp1) = &F ('./specification-part/declaration-part', $d1);
+  my ($up1) = &F ('./specification-part/use-part', $d1);
+  my ($dp2) = &F ('./specification-part/declaration-part', $d2);
+
+  my %caller = map { ($_, 1) } &F ('./use-stmt/rename-LT/rename/use-N[1]', $up1, 1);
+
+  for my $decl1 (&F ('./T-decl-stmt', $dp1))
+    {
+      my ($N) = &F ('./EN-decl-LT/EN-decl/EN-N', $decl1, 1);
+      my ($decl2) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $N, $dp2);
+      if ($decl2 && (my $from = $MOVED{$decl1->unique_key})
+                 && (&strip ($decl1->textContent) eq &strip ($decl2->textContent)))
+        {
+          my $save = &F ('./attribute[string(attribute-N)="SAVE"]|./EN-decl-LT/EN-decl/init-E', $decl2)
+                && ! &F ('./attribute[string(attribute-N)="PARAMETER"]', $decl2);
+          next if (($from eq $ctx->{callee}) || (! $save));
+        }
+      $caller{$N} = 1;
+    }
+
+  my %dummy = map { ($_, 1) } @$da;
+
+  my @local = grep { ! $dummy{$_} } &F ('./T-decl-stmt/EN-decl-LT/EN-decl/EN-N', $dp2, 1);
+
+  my %local = map { ($_, 1) } @local;
+
+  my %rename;
+
+  for my $N (@local)
+    {
+      next unless ($caller{$N});
+      next if (&keepLocalName ($N, $d1, $d2, $call));
+      next if (&keepInvariantName ($N, $d1, $d2, $bind, $call));
+      my $M = "${N}_$ctx->{callee}";
+      &dieInline ($ctx, "cannot rename local variable $N: $M is declared in the callee") if ($local{$M});
+      $rename{$N} = $M;
+    }
+
+  return unless (%rename);
+
+  for my $n (&F ('.//named-E/N/n/text()|.//EN-N/N/n/text()', $d2))
+    {
+      my $M = $rename{$n->data};
+      $n->setData ($M) if ($M);
     }
 }
 
@@ -556,6 +803,7 @@ Bind dummy arguments to actual arguments (by position or keyword).
 
 =item
 
+With option C<renameLocals>, rename local variables of the callee (see C<renameLocals>).
 Renumber labels of the callee already used in the caller. Replace RETURN statements by a
 GOTO to the end of the inlined code.
 
@@ -630,6 +878,8 @@ Inlining fails for strided sections, array elements passed to array dummy argume
   my $info = &describeDummies ($ctx, $dp2, $da, $bind);
 
   &checkSpecificationPart ($ctx, $d2);
+
+  &renameLocals ($ctx, $d1, $d2, $da, $bind, $call) if ($opts{renameLocals});
 
   my $newLabel = &renumberLabels ($ep1, $ep2);
 
@@ -708,7 +958,9 @@ Inlining fails for strided sections, array elements passed to array dummy argume
         }
       for my $decl (@decl)
         {
-          &Fxtran::Decl::declare ($d1, $decl->cloneNode (1));
+          my $clone = $decl->cloneNode (1);
+          &Fxtran::Decl::declare ($d1, $clone);
+          $MOVED{$clone->unique_key} = "$n2" if ($clone->parentNode);
           &removeStmt ($decl);
         }
       for my $include (@include)
@@ -974,7 +1226,7 @@ Inline all calls to the contained subroutine named C<$n2> within program unit C<
 
   for my $call (@call)
     {
-      &inlineSingleCall ($d1, $D2->cloneNode (1), $S2->cloneNode (1), $n2, $call, %opts);
+      &inlineSingleCall ($d1, $D2->cloneNode (1), $S2->cloneNode (1), $n2, $call, %opts, renameLocals => 1);
     }
 }
 
