@@ -296,7 +296,7 @@ number of simplified expressions.
       @e = map { &F ('./ANY-E', $_) } @e;
       my $mask = &strip ($e[2]->textContent);
       next unless ($mask =~ m/^\.(?:TRUE|FALSE)\.$/o);
-      $merge->replaceNode (&parenthesize ($mask eq '.TRUE.' ? $e[0] : $e[1]));
+      $merge->replaceNode (&parenthesize ($mask eq '.TRUE.' ? $e[0] : $e[1], $merge));
       $count++;
     }
 
@@ -308,13 +308,18 @@ sub parenthesize
 
 =head2 parenthesize
 
-Return a copy of the expression C<$e>, parenthesised if it is an operator expression.
+Return a copy of the expression C<$e>, to replace the expression C<$context>; parenthesise
+it if it is an operator expression, unless C<$context> is a whole expression by itself (right
+hand side of an assignment, argument, subscript or bound, DO loop control, condition).
 
 =cut
 
-  my $e = shift;
+  my ($e, $context) = @_;
 
   return $e->cloneNode (1) unless ($e->nodeName eq 'op-E');
+
+  return $e->cloneNode (1)
+    if ($context->parentNode->nodeName =~ m/^(?:E-2|arg|element|lower-bound|upper-bound|stride|step|condition-E|mask-E|case-E)$/o);
 
   my $p = &n ('<parens-E>(<x/>)</parens-E>');
   my ($x) = &F ('./x', $p);
@@ -436,8 +441,8 @@ sub substituteOccurrence
 
 Replace the occurrence C<$e> of dummy argument C<$da> by its actual argument C<$aa>.
 Variables are composed with the references of the dummy (see C<substituteDesignator>);
-constants and expressions are copied (operator expressions are parenthesised), and cannot
-be referenced with subscripts or components.
+constants and expressions are copied (operator expressions are parenthesised when needed,
+see C<parenthesize>), and cannot be referenced with subscripts or components.
 
 =cut
 
@@ -453,7 +458,7 @@ be referenced with subscripts or components.
     {
       &dieInline ($ctx, "dummy $da: reference " . $e->textContent . " to an expression actual argument")
         if (&F ('./R-LT', $e));
-      $new = &parenthesize ($aa);
+      $new = &parenthesize ($aa, $e);
     }
 
   $e->replaceNode ($new);
