@@ -275,6 +275,34 @@ added at the end.
   $ep2->appendChild ($_) for (&t ("\n"), &n ("<label>$label</label>"), &t (" "), &s ("CONTINUE"), &t ("\n"));
 }
 
+sub simplifyMerge
+{
+
+=head2 simplifyMerge
+
+Replace C<MERGE (A, B, .TRUE.)> by C<A> and C<MERGE (A, B, .FALSE.)> by C<B>. Return the
+number of simplified expressions.
+
+=cut
+
+  my $d = shift;
+
+  my $count = 0;
+
+  for my $merge (&F ('.//named-E[string(N)="MERGE"][./R-LT/function-R]', $d))
+    {
+      my @e = &F ('./R-LT/function-R/element-LT/element', $merge);
+      next unless ((scalar (@e) == 3) && (! grep { &F ('./arg-N', $_) } @e));
+      @e = map { &F ('./ANY-E', $_) } @e;
+      my $mask = &strip ($e[2]->textContent);
+      next unless ($mask =~ m/^\.(?:TRUE|FALSE)\.$/o);
+      $merge->replaceNode (&parenthesize ($mask eq '.TRUE.' ? $e[0] : $e[1]));
+      $count++;
+    }
+
+  return $count;
+}
+
 sub parenthesize
 {
 
@@ -534,8 +562,8 @@ coming from actual arguments are never substituted again.
 
 =item
 
-Simplify the code (constant conditions); statements still referencing absent optional
-arguments are replaced by C<STOP 1>.
+Simplify the code (constant conditions, C<MERGE> with a constant mask); statements still
+referencing absent optional arguments are replaced by C<STOP 1>.
 
 =item
 
@@ -633,6 +661,8 @@ Inlining fails for strided sections, array elements passed to array dummy argume
   # Simplify subroutine (with PRESENT (...) expressions replaced by their values)
 
   &Fxtran::Construct::apply ($d2);
+
+  &Fxtran::Construct::apply ($d2) if (&simplifyMerge ($d2));
 
   # See whether some optional missing arguments remain
 

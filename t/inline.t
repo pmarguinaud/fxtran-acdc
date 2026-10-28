@@ -22,9 +22,9 @@ use Fxtran::Canonic;
 use Fxtran::Inline;
 use Fxtran::Style;
 
-# Cases which the current code gets wrong; MERGE simplification (r11) and renaming of local
-# variables (r12) are not implemented yet
-my %TODO = map { ($_, 1) } qw (r11_optional r12_clash);
+# Cases which the current code gets wrong; renaming of local variables (r12) is not
+# implemented yet
+my %TODO = map { ($_, 1) } qw (r12_clash);
 
 sub slurp
 {
