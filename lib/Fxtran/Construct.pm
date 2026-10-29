@@ -692,9 +692,11 @@ This is achieved by calling C<apply> like this:
 Matching expressions are not replaced where they are written: assignment targets,
 DO variables and READ input items. They are replaced in CALL arguments.
 
-Constant expressions are then folded (see C<foldExpression>), and C<IF> statements and
-constructs with constant conditions simplified (see C<simplifyIfConstructs>), until
-nothing changes.
+Constant expressions are then folded (see C<foldExpression>), and statements and
+constructs with constant conditions simplified, until nothing changes: C<IF> and
+C<WHERE> statements and constructs (see C<simplifyIfConstructs>, C<simplifyWhereConstructs>),
+C<SELECT CASE> constructs (see C<simplifySelectCaseConstructs>) and C<DO WHILE (.FALSE.)>
+loops (see C<removeDoWhileFalse>).
 
 =cut
 
@@ -715,7 +717,10 @@ nothing changes.
 
       my $count = &foldExpressions ($d);
 
-      for my $ce (&F ('.//if-stmt/condition-E[string(.)=".TRUE." or string(.)=".FALSE."]', $d))
+      # IF and WHERE statements
+
+      for my $ce (&F ('.//if-stmt/condition-E[string(.)=".TRUE." or string(.)=".FALSE."]'
+                    . '|.//where-stmt/mask-E[string(.)=".TRUE." or string(.)=".FALSE."]', $d))
         {
           my $stmt = $ce->parentNode;
           if ($ce->textContent eq '.TRUE.')
@@ -731,9 +736,157 @@ nothing changes.
         }
 
       $count += &simplifyIfConstructs ($d);
+      $count += &simplifyWhereConstructs ($d);
+      $count += &simplifySelectCaseConstructs ($d);
+      $count += &removeDoWhileFalse ($d);
 
       last unless ($count);
     }
+}
+
+sub detachEnd
+{
+
+=head2 detachEnd
+
+Detach the end statement C<$name> of the last block C<$block> of a construct, with its label;
+return the label (if any) and the detached nodes.
+
+=cut
+
+  my ($block, $name) = @_;
+
+  my ($end) = &F ("./$name", $block);
+  my @end = ($end);
+
+  my $prev = $end->previousSibling;
+  $prev = $prev->previousSibling if ($prev && ($prev->nodeName eq '#text') && ($prev->data !~ m/\n/o));
+  my $label = ($prev && ($prev->nodeName eq 'label')) ? $prev : undef;
+
+  if ($label)
+    {
+      my $n = $label;
+      while (($n = $n->nextSibling) && (! $n->isSameNode ($end)))
+        {
+          push @end, $n;
+        }
+      unshift @end, $label;
+    }
+
+  $_->unbindNode () for (@end);
+
+  return ($label, @end);
+}
+
+sub replaceConstruct
+{
+
+=head2 replaceConstruct
+
+Replace the construct C<$construct> by the statements of its block C<$block> (if any), after
+its first statement; the label C<$label> of its end statement is kept on a C<CONTINUE> statement.
+
+=cut
+
+  my ($construct, $block, $label) = @_;
+
+  my @node;
+
+  if ($block)
+    {
+      my ($stmt) = &F ('./ANY-stmt[1]', $block);
+      $stmt->unbindNode ();
+      @node = $block->childNodes ();
+      shift (@node) while (@node && ($node[0]->nodeName eq '#text') && ($node[0]->data !~ m/\S/o)
+                          && ($node[0]->data !~ m/\n/o));
+    }
+
+  push @node, $label, &t (' '), &s ('CONTINUE') if ($label);
+
+  my $p = $construct->parentNode;
+  $p->insertBefore ($_, $construct) for (@node);
+
+  $construct->unbindNode ();
+}
+
+# Element names of IF and WHERE constructs
+my %IF    = (construct => 'if-construct', block => 'if-block', first => 'if-then-stmt', else => 'else-stmt',
+             cond => 'condition-E', end => 'end-if-stmt', keyword => 'IF', then => ' THEN', elsekw => 'ELSE');
+my %WHERE = (construct => 'where-construct', block => 'where-block', first => 'where-construct-stmt', else => 'else-where-stmt',
+             cond => 'mask-E', end => 'end-where-stmt', keyword => 'WHERE', then => '', elsekw => 'ELSEWHERE');
+
+sub simplifyBlockConstructs
+{
+
+=head2 simplifyBlockConstructs
+
+Simplify the C<IF> or C<WHERE> constructs (C<%$spec> gives the element names, see C<%IF> and
+C<%WHERE>) whose conditions are literal C<.TRUE.> or C<.FALSE.>, as described in
+C<simplifyIfConstructs>. Return the number of constructs simplified.
+
+=cut
+
+  my ($d, $spec) = @_;
+
+  my ($construct, $block, $cond) = @{$spec}{qw (construct block cond)};
+
+  my @construct = &F (".//$construct\[./$block/ANY-stmt/$cond\[string(.)=\".TRUE.\" or string(.)=\".FALSE.\"]]", $d);
+
+  # Inner constructs first
+  for my $c (reverse (@construct))
+    {
+      my @block = &F ("./$block", $c);
+
+      my ($name) = &F ("./$spec->{first}/N", $block[0], 1);
+
+      my ($label, @end) = &detachEnd ($block[-1], $spec->{end});
+
+      # Blocks which are kept
+
+      my @keep;
+
+      for my $b (@block)
+        {
+          my ($stmt) = &F ('./ANY-stmt[1]', $b);
+          my ($ce) = &F ("./$cond", $stmt);
+          my $value = $ce ? $ce->textContent : 'ELSE';
+          next if ($value eq '.FALSE.');
+          push @keep, [$b, $stmt, $value];
+          last if (($value eq '.TRUE.') || ($value eq 'ELSE'));
+        }
+
+      my %keep = map { ($_->[0]->unique_key, 1) } @keep;
+
+      $_->unbindNode () for (grep { ! $keep{$_->unique_key} } @block);
+
+      if ((! @keep) || ($keep[0][2] eq '.TRUE.') || ($keep[0][2] eq 'ELSE'))
+        {
+          &replaceConstruct ($c, @keep ? $keep[0][0] : undef, $label);
+          next;
+        }
+
+      # First block left: IF (...) THEN, WHERE (...)
+
+      if ($keep[0][1]->nodeName ne $spec->{first})
+        {
+          my ($ce) = &F ("./$cond", $keep[0][1]);
+          my $first = &n ("<$spec->{first}>" . ($name ? "<N><n>$name</n></N>:" : '') . "$spec->{keyword} (</$spec->{first}>");
+          $first->appendChild ($ce->cloneNode (1));
+          $first->appendChild (&t (")$spec->{then}"));
+          $keep[0][1]->replaceNode ($first);
+        }
+
+      # Last block left, with a .TRUE. condition: ELSE, ELSEWHERE
+
+      if ((@keep > 1) && ($keep[-1][2] eq '.TRUE.'))
+        {
+          $keep[-1][1]->replaceNode (&n ("<$spec->{else}>$spec->{elsekw}" . ($name ? " <N><n>$name</n></N>" : '') . "</$spec->{else}>"));
+        }
+
+      $keep[-1][0]->appendChild ($_) for (@end);
+    }
+
+  return scalar (@construct);
 }
 
 sub simplifyIfConstructs
@@ -770,105 +923,141 @@ Return the number of constructs simplified.
 =cut
 
   my $d = shift;
+  return &simplifyBlockConstructs ($d, \%IF);
+}
 
-  my @if_construct = &F ('.//if-construct[./if-block/ANY-stmt/condition-E[string(.)=".TRUE." or string(.)=".FALSE."]]', $d);
+sub simplifyWhereConstructs
+{
 
-  # Inner constructs first
-  for my $if_construct (reverse (@if_construct))
+=head2 simplifyWhereConstructs
+
+Simplify C<WHERE> constructs whose masks (scalars) have been reduced to literal C<.TRUE.> or
+C<.FALSE.>, as C<IF> constructs (see C<simplifyIfConstructs>): the statements of a block
+whose mask is C<.TRUE.> become plain array assignments. Return the number of constructs
+simplified.
+
+=cut
+
+  my $d = shift;
+  return &simplifyBlockConstructs ($d, \%WHERE);
+}
+
+sub simplifySelectCaseConstructs
+{
+
+=head2 simplifySelectCaseConstructs
+
+Replace C<SELECT CASE> constructs whose selector is a literal by the statements of the
+matching C<CASE> block (values and ranges of literals), or of the C<CASE DEFAULT> block;
+remove the construct if no block matches. Constructs with a case value which is not a
+literal, or left by an C<EXIT> statement, are not changed. Return the number of constructs
+simplified.
+
+=cut
+
+  my $d = shift;
+
+  my $count = 0;
+
+  for my $c (reverse (&F ('.//selectcase-construct', $d)))
     {
-      my @if_block = &F ('./if-block', $if_construct);
+      my @block = &F ('./selectcase-block', $c);
 
-      my ($name) = &F ('./if-then-stmt/N', $if_block[0], 1);
+      my ($stmt) = &F ('./select-case-stmt', $block[0]);
+      my ($x) = grep { $_->nodeName =~ m/-E$/o } &children (&F ('./case-E', $stmt));
+      next unless ($x && ($x->nodeName =~ m/^(?:literal|string|op)-E$/o));
+      my $v = &foldExpression ($x);
+      next unless ($v && ($v->{type} =~ m/^[ILC]$/o));
 
-      # Detach the END IF statement, with its label
+      my ($name) = &F ('./N', $stmt, 1);
+      next if ($name && &F ('.//exit-stmt[string(N)="?"]', $name, $c));
 
-      my ($end) = &F ('./end-if-stmt', $if_block[-1]);
-      my @end = ($end);
+      my ($match, $default, $undecided);
 
-      my $prev = $end->previousSibling;
-      $prev = $prev->previousSibling if ($prev && ($prev->nodeName eq '#text') && ($prev->data !~ m/\n/o));
-      my $label = ($prev && ($prev->nodeName eq 'label')) ? $prev : undef;
-
-      if ($label)
+      BLOCK: for my $b (@block[1 .. $#block])
         {
-          my $n = $label;
-          while (($n = $n->nextSibling) && (! $n->isSameNode ($end)))
+          my ($cs) = &F ('./case-selector', &F ('./case-stmt', $b));
+
+          if (&strip ($cs->textContent) eq 'DEFAULT')
             {
-              push @end, $n;
-            }
-          unshift @end, $label;
-        }
-
-      $_->unbindNode () for (@end);
-
-      # Blocks which are kept
-
-      my @keep;
-
-      for my $if_block (@if_block)
-        {
-          my ($stmt) = &F ('./ANY-stmt[1]', $if_block);
-          my ($ce) = &F ('./condition-E', $stmt);
-          my $cond = $ce ? $ce->textContent : 'ELSE';
-          next if ($cond eq '.FALSE.');
-          push @keep, [$if_block, $stmt, $cond];
-          last if (($cond eq '.TRUE.') || ($cond eq 'ELSE'));
-        }
-
-      my %keep = map { ($_->[0]->unique_key, 1) } @keep;
-
-      $_->unbindNode () for (grep { ! $keep{$_->unique_key} } @if_block);
-
-      if ((! @keep) || ($keep[0][2] eq '.TRUE.') || ($keep[0][2] eq 'ELSE'))
-        {
-          # Replace the construct by the statements of its single unconditional block (if any)
-
-          my @node;
-
-          if (@keep)
-            {
-              my ($if_block, $stmt) = @{ $keep[0] };
-              $stmt->unbindNode ();
-              @node = $if_block->childNodes ();
-              shift (@node) while (@node && ($node[0]->nodeName eq '#text') && ($node[0]->data !~ m/\S/o)
-                                  && ($node[0]->data !~ m/\n/o));
+              $default = $b;
+              next;
             }
 
-          if ($label)
+          for my $r (&F ('./case-value-range-LT/case-value-range', $cs))
             {
-              push @node, $label, &t (' '), &s ('CONTINUE');
+              # Case values; an empty case value is the missing bound of a range (:B or A:)
+              my @x = map { my ($e) = grep { $_->nodeName =~ m/-E$/o } &children ($_); $e } &F ('./case-value', $r);
+              my @w = map { $_ ? scalar (&foldExpression ($_)) : undef } @x;
+
+              if (grep { $x[$_] && ! $w[$_] } (0 .. $#x))
+                {
+                  $undecided = 1;
+                  next;
+                }
+
+              my $m;
+
+              if (@x == 1)
+                {
+                  $m = $v->{type} eq 'L' ? (($w[0]{type} eq 'L') ? ($v->{value} == $w[0]{value}) : undef)
+                     : (&compare ($v, '==', $w[0]) || {})->{value};
+                }
+              else
+                {
+                  my ($lo, $hi) = @w;
+                  my $l = $lo ? &compare ($lo, '<=', $v) : {value => 1};
+                  my $h = $hi ? &compare ($v, '<=', $hi) : {value => 1};
+                  $m = ($l && $h) ? ($l->{value} && $h->{value}) : undef;
+                }
+
+              if (! defined ($m))
+                {
+                  $undecided = 1;
+                }
+              elsif ($m)
+                {
+                  $match = $b;
+                  last BLOCK;
+                }
             }
-
-          my $p = $if_construct->parentNode;
-          $p->insertBefore ($_, $if_construct) for (@node);
-
-          $if_construct->unbindNode ();
-
-          next;
         }
 
-      # First block left: IF (...) THEN
+      next if ((! $match) && $undecided);
 
-      if ($keep[0][1]->nodeName ne 'if-then-stmt')
-        {
-          my ($ce) = &F ('./condition-E', $keep[0][1]);
-          my $if = &n ('<if-then-stmt>' . ($name ? "<N><n>$name</n></N>:" : '') . 'IF (</if-then-stmt>');
-          $if->appendChild ($ce->cloneNode (1));
-          $if->appendChild (&t (') THEN'));
-          $keep[0][1]->replaceNode ($if);
-        }
+      my $selected = $match || $default;
 
-      # Last block left, with a .TRUE. condition: ELSE
+      my ($label) = &detachEnd ($block[-1], 'end-select-case-stmt');
 
-      if ((@keep > 1) && ($keep[-1][2] eq '.TRUE.'))
-        {
-          $keep[-1][1]->replaceNode (&n ('<else-stmt>ELSE' . ($name ? " <N><n>$name</n></N>" : '') . '</else-stmt>'));
-        }
+      &replaceConstruct ($c, $selected, $label);
 
-      $keep[-1][0]->appendChild ($_) for (@end);
+      $count++;
     }
 
-  return scalar (@if_construct);
+  return $count;
+}
+
+sub removeDoWhileFalse
+{
+
+=head2 removeDoWhileFalse
+
+Remove C<DO WHILE (.FALSE.)> loops; the label of the C<END DO> statement is kept on a
+C<CONTINUE> statement. Return the number of loops removed.
+
+=cut
+
+  my $d = shift;
+
+  my @do = &F ('.//do-construct[./do-stmt/test-E[string(.)=".FALSE."]]', $d);
+
+  for my $do (reverse (@do))
+    {
+      my ($label) = &detachEnd ($do, 'end-do-stmt');
+      &replaceConstruct ($do, undef, $label);
+    }
+
+  return scalar (@do);
 }
 
 sub removeEmptyDoConstructs
