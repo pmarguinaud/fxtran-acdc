@@ -14,10 +14,6 @@ This module provides functions whose purpose is construct reorganization.
 
 use strict;
 use Fxtran;
-use Data::Dumper;
-use FileHandle;
-use File::Basename;
-use Fxtran;
 
 
 sub changeIfStatementsInIfConstructs
@@ -69,113 +65,522 @@ EOF
 }
 
 
-sub simplify
+# Operator classes: binary operators of a class form chains evaluated from left to right
+# (from right to left for **)
+my %CLASS =
+(
+  '+'  => 'add', '-' => 'add',
+  '*'  => 'mul', '/' => 'mul',
+  '**' => 'pow',
+  '//' => 'cat',
+  (map { ($_, 'cmp') } qw (== /= < <= > >= .EQ. .NE. .LT. .LE. .GT. .GE.)),
+  (map { ($_, 'log') } qw (.AND. .OR. .EQV. .NEQV.)),
+);
+
+my %CMP = ('.EQ.' => '==', '.NE.' => '/=', '.LT.' => '<', '.LE.' => '<=', '.GT.' => '>', '.GE.' => '>=');
+
+sub exactSingle
+{
+  my $v = shift;
+  return unpack ('f', pack ('f', $v)) == $v;
+}
+
+sub literalValue
 {
 
-=head2 simplify
+=head2 literalValue
 
-Constant-fold a single expression node C<$e1> within its parent expression.
-Handles arithmetic (C<+>), comparison (C<==> / C</=>), and logical (C<.AND.>,
-C<.OR.>, C<.NOT.>) operators with literal operands, and removes redundant
-parentheses. Recursively simplifies the result if it is a literal.
+Return the value of a literal expression (C<literal-E> or C<string-E>), as a hash
+with keys C<type> (C<I>, C<R>, C<L> or C<C>), C<value>, C<kind> (the kind suffix, if any) and
+C<text>; return nothing if the literal is not supported (C<D> exponents, BOZ, kind prefixes of strings).
 
 =cut
 
-  my $e1 = shift;
-  my $e = $e1->parentNode;
-  return unless ($e->nodeName =~ m/-E$/o);
-  
-  my $nn;
+  my $e = shift;
+  my $text = &strip ($e->textContent);
 
-  if (my ($op) = &F ('./op', $e, 1))
+  if ($e->nodeName eq 'string-E')
     {
-      my ($e2) = grep { $_->unique_key != $e1->unique_key } &F ('./ANY-E', $e);
+      return unless ($text =~ m/^(["'])(.*)\1$/so);
+      my ($q, $s) = ($1, $2);
+      $s =~ s/$q$q/$q/g;
+      return {type => 'C', value => $s, kind => '', text => $text, quote => $q};
+    }
 
-      my ($i1, $i2);
-      my ($r1, $r2);
+  # Blanks are not significant in literals, but they are in strings
+  $text = $e->textContent;
+  $text =~ s/\s+//go;
 
-      ($i1) =       ($e1->textContent =~ m/^(\d+)$/o);
-      ($i2) = $e2 ? ($e2->textContent =~ m/^(\d+)$/o) : ();
+  if ($text =~ m/^\.(TRUE|FALSE)\.(?:_(\w+))?$/io)
+    {
+      return {type => 'L', value => (uc ($1) eq 'TRUE' ? 1 : 0), kind => $2 || '', text => $text};
+    }
+  if ($text =~ m/^(\d+)(?:_(\w+))?$/o)
+    {
+      return {type => 'I', value => $1 + 0, kind => $2 || '', text => $text};
+    }
+  if ($text =~ m/^((?:\d+\.\d*|\.\d+)(?:[eE][-+]?\d+)?|\d+[eE][-+]?\d+)(?:_(\w+))?$/o)
+    {
+      return {type => 'R', value => $1 + 0, kind => $2 || '', text => $text};
+    }
 
-      ($r1) =       ($e1->textContent =~ m/^(\d*\.\d*)(?:_\w+)?$/o);
-      ($r2) = $e2 ? ($e2->textContent =~ m/^(\d*\.\d*)(?:_\w+)?$/o) : ();
+  return;
+}
 
-      $i1 = $r1 if (defined ($r1));
-      $i2 = $r2 if (defined ($r2));
+sub constantNode
+{
 
-      if (defined ($i1) && $e2 && defined ($i2))
+=head2 constantNode
+
+Return an expression node for the constant C<$v> (see C<literalValue>), to be placed under
+C<$parent>: negative numbers are parenthesized inside operator expressions.
+
+=cut
+
+  my ($v, $parent) = @_;
+
+  # A value coming from a literal keeps its text
+  if (defined ($v->{text}))
+    {
+      my $text = $v->{text};
+      $text = "($text)" if (($text =~ m/^-/o) && $parent && ($parent->nodeName =~ m/^(?:op|parens)-E$/o));
+      return &e ($text);
+    }
+
+  my $text;
+
+  if ($v->{type} eq 'L')
+    {
+      $text = $v->{value} ? '.TRUE.' : '.FALSE.';
+    }
+  elsif ($v->{type} eq 'I')
+    {
+      $text = abs ($v->{value});
+    }
+  elsif ($v->{type} eq 'R')
+    {
+      $text = sprintf ('%.17g', abs ($v->{value}));
+      if ($text =~ m/^([^e]*)e([-+]?)0*(\d+)$/o)
         {
-          if (defined ($i1) && defined ($i2))
+          my ($m, $s, $x) = ($1, $2, $3);
+          $m .= '.' unless ($m =~ m/\./o);
+          $text = $m . 'E' . ($s eq '-' ? '-' : '') . $x;
+        }
+      elsif ($text !~ m/\./o)
+        {
+          $text .= '.';
+        }
+    }
+  elsif ($v->{type} eq 'C')
+    {
+      my $q = $v->{quote} || "'";
+      (my $s = $v->{value}) =~ s/$q/$q$q/g;
+      return &e ($q . $s . $q);
+    }
+
+  $text .= '_' . $v->{kind} if ($v->{kind});
+
+  if ((($v->{type} eq 'I') || ($v->{type} eq 'R')) && ($v->{value} < 0))
+    {
+      $text = '-' . $text;
+      $text = "($text)" if ($parent && ($parent->nodeName =~ m/^(?:op|parens)-E$/o));
+    }
+
+  return &e ($text);
+}
+
+sub strip
+{
+  (my $s = shift) =~ s/\s+//go;
+  return $s;
+}
+
+sub children
+{
+  my $e = shift;
+  return grep { $_->nodeType == 1 } $e->childNodes ();
+}
+
+sub chain
+{
+
+=head2 chain
+
+Return the operands and operators of the chain of binary operators of class C<$class>
+whose top is C<$e>, from left to right (operands at even positions).
+
+=cut
+
+  my ($e, $class) = @_;
+
+  my @c = &children ($e);
+
+  return ($e) unless (($e->nodeName eq 'op-E') && (@c == 3) && ($c[1]->nodeName eq 'op')
+                   && (($CLASS{&strip ($c[1]->textContent)} || '') eq $class));
+
+  return (&chain ($c[0], $class), $c[1], &chain ($c[2], $class));
+}
+
+sub replaceByConstant
+{
+  my ($e, $v) = @_;
+  $e->replaceNode (&constantNode ($v, $e->parentNode));
+  return $v;
+}
+
+sub arith
+{
+
+=head2 arith
+
+Evaluate C<$x OP $y> for numbers (C<I> or C<R>), following Fortran rules; return nothing when
+the operation is not folded: reals of different kinds, real results not exactly representable
+in single precision, integer overflow or division by zero.
+
+=cut
+
+  my ($x, $op, $y) = @_;
+
+  my $type = (($x->{type} eq 'R') || ($y->{type} eq 'R')) ? 'R' : 'I';
+
+  # Kinds must agree
+  return if (($x->{type} eq $y->{type}) && ($x->{kind} ne $y->{kind}));
+  my $kind = $x->{type} eq $type ? $x->{kind} : $y->{kind};
+
+  my ($a, $b) = ($x->{value}, $y->{value});
+
+  if ($type eq 'R')
+    {
+      return unless (&exactSingle ($a) && &exactSingle ($b));
+    }
+
+  my $r;
+
+  if ($op eq '+')
+    {
+      $r = $a + $b;
+    }
+  elsif ($op eq '-')
+    {
+      $r = $a - $b;
+    }
+  elsif ($op eq '*')
+    {
+      $r = $a * $b;
+    }
+  elsif ($op eq '/')
+    {
+      return if ($b == 0);
+      $r = $type eq 'I' ? int ($a / $b) : $a / $b;
+    }
+  elsif ($op eq '**')
+    {
+      return unless (($type eq 'I') && ($b >= 0));
+      $r = $a ** $b;
+    }
+  else
+    {
+      return;
+    }
+
+  if ($type eq 'R')
+    {
+      return unless (&exactSingle ($r));
+    }
+  else
+    {
+      return unless (abs ($r) < 2 ** 31);
+    }
+
+  return {type => $type, value => $r, kind => $kind};
+}
+
+sub compare
+{
+
+=head2 compare
+
+Evaluate the comparison C<$x OP $y> (numbers, or strings compared after padding the shortest
+one with blanks); return nothing if it is not folded.
+
+=cut
+
+  my ($x, $op, $y) = @_;
+
+  $op = $CMP{$op} || $op;
+
+  my $c;
+
+  if (($x->{type} eq 'C') && ($y->{type} eq 'C'))
+    {
+      my ($s, $t) = ($x->{value}, $y->{value});
+      my $n = length ($s) > length ($t) ? length ($s) : length ($t);
+      $s .= ' ' x ($n - length ($s));
+      $t .= ' ' x ($n - length ($t));
+      $c = $s cmp $t;
+    }
+  elsif (($x->{type} =~ m/^[IR]$/o) && ($y->{type} =~ m/^[IR]$/o))
+    {
+      if ($x->{type} eq 'R' || $y->{type} eq 'R')
+        {
+          # Reals: identical texts, or exact values
+          if (defined ($x->{text}) && defined ($y->{text}) && ($x->{text} eq $y->{text}))
             {
-              if ($op eq '+')
-                {
-                  my $s = $i1 + $i2;
-                  $nn = &n ("<literal-E><l>$s</l></literal-E>");
-                }
-              elsif (($op eq '==') || ($op eq '.EQ.'))
-                {
-                  $nn = &e ($i1 == $i2 ? '.TRUE.' : '.FALSE.');
-                }
-              elsif (($op eq '/=') || ($op eq '.NE.'))
-                {
-                  $nn = &e ($i1 == $i2 ? '.FALSE.' : '.TRUE.');
-                }
+              $c = 0;
+            }
+          else
+            {
+              return unless (&exactSingle ($x->{value}) && &exactSingle ($y->{value}));
+              return if (($x->{type} eq $y->{type}) && ($x->{kind} ne $y->{kind}));
             }
         }
-      elsif ($e1->textContent eq '.TRUE.')
+      $c = $x->{value} <=> $y->{value} unless (defined ($c));
+    }
+  else
+    {
+      return;
+    }
+
+  my %r = ('==' => $c == 0, '/=' => $c != 0, '<' => $c < 0, '<=' => $c <= 0, '>' => $c > 0, '>=' => $c >= 0);
+
+  return {type => 'L', value => $r{$op} ? 1 : 0, kind => ''};
+}
+
+sub singleArgument
+{
+
+=head2 singleArgument
+
+Return the expression of the single positional argument of the function reference C<$e>,
+if any.
+
+=cut
+
+  my $e = shift;
+  my @r = &F ('./R-LT/ANY-R', $e);
+  return unless (@r == 1);
+  my @a = &F ('./element-LT/element|./arg-spec/arg|./section-subscript-LT/section-subscript', $r[0]);
+  return unless (@a == 1);
+  return if (&F ('./arg-N', $a[0]));
+  my @x = grep { $_->nodeName =~ m/-E$/o } &children ($a[0]);
+  @x = &F ('./lower-bound/ANY-E', $a[0]) if ($a[0]->nodeName eq 'section-subscript' && ! &F ('./upper-bound|./text()[contains(.,":")]', $a[0]));
+  return unless (@x == 1);
+  return $x[0];
+}
+
+sub foldExpression
+{
+
+=head2 foldExpression
+
+Fold the expression C<$e>, replacing its constant sub-expressions by literals, and return its
+value if it is constant (see C<literalValue>):
+
+=over 4
+
+=item
+
+integer and real arithmetic (C<+ - * / **>); chains of operators of the same precedence are
+evaluated from left to right, as a whole (never a part of a chain); real operations are folded
+only when their operands and results are exactly representable in single precision, so that the
+value does not depend on the precision;
+
+=item
+
+comparisons (numbers, and strings padded with blanks), concatenation, C<TRIM> and C<ADJUSTL> of
+strings;
+
+=item
+
+logical operators, including partially (C<X .AND. .TRUE.> is C<X>, C<X .OR. .TRUE.> is C<.TRUE.>);
+
+=item
+
+parentheses around a constant.
+
+=back
+
+Sub-expressions of variables and function references (subscripts, arguments) are not visited:
+they are folded separately (see C<foldExpressions>).
+
+=cut
+
+  my $e = shift;
+
+  my $name = $e->nodeName;
+
+  if (($name eq 'literal-E') || ($name eq 'string-E'))
+    {
+      return &literalValue ($e);
+    }
+
+  if ($name eq 'parens-E')
+    {
+      my ($x) = grep { $_->nodeName =~ m/-E$/o } &children ($e);
+      return unless ($x);
+      my $v = &foldExpression ($x);
+      return $v ? &replaceByConstant ($e, $v) : undef;
+    }
+
+  if ($name eq 'named-E')
+    {
+      my ($N) = &F ('./N', $e, 1);
+      return unless (($N eq 'TRIM') || ($N eq 'ADJUSTL'));
+      my $x = &singleArgument ($e);
+      return unless ($x);
+      my $v = &foldExpression ($x);
+      return unless ($v && ($v->{type} eq 'C'));
+      my $s = $v->{value};
+      if ($N eq 'TRIM')
         {
-          if ($op eq '.AND.')
+          $s =~ s/ +$//o;
+        }
+      else
+        {
+          my ($b) = ($s =~ m/^( *)/o);
+          $s = substr ($s, length ($b)) . $b;
+        }
+      return &replaceByConstant ($e, {%$v, value => $s, text => undef});
+    }
+
+  return unless ($name eq 'op-E');
+
+  my @c = &children ($e);
+
+  # Unary operators
+
+  if ($c[0]->nodeName eq 'op')
+    {
+      my $op = &strip ($c[0]->textContent);
+      my $literal = $c[1]->nodeName eq 'literal-E';
+      my $v = &foldExpression ($c[1]);
+      return unless ($v);
+      if (($op eq '.NOT.') && ($v->{type} eq 'L'))
+        {
+          return &replaceByConstant ($e, {%$v, value => 1 - $v->{value}, text => undef});
+        }
+      if ((($op eq '-') || ($op eq '+')) && ($v->{type} =~ m/^[IR]$/o))
+        {
+          my $w = {%$v, value => $op eq '-' ? - $v->{value} : $v->{value}};
+          # A signed literal is left as it is
+          return {%$w, text => $op . $v->{text}} if ($literal);
+          return &replaceByConstant ($e, {%$w, text => undef});
+        }
+      return;
+    }
+
+  return unless ((@c == 3) && ($c[1]->nodeName eq 'op'));
+
+  my $op = &strip ($c[1]->textContent);
+  my $class = $CLASS{$op} || '';
+
+  if ($class eq 'log')
+    {
+      my @v = map { scalar (&foldExpression ($_)) } @c[0,2];
+      @c = &children ($e);
+      my @x = ($c[0], $c[2]);
+      for my $i (0, 1)
+        {
+          return unless (! $v[$i] || ($v[$i]{type} eq 'L'));
+        }
+      if ($v[0] && $v[1])
+        {
+          my ($a, $b) = ($v[0]{value}, $v[1]{value});
+          my %r = ('.AND.' => $a && $b, '.OR.' => $a || $b, '.EQV.' => $a == $b, '.NEQV.' => $a != $b);
+          return &replaceByConstant ($e, {type => 'L', value => $r{$op} ? 1 : 0, kind => ''});
+        }
+      for my $i (0, 1)
+        {
+          next unless ($v[$i]);
+          my $other = $x[1-$i];
+          my $t = $v[$i]{value};
+          if ((($op eq '.AND.') && $t) || (($op eq '.OR.') && ! $t) || (($op eq '.EQV.') && $t) || (($op eq '.NEQV.') && ! $t))
             {
-              $nn = $e2;
+              $e->replaceNode ($other);
+              return;
             }
-          elsif ($op eq '.OR.')
+          if ((($op eq '.AND.') && ! $t) || (($op eq '.OR.') && $t))
             {
-              $nn = $e1;
-            }
-          elsif ($op eq '.NOT.')
-            {
-              $nn = &n ('<literal-E>.FALSE.</literal-E>');
+              return &replaceByConstant ($e, $v[$i]);
             }
         }
-      if ($e1->textContent eq '.FALSE.')
+      return;
+    }
+
+  if ($class eq 'cmp')
+    {
+      my @v = map { scalar (&foldExpression ($_)) } @c[0,2];
+      return unless ($v[0] && $v[1]);
+      my $v = &compare ($v[0], $op, $v[1]);
+      return $v ? &replaceByConstant ($e, $v) : undef;
+    }
+
+  return unless ($class);
+
+  # Arithmetic and concatenation: fold a whole chain
+
+  my @chain = &chain ($e, $class);
+  my @v;
+  for (my $i = 0; $i < @chain; $i += 2)
+    {
+      push @v, scalar (&foldExpression ($chain[$i]));
+    }
+
+  return if (grep { ! $_ } @v);
+
+  my @op = map { &strip ($chain[$_]->textContent) } grep { $_ % 2 } (0 .. $#chain);
+
+  my $v;
+
+  if ($class eq 'cat')
+    {
+      return if (grep { $_->{type} ne 'C' } @v);
+      $v = {%{ $v[0] }, value => join ('', map { $_->{value} } @v), text => undef};
+    }
+  else
+    {
+      return if (grep { $_->{type} !~ m/^[IR]$/o } @v);
+      if ($class eq 'pow')
         {
-          if ($op eq '.AND.')
+          $v = $v[-1];
+          for (my $i = $#op; $i >= 0; $i--)
             {
-              $nn = $e1;
+              return unless ($v = &arith ($v[$i], $op[$i], $v));
             }
-          elsif ($op eq '.OR.')
+        }
+      else
+        {
+          $v = $v[0];
+          for my $i (0 .. $#op)
             {
-              $nn = $e2;
-            }
-          elsif ($op eq '.NOT.')
-            {
-              $nn = &n ('<literal-E>.TRUE.</literal-E>');
+              return unless ($v = &arith ($v, $op[$i], $v[$i+1]));
             }
         }
     }
-  elsif ($e->nodeName eq 'parens-E')
+
+  return &replaceByConstant ($e, $v);
+}
+
+sub foldExpressions
+{
+
+=head2 foldExpressions
+
+Fold all expressions of C<$d> (see C<foldExpression>); inner expressions (subscripts, arguments)
+are folded first.
+
+=cut
+
+  my $d = shift;
+
+  my @e = grep { ($_->parentNode->nodeName !~ m/^(?:op|parens)-E$/o) && &Fxtran::stmt ($_) }
+          &F ('.//op-E|.//parens-E|.//named-E[./N/n[string(.)="TRIM" or string(.)="ADJUSTL"]]', $d);
+
+  for my $e (reverse (@e))
     {
-      $nn = $e1;
+      next unless (&Fxtran::stmt ($e));
+      &foldExpression ($e);
     }
-
-  unless ($nn)
-     {
-#      print $e->textContent, "\n";
-       return;
-     }
-
-  $e->replaceNode ($nn); 
-
-  if ($nn->textContent =~ m/^\.(?:TRUE|FALSE)\.$/o)
-    {
-      &simplify ($nn);
-    }
-
-  if ($nn->textContent =~ m/^\d+$/o)
-    {
-      &simplify ($nn);
-    }
-
 }
 
 sub apply
@@ -210,9 +615,12 @@ This is achieved by calling C<apply> like this:
   &Fxtran::Construct::apply 
   (
     $d,                                 # section to be reorganized
-    '//named-E[string(N)="LLCOND2"]',   # XPath expression for expression matching
-    &e ('.FALSE.),                      # expression to replace matching expressions with
+    './/named-E[string(N)="LLCOND2"]',  # XPath expression for expression matching
+    &e ('.FALSE.'),                     # expression to replace matching expressions with
   );
+
+Constant expressions are then folded (see C<foldExpression>), and C<IF> statements and
+constructs with constant conditions simplified (see C<simplifyIfConstructs>).
 
 =cut
 
@@ -227,44 +635,7 @@ This is achieved by calling C<apply> like this:
         } 
     }
 
-  my @tr = &F ('.//named-E[string(N)="TRIM"][./R-LT/parens-R/element-LT/element/string-E]', $d);
-  
-  for my $tr (@tr)
-    {
-      my ($s) = &F ('./R-LT/parens-R/element-LT/element/string-E', $tr);
-      $tr->replaceNode ($s);
-    }
-  
-  my @sc = &F ('.//op-E[string(op)="=="][count(./string-E)=2]', $d);
-
-  for my $sc (@sc)
-    {
-      my ($e1, $e2) = &F ('./string-E/S', $sc, 2);
-      for ($e1, $e2)
-        {
-          s/^["']//o;
-          s/["']$//o;
-        }
-      if ($e1 eq $e2)
-        {
-          $sc->replaceNode (&n ("<literal-E>.TRUE.</literal-E>"));
-        }
-      else
-        {
-          $sc->replaceNode (&n ("<literal-E>.FALSE.</literal-E>"));
-        }
-    }
-
-
-
-  my @expr = &F ('.//literal-E', $d);
-
-  for my $expr (@expr)
-    {
-      next unless ($expr->textContent =~ m/^(?:\.TRUE\.|\.FALSE\.|\d+|\d*\.\d*(?:_\w+)?)$/o);
-      next unless (&Fxtran::stmt ($expr));
-      &simplify ($expr);
-    }
+  &foldExpressions ($d);
 
   for my $ce (&F ('.//if-stmt/condition-E[string(.)=".TRUE." or string(.)=".FALSE."]', $d))
     {

@@ -1,0 +1,11 @@
+SUBROUTINE C18_LOGICAL (L1, L2, LT, LF, X)
+LOGICAL :: L1, L2, LT, LF
+REAL :: X
+IF (L1 .EQV. .TRUE.) X = 1.
+IF (L1 .NEQV. .FALSE.) X = 2.
+IF (.TRUE. .EQV. .FALSE.) X = 3.
+IF (L1 .AND. LT .AND. L2) X = 4.
+IF (.NOT. LF) X = 5.
+IF (L1 .OR. (LF .AND. L2)) X = 6.
+IF (L1 .EQV. .FALSE.) X = 7.
+END SUBROUTINE
