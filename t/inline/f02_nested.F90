@@ -1,0 +1,12 @@
+SUBROUTINE F02_NESTED (X, Z)
+REAL, INTENT (IN) :: X
+REAL, INTENT (OUT) :: Z
+! The inner reference is evaluated first
+Z = F (F (X))
+CONTAINS
+FUNCTION F (A) RESULT (R)
+REAL, INTENT (IN) :: A
+REAL :: R
+R = 2. * A
+END FUNCTION
+END SUBROUTINE

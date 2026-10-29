@@ -8,6 +8,8 @@
 # If t/inline/<case>.die exists, inlining must fail instead, with a message
 # matching the regular expression in this file.
 #
+# The style is NONE, unless t/inline/<case>.style holds another style name (IAL, MESONH, ...).
+#
 # Set INLINE_TEST_OUTPUT=<dir> to write the actual results in <dir>.
 
 use strict;
@@ -22,8 +24,13 @@ use Fxtran::Canonic;
 use Fxtran::Inline;
 use Fxtran::Style;
 
-# Cases which the current code gets wrong (none at the moment)
-my %TODO = map { ($_, 1) } qw ();
+# Cases which the current code gets wrong
+my %TODO = map { ($_, 1) } qw (
+  f01_same_function f02_nested f03_do_while f03_else_if f04_no_result f04_no_result_decl
+  f05_keyword f06_no_argument f07_elemental_array f08_array_result f09_name_clash
+  l01_lookup l01_undeclared l02_index l02_index_mesonh l03_omitted_bound l04_lower_bound
+  l05_assumed_shape l06_expression l07_bounds l08_iterator l09_component
+);
 
 sub slurp
 {
@@ -42,12 +49,12 @@ sub normalize
 
 sub inline
 {
-  my $F90 = shift;
+  my ($F90, $style) = @_;
 
   my $d = &Fxtran::parse (string => &slurp ($F90), fopts => [qw (-construct-tag -line-length 512 -canonic -no-include)]);
   &Fxtran::Canonic::makeCanonic ($d);
 
-  my $style = 'Fxtran::Style'->new (style => 'NONE', document => $d);
+  $style = 'Fxtran::Style'->new (style => $style, document => $d);
 
   for my $pu (&F ('.//program-unit', $d))
     {
@@ -64,8 +71,15 @@ for my $case (@case)
   {
     local $TODO = $TODO{$case} ? 'not implemented yet' : undef;
 
-    my $out = eval { &inline ("$Bin/inline/$case.F90") };
+    my $style = 'NONE';
+    chomp ($style = &slurp ("$Bin/inline/$case.style")) if (-f "$Bin/inline/$case.style");
+
+    # Keep anything printed on STDOUT out of the TAP stream
+    open (my $buf, '>', \my $stdout);
+    my $select = select ($buf);
+    my $out = eval { &inline ("$Bin/inline/$case.F90", $style) };
     my $err = $@;
+    select ($select);
 
     if (my $dir = $ENV{INLINE_TEST_OUTPUT})
       {

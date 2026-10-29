@@ -1,0 +1,13 @@
+SUBROUTINE F08_ARRAY_RESULT (KLON, X, Z)
+INTEGER, INTENT (IN) :: KLON
+REAL, INTENT (IN) :: X (KLON)
+REAL, INTENT (OUT) :: Z (KLON)
+! The shape of the result depends on a dummy argument
+Z = F (X)
+CONTAINS
+FUNCTION F (A) RESULT (R)
+REAL, INTENT (IN) :: A (:)
+REAL :: R (SIZE (A))
+R = 2. * A
+END FUNCTION
+END SUBROUTINE
