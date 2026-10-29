@@ -221,11 +221,62 @@ whose top is C<$e>, from left to right (operands at even positions).
   return (&chain ($c[0], $class), $c[1], &chain ($c[2], $class));
 }
 
+# Number of expressions changed by foldExpression
+my $CHANGED = 0;
+
 sub replaceByConstant
 {
   my ($e, $v) = @_;
-  $e->replaceNode (&constantNode ($v, $e->parentNode));
+  my $c = &constantNode ($v, $e->parentNode);
+  # Nothing to do if the text is the same (a parenthesized negative literal)
+  return $v if (&strip ($c->textContent) eq &strip ($e->textContent));
+  $e->replaceNode ($c);
+  $CHANGED++;
   return $v;
+}
+
+sub replaceByExpression
+{
+
+=head2 replaceByExpression
+
+Replace the expression C<$e> by the expression C<$x> (one of its operands or arguments),
+parenthesised if it is an operator expression and C<$e> is an operand.
+
+=cut
+
+  my ($e, $x) = @_;
+
+  if (($x->nodeName eq 'op-E') && ($e->parentNode->nodeName eq 'op-E'))
+    {
+      my $p = &n ('<parens-E>(<x/>)</parens-E>');
+      my ($y) = &F ('./x', $p);
+      $y->replaceNode ($x);
+      $x = $p;
+    }
+
+  $e->replaceNode ($x);
+  $CHANGED++;
+}
+
+sub arguments
+{
+
+=head2 arguments
+
+Return the expressions of the positional arguments of the function reference C<$e>,
+or nothing if it has keyword arguments.
+
+=cut
+
+  my $e = shift;
+  my @r = &F ('./R-LT/ANY-R', $e);
+  return unless (@r == 1);
+  my @a = &F ('./element-LT/element|./arg-spec/arg', $r[0]);
+  return if (grep { &F ('./arg-N', $_) } @a);
+  my @x = map { grep { $_->nodeName =~ m/-E$/o } &children ($_) } @a;
+  return unless (@x == @a);
+  return @x;
 }
 
 sub arith
@@ -396,6 +447,10 @@ logical operators, including partially (C<X .AND. .TRUE.> is C<X>, C<X .OR. .TRU
 
 =item
 
+C<MERGE> with a constant mask, replaced by one of its arguments;
+
+=item
+
 parentheses around a constant.
 
 =back
@@ -425,6 +480,16 @@ they are folded separately (see C<foldExpressions>).
   if ($name eq 'named-E')
     {
       my ($N) = &F ('./N', $e, 1);
+      if ($N eq 'MERGE')
+        {
+          my @x = &arguments ($e);
+          return unless (@x == 3);
+          my $m = &foldExpression ($x[2]);
+          return unless ($m && ($m->{type} eq 'L'));
+          my $x = $m->{value} ? $x[0] : $x[1];
+          &replaceByExpression ($e, $x);
+          return &foldExpression ($x->parentNode->nodeName eq 'parens-E' ? $x->parentNode : $x);
+        }
       return unless (($N eq 'TRIM') || ($N eq 'ADJUSTL'));
       my $x = &singleArgument ($e);
       return unless ($x);
@@ -497,6 +562,7 @@ they are folded separately (see C<foldExpressions>).
           if ((($op eq '.AND.') && $t) || (($op eq '.OR.') && ! $t) || (($op eq '.EQV.') && $t) || (($op eq '.NEQV.') && ! $t))
             {
               $e->replaceNode ($other);
+              $CHANGED++;
               return;
             }
           if ((($op eq '.AND.') && ! $t) || (($op eq '.OR.') && $t))
@@ -567,20 +633,24 @@ sub foldExpressions
 =head2 foldExpressions
 
 Fold all expressions of C<$d> (see C<foldExpression>); inner expressions (subscripts, arguments)
-are folded first.
+are folded first. Return the number of expressions changed.
 
 =cut
 
   my $d = shift;
 
   my @e = grep { ($_->parentNode->nodeName !~ m/^(?:op|parens)-E$/o) && &Fxtran::stmt ($_) }
-          &F ('.//op-E|.//parens-E|.//named-E[./N/n[string(.)="TRIM" or string(.)="ADJUSTL"]]', $d);
+          &F ('.//op-E|.//parens-E|.//named-E[./N/n[string(.)="TRIM" or string(.)="ADJUSTL" or string(.)="MERGE"]]', $d);
+
+  $CHANGED = 0;
 
   for my $e (reverse (@e))
     {
       next unless (&Fxtran::stmt ($e));
       &foldExpression ($e);
     }
+
+  return $CHANGED;
 }
 
 sub apply
@@ -619,8 +689,12 @@ This is achieved by calling C<apply> like this:
     &e ('.FALSE.'),                     # expression to replace matching expressions with
   );
 
+Matching expressions are not replaced where they are written: assignment targets,
+DO variables and READ input items. They are replaced in CALL arguments.
+
 Constant expressions are then folded (see C<foldExpression>), and C<IF> statements and
-constructs with constant conditions simplified (see C<simplifyIfConstructs>).
+constructs with constant conditions simplified (see C<simplifyIfConstructs>), until
+nothing changes.
 
 =cut
 
@@ -630,18 +704,20 @@ constructs with constant conditions simplified (see C<simplifyIfConstructs>).
       for my $expr (@expr)
         {
           my $p = $expr->parentNode ();
-          next if ($p->nodeName eq 'E-1');
+          next if ($p->nodeName =~ m/^(?:E-1|do-V|input-item)$/o);
           $expr->replaceNode ($v->cloneNode (1));
-        } 
+        }
     }
 
-  &foldExpressions ($d);
-
-  for my $ce (&F ('.//if-stmt/condition-E[string(.)=".TRUE." or string(.)=".FALSE."]', $d))
+  for my $iter (1 .. 100)
     {
-      my $stmt = $ce->parentNode;
-      if ($stmt->nodeName eq 'if-stmt')
+      die ("Fxtran::Construct::apply does not converge") if ($iter == 100);
+
+      my $count = &foldExpressions ($d);
+
+      for my $ce (&F ('.//if-stmt/condition-E[string(.)=".TRUE." or string(.)=".FALSE."]', $d))
         {
+          my $stmt = $ce->parentNode;
           if ($ce->textContent eq '.TRUE.')
             {
               my ($stmt1) = &F ('./action-stmt/ANY-stmt', $stmt);
@@ -651,10 +727,13 @@ constructs with constant conditions simplified (see C<simplifyIfConstructs>).
             {
               $stmt->unbindNode ();
             }
+          $count++;
         }
-    }
 
-  &simplifyIfConstructs ($d);
+      $count += &simplifyIfConstructs ($d);
+
+      last unless ($count);
+    }
 }
 
 sub simplifyIfConstructs
@@ -685,6 +764,8 @@ block (C<.TRUE.> condition, or C<ELSE>) is replaced by the statements of this bl
 
 The C<END IF> statement is kept, with the name of the construct and its label; when
 it is removed, its label is kept on a C<CONTINUE> statement.
+
+Return the number of constructs simplified.
 
 =cut
 
@@ -786,6 +867,8 @@ it is removed, its label is kept on a C<CONTINUE> statement.
 
       $keep[-1][0]->appendChild ($_) for (@end);
     }
+
+  return scalar (@if_construct);
 }
 
 sub removeEmptyDoConstructs

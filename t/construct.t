@@ -3,7 +3,7 @@
 # Unit tests for Fxtran::Construct; run with: prove -I lib t/
 #
 # Each t/construct/<case>.F90 is a subroutine; Fxtran::Construct::apply is called on it,
-# with the variables LT and LF forced to .TRUE. and .FALSE., and the result is compared
+# with the variables LT, LF and KF forced to .TRUE., .FALSE. and 5, and the result is compared
 # with t/construct/<case>.ref.F90, ignoring whitespace and blank lines.
 #
 # Set CONSTRUCT_TEST_OUTPUT=<dir> to write the actual results in <dir>.
@@ -50,6 +50,7 @@ sub apply
         $pu,
         './/named-E[string(N)="LT"]' => &e ('.TRUE.'),
         './/named-E[string(N)="LF"]' => &e ('.FALSE.'),
+        './/named-E[string(N)="KF"]' => &e ('5'),
       );
     }
 
