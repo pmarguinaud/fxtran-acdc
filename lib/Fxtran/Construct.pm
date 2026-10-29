@@ -291,10 +291,29 @@ sub simplifyIfConstructs
 
 =head2 simplifyIfConstructs
 
-Remove dead branches from C<IF> constructs whose condition has been reduced to
-a literal C<.TRUE.> or C<.FALSE.>. When a single-block construct with a
-C<.TRUE.> condition remains, the surrounding C<IF>/C<ENDIF> markers are
-removed and the body is inlined.
+Remove dead branches from C<IF> constructs whose conditions have been reduced to
+literal C<.TRUE.> or C<.FALSE.>:
+
+=over 4
+
+=item
+
+blocks with a C<.FALSE.> condition are removed;
+
+=item
+
+blocks following a block with a C<.TRUE.> condition are removed, and this block
+becomes the C<ELSE> block (or the only block);
+
+=item
+
+a construct left with no block is removed; a construct left with a single unconditional
+block (C<.TRUE.> condition, or C<ELSE>) is replaced by the statements of this block.
+
+=back
+
+The C<END IF> statement is kept, with the name of the construct and its label; when
+it is removed, its label is kept on a C<CONTINUE> statement.
 
 =cut
 
@@ -302,82 +321,100 @@ removed and the body is inlined.
 
   my @if_construct = &F ('.//if-construct[./if-block/ANY-stmt/condition-E[string(.)=".TRUE." or string(.)=".FALSE."]]', $d);
 
-  for my $i (0 .. $#if_construct)
+  # Inner constructs first
+  for my $if_construct (reverse (@if_construct))
     {
-      my $if_construct = $if_construct[$i];
-  
-#     my ($file) = &F ('ancestor::file', $if_construct);
-#     next unless ($file);
-  
-      my $str = $if_construct->textContent;
-  
-      if (my ($if_block) = &F ('./if-block[./ANY-stmt/condition-E[string(.)=".TRUE."]]', $if_construct))
-        {
-          if (my @if_block = &F ('following-sibling::if-block', $if_block))
-            {
-              for (@if_block)
-                {
-                  $_->unbindNode ();
-                }
-              $if_block->appendChild (&n ('<end-if-stmt>ENDIF</end-if-stmt>'));
-            }
-        }
-  
-
-      if (my @if_block = &F ('./if-block[./ANY-stmt/condition-E[string(.)=".FALSE."]]', $if_construct))
-        {
-          for my $if_block (@if_block)
-            {
-              if (my $prev = $if_block->previousSibling)
-                {
-                  unless ($if_block->nextSibling)
-                    {
-                      $prev->appendChild (&n ('<end-if-stmt>ENDIF</end-if-stmt>'));
-                    }
-                  $if_block->unbindNode ();
-                }
-              elsif (my $next = $if_block->nextSibling)
-                {
-                  my ($stmt) = &F ('./ANY-stmt', $next);
-                  if ($stmt->nodeName eq 'else-stmt')
-                    {
-                      $if_block->unbindNode ();
-                      $stmt->replaceNode (&n ("<if-then-stmt>IF (<condition-E><literal-E>.TRUE.</literal-E></condition-E>) THEN</if-then-stmt>"));
-                    }
-                  elsif ($stmt->nodeName eq 'else-if-stmt')
-                    {
-                      $if_block->unbindNode ();
-                      $stmt->setNodeName ('if-then-stmt');
-                      my $tt = $stmt->firstChild;
-                      $tt->replaceNode (&t ("IF ("));
-                    }
-                }
-            }
-        }
-  
       my @if_block = &F ('./if-block', $if_construct);
-  
-      if (scalar (@if_block) == 1)
+
+      my ($name) = &F ('./if-then-stmt/N', $if_block[0], 1);
+
+      # Detach the END IF statement, with its label
+
+      my ($end) = &F ('./end-if-stmt', $if_block[-1]);
+      my @end = ($end);
+
+      my $prev = $end->previousSibling;
+      $prev = $prev->previousSibling if ($prev && ($prev->nodeName eq '#text') && ($prev->data !~ m/\n/o));
+      my $label = ($prev && ($prev->nodeName eq 'label')) ? $prev : undef;
+
+      if ($label)
         {
-          my ($if_block) = @if_block;
-          if (&F ('./ANY-stmt/condition-E[string(.)=".TRUE."]', $if_block))
+          my $n = $label;
+          while (($n = $n->nextSibling) && (! $n->isSameNode ($end)))
             {
-              $if_block->firstChild->unbindNode ();
-              $if_block->lastChild->unbindNode ();
- 
-              for my $node (&F ('./if-block/node()', $if_construct))
-                {
-                  $if_construct->parentNode->insertBefore ($node, $if_construct);
-                }
+              push @end, $n;
             }
+          unshift @end, $label;
+        }
+
+      $_->unbindNode () for (@end);
+
+      # Blocks which are kept
+
+      my @keep;
+
+      for my $if_block (@if_block)
+        {
+          my ($stmt) = &F ('./ANY-stmt[1]', $if_block);
+          my ($ce) = &F ('./condition-E', $stmt);
+          my $cond = $ce ? $ce->textContent : 'ELSE';
+          next if ($cond eq '.FALSE.');
+          push @keep, [$if_block, $stmt, $cond];
+          last if (($cond eq '.TRUE.') || ($cond eq 'ELSE'));
+        }
+
+      my %keep = map { ($_->[0]->unique_key, 1) } @keep;
+
+      $_->unbindNode () for (grep { ! $keep{$_->unique_key} } @if_block);
+
+      if ((! @keep) || ($keep[0][2] eq '.TRUE.') || ($keep[0][2] eq 'ELSE'))
+        {
+          # Replace the construct by the statements of its single unconditional block (if any)
+
+          my @node;
+
+          if (@keep)
+            {
+              my ($if_block, $stmt) = @{ $keep[0] };
+              $stmt->unbindNode ();
+              @node = $if_block->childNodes ();
+              shift (@node) while (@node && ($node[0]->nodeName eq '#text') && ($node[0]->data !~ m/\S/o)
+                                  && ($node[0]->data !~ m/\n/o));
+            }
+
+          if ($label)
+            {
+              push @node, $label, &t (' '), &s ('CONTINUE');
+            }
+
+          my $p = $if_construct->parentNode;
+          $p->insertBefore ($_, $if_construct) for (@node);
 
           $if_construct->unbindNode ();
+
+          next;
         }
-  
-  
+
+      # First block left: IF (...) THEN
+
+      if ($keep[0][1]->nodeName ne 'if-then-stmt')
+        {
+          my ($ce) = &F ('./condition-E', $keep[0][1]);
+          my $if = &n ('<if-then-stmt>' . ($name ? "<N><n>$name</n></N>:" : '') . 'IF (</if-then-stmt>');
+          $if->appendChild ($ce->cloneNode (1));
+          $if->appendChild (&t (') THEN'));
+          $keep[0][1]->replaceNode ($if);
+        }
+
+      # Last block left, with a .TRUE. condition: ELSE
+
+      if ((@keep > 1) && ($keep[-1][2] eq '.TRUE.'))
+        {
+          $keep[-1][1]->replaceNode (&n ('<else-stmt>ELSE' . ($name ? " <N><n>$name</n></N>" : '') . '</else-stmt>'));
+        }
+
+      $keep[-1][0]->appendChild ($_) for (@end);
     }
-
-
 }
 
 sub removeEmptyDoConstructs

@@ -1,0 +1,14 @@
+SUBROUTINE C09_NAMED (L1, L2, LT, LF, X)
+LOGICAL :: L1, L2, LT, LF
+REAL :: X
+! The construct name is kept
+LBL: IF (L1) THEN
+  X = 1.
+ELSE IF (LF) THEN LBL
+  X = 2.
+ELSE IF (L2) THEN LBL
+  X = 3.
+ELSE IF (LT) THEN LBL
+  X = 4.
+END IF LBL
+END SUBROUTINE
