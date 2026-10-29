@@ -26,8 +26,6 @@ use Fxtran::Style;
 
 # Cases which the current code gets wrong
 my %TODO = map { ($_, 1) } qw (
-  f01_same_function f02_nested f03_do_while f03_else_if f04_no_result f04_no_result_decl
-  f05_keyword f06_no_argument f07_elemental_array f08_array_result f09_name_clash
   l01_lookup l01_undeclared l02_index l02_index_mesonh l03_omitted_bound l04_lower_bound
   l05_assumed_shape l06_expression l07_bounds l08_iterator l09_component
 );

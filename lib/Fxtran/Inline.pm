@@ -1298,51 +1298,268 @@ Sort a list of contained subroutine name nodes so that subroutines called by no 
   return @s2;
 }
 
+sub findDeclaration
+{
+
+=head2 findDeclaration
+
+Return the entity declaration of C<$N> visible from C<$node>: the declaration part of the
+innermost program unit containing C<$node> which declares it, if any.
+
+=cut
+
+  my ($N, $node) = @_;
+
+  for my $pu (reverse (&F ('ancestor-or-self::program-unit', $node)))
+    {
+      my ($en_decl) = &F ('./specification-part/declaration-part/T-decl-stmt/EN-decl-LT/EN-decl[string(EN-N)="?"]', $N, $pu);
+      return $en_decl if ($en_decl);
+    }
+
+  return;
+}
+
+sub functionResult
+{
+
+=head2 functionResult
+
+Return the name of the result variable of the function C<$pu2> named C<$n2>. Without a RESULT
+clause, the result is renamed C<E<lt>FE<gt>_RESULT> in the function (C<E<lt>FE<gt>_RESULT2>... if this
+name is used), and declared with the type given in the function statement if needed.
+
+=cut
+
+  my ($ctx, $pu2, $n2) = @_;
+
+  my $f = $pu2->firstChild;
+
+  if (my ($r) = &F ('./result-spec/N', $f, 1))
+    {
+      return $r;
+    }
+
+  my %used = map { ($_, 1) } &F ('.//N/n', $pu2, 1);
+
+  my $r = "${n2}_RESULT";
+  for (my $i = 2; $used{$r}; $i++)
+    {
+      $r = "${n2}_RESULT$i";
+    }
+
+  my ($ts) = &F ('./intrinsic-T-spec|./derived-T-spec', $f);
+  my ($en) =&F ('./specification-part/declaration-part/T-decl-stmt/EN-decl-LT/EN-decl/EN-N/N/n/text()[string(.)="?"]', $n2, $pu2);
+
+  if ($en)
+    {
+      $en->setData ($r);
+    }
+  elsif ($ts)
+    {
+      &Fxtran::Decl::declare ($pu2, &s ($ts->textContent . " :: $r"));
+    }
+  else
+    {
+      &dieInline ($ctx, "type of the function result not found");
+    }
+
+  $_->setData ($r) for (&F ('.//named-E/N/n/text()[string(.)="?"]', $n2, $pu2));
+
+  return $r;
+}
+
+sub functionReferences
+{
+
+=head2 functionReferences
+
+Return the references to function C<$n2> in C<$d1>, grouped by statement (a list of
+[statement, references] pairs), with the references of each statement in evaluation order:
+inner references (in arguments) first, then from left to right.
+
+=cut
+
+  my ($d1, $n2) = @_;
+
+  my (@stmt, %ref);
+
+  for my $expr (&F ('.//named-E[string(N)="?"][./R-LT/function-R]', $n2, $d1))
+    {
+      my $stmt = &Fxtran::stmt ($expr);
+      push @stmt, $stmt unless ($ref{$stmt->unique_key});
+      push @{ $ref{$stmt->unique_key} }, $expr;
+    }
+
+  my @list;
+
+  for my $stmt (@stmt)
+    {
+      my @expr = @{ $ref{$stmt->unique_key} };
+      my %rank = map { ($expr[$_]->unique_key, $_) } (0 .. $#expr);
+      my %inner = map { my $e = $_; ($e->unique_key, { map { ($_->unique_key, 1) } &F ('.//named-E', $e) }) } @expr;
+
+      # Post-order: an expression comes after the references it contains
+      @expr = sort { $inner{$a->unique_key}{$b->unique_key} ? +1
+                   : $inner{$b->unique_key}{$a->unique_key} ? -1
+                   : $rank{$a->unique_key} <=> $rank{$b->unique_key} } @expr;
+
+      push @list, [$stmt, \@expr];
+    }
+
+  return @list;
+}
+
 sub containedFunctionToSubroutine
 {
-  my ($d1, $f2, %opts) = @_;
 
-  my ($dp1) = &F ('./specification-part/declaration-part', $d1);
+=head2 containedFunctionToSubroutine
+
+Transform the contained function whose name is the text node C<$f2> into a subroutine with
+an extra INTENT(OUT) argument for its result, and replace each reference to it in C<$d1> by
+a temporary variable, set by a CALL inserted before the statement. A statement gets one
+temporary per reference (C<E<lt>FE<gt>TMP>, C<E<lt>FE<gt>TMP2>... skipping names used in
+C<$d1>), the CALL statements being in evaluation order.
+
+Die for references in an ELSE IF or DO WHILE condition, or outside the execution part, for
+references of an ELEMENTAL function with an array argument, and for array results whose shape
+depends on the dummy arguments.
+
+=cut
+
+  my ($d1, $f2, %opts) = @_;
 
   my $n2 = $f2->textContent;
 
-  # Transform pu2 FUNCTION into a SUBROUTINE
+  my ($caller) = &F ('./subroutine-stmt/subroutine-N|./function-stmt/function-N', $d1, 1);
 
   my @pu = &F ('ancestor::program-unit', $f2);
   my $pu2 = pop (@pu);
 
   my $f = $pu2->firstChild;
-  my $l = $pu2->lastChild;
+  my ($l) = &F ('./end-function-stmt', $pu2);
 
-  # Add an INTENT to the result
+  my $ctx = {callee => $n2, caller => $caller, call => $f->textContent};
 
-  my ($rs) = &F ('./result-spec', $f);
-  my ($r) = &F ('./N/n', $rs, 1);
- 
-  die unless ($r);
+  my $r = &functionResult ($ctx, $pu2, $n2);
 
   my ($dp2) = &F ('./specification-part/declaration-part', $pu2);
 
   my ($decl) = &F ('./T-decl-stmt[./EN-decl-LT/EN-decl[string(EN-N)="?"]]', $r, $dp2);
 
-  die unless ($decl); 
+  &dieInline ($ctx, "result $r: declaration not found") unless ($decl);
+  &dieInline ($ctx, "result $r: declared with other entities") if (&F ('./EN-decl-LT/EN-decl', $decl) > 1);
 
-  # Declare temporary variable to hold function result
+  my %dummy = map { ($_, 1) } &F ('./dummy-arg-LT/arg-N', $f, 1);
 
-  my $decl2 = $decl->cloneNode (1);
-  my ($N1) = &F ('./EN-decl-LT/EN-decl/EN-N/N/n/text()', $decl2); $N1->setData ("${n2}TMP");
-  &Fxtran::Decl::declare ($d1, $decl2);
+  if (my $as = &arraySpec (&F ('./EN-decl-LT/EN-decl', $decl)))
+    {
+      &dieInline ($ctx, "result $r: shape depends on dummy arguments")
+        if (grep { $dummy{$_} } &F ('.//named-E/N', $as, 1));
+    }
 
+  my $elemental = &F ('./prefix[string(.)="ELEMENTAL"]', $f);
 
-  my ($ts) = &F ('./_T-spec_', $decl); 
+  # Declaration of the temporaries, without INTENT
+
+  my $tdecl = $decl->cloneNode (1);
+
+  # Names already used in the caller
+
+  my %used = map { ($_, 1) } &F ('.//N/n|.//use-N', $d1, 1);
+
+  my @tmp;
+
+  my $tmp = sub
+  {
+    my $i = shift;
+    until ($tmp[$i])
+      {
+        my $T;
+        for (my $j = 1; ; $j++)
+          {
+            $T = $n2 . 'TMP' . ($j > 1 ? $j : '');
+            last unless ($used{$T});
+          }
+        $used{$T} = 1;
+        my $d = $tdecl->cloneNode (1);
+        my ($N) = &F ('./EN-decl-LT/EN-decl/EN-N/N/n/text()', $d);
+        $N->setData ($T);
+        &Fxtran::Decl::declare ($d1, $d);
+        push @tmp, $T;
+      }
+    return $tmp[$i];
+  };
+
+  # Replace function references by temporaries set by CALL statements
+
+  for my $item (&functionReferences ($d1, $n2))
+    {
+      my ($stmt, $expr) = @$item;
+
+      $ctx->{call} = $stmt->textContent;
+
+      &dieInline ($ctx, "recursive function")
+        if (grep { $_->isSameNode ($pu2) } &F ('ancestor::program-unit', $stmt));
+      &dieInline ($ctx, "referenced in an ELSE IF condition")
+        if ($stmt->nodeName eq 'else-if-stmt');
+      &dieInline ($ctx, "referenced in a DO WHILE condition")
+        if (($stmt->nodeName eq 'do-stmt') && &F ('./test-E', $stmt));
+      &dieInline ($ctx, "referenced outside the execution part")
+        unless (&Fxtran::stmt_is_executable ($stmt) && &F ('ancestor::execution-part', $stmt));
+
+      for my $i (0 .. $#{$expr})
+        {
+          my $e = $expr->[$i];
+
+          my @arg = &F ('./R-LT/function-R/element-LT/element|./R-LT/function-R/arg-spec/arg', $e);
+
+          if ($elemental)
+            {
+              for my $x (map { &F ('.//named-E', $_) } @arg)
+                {
+                  my ($N) = &F ('./N', $x, 1);
+                  my $en_decl = &findDeclaration ($N, $stmt);
+                  next unless ($en_decl && &arraySpec ($en_decl));
+                  my ($ar) = &F ('./R-LT/array-R', $x);
+                  &dieInline ($ctx, "ELEMENTAL function with an array argument ($N)")
+                    if ((! $ar) || grep { &isTriplet ($_) } &F ('./section-subscript-LT/section-subscript', $ar));
+                }
+            }
+
+          my $T = $tmp->($i);
+
+          my $call = &s ("CALL $n2 (X)");
+          my ($argspec) = &F ('./arg-spec', $call);
+          $_->unbindNode () for ($argspec->childNodes ());
+
+          my $keyword = 0;
+          for my $arg (@arg)
+            {
+              my $a = &n ('<arg/>');
+              $a->appendChild ($_->cloneNode (1)) for ($arg->childNodes ());
+              $keyword ||= &F ('./arg-N', $a);
+              $argspec->appendChild ($_) for (($argspec->hasChildNodes () ? (&t (", ")) : ()), $a);
+            }
+
+          my $a = &n ($keyword ? "<arg><arg-N n=\"$r\"><k>$r</k></arg-N>=</arg>" : '<arg/>');
+          $a->appendChild (&e ($T));
+          $argspec->appendChild ($_) for (($argspec->hasChildNodes () ? (&t (", ")) : ()), $a);
+
+          $stmt->parentNode->insertBefore ($_, $stmt) for ($call, &t ("\n"));
+          $e->replaceNode (&e ($T));
+        }
+    }
+
+  # Add an INTENT to the result
+
+  my ($ts) = &F ('./_T-spec_', $decl);
 
   $decl->insertAfter ($_, $ts) for (&n ("<attribute><attribute-N>INTENT</attribute-N> (<intent-spec>OUT</intent-spec>)</attribute>"), &t (", "));
 
   # Add the result as an extra argument
 
   my ($dal2) = &F ('./dummy-arg-LT', $f);
-  $dal2->appendChild ($_) for (&t (", "), &n ("<arg-N><N><n>$r</n></N></arg-N>"));
-
+  $dal2->appendChild ($_) for (($dal2->hasChildNodes () ? (&t (", ")) : ()), &n ("<arg-N><N><n>$r</n></N></arg-N>"));
 
   # Replace function-stmt / end-function-stmt by subroutine-stmt / end-subroutine-stmt
 
@@ -1356,26 +1573,6 @@ sub containedFunctionToSubroutine
   $f->replaceNode ($sub);
 
   $l->replaceNode (&n ("<end-subroutine-stmt>ENDSUBROUTINE</end-subroutine-stmt>"));
-  
-  # Find function expressions & replace them with calls
-  
-  for my $expr (&F ('.//named-E[string(N)="?"][./R-LT/function-R]', $n2, $d1))
-    {
-      my $stmt = &Fxtran::stmt ($expr);
-
-#print &Dumper ([$stmt->textContent]);
-
-      my $p = $stmt->parentNode;
-
-      my ($argspec) = &F ('./R-LT/function-R/element-LT', $expr);
-
-      my $call = &s ("CALL $n2 (" . $argspec->textContent . ", ${n2}TMP)");
-
-#print &Dumper ([$call->textContent]);
-
-      $p->insertBefore ($_, $stmt) for ($call, &t ("\n"));
-      $expr->replaceNode (&e ("${n2}TMP"));
-    }
 }
 
 sub inlineContainedSubroutines
