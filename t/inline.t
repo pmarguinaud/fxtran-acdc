@@ -24,11 +24,8 @@ use Fxtran::Canonic;
 use Fxtran::Inline;
 use Fxtran::Style;
 
-# Cases which the current code gets wrong
-my %TODO = map { ($_, 1) } qw (
-  l01_lookup l01_undeclared l02_index l02_index_mesonh l03_omitted_bound l04_lower_bound
-  l05_assumed_shape l06_expression l07_bounds l08_iterator l09_component
-);
+# Cases which the current code gets wrong (none at the moment)
+my %TODO = map { ($_, 1) } qw ();
 
 sub slurp
 {

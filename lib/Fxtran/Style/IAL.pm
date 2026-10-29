@@ -86,6 +86,11 @@ sub handleMessages
   &Fxtran::Print::changeWRITEintoPRINT ($d);
 }
 
+sub integerType
+{
+  return 'INTEGER (KIND=JPIM)';
+}
+
 sub dim2ind
 {
   shift;

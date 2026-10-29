@@ -160,6 +160,11 @@ sub handleMessages
   &Fxtran::Print::changePRINT_MSGintoPRINT ($d);
 }
 
+sub integerType
+{
+  return 'INTEGER';
+}
+
 sub dim2ind
 {
   shift;

@@ -248,6 +248,18 @@ sub getAbortStatement
   return &s ("CALL ABOR1 ('$mess')");
 }
 
+sub integerType
+{
+
+=head2 integerType
+
+Returns the type used to declare integer variables, such as loop indices (C<INTEGER> by default).
+
+=cut
+
+  return 'INTEGER';
+}
+
 =head1 SEE ALSO
 
 L<Fxtran::Style::MFPHYS>, L<Fxtran::Style::IAL>, L<Fxtran::Style::ECPHYS>, L<Fxtran::Style::MESONH>.

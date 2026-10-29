@@ -22,6 +22,7 @@ updated consistently.
 
 use strict;
 use Fxtran;
+use Fxtran::Inline;
 
 sub rename
 {
@@ -30,6 +31,8 @@ sub rename
 
 Renames Fortran identifiers in the parsed document according to a mapping hash.
 Updates both expression references (C<named-E>) and declaration names (C<EN-N>).
+In a program unit which already declares the new name, the declaration of the old
+name is removed instead.
 
 =cut
 
@@ -41,22 +44,26 @@ Updates both expression references (C<named-E>) and declaration names (C<EN-N>).
     {
 
       my @expr = &F ('.//named-E[string(N)="?"]/N/n/text()', $k, $d);
-     
+
       for (@expr)
-        {   
+        {
           $_->setData ($v);
-        }   
-     
-      my @en_decl;
+        }
 
-      next if (@en_decl = &F ('.//EN-N[string(N)="?"]/N/n/text()', $v, $d));
+      my @en_decl = &F ('.//EN-N[string(N)="?"]/N/n/text()', $k, $d);
 
-      @en_decl = &F ('.//EN-N[string(N)="?"]/N/n/text()', $k, $d);
-     
       for (@en_decl)
-        {   
-          $_->setData ($v);
-        }   
+        {
+          my ($pu) = &F ('ancestor::program-unit[1]', $_);
+          if ($pu && &F ('./specification-part/declaration-part//EN-N[string(N)="?"]', $v, $pu))
+            {
+              &Fxtran::Inline::removeEntity (&F ('ancestor::EN-decl[1]', $_));
+            }
+          else
+            {
+              $_->setData ($v);
+            }
+        }
     }
 }
 

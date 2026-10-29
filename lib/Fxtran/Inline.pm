@@ -1027,155 +1027,164 @@ sub loopElementalSingleCall
 
 =head2 loopElementalSingleCall
 
-Wrap a single call to an ELEMENTAL subroutine with DO loops over the array dimensions of its array arguments, replacing whole-array section subscripts with loop indices.
+Wrap a single call to an ELEMENTAL subroutine with DO loops over the array dimensions of its
+array arguments, replacing whole-array section subscripts with loop indices. Arrays referenced
+in argument expressions are indexed as well. Loop indices and default bounds are given by the
+style (C<dim2ind>, C<dim2bnd>); other bounds come from the sections or the declarations.
+Missing loop indices are declared (C<integerType> of the style).
+
+Die when the loop indices or bounds of the arrays differ, for sections of arrays whose
+declaration is not visible, of components and of assumed-shape arrays, for strides, and when
+a loop index is already used by an enclosing loop.
 
 =cut
-
-# Add loops around a single call to an ELEMENTAL subroutine
 
   my ($d1, $call, %opts) = @_;
 
   my $style = $opts{style};
 
-  my @expr = &F ('./arg-spec/arg/named-E[not(R-LT/component-R)]', $call);
+  my ($n2) = &F ('./procedure-designator', $call, 1);
+  my ($caller) = &F ('./subroutine-stmt/subroutine-N|./function-stmt/function-N', $d1, 1);
+  my $ctx = {callee => $n2, caller => $caller, call => $call->textContent};
 
-  my @X;
+  my ($FIRST, @IND, @LBND, @UBND);
 
-  for my $expr (@expr)
+  for my $expr (&F ('./arg-spec/arg//named-E', $call))
     {
+      # Skip expressions removed with a subscript replaced by a loop index
+      next unless (&F ('ancestor::call-stmt', $expr));
+
       my ($N) = &F ('./N', $expr, 1);
 
-      my ($en_decl) = &F ('.//T-decl-stmt//EN-decl[string (EN-N)="?"]', $N, $d1);
-      my ($as) = &F ('./array-spec', $en_decl);
-      unless ($as)
+      my $section = grep { &isTriplet ($_) } &F ('./R-LT/array-R/section-subscript-LT/section-subscript', $expr);
+
+      if (&F ('./R-LT/component-R', $expr))
         {
-          my ($decl) = &Fxtran::stmt ($en_decl);
-          ($as) = &F ('./attribute/array-spec', $decl);
+          &dieInline ($ctx, "section of a component: " . $expr->textContent) if ($section);
+          next;
         }
+
+      my $en_decl = &findDeclaration ($N, $call);
+
+      unless ($en_decl)
+        {
+          &dieInline ($ctx, "section of $N, whose declaration is not visible") if ($section);
+          next;
+        }
+
+      next unless (my $as = &arraySpec ($en_decl));
+
+      my ($r) = &F ('./R-LT/ANY-R', $expr);
+      &Fxtran::Ref::parensToArrayRef ($r) if ($r);
 
       my ($ar) = &F ('./R-LT/array-R', $expr);
 
-      if ($as && (! $ar))
+      my @ssp = &F ('./shape-spec-LT/shape-spec', $as);
+
+      if (! $r)
         {
-          my $nd = &F ('./shape-spec-LT/shape-spec', $as);
+          $expr->appendChild (my $rlt = &n ('<R-LT/>'));
 
-          my ($rlt) = &F ('./R-LT', $expr);
-          unless ($rlt)
-            {
-              $expr->appendChild ($rlt = &n ('<R-LT/>'));
-            }
-
-          $ar = &n ('<array-R>(<section-subscript-LT>' 
-                   . join (',', ('<section-subscript>:</section-subscript>') x $nd) 
+          $ar = &n ('<array-R>(<section-subscript-LT>'
+                   . join (',', ('<section-subscript>:</section-subscript>') x scalar (@ssp))
                    . '</section-subscript-LT>)</array-R>');
           $rlt->appendChild ($ar);
         }
-
-      my $dd = $ar && &F ('./section-subscript-LT/section-subscript/text()[string(.)=":"]', $ar);
-
-      push @X, [$N, $expr, $ar, $as] if ((! $ar && $as) || ($dd));
-    }
-
-  return unless (@X);
-
-  my (@DIM, @IND, @LBND, @UBND);
-
-  for my $X (@X)
-    {
-      my ($N, $expr, $ar, $as) = @$X;
-
-      die "$N" unless ($ar);
-      die "$N" unless ($as);
+      elsif ((! $ar) || (! $section))
+        {
+          next;
+        }
 
       my @ssu = &F ('./section-subscript-LT/section-subscript', $ar);
-      my @ssp = &F ('./shape-spec-LT/shape-spec', $as);
 
-      my (@dim, @ind, @lbnd, @ubnd);
+      &dieInline ($ctx, "$N: rank of the reference differs from the rank of the declaration")
+        unless (scalar (@ssu) == scalar (@ssp));
+
+      my (@ind, @lbnd, @ubnd);
 
       for my $i (0 .. $#ssu)
         {
           my $ssu = $ssu[$i];
 
-          next unless (&F ('./text()[string(.)=":"]', $ssu));
+          next unless (&isTriplet ($ssu));
 
-          my $dim = $ssp[$i];
+          &dieInline ($ctx, "$N: stride in section " . $expr->textContent) if (&F ('./stride', $ssu));
 
-          $dim = $dim->textContent;
+          my ($dlb) = &F ('./lower-bound', $ssp[$i], 1);
+          my ($dub) = &F ('./upper-bound', $ssp[$i], 1);
 
-          (my $ind = $style->dim2ind ($dim)) or die;
+          &dieInline ($ctx, "$N: dimension " . ($i + 1) . " is assumed or deferred (no upper bound)") unless (defined ($dub));
+
+          my $ind = $style->dim2ind (&strip ($dub));
+
+          &dieInline ($ctx, "$N: no loop index for dimension $dub") unless ($ind);
+
+          my ($lb) = &F ('./lower-bound', $ssu, 1);
+          my ($ub) = &F ('./upper-bound', $ssu, 1);
+
+          if ((! defined ($lb)) && (! defined ($ub)))
+            {
+              ($lb, $ub) = $style->dim2bnd (&strip ($dub));
+              ($lb, $ub) = (defined ($dlb) ? $dlb : '1', $dub) unless (defined ($lb));
+            }
+          else
+            {
+              $lb = defined ($dlb) ? $dlb : '1' unless (defined ($lb));
+              $ub = $dub unless (defined ($ub));
+            }
 
           $ssu->replaceNode (&n ("<section-subscript><lower-bound><named-E><N><n>$ind</n></N></named-E></lower-bound></section-subscript>"));
 
           push @ind, $ind;
-          push @dim, $dim;
-
-          if (my @bnd = $style->dim2bnd ($dim))
-            {
-              my ($lbnd, $ubnd) = @bnd;
-              if ($ssu->textContent eq ':')
-                {
-                  push @lbnd, $lbnd;
-                  push @ubnd, $ubnd;
-                }
-              else
-                {
-                  my ($lb) = &F ('./lower-bound/ANY-E', $ssu); $lb or print $ssu;
-                  my ($ub) = &F ('./upper-bound/ANY-E', $ssu); $ub or print $ssu;
-                  push @lbnd, $lb->textContent;
-                  push @ubnd, $ub->textContent;
-                }
-            }
-          else
-            {
-              if ($ssu->textContent eq ':')
-                {
-                  push @lbnd, '1';
-                  push @ubnd, $dim;
-                }
-              else
-                {
-                  my ($lb) = &F ('./lower-bound/ANY-E', $ssu); $lb or print $ssu;
-                  my ($ub) = &F ('./upper-bound/ANY-E', $ssu); $ub or print $ssu;
-                  push @lbnd, $lb->textContent;
-                  push @ubnd, $ub->textContent;
-                }
-            }
-
+          push @lbnd, $lb;
+          push @ubnd, $ub;
         }
 
-      # Check same indices for all arrays
-      if (@IND)
+      # Same indices and bounds for all arrays
+
+      if (defined ($FIRST))
         {
-          die unless (scalar (@IND) == scalar (@ind));
+          &dieInline ($ctx, "$N: loop indices (@ind) differ from those of $FIRST (@IND)")
+            unless ("@ind" eq "@IND");
           for my $i (0 .. $#IND)
             {
-              die "$N: $IND[$i], $ind[$i]" unless ($IND[$i] eq $ind[$i]);
+              &dieInline ($ctx, "$N: bounds $lbnd[$i]:$ubnd[$i] differ from those of $FIRST ($LBND[$i]:$UBND[$i])")
+                unless ((&strip ($lbnd[$i]) eq &strip ($LBND[$i])) && (&strip ($ubnd[$i]) eq &strip ($UBND[$i])));
             }
         }
       else
         {
+          $FIRST = $N;
           @IND = @ind;
-          @DIM = @dim;
           @LBND = @lbnd;
           @UBND = @ubnd;
         }
     }
 
-  my $do_construct;
+  return unless (@IND);
 
-  $do_construct = join ("\n", 
-                        map ({ "DO $IND[$_] = $LBND[$_], $UBND[$_]" } reverse (0 .. $#DIM)),
-                        "!",
-                        map ({ "ENDDO" } reverse (0 .. $#DIM)));
+  my ($pu) = &F ('ancestor::program-unit[1]', $call);
+
+  for my $ind (@IND)
+    {
+      &dieInline ($ctx, "loop index $ind is already used by an enclosing loop")
+        if (&F (&doLoops ('ancestor::', $ind), $call));
+      &Fxtran::Decl::declare ($pu, &s ($style->integerType () . " :: $ind"))
+        unless (&findDeclaration ($ind, $call));
+    }
+
+  my $do_construct = join ("\n",
+                           map ({ "DO $IND[$_] = $LBND[$_], $UBND[$_]" } reverse (0 .. $#IND)),
+                           "!",
+                           map ({ "ENDDO" } reverse (0 .. $#IND)));
 
   ($do_construct) = &Fxtran::parse (fragment => $do_construct, fopts => [qw (-line-length 800 -construct-tag)]);
 
   my ($C) = &F ('.//C', $do_construct);
-  
+
   $call->replaceNode ($do_construct);
 
   $C->replaceNode ($call);
-
 }
 
 sub loopElemental
