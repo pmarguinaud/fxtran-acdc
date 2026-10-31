@@ -68,16 +68,38 @@ into the parent.
 
 }
 
+sub replaceCall
+{
+
+=head2 replaceCall
+
+Replaces an intrinsic call with its argument. Dropping the call also drops
+the grouping it provided: when C<$group> is true and the call is an operand
+of another operator, the argument is enclosed in parentheses.
+
+=cut
+
+  my ($call, $arg, $group) = @_;
+
+  unless ($group && ($call->parentNode->nodeName eq 'op-E'))
+    {
+      $call->replaceNode ($arg);
+      return;
+    }
+
+  my $parens = &n ('<parens-E/>');
+  $call->replaceNode ($parens);
+  $parens->appendChild ($_) for (&t ('('), $arg, &t (')'));
+}
+
 sub replaceANY
 {
 
 =head2 replaceANY
 
-Replaces an C<ANY(...)> call with its argument. Dropping the call also drops
-the grouping it provided, so C<LLA .AND. ANY(B .OR. C)> must not become
-C<LLA .AND. B .OR. C>: the argument is enclosed in parentheses when the call
-is an operand of another operator and the argument is itself a logical
-operation.
+Replaces an C<ANY(...)> call with its argument, so that
+C<LLA .AND. ANY(B .OR. C)> does not become C<LLA .AND. B .OR. C>: the argument
+needs parentheses only if it is itself a logical operation.
 
 =cut
 
@@ -85,15 +107,56 @@ operation.
 
   my $logical = grep { m/^\.(?:NOT|AND|OR|EQV|NEQV)\.$/io } &F ('./op', $arg, 1);
 
-  unless ($logical && ($ANY->parentNode->nodeName eq 'op-E'))
+  &replaceCall ($ANY, $arg, $logical);
+}
+
+sub scalarizeArgument
+{
+
+=head2 scalarizeArgument
+
+Returns the single argument of a C<SUM> or C<COUNT> call, after replacing the
+horizontal sections listed in C<@range> with the scalar index C<$jlon>.
+
+Nothing is returned (and the call is left untouched) when the call has other
+arguments (C<DIM>, C<MASK>), when it does not reduce over a horizontal section,
+or when another array section remains in the argument: the call is then still
+a reduction.
+
+=cut
+
+  my ($call, $jlon, @range) = @_;
+
+  my @arg = &F ('./R-LT/function-R/element-LT/node()[self::element or self::arg]', $call);
+
+  return unless (scalar (@arg) == 1);
+
+  my ($arg) = &F ('./ANY-E', $arg[0]);
+
+  return unless ($arg);
+
+  my (@column, @other);
+
+  for my $ss (&F ('.//section-subscript', $arg))
     {
-      $ANY->replaceNode ($arg);
-      return;
+      my $str = $ss->textContent;
+      if (grep { $str eq $_ } @range)
+        {
+          push @column, $ss;
+        }
+      elsif (index ($str, ':') >= 0)
+        {
+          push @other, $ss;
+        }
     }
 
-  my $parens = &n ('<parens-E/>');
-  $ANY->replaceNode ($parens);
-  $parens->appendChild ($_) for (&t ('('), $arg, &t (')'));
+  return if (@other || (! @column));
+
+  my $JLONSUB = &n ("<section-subscript><lower-bound><named-E><N><n>$jlon</n></N></named-E></lower-bound></section-subscript>");
+
+  $_->replaceNode ($JLONSUB->cloneNode (1)) for (@column);
+
+  return $arg;
 }
 
 sub fixANYidiom
@@ -133,9 +196,9 @@ sub fixCOUNTIdiom
 
 =head2 fixCOUNTIdiom
 
-Replaces C<COUNT(var(KIDIA:KFDIA))> array-reduction idioms with the scalar
-equivalent C<MERGE(1, 0, var(JLON))>, operating on the right-hand side of
-assignment statements.
+Replaces C<COUNT(mask(KIDIA:KFDIA))> array-reduction idioms with the scalar
+equivalent C<MERGE(1, 0, mask(JLON))>, where C<mask> may be any logical
+expression.
 
 =cut
 
@@ -145,20 +208,15 @@ assignment statements.
   my $kidia = $opts{style}->kidia ();
   my $kfdia = $opts{style}->kfdia ();
 
-  for my $E2 (&F ('.//a-stmt/E-2/named-E[string(N)="COUNT"]', $s))
+  for my $COUNT (&F ('.//named-E[string(N)="COUNT"]', $s))
     {
-      my $T;
-      if (($T) = &F ('.//named-E[./R-LT/array-R[string(section-subscript-LT)="IIJB:IIJE"]]', $E2))
-        {
-          # MesoNH only (IIJB=D%NIJB, IIJE=D%NIJE)
-          my ($N) = &F ('./N', $T, 1);
-          $E2->replaceNode (&e ("MERGE (1, 0, $N ($jlon))"));
-        }
-      elsif (($T) = &F ('.//named-E[./R-LT/array-R[string(section-subscript-LT)="?"]]', "$kidia:$kfdia", $E2))
-        {
-          my ($N) = &F ('./N', $T, 1);
-          $E2->replaceNode (&e ("MERGE (1, 0, $N ($jlon))"));
-        }
+      # IIJB:IIJE is MesoNH only (IIJB=D%NIJB, IIJE=D%NIJE)
+
+      my $arg = &scalarizeArgument ($COUNT, $jlon, "$kidia:$kfdia", 'IIJB:IIJE');
+
+      next unless ($arg);
+
+      $COUNT->replaceNode (&e ('MERGE (1, 0, ' . $arg->textContent . ')'));
     }
 
 }
@@ -168,8 +226,8 @@ sub fixSUMIdiom
 
 =head2 fixSUMIdiom
 
-Replaces C<SUM(var(KIDIA:KFDIA))> array-reduction idioms with the scalar
-element C<var(JLON)>, eliminating the horizontal reduction for the
+Replaces C<SUM(expr(KIDIA:KFDIA))> array-reduction idioms with the scalar
+expression C<expr(JLON)>, eliminating the horizontal reduction for the
 single-column execution model.
 
 =cut
@@ -198,26 +256,15 @@ single-column execution model.
 
 # my @sum = &F ('//E-2/named-E[string(N)="SUM"]', $d);
 
-  for my $R ('function')
-    {
-
-      my $xpath =
-         './/named-E[string(N)="SUM"]'
-       . "[./R-LT/$R-R/element-LT/element/named-E/R-LT/array-R/section-subscript-LT"
-       . "/section-subscript[string(.)=\"$kidia:$kfdia\"]]";
-
-      my @sum = &F ($xpath, $s);
-
 # So we need to replace the SUM by a scalar expression
 
-      for my $sum (@sum)
-        {
-          my ($expr) = &F ("./R-LT/$R-R/element-LT/element/named-E", $sum);
-          my ($sslt) = &F ('./R-LT/array-R/section-subscript-LT', $expr);
-          my @ss = &F ('./section-subscript', $sslt);
-          $ss[0]->replaceNode (&n ('<section-subscript><lower-bound>' . &e ($jlon) . '</lower-bound></section-subscript>'));
-          $sum->replaceNode ($expr);
-        }
+  for my $sum (&F ('.//named-E[string(N)="SUM"]', $s))
+    {
+      my $arg = &scalarizeArgument ($sum, $jlon, "$kidia:$kfdia");
+
+      next unless ($arg);
+
+      &replaceCall ($sum, $arg, $arg->nodeName eq 'op-E');
     }
 }
 
