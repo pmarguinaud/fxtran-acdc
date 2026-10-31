@@ -88,18 +88,26 @@ sub makeParallel
       $pragma->insertData ($comp, PRESENT => [sort keys (%present)]);
     }
 
+
   my $LDACC = $opts{acc} ? &e ('.TRUE.') : &e ('.FALSE.');
   my $YDOFFSET = &e ('YLOFFSET');
 
-  my $KFDIA = "MIN ($KLON, $KGPTOT - ($KGPBLKS - 1) * $KLON)";
+  #changes to enable ManyBlocks with Filter used in aro_rain_ice_mnh
+  my $filter = $par1->getAttribute('filter');
+
+  my $KFDIA = $filter ? "MIN (YL_FGS%KLON, YL_FGS%KGPTOT - (YL_FGS%KGPBLKS - 1) * YL_FGS%KLON)" : "MIN ($KLON, $KGPTOT - ($KGPBLKS - 1) * $KLON)";
+  my $KGPBLKS1 = $filter ? 'YL_FGS%KGPBLKS' : $KGPBLKS;
 
   for my $call (&F ('.//call-stmt', $comp))
     {
+
       my ($proc) = &F ('./procedure-designator/named-E/N/n/text()', $call);
 
       next if ($proc->textContent eq 'ABOR1');
       next if ($proc->textContent eq 'DR_HOOK');
       next if ($proc =~ m/$opts{'suffix-singlecolumn'}$/i);
+
+      my %copyin;
 
       if (my $it = $style->customIterator ())
         {
@@ -111,6 +119,12 @@ sub makeParallel
               $_->setData ($it1);
             }
           $call->parentNode->insertBefore ($_, $call) for (&s ($kfdia->textContent . " = $KFDIA"), &t ("\n"));
+          $copyin{$it1}++;
+
+          if ($opts{acc})
+           {
+             $pragma->insertEnterDataWorkaround ($call, COPYIN => [sort keys (%copyin)]);
+           }
         }
 
       $proc->setData ($proc->textContent . $opts{'suffix-manyblocks'});
@@ -140,7 +154,7 @@ sub makeParallel
             }
         }
 
-      $argspec->appendChild ($_) for (&t (', '), &n ('<arg><arg-N><k>KGPBLKS</k></arg-N>=' . &e ($KGPBLKS) . '</arg>'));
+      $argspec->appendChild ($_) for (&t (', '), &n ('<arg><arg-N><k>KGPBLKS</k></arg-N>=' . &e ($KGPBLKS1) . '</arg>'));
 
     }
 

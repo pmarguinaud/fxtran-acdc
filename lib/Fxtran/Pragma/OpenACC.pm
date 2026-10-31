@@ -214,6 +214,15 @@ sub insertData
   &insertDirectiveAfter ($p, '!$ACC END DATA');
 }
 
+# workaround for MESO-NH DD object compiler bug, should be replaced by insertData
+sub insertEnterDataWorkaround
+{
+  shift;
+  my ($p, %c) = @_;
+  &insertDirectiveBefore ($p, 'ENTER DATA', %c);
+  &insertDirectiveAfter ($p, '!$ACC EXIT DATA DELETE(DD)');
+}
+
 sub insertLoopVector
 {
   shift;

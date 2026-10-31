@@ -127,9 +127,12 @@ sub apply
 
           my @ss = &F ('./R-LT/array-R/section-subscript-LT/node()', $expr);
 
-          for ($ss[1], $ss[2])
+          if ( @ss >= 3) 
             {
-              $_->unbindNode ();
+             for ($ss[1], $ss[2])
+               {
+                 $_->unbindNode ();
+               }
             }
         }
     }
