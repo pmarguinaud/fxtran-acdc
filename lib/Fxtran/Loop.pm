@@ -68,6 +68,34 @@ into the parent.
 
 }
 
+sub replaceANY
+{
+
+=head2 replaceANY
+
+Replaces an C<ANY(...)> call with its argument. Dropping the call also drops
+the grouping it provided, so C<LLA .AND. ANY(B .OR. C)> must not become
+C<LLA .AND. B .OR. C>: the argument is enclosed in parentheses when the call
+is an operand of another operator and the argument is itself a logical
+operation.
+
+=cut
+
+  my ($ANY, $arg) = @_;
+
+  my $logical = grep { m/^\.(?:NOT|AND|OR|EQV|NEQV)\.$/io } &F ('./op', $arg, 1);
+
+  unless ($logical && ($ANY->parentNode->nodeName eq 'op-E'))
+    {
+      $ANY->replaceNode ($arg);
+      return;
+    }
+
+  my $parens = &n ('<parens-E/>');
+  $ANY->replaceNode ($parens);
+  $parens->appendChild ($_) for (&t ('('), $arg, &t (')'));
+}
+
 sub fixANYidiom
 {
   my ($s, %opts) = @_;
@@ -96,7 +124,7 @@ sub fixANYidiom
      
       my ($arg) = &F ('./R-LT/function-R/element-LT/element/ANY-E', $ANY);
 
-      $ANY->replaceNode ($arg);
+      &replaceANY ($ANY, $arg);
     }
 }
 
