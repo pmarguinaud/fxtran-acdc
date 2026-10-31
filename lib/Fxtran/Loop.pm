@@ -196,7 +196,10 @@ and only C<ANY()> is dropped, as in C<fixANYidiom>.
 
   for my $NOT (&F ('.//op-E[string(op)=".NOT."][count(./ANY-E)=1]', $s))
     {
-      my ($ANY) = &F ('.//named-E[string(N)="ANY"]', $NOT);
+      # ANY must be the operand of the .NOT.: anything deeper belongs to a larger
+      # expression, which would be lost; these cases are left to fixANYidiom
+
+      my ($ANY) = &F ('./named-E[string(N)="ANY"]', $NOT);
 
       next unless ($ANY);
 
@@ -231,7 +234,7 @@ and only C<ANY()> is dropped, as in C<fixANYidiom>.
       else
         {
           # Not a simple relational comparison: keep the .NOT., only drop ANY()
-          $ANY->replaceNode ($arg);
+          &replaceANY ($ANY, $arg);
         }
     }
 }
