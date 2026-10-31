@@ -45,7 +45,7 @@ statement node.
   my $class = shift;
   my ($stmt, $indent) = @_;
 
-  my @arg = &F ('./arg-spec/arg', $stmt, 1);
+  my @arg = &F ('./arg-spec/arg', $stmt, 2);
   my ($proc) = &F ('./procedure-designator', $stmt, 1);
 
   $stmt = "CALL $proc (& \n  " . join (", ", map { "$indent $_ &\n" } @arg) . "$indent)";

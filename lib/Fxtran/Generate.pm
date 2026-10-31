@@ -629,6 +629,7 @@ See L<Fxtran::SingleBlock> for more details.
   ignore-array-variables=s@       -- Does not process the mentionned variables as other array variables (used for ZBUDGET in MESONH files)
   max-statements-per-parallel=s   -- Maximum number of statements per parallel section
   parallel-iterator-list=s@       -- List of iterators for generating parallel sections (add to JLON, JLEV)
+  reduction-to-loop               -- Transform ANY/COUNT/SUM reduction into loops
 EOF
 sub manyblocks
 {
