@@ -78,7 +78,7 @@ sub openmptarget
 sub findParallel
 {
   my ($self, $node) = @_;
-  return &F ('.//target-teams-openmp[clause[string(.)="DISTRIBUTE"]', $node);
+  return &F ('.//target-teams-distribute-openmp', $node);
 }
 
 sub copyin
@@ -92,7 +92,7 @@ sub copyin
 sub sentinel
 {
   my $self = shift;
-  return &n ('<omptarget>!$OMP</omptarget>');
+  return &n ('<omp>!$OMP</omp>');
 }
 
 sub insertDirectiveBefore
