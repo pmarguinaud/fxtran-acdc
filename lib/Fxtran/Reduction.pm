@@ -179,7 +179,7 @@ sub reduceMask
 {
   my ($mask, $opts) = @_;
 
-  my @arr = &F ('.//named-E[R-LT/array-R/section-subscript-LT/section-subscript[lower-bound and upper-bound]]', $mask);
+  my @arr = &F ('.//named-E[R-LT/array-R/section-subscript-LT/section-subscript[text()[contains(.,":")]]]', $mask);
 
   die ("Fxtran::Reduction: cannot find a reducible array reference (indexed by $opts->{kidia}:$opts->{kfdia}) in: " . $mask->textContent . "\n")
     unless (scalar (@arr) == 1);
@@ -187,12 +187,13 @@ sub reduceMask
   my ($arr) = @arr;
 
   # The XPath above only requires *some* subscript in the list to be a
-  # lower:upper range -- any other subscripts (e.g. a fixed KLEV index
+  # range, with or without bounds (LO:HI, LO:, :HI or a bare ":") -- any
+  # other subscripts (e.g. a fixed KLEV index
   # alongside a KIDIA:KFDIA one) are left untouched in the generated loop.
   # Reject more than one ranging subscript (ambiguous: which one is being
   # reduced?) or a range that isn't exactly $opts->{kidia}:$opts->{kfdia}.
 
-  my @range = &F ('./R-LT/array-R/section-subscript-LT/section-subscript[lower-bound and upper-bound]', $arr);
+  my @range = &F ('./R-LT/array-R/section-subscript-LT/section-subscript[text()[contains(.,":")]]', $arr);
 
   die ("Fxtran::Reduction: more than one ranging subscript in reduced array reference: " . $arr->textContent . "\n")
     unless (scalar (@range) == 1);
@@ -203,7 +204,7 @@ sub reduceMask
   my ($hi) = &F ('./upper-bound', $range, 2);
 
   die ("Fxtran::Reduction: reduced array reference is not bounded by $opts->{kidia}:$opts->{kfdia}: " . $arr->textContent . "\n")
-    unless (($lo eq $opts->{kidia}) && ($hi eq $opts->{kfdia}));
+    unless (defined ($lo) && defined ($hi) && ($lo eq $opts->{kidia}) && ($hi eq $opts->{kfdia}));
 
   my $old = $range->textContent;
   my $new = $opts->{jlon};
