@@ -19,16 +19,38 @@ Removes DO-loop constructs whose loop variable matches the JLON column index.
 The loop header and footer are discarded and the body nodes are spliced directly
 into the parent.
 
+## replaceCall
+
+Replaces an intrinsic call with its argument. Dropping the call also drops
+the grouping it provided: when `$group` is true and the call is an operand
+of another operator, the argument is enclosed in parentheses.
+
+## replaceANY
+
+Replaces an `ANY(...)` call with its argument, so that
+`LLA .AND. ANY(B .OR. C)` does not become `LLA .AND. B .OR. C`: the argument
+needs parentheses only if it is itself a logical operation.
+
+## scalarizeArgument
+
+Returns the single argument of a `SUM` or `COUNT` call, after replacing the
+horizontal sections listed in `@range` with the scalar index `$jlon`.
+
+Nothing is returned (and the call is left untouched) when the call has other
+arguments (`DIM`, `MASK`), when it does not reduce over a horizontal section,
+or when another array section remains in the argument: the call is then still
+a reduction.
+
 ## fixCOUNTIdiom
 
-Replaces `COUNT(var(KIDIA:KFDIA))` array-reduction idioms with the scalar
-equivalent `MERGE(1, 0, var(JLON))`, operating on the right-hand side of
-assignment statements.
+Replaces `COUNT(mask(KIDIA:KFDIA))` array-reduction idioms with the scalar
+equivalent `MERGE(1, 0, mask(JLON))`, where `mask` may be any logical
+expression.
 
 ## fixSUMIdiom
 
-Replaces `SUM(var(KIDIA:KFDIA))` array-reduction idioms with the scalar
-element `var(JLON)`, eliminating the horizontal reduction for the
+Replaces `SUM(expr(KIDIA:KFDIA))` array-reduction idioms with the scalar
+expression `expr(JLON)`, eliminating the horizontal reduction for the
 single-column execution model.
 
 ## removeNpromaLoopsInSection

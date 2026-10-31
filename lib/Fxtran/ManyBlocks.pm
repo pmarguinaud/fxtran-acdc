@@ -229,6 +229,7 @@ use Fxtran::Decl;
 use Fxtran::Dimension;
 use Fxtran::DetectParallel;
 use Fxtran::Module;
+use Fxtran::Reduction;
 use Fxtran;
 
 sub processSingleSection
@@ -241,6 +242,16 @@ Process a single parallel section within a routine, generating the OpenACC kerne
 =cut
 
   my ($pu, $par, $var2dim, $typearg, $dims, $LDACC, %opts) = @_;
+
+  my ($doconstruct) = &F ('./do-construct', $par);
+
+  my %reduction = do
+  {
+    my ($r) = $doconstruct ? &F ('./@reduction', $doconstruct) : ();
+    $r &&= $r->textContent;
+    my @r = $r ? split (m/,/o, $r) : ();
+    @r ? (accum => $r[0], op  => $r[1], init => $r[2]) :  ()
+  };
 
   my ($style, $pragma) = @opts{qw (style pragma)};
 
@@ -434,6 +445,11 @@ EOF
         }
     }
 
+  if (%reduction)
+    {
+      delete ($priv{$reduction{accum}});
+    }
+
   # Add OpenACC directive  
   
   if ($LDACC ne '.FALSE.')
@@ -445,11 +461,23 @@ EOF
           push @pointer, $n;
         }
 
-      $pragma->insertLoopVector ($do_jlon, PRIVATE => [sort (keys (%priv))]);
+      my @reduction = (%reduction ? (REDUCTION => ["$reduction{op}:$reduction{accum}"]) : ());
+
+      $pragma->insertLoopVector 
+        (
+          $do_jlon, 
+          PRIVATE => [sort (keys (%priv))],
+          @reduction,
+        );
+
       $pragma->insertParallelLoopGang 
         ( 
-          $do_jblk, PRIVATE => ['JBLK'], VECTOR_LENGTH => [$nproma], ($LDACC ne '.TRUE.' ? (IF => [$LDACC]) : ()),
-          $opts{'use-stack-manyblocks'} ? (PRESENT => \@pointer) : ()
+          $do_jblk, 
+          PRIVATE => ['JBLK'], 
+          VECTOR_LENGTH => [$nproma], 
+          ($LDACC ne '.TRUE.' ? (IF => [$LDACC]) : ()),
+          $opts{'use-stack-manyblocks'} ? (PRESENT => \@pointer) : (),
+          @reduction,
         );
     }
 
@@ -507,6 +535,8 @@ Apply the manyblocks transformation to a single subroutine program unit.
 
   my $var2dim = &Fxtran::Loop::getVarToDim ($pu, style => $style);
   my $typearg = {};
+
+  &Fxtran::Reduction::reduceAnyIntrinsic ($pu, {kidia => $kidia, kfdia => $kfdia, jlon => $jlon}) if ($opts{'reduction-to-loop'});
 
   # Add parallel sections if required
   
