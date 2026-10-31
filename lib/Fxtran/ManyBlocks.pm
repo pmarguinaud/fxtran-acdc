@@ -243,8 +243,6 @@ Process a single parallel section within a routine, generating the OpenACC kerne
 
   my ($pu, $par, $var2dim, $typearg, $dims, $LDACC, %opts) = @_;
 
-my $dbg = ($par->toString =~ m/reduction=/goms);
-
   my ($doconstruct) = &F ('./do-construct', $par);
 
   my %reduction = do
