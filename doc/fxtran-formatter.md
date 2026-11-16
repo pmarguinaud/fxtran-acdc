@@ -1,11 +1,3 @@
-The purpose of `fxtran-formatter` is to reformat some statements.
-
-For now we reformat only the following statements (these happen to be the
-most sensitive to merge process) :
-
-- `CALL` statements.
-- `SUBROUTINE` statements.
-- `ASSOCIATE` statements.
 # NAME
 
 [fxtran-formatter](../bin/fxtran-formatter)

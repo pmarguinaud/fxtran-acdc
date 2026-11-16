@@ -1,0 +1,12 @@
+SUBROUTINE C03_TRUE_MIDDLE (L1, L2, LT, LF, X)
+LOGICAL :: L1, L2, LT, LF
+REAL :: X
+! The .TRUE. block becomes the ELSE block
+IF (L1) THEN
+  X = 1.
+ELSEIF (LT) THEN
+  X = 2.
+ELSE
+  X = 3.
+ENDIF
+END SUBROUTINE

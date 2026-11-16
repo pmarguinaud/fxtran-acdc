@@ -1,8 +1,0 @@
-src/local/
-hub/local/
-types-constant/
-types-fieldapi/
-tmp/
-run.*.log
-run/
-.scan.pl

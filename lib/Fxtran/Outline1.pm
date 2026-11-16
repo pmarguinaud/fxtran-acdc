@@ -578,7 +578,7 @@ Top-level entry point: parse a Fortran source file and outline all C<ACDC PARALL
       my @pu = &F ('./object/file/program-unit', $d);
       for my $pu (@pu)
         {
-          &Fxtran::Inline::inlineContainedSubroutines ($pu, skipDimensionCheck => 1);
+          &Fxtran::Inline::inlineContainedSubroutines ($pu);
         }
     }
   

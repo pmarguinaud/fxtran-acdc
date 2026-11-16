@@ -35,7 +35,7 @@ use strict;
 
 my $bin = shift;
 
-my @s;
+my %s;
 
 my $objdump = `objdump -h $bin`;
 
@@ -44,15 +44,21 @@ if ($?)
     die ("Command `objdump -h $bin' failed");
   }
 
+# Idx Name Size VMA LMA File-off Algn
 for my $line (split (m/\n/o, $objdump))
   {
-    if ($line =~ m/^\s*\d+\s*(\S+)/o)
+    if ($line =~ m/^\s*\d+\s+(\S+)\s+([0-9a-f]+)\s+[0-9a-f]+\s+[0-9a-f]+\s+([0-9a-f]+)/o)
       {
-        push @s, $1;
+        $s{$1} = [hex ($2), hex ($3)];
       }
   }
 
-for my $s (@s)
+# Read sections directly : objcopy --dump-section would rewrite $bin in place
+
+my $fh = 'FileHandle'->new ("<$bin") or die ("Cannot open $bin\n");
+binmode ($fh);
+
+for my $s (sort keys (%s))
   {
     if ($s =~ m/^\.fxtran\.acdc\.parallelmethod\.(\w+)$/o)
       {
@@ -60,16 +66,15 @@ for my $s (@s)
 
         my $f = "fxtran.acdc.parallelmethod.$method.txt";
 
-        my @cmd = ('objcopy', '--dump-section',  "$s=$f", $bin);
-        system (@cmd)
-          and die ("Command `@cmd' failed\n");
+        my ($size, $off) = @{ $s{$s} };
 
-        my $data = do { my $fh = 'FileHandle'->new ("<$f"); local $/ = undef; <$fh> };
+        my $data;
+        $fh->seek ($off, 0) && ($fh->read ($data, $size) == $size)
+          or die ("Cannot read section $s from $bin\n");
+
         $data =~ s/\0//goms;
 
         'FileHandle'->new (">$f")->print ($data);
       }
   }
-
-
 

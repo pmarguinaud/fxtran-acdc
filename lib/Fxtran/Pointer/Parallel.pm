@@ -142,6 +142,15 @@ EOF
 
       $parallel1 = $parallel1->cloneNode (1);
 
+      # Blocked kernels must not process columns beyond KFDIA
+
+      unless ($class->can ('keepKlonSlices') && $class->keepKlonSlices ())
+        {
+          my $style = $parallel1->getAttribute ('style');
+          $style = $style ? 'Fxtran::Style'->new (style => $style) : $opts{style};
+          $style->klonSlicesToColon ($parallel1) if ($style->can ('klonSlicesToColon'));
+        }
+
       $parallel1 = $class->makeParallel ($pu, $parallel1, $t, %opts);
       
       my $block;

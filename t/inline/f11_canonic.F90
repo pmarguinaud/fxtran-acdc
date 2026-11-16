@@ -1,0 +1,22 @@
+SUBROUTINE F11_CANONIC (KLON, X, Z)
+INTEGER, INTENT (IN) :: KLON
+REAL, INTENT (IN) :: X (KLON)
+REAL, INTENT (OUT) :: Z (KLON)
+! A contained function referenced from a contained subroutine, with array elements as arguments
+CALL S (KLON, X, Z)
+CONTAINS
+SUBROUTINE S (KLON, P, Q)
+INTEGER, INTENT (IN) :: KLON
+REAL, INTENT (IN) :: P (KLON)
+REAL, INTENT (OUT) :: Q (KLON)
+INTEGER :: JLON
+DO JLON = 1, KLON
+  Q (JLON) = F (P (JLON))
+ENDDO
+END SUBROUTINE
+FUNCTION F (A) RESULT (R)
+REAL, INTENT (IN) :: A
+REAL :: R
+R = 2. * A
+END FUNCTION
+END SUBROUTINE

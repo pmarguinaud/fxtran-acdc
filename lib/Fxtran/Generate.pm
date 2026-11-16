@@ -261,7 +261,7 @@ Parse a FORTRAN source file and prepare it for transformation, returning the par
 
           if ($opts->{'inline-contained'})
             {
-              &Fxtran::Inline::inlineContainedSubroutines ($pu, skipDimensionCheck => 1, inlineDeclarations => 1, 
+              &Fxtran::Inline::inlineContainedSubroutines ($pu, inlineDeclarations => 1, 
                                                            comment => $opts->{'inline-comment'}, find => $find,
                                                            style => $opts->{style});
             }
@@ -528,11 +528,13 @@ See L<Fxtran::Pointer::Parallel> for more details.
   
   my @pu = &F ('./object/file/program-unit', $d);
   
+  # KIDIA:KFDIA slices are turned into ':' for each target in Fxtran::Pointer::Parallel
+
   for my $pu (@pu)
     {
-      $opts->{style}->preProcessForOpenACC ($pu, %$opts);
+      $opts->{style}->preProcessForOpenACC ($pu, %$opts, 'keep-klon-slices' => 1);
     }
-  
+
   my $NAME = uc (&basename ($F90out, qw (.F90)));
   
   my $linkTypes = &Fxtran::IO::Link::link ('types-fieldapi-dir' => $opts->{'types-fieldapi-dir'});

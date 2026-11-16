@@ -1,0 +1,33 @@
+SUBROUTINE C24_WHERE (L1, L2, LT, LF, X)
+LOGICAL :: L1, L2, LT, LF
+REAL :: X
+! WHERE with a constant scalar mask
+REAL :: Y (10), Z (10)
+WHERE (LT)
+  Y = 1.
+ELSEWHERE
+  Y = 2.
+ENDWHERE
+WHERE (LF)
+  Y = 3.
+ELSEWHERE
+  Y = 4.
+ENDWHERE
+WHERE (LF)
+  Y = 5.
+ELSEWHERE (Z > 0.)
+  Y = 6.
+ELSEWHERE
+  Y = 7.
+ENDWHERE
+WHERE (Z > 0.)
+  Y = 8.
+ELSEWHERE (LT)
+  Y = 9.
+ELSEWHERE
+  Y = 10.
+ENDWHERE
+WHERE (LF) Y = 11.
+WHERE (LT) Y = 12.
+WHERE (Z > 0.) Y = 13.
+END SUBROUTINE

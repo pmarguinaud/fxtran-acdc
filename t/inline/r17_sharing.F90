@@ -1,0 +1,25 @@
+SUBROUTINE R17_SHARING (X, Y)
+REAL, INTENT (INOUT) :: X, Y
+! Z: S1 inlined twice, and S2 has the same local -> shared
+! K: SAVE variable of S1 and S2 -> not shared
+CALL S1 (X)
+CALL S1 (Y)
+CALL S2 (X)
+CONTAINS
+SUBROUTINE S1 (P)
+REAL, INTENT (INOUT) :: P
+REAL :: Z
+INTEGER, SAVE :: K
+K = K + 1
+Z = 2. * P
+P = Z
+END SUBROUTINE
+SUBROUTINE S2 (P)
+REAL, INTENT (INOUT) :: P
+REAL :: Z
+INTEGER, SAVE :: K
+K = K + 2
+Z = 3. * P
+P = Z
+END SUBROUTINE
+END SUBROUTINE

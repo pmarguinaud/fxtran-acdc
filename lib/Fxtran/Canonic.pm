@@ -307,6 +307,17 @@ reorganise the remaining statements into a structured specification part.
     }
   else
     {
+      # Detach CONTAINS and contained program units, so that they do not end up in the execution part
+
+      my @contains;
+
+      if (my ($contains) = &F ('./contains-stmt', $pu))
+        {
+          @contains = ($contains, &F ('following-sibling::node()', $contains));
+          pop (@contains); # End statement
+          $_->unbindNode () for (@contains);
+        }
+
       my $noexec = &Fxtran::Scope::getNoExec ($pu);
 
       for my $node (&F ('following-sibling::node()', $noexec))
@@ -316,6 +327,8 @@ reorganise the remaining statements into a structured specification part.
         }
 
       $pu->insertAfter ($_, $noexec) for ($exec, &t ("\n"));
+
+      $pu->insertBefore ($_, $pu->lastChild) for (@contains);
     }
 
   $pu->normalize ();

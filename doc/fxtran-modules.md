@@ -1,5 +1,3 @@
-The purpose of this script is to compile all modules of fxtran-acdc 
-and check they do not contain any errors.
 # NAME
 
 [fxtran-modules](../bin/fxtran-modules)

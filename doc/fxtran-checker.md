@@ -1,5 +1,3 @@
-Apply norm checking to a FORTRAN file. The file will be scanned for ACDC directives, unless
-the `--method` option is used. `fxtran-f90` will be invoked.
 # NAME
 
 [fxtran-checker](../bin/fxtran-checker)

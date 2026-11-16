@@ -179,7 +179,12 @@ EOF
 
 #   print &Dumper ([$pod, $markdown]);
 
-    $pp = 'Pod::Markdown'->new 
+    # output_string appends: start afresh, or the DESCRIPTION written to
+    # README.md would be duplicated at the top of doc/$perl.md
+
+    $markdown = '';
+
+    $pp = 'Pod::Markdown'->new
     ( 
       perldoc_url_prefix => '',
     );
